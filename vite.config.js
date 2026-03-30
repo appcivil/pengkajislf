@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/pengkajislf/',
+  base: './',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
