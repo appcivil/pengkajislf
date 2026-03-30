@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/smartaipengkaji/',
+  base: '/pengkajislf/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
