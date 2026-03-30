@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="app-version" content="2.0.0-forensic" />
+    <meta name="description" content="Smart AI Konsultan Pengkaji SLF - Sistem berbasis AI untuk pengkajian teknis bangunan gedung dengan standar NSPK, SNI 9273:2025, dan ASCE 41-17" />
+    <meta name="keywords" content="SLF, Sertifikat Laik Fungsi, pengkaji bangunan, AI konsultan, SNI 9273" />
+    <meta name="author" content="Smart AI Pengkaji" />
+    <meta property="og:title" content="Smart AI Konsultan Pengkaji SLF" />
+    <meta property="og:description" content="Sistem AI untuk pengkajian teknis bangunan gedung" />
+    <meta property="og:type" content="website" />
+    <title>Smart AI Konsultan Pengkaji SLF</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  </head>
+  <body>
+    <div id="loading-screen" class="loading-screen">
+      <div class="loading-card">
+        <div class="loading-logo-area">
+          <div class="logo-ring"></div>
+          <img src="logo-app.png" alt="Logo" class="main-loader-logo">
+        </div>
+        
+        <div class="loading-text-area">
+          <h2 class="loading-title">Smart AI Pengkaji SLF</h2>
+          <div class="loading-status-container">
+            <span id="loading-status">Menyiapkan Sistem...</span>
+          </div>
+          <div class="loading-bar-wrapper">
+            <div class="loading-bar-glow" id="loading-progress"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
