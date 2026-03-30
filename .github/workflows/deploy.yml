@@ -3,29 +3,40 @@ name: Deploy Smart AI SLF to GitHub Pages
 on:
   push:
     branches: ["main"]
-
-  # Memungkinkan dijalankan secara manual dari tab Actions
   workflow_dispatch:
 
-# Izin yang diperlukan untuk menulis ke branch gh-pages
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
-    concurrency: ci-${{ github.ref }} # Mencegah multiple deploys bersamaan
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout 🛎️
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Install and Build 🔧
-        run: |
-          npm install
-          npm run build
-
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
-          folder: dist # Folder yang dihasilkan oleh 'vite build'
-          branch: gh-pages # Branch target untuk GitHub Pages
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
