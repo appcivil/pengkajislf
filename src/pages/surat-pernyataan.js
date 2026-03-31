@@ -1,460 +1,589 @@
 import { supabase } from '../lib/supabase.js';
 import { navigate } from '../lib/router.js';
-import { showSuccess, showError } from '../components/toast.js';
+import { showSuccess, showError, showInfo } from '../components/toast.js';
+import { getSettings } from '../lib/settings.js';
+import { getNextSequence, formatDocumentNumber } from '../lib/numbering-service.js';
 
 /**
- * Surat Pernyataan Page (High-Fidelity PP 16/2021)
+ * SURAT PERNYATAAN PAGE (ULTRA MODERN UI/UX)
  * Interactive A4 preview and editor for 3 Experts & TTE.
+ * Follows PP 16/2021 & SIMBG Formal Standard.
  */
 export async function suratPernyataanPage(params = {}) {
   const id = params.id;
   if (!id) { navigate('proyek'); return ''; }
 
   const root = document.getElementById('page-root');
-  if (root) root.innerHTML = '<div class="loading-full"><div class="spinner"></div><p>Sinkronisasi Format Resmi SIMBG...</p></div>';
+  if (root) root.innerHTML = '<div class="loading-full-overlay"><div class="modern-spinner"></div><p>Sinkronisasi Enkripsi TTE SIMBG...</p></div>';
 
   try {
-    const [proyek, settingsRes] = await Promise.all([
-      fetchProyek(id),
-      supabase.from('settings').select('*').eq('id', '00000000-0000-0000-0000-000000000000').single()
-    ]).catch(err => {
-      console.error("[SLF] Initial Fetch Error:", err);
-      throw new Error("Gagal mengambil data proyek atau pengaturan.");
-    });
+    // 1. Concurrent fetching for speed
+    const [proyekRes, settings, findingsRes] = await Promise.all([
+      supabase.from('proyek').select('*').eq('id', id).single(),
+      getSettings(),
+      supabase.from('checklist_items').select('*').eq('proyek_id', id)
+    ]);
 
-    const settings = settingsRes.data?.data || {};
-
-    if (!proyek) {
-      showError('Proyek tidak ditemukan.');
-      navigate('proyek');
-      return '';
+    if (proyekRes.error) throw proyekRes.error;
+    
+    const proyek = proyekRes.data;
+    
+    // Auto-generate nomor_surat if missing
+    if (!proyek.metadata?.nomor_surat) {
+       try {
+          const seq = await getNextSequence();
+          const format = settings.consultant?.nomor_surat_format || '[SEQ]/SP-SLF/[ROMAN_MONTH]/[YEAR]';
+          const newNum = formatDocumentNumber(format, seq);
+          
+          proyek.metadata = { ...(proyek.metadata || {}), nomor_surat: newNum };
+          
+          // Save back to DB
+          await supabase.from('proyek').update({ metadata: proyek.metadata }).eq('id', id);
+          showInfo(`Nomor surat baru dihasilkan: ${newNum}`);
+       } catch (err) {
+          console.error("Failed to auto-number:", err);
+       }
     }
+    
+    // Filtering findings meticulously in JS
+    const findings = (findingsRes.data || []).filter(item => 
+      item.status && 
+      !['baik', 'ada_sesuai', 'tidak_wajib'].includes(item.status)
+    );
 
-    const html = buildHtml(proyek, settings);
+    // 2. Build Shell
     if (root) {
-      root.innerHTML = html;
-      initAfterRender(proyek, settings);
+      root.className = 'page-no-scroll';
+      root.innerHTML = buildModernLayout(proyek, settings);
+      
+      // 3. Initialize UI Handlers
+      initModernHandlers(proyek, settings, findings);
+      
+      // 4. Trigger Initial Render (Consultant by default)
+      const preview = document.getElementById('legal-preview');
+      if (preview) {
+         preview.innerHTML = renderDocTemplate('konsultan', proyek, settings, findings);
+      }
     }
-    return html;
   } catch (err) {
-    console.error("[SLF] Page Error:", err);
+    console.error("[SURAT_PERNYATAAN] Critical Error:", err);
     if (root) {
-      root.innerHTML = `
-        <div class="empty-state" style="min-height:70vh">
-          <div class="empty-icon" style="color:var(--danger-400)"><i class="fas fa-exclamation-triangle"></i></div>
-          <h2 class="empty-title">Gagal Memuat Halaman</h2>
-          <p class="empty-desc">${err.message}</p>
-          <button class="btn btn-primary" onclick="window.location.reload()">Muat Ulang</button>
-        </div>
-      `;
+      root.innerHTML = `<div class="p-10 text-center"><h2 class="text-danger">Gagal Memuat Dokumen</h2><p>${err.message}</p></div>`;
     }
-    return '';
   }
 }
 
-function buildHtml(p, s) {
+/**
+ * Modern Sidebar & Canvas Layout (Glassmorphism)
+ */
+function buildModernLayout(p, s) {
   return `
-    <div id="surat-pernyataan-page" class="legal-page hf-version">
-      <div class="legal-sidebar">
-        <div class="sidebar-header">
-          <button class="btn btn-ghost btn-sm" onclick="window.navigate('proyek-detail', {id:'${p.id}'})">
-            <i class="fas fa-arrow-left"></i> Kembali ke Proyek
+    <div id="sp-modern-container" class="modern-app-layout">
+      <!-- Sidebar Glass -->
+      <aside class="sp-sidebar-glass">
+        <div class="sidebar-top">
+          <button class="btn-back-modern" onclick="window.navigate('proyek-detail', {id:'${p.id}'})">
+            <i class="fas fa-chevron-left"></i> Kembali ke Proyek
           </button>
-          <h2>Format Resmi SIMBG</h2>
-          <p class="text-xs text-tertiary">PP 16/2021 · 3 Pilar Tenaga Ahli</p>
+          
+          <div class="sidebar-brand-box">
+             <div class="brand-chip">FORMAT RESMI SIMBG</div>
+             <h1>Legal Statement</h1>
+             <p>Aspek Keandalan Bangunan · PP 16/2021</p>
+          </div>
         </div>
 
-        <div class="sidebar-menu">
-          <div class="menu-item active" data-type="konsultan">
-            <i class="fas fa-file-shield"></i>
-            <div class="menu-label">
-              <span>Pernyataan Konsultan</span>
-              <small>3 Bidang Ahli (+TTE)</small>
+        <nav class="sidebar-nav-modern">
+          <div class="nav-card active" data-type="konsultan">
+            <div class="nav-card-icon"><i class="fas fa-shield-halved"></i></div>
+            <div class="nav-card-body">
+              <span class="nav-title">Pernyataan Pengkaji</span>
+              <span class="nav-subtitle">Konsultan & 3 Tenaga Ahli</span>
             </div>
+            <div class="nav-card-status"><i class="fas fa-check-circle"></i></div>
           </div>
-          <div class="menu-item" data-type="pemilik">
-            <i class="fas fa-user-check"></i>
-            <div class="menu-label">
-              <span>Pernyataan Pemilik</span>
-              <small>Komitmen Pemeliharaan</small>
+
+          <div class="nav-card" data-type="pemilik">
+            <div class="nav-card-icon"><i class="fas fa-user-check"></i></div>
+            <div class="nav-card-body">
+              <span class="nav-title">Pernyataan Pemilik</span>
+              <span class="nav-subtitle">Komitmen & Tabel Temuan</span>
             </div>
+            <div class="nav-card-status"><i class="fas fa-circle"></i></div>
           </div>
-        </div>
+        </nav>
 
-        <div class="sidebar-footer">
-          <div class="alert alert-info" style="font-size:11px; margin-bottom:15px;">
-            <i class="fas fa-info-circle"></i>
-            Koordinat & Data Teknis ditarik otomatis. Aktifkan "Mode Edit" untuk perubahan manual.
-          </div>
-          <div class="form-group" style="padding:0 10px 15px 10px;">
-            <label class="toggle" style="justify-content:space-between; width:100%; font-size:13px; font-weight:600;">
-              <span><i class="fas fa-edit"></i> Mode Edit Teks</span>
-              <input type="checkbox" id="toggle-edit-mode">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <button class="btn btn-primary btn-block" id="btn-download-docx">
-            <i class="fas fa-file-word"></i> Ekspor Word (TTE Ready)
-          </button>
-        </div>
-      </div>
+        <div class="sidebar-bottom">
+           <div class="tte-security-badge">
+              <i class="fas fa-fingerprint"></i>
+              <div>
+                <strong>TTE TERVERIFIKASI</strong>
+                <p>UU ITE No. 11/2008 Aktif</p>
+              </div>
+           </div>
 
-      <div class="legal-canvas">
-        <div class="paper-a4" id="legal-preview" contenteditable="false">
-          ${renderDocTemplate('konsultan', p, s)}
+           <div class="edit-mode-glass">
+              <label class="toggle-modern">
+                <div class="toggle-text">
+                   <strong>Mode Edit Bebas</strong>
+                   <p>Kertas A4 menjadi editable</p>
+                </div>
+                <input type="checkbox" id="toggle-edit-mode">
+                <span class="slider-modern"></span>
+              </label>
+           </div>
+
+           <button class="btn-modern btn-primary btn-lg shadow-blue w-full" id="btn-export-word">
+              <i class="fas fa-file-word"></i> Ekspor Ms. Word Resmi
+           </button>
         </div>
-      </div>
+      </aside>
+
+      <!-- Document Canvas Technical -->
+      <main class="sp-canvas-technical">
+         <div class="canvas-viewport">
+            <div id="legal-preview" class="paper-a4-modern" contenteditable="false">
+               <!-- Content injected here -->
+            </div>
+         </div>
+      </main>
     </div>
 
     <style>
-      .legal-page.hf-version { display: flex; height: calc(100vh - 64px); background: #f1f5f9; overflow: hidden; }
-      .legal-sidebar { width: 340px; background: #fff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; box-shadow: 10px 0 30px rgba(0,0,0,0.03); z-index: 10; }
-      .sidebar-header { padding: 30px 24px; border-bottom: 1px solid #f1f5f9; }
-      .sidebar-header h2 { margin-top: 15px; font-size: 20px; color: #1e293b; font-weight: 800; }
+      .modern-app-layout { display: flex; height: calc(100vh - 64px); background: #f0f2f5; overflow: hidden; font-family: 'Inter', sans-serif; }
       
-      .sidebar-menu { flex: 1; padding: 15px; }
-      .menu-item { display: flex; align-items: center; gap: 15px; padding: 16px; border-radius: 12px; cursor: pointer; transition: all 0.3s; margin-bottom: 8px; border: 1px solid transparent; color: #475569; }
-      .menu-item:hover { background: #f1f5f9; border-color: #cbd5e1; color: #1e293b; }
-      .menu-item.active { background: #2563eb; color: #fff; border-color: #1d4ed8; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.2); }
-      .menu-item i { font-size: 24px; opacity: 0.8; }
-      .menu-item.active i { opacity: 1; color: #fff; }
-      .menu-label { display: flex; flex-direction: column; }
-      .menu-label span { font-weight: 700; font-size: 15px; color: inherit; }
-      .menu-label small { font-size: 11px; opacity: 0.8; font-weight: 500; color: inherit; }
-      .menu-item.active .menu-label small { opacity: 0.9; color: #dbeafe; }
-
-      .sidebar-footer { padding: 25px; background: #fff; border-top: 1px solid #f1f5f9; color: #1e293b; }
-      .alert-info { background: #dbeafe !important; color: #1e3a8a !important; border-color: #3b82f6 !important; opacity: 1 !important; }
-      .sidebar-footer label { color: #1e293b !important; }
-      .sidebar-footer .text-xs { color: #64748b !important; }
-
-      .legal-canvas { flex: 1; overflow-y: auto; padding: 60px; display: flex; justify-content: center; scroll-behavior: smooth; }
-      
-      .paper-a4 {
-        width: 210mm;
-        min-height: 297mm;
-        background: #fff;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-        padding: 25mm 20mm;
-        font-family: "Times New Roman", serif;
-        font-size: 11.5pt;
-        line-height: 1.4;
-        color: #000;
-        outline: none;
-        position: relative;
-        text-align: justify;
+      /* Sidebar Modern Glass */
+      .sp-sidebar-glass { 
+        width: 320px; 
+        background: rgba(255, 255, 255, 0.7); 
+        backdrop-filter: blur(15px); 
+        -webkit-backdrop-filter: blur(15px);
+        border-right: 1px solid rgba(0,0,0,0.05);
+        display: flex; flex-direction: column; padding: 24px;
+        box-shadow: 10px 0 40px rgba(0,0,0,0.03); 
       }
-      .paper-a4:focus { border: 1px dashed #3b82f6; }
+      .btn-back-modern { 
+        background: none; border: none; font-size: 13px; font-weight: 600; color: #1e40af; 
+        display: flex; align-items:center; gap: 8px; cursor: pointer; padding: 0; margin-bottom: 24px; 
+        transition: opacity 0.2s;
+      }
+      .btn-back-modern:hover { opacity: 0.6; }
+      .brand-chip { display: inline-block; padding: 4px 10px; background: #dbeafe; color: #1e40af; font-size: 10px; font-weight: 800; border-radius: 6px; margin-bottom: 8px; }
+      .sidebar-brand-box h1 { font-size: 24px; font-weight: 900; color: #0f172a; margin: 0; letter-spacing: -0.5px; }
+      .sidebar-brand-box p { font-size: 12px; color: #64748b; margin-top: 4px; }
 
-      /* Detailed Document Styles */
-      .doc-header-hf { position: relative; min-height: 100px; margin-bottom: 20px; }
-      .doc-kop-img { width: 100%; max-height: 150px; object-fit: contain; }
-      .doc-kop-text { border-bottom: 4px double #000; padding-bottom: 10px; text-align: center; line-height: 1.2; }
-      .doc-kop-text h1 { font-size: 16pt; font-weight: bold; margin: 0; text-transform: uppercase; }
-      .doc-kop-text h2 { font-size: 14pt; font-weight: bold; margin: 2px 0; text-transform: uppercase; }
-      .doc-kop-text p { font-size: 9pt; margin: 2px 0; font-style: italic; }
+      .sidebar-nav-modern { flex: 1; margin: 30px 0; display: flex; flex-direction: column; gap: 12px; }
+      .nav-card { 
+        display: flex; align-items: center; gap: 16px; padding: 18px; border-radius: 16px; 
+        background: #fff; border: 1px solid #f1f5f9; cursor: pointer; transition: all 0.3s ease; 
+        position: relative;
+      }
+      .nav-card:hover { border-color: #3b82f6; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+      .nav-card.active { border-color: #2563eb; background: linear-gradient(135deg, #1d4ed8, #2563eb); color: #fff; }
+      .nav-card-icon { width: 44px; height: 44px; background: #eff6ff; display: flex; align-items:center; justify-content:center; border-radius: 12px; font-size: 20px; color: #2563eb; }
+      .nav-card.active .nav-card-icon { background: rgba(255,255,255,0.2); color: #fff; }
+      .nav-card-body { flex: 1; }
+      .nav-title { display: block; font-weight: 800; font-size: 14px; }
+      .nav-subtitle { display: block; font-size: 10px; opacity: 0.7; }
+      .nav-card-status { font-size: 18px; color: #cbd5e1; }
+      .nav-card.active .nav-card-status { color: #fff; }
+
+      .tte-security-badge { 
+        display: flex; align-items: center; gap: 15px; padding: 16px; 
+        background: #0f172a; color: #fff; border-radius: 16px; margin-bottom: 16px; 
+      }
+      .tte-security-badge i { font-size: 28px; color: #3b82f6; }
+      .tte-security-badge strong { font-size: 12px; display: block; }
+      .tte-security-badge p { font-size: 10px; opacity: 0.6; margin: 0; }
+
+      .edit-mode-glass { background: #fff; border-radius: 12px; padding: 15px; border: 1px solid #f1f5f9; margin-bottom: 20px; }
+      .toggle-modern { display: flex; align-items: center; justify-content: space-between; gap: 15px; cursor: pointer; }
+      .toggle-text strong { display: block; font-size: 13px; color: #1e293b; }
+      .toggle-text p { font-size: 10px; color: #64748b; margin: 0; }
       
-      .doc-title-hf { text-align: center; margin-bottom: 25px; }
-      .doc-title-hf h2 { font-size: 13pt; margin: 0; font-weight: bold; line-height: 1.2; text-transform: uppercase; }
-      .doc-meta-hf { margin-bottom: 20px; font-weight: 500; }
-      .meta-row { display: grid; grid-template-columns: 80px 10px 1fr; margin-bottom: 2px; }
+      .btn-modern { 
+        border: none; border-radius: 12px; font-weight: 800; cursor: pointer; 
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        transition: all 0.3s;
+      }
+      .btn-modern.btn-lg { height: 56px; font-size: 15px; }
+      .btn-modern.btn-primary { background: #2563eb; color: #fff; }
+      .btn-modern.btn-primary:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 15px 30px rgba(37, 99, 235, 0.4); }
 
-      .doc-section-title { font-weight: bold; margin-bottom: 10px; }
-      .doc-list { list-style: none; padding-left: 20px; margin-bottom: 15px; }
-      .doc-list li { margin-bottom: 4px; display: flex; gap: 8px; }
+      /* Technical Canvas */
+      .sp-canvas-technical { flex: 1; overflow: hidden; position: relative; }
+      .canvas-viewport { 
+         height: 100%; overflow-y: auto; padding: 40px 20px 200px 20px; display: flex; justify-content: center;
+         background-color: #cbd5e1;
+         background-image: 
+           linear-gradient(45deg, #e2e8f0 25%, transparent 25%, transparent 50%, #e2e8f0 50%, #e2e8f0 75%, transparent 75%, transparent);
+         background-size: 100px 100px;
+         scroll-behavior: smooth;
+      }
 
-      .sig-director-content { display: flex; align-items: flex-end; justify-content: flex-end; gap: 40px; margin-top: 25px; width: 100%; }
-      .materai-box { width: 95px; height: 95px; border: 1px dashed #64748b; border-radius: 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 8px; color: #64748b; line-height: 1.2; text-align: center; background: #fafafa; opacity: 0.8; font-family: 'Inter', sans-serif; margin-bottom: 20px; }
-      .materai-box b { font-size: 10px; color: #475569; letter-spacing: 1px; margin-bottom: 3px; }
-      .sig-director-right { display: flex; flex-direction: column; align-items: center; min-width: 280px; }
-      .sig-img-director { max-width: 150px; max-height: 80px; object-fit: contain; }
-      .sig-img-qr-std { width: 65px; height: 65px; object-fit: contain; background: white; padding: 2px; border: 1px solid #f1f5f9; }
-      .sig-header-text { font-weight: bold; font-size: 10pt; min-height: 35px; display: flex; align-items: center; justify-content: center; line-height: 1.2; text-align: center; margin-bottom: 8px; }
-      .director-name-container { text-align: center; width: 100%; margin-top: 8px; }
-      .director-job-text { font-size: 10pt; margin-top: 4px; display: block; }
-      .list-num { min-width: 20px; }
+      .paper-a4-modern { 
+        width: 210mm; min-height: 297mm; height: auto; 
+        background-color: #fff;
+        background-image: 
+          linear-gradient(to bottom, #fff 0, #fff 297mm, #cbd5e1 297mm, #cbd5e1 307mm);
+        background-size: 100% 307mm;
+        padding: 0; /* Changed: padding now on internal pages */
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+        font-family: 'Times New Roman', serif;
+        word-wrap: break-word; color: #000; text-align: justify;
+        line-height: 1.5; font-size: 11pt; position: relative;
+        animation: paperFadeIn 0.5s ease-out;
+      }
 
-      .doc-grid-11 { margin: 15px 0 25px 25px; display: flex; flex-direction: column; gap: 4px; }
-      .grid-11-row { display: grid; grid-template-columns: 20px 180px 10px 1fr; align-items: baseline; }
+      .paper-page-content {
+        padding: 30mm 20mm;
+        min-height: 297mm;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
 
-      .box-pernyataan { border: 2px solid #000; padding: 15px; text-align: center; font-weight: bold; font-size: 13pt; margin: 25px 0; text-transform: uppercase; }
+      @keyframes paperFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-      /* 3 Column Signature */
-      .sig-3-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 40px; }
-      .sig-cell { text-align: center; display: flex; flex-direction: column; align-items: center; }
-      .sig-role { font-weight: bold; font-size: 9pt; min-height: 35px; display: flex; align-items: center; justify-content: center; line-height: 1.2; }
-      .sig-box-tte { height: 90px; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 8px 0; position: relative; }
-      .sig-img-signature { position: absolute; max-height: 60px; max-width: 80%; object-fit: contain; z-index: 1; opacity: 0.9; }
-      .sig-img-qr { max-height: 65px; max-width: 65px; object-fit: contain; z-index: 2; border: 1px solid #eee; background: #fff; padding: 2px; border-radius: 4px; }
-      .sig-placeholder { font-size: 7pt; color: #666; font-style: italic; opacity: 0.3; border: 1px dashed #ccc; width: 65px; height: 65px; display: flex; align-items: center; justify-content: center; }
-      .sig-name { font-weight: bold; text-decoration: underline; font-size: 10pt; margin-top: 8px; text-transform: uppercase; }
-      .sig-skk { font-size: 8pt; margin-top: 2px; opacity: 0.8; }
+      /* Formal Document Styling Internal (PP 16/2021) */
+      .hf-doc-header { border-bottom: 4px double #000; padding-bottom: 20px; margin-bottom: 25px; text-align: center; }
+      .hf-doc-title { text-align: center; font-weight: bold; font-size: 13pt; margin-bottom: 25px; line-height: 1.2; text-transform: uppercase; }
+      
+      .hf-meta-grid { display: grid; grid-template-columns: 80px 10px 1fr; margin-bottom: 20px; font-weight: 500; font-size: 10.5pt; }
+      
+      .hf-section-title { font-weight: bold; margin: 15px 0 10px 0; font-size: 11pt; text-decoration: underline; }
+      
+      /* Universal Data Alignment Grid */
+      .hf-data-grid { margin: 10px 0 20px 0; display: flex; flex-direction: column; gap: 4px; font-size: 10.5pt; }
+      .hf-grid-row { display: grid; grid-template-columns: 25px 180px 15px 1fr; align-items: baseline; }
+      .hf-grid-row.nested { margin-left: 25px; grid-template-columns: 25px 155px 15px 1fr; }
+
+      .box-result-formal { border: 2px solid #000; padding: 12px; text-align: center; font-weight: bold; font-size: 11pt; margin: 20px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+
+      /* Multi-Signature Block (Revised for Director Center Above Experts) */
+      .sig-director-area { margin-top: 30px; display: flex; justify-content: center; }
+      .sig-director-box { width: 450px; text-align: center; position: relative; }
+      .sig-director-flex { display: flex; align-items: center; justify-content: center; gap: 30px; margin: 15px 0; }
+      
+      .ematerai-placeholder { 
+        width: 100px; height: 100px; border: 2px dashed #3b82f6; border-radius: 4px; 
+        display: flex; flex-direction: column; align-items:center; justify-content:center;
+        font-size: 8pt; color: #1e40af; background: #eff6ff; font-family: 'Inter', sans-serif;
+        font-weight: 900; line-height: 1.1; padding: 5px; opacity: 0.9;
+      }
+      .ematerai-placeholder span.val { font-size: 14pt; display: block; border-top: 1px solid #3b82f6; margin-top:5px; padding-top:6px; width: 100%; }
+      
+      .sig-experts-container { margin-top: 40px; }
+      .sig-experts-title { text-align: center; font-weight: bold; margin-bottom: 25px; text-decoration: underline; font-size: 11pt; }
+      .sig-experts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+      .sig-expert-card { text-align: center; font-size: 9.5pt; break-inside: avoid; }
+      
+      .sig-box-tte { height: 110px; width: 100%; display: flex; align-items: center; justify-content: center; position: relative; }
+      .sig-qr-small { width: 100px; height: 100px; border: 1px solid #000; background: #fff; padding: 2px; }
+      .sig-name-underline { font-weight: bold; text-decoration: underline; text-transform: uppercase; margin-top: 10px; font-size: 10.5pt; }
+
+      /* Page Break Simulation */
+      .page-break-professional { padding: 40px 0; text-align: center; color: #64748b; font-size: 10px; font-weight: bold; opacity: 0.5; }
+      
+      /* Avoid splits */
+      .hf-data-grid, .hf-meta-grid, .sig-director-area, .sig-experts-container, .box-result-formal { break-inside: avoid; }
+    <style>
+      .modern-table-temuan { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #000; margin-top: 15px; font-size: 10pt; }
+      .modern-table-temuan th { background: #f8fafc; border: 1px solid #000; padding: 8px; text-align: left; font-weight: bold; }
+      .modern-table-temuan td { border: 1px solid #000; padding: 8px; vertical-align: top; }
     </style>
   `;
 }
 
-function renderDocTemplate(type, p, s) {
-  const dateStr = formatDate(new Date());
-  const experts = s.experts || {};
-  
-  if (type === 'konsultan') {
-    const kopHeader = s.consultant?.kop_image 
-      ? `<img src="${s.consultant.kop_image}" class="doc-kop-img">`
-      : `<div class="doc-kop-text">${(s.consultant?.kop_text || 'KOP SURAT').split('\n').map((line, i) => i === 0 ? `<h1>${line}</h1>` : i === 1 ? `<h2>${line}</h2>` : `<p>${line}</p>`).join('')}</div>`;
-
-    return `
-      <div class="doc-header-hf">
-        ${kopHeader}
-      </div>
-
-      <div class="doc-title-hf">
-        <h2>SURAT PERNYATAAN KELAIKAN FUNGSI<br>BANGUNAN GEDUNG</h2>
-      </div>
-
-      <div class="doc-meta-hf">
-        <div class="meta-row"><div>Nomor</div><div>:</div><div>__________</div></div>
-        <div class="meta-row"><div>Tanggal</div><div>:</div><div>${dateStr}</div></div>
-        <div class="meta-row"><div>Lampiran</div><div>:</div><div>1 (Satu) Berkas</div></div>
-      </div>
-
-      <div style="margin-bottom:15px;">
-        Pada hari ini, tanggal ${new Date().getDate()} bulan ${formatMonth(new Date())} tahun ${new Date().getFullYear()}, yang bertanda tangan di bawah ini:
-      </div>
-
-      <div class="doc-list">
-        <li><div class="list-num">□</div><div>Penyedia jasa pengkaji teknis / Penyedia jasa pengawas konstruksi / Penyedia jasa manajemen konstruksi / Instansi penyelenggara SLF Pemerintah Daerah</div></li>
-      </div>
-
-      <div style="margin-left:25px; margin-bottom:20px;">
-        <div class="meta-row" style="grid-template-columns: 180px 10px 1fr;"><div>Nama perusahaan/instansi</div><div>:</div><div>${escHtml(s.consultant?.name || '-')}</div></div>
-        <div class="meta-row" style="grid-template-columns: 180px 10px 1fr;"><div>Alamat</div><div>:</div><div>${escHtml(s.consultant?.address || '-')}</div></div>
-        <div class="meta-row" style="grid-template-columns: 180px 10px 1fr;"><div>Telepon</div><div>:</div><div>${escHtml(p.telepon || '-')}</div></div>
-        <div class="meta-row" style="grid-template-columns: 180px 10px 1fr;"><div>Email</div><div>:</div><div>${escHtml(p.email_pemilik || '-')}</div></div>
-      </div>
-
-      <div class="doc-section-title">Pelaksana pemeriksaan kelaikan fungsi bangunan gedung:</div>
-      <div style="margin-left:25px; margin-bottom:15px;">
-        <div class="grid-11-row"><div>1)</div><div style="font-weight:bold">Bidang arsitektur / tata ruang-luar:</div></div>
-        <div class="grid-11-row"><div></div><div style="padding-left:15px">a) Nama</div><div>:</div><div>${escHtml(experts.architecture?.name || '____________________')}</div></div>
-        <div class="grid-11-row"><div></div><div style="padding-left:15px">b) Nomor sertifikat keahlian</div><div>:</div><div>${escHtml(experts.architecture?.skk || '____________________')}</div></div>
-        
-        <div class="grid-11-row" style="margin-top:4px"><div>2)</div><div style="font-weight:bold">Bidang struktur:</div></div>
-        <div class="grid-11-row"><div></div><div style="padding-left:15px">a) Nama</div><div>:</div><div>${escHtml(experts.structure?.name || '____________________')}</div></div>
-        <div class="grid-11-row"><div></div><div style="padding-left:15px">b) Nomor sertifikat keahlian</div><div>:</div><div>${escHtml(experts.structure?.skk || '____________________')}</div></div>
-
-        <div class="grid-11-row" style="margin-top:4px"><div>3)</div><div style="font-weight:bold">Bidang utilitas / MEP:</div></div>
-        <div class="grid-11-row"><div></div><div style="padding-left:15px">a) Nama</div><div>:</div><div>${escHtml(experts.mep?.name || '____________________')}</div></div>
-        <div class="grid-11-row"><div></div><div style="padding-left:15px">b) Nomor sertifikat keahlian</div><div>:</div><div>${escHtml(experts.mep?.skk || '____________________')}</div></div>
-      </div>
-
-      <div class="doc-section-title">Telah melaksanakan pemeriksaan kelaikan fungsi bangunan gedung pada:</div>
-      <div class="doc-grid-11">
-        <div class="grid-11-row"><div>1)</div><div>Nama bangunan</div><div>:</div><div>${escHtml(p.nama_bangunan)}</div></div>
-        <div class="grid-11-row"><div>2)</div><div>Alamat bangunan</div><div>:</div><div>${escHtml(p.alamat || '-')}</div></div>
-        <div class="grid-11-row"><div>3)</div><div>Posisi koordinat</div><div>:</div><div>${p.latitude || '0'}, ${p.longitude || '0'}</div></div>
-        <div class="grid-11-row"><div>4)</div><div>Fungsi bangunan</div><div>:</div><div>${escHtml(p.fungsi_bangunan || '-')}</div></div>
-        <div class="grid-11-row"><div>5)</div><div>Klasifikasi kompleksitas</div><div>:</div><div>Sederhana / Tidak Sederhana</div></div>
-        <div class="grid-11-row"><div>6)</div><div>Ketinggian bangunan</div><div>:</div><div>${p.tahun_dibangun || '-'}</div></div>
-        <div class="grid-11-row"><div>7)</div><div>Jumlah lantai bangunan</div><div>:</div><div>${p.jumlah_lantai || 1} Lantai</div></div>
-        <div class="grid-11-row"><div>8)</div><div>Luas lantai bangunan</div><div>:</div><div>${p.luas_bangunan || 0} m²</div></div>
-        <div class="grid-11-row"><div>9)</div><div>Jumlah basement</div><div>:</div><div>-</div></div>
-        <div class="grid-11-row"><div>10)</div><div>Luas lantai basement</div><div>:</div><div>-</div></div>
-        <div class="grid-11-row"><div>11)</div><div>Luas tanah</div><div>:</div><div>${p.luas_lahan || 0} m²</div></div>
-      </div>
-
-      <div class="doc-section-title">Berdasarkan hasil pemeriksaan persyaratan kelaikan fungsi yang terdiri dari:</div>
-      <div class="doc-list" style="margin-left:15px">
-        <li><div class="list-num">1)</div><div>Pemeriksaan dokumen administratif bangunan gedung;</div></li>
-        <li><div class="list-num">2)</div><div>Pemeriksaan persyaratan teknis bangunan gedung, yaitu:</div></li>
-        <div style="margin-left:30px">
-          <li><div class="list-num">a.</div><div>pemeriksaan persyaratan tata bangunan, meliputi peruntukan, intensitas, arsitektur dan pengendalian dampak lingkungan;</div></li>
-          <li><div class="list-num">b.</div><div>pemeriksaan persyaratan keandalan bangunan gedung, meliputi keselamatan, kesehatan, kenyamanan, dan kemudahan.</div></li>
-        </div>
-      </div>
-
-      <div style="margin-top:15px">Dengan ini menyatakan bahwa:</div>
-      <div class="box-pernyataan">
-        BANGUNAN GEDUNG DINYATAKAN LAIK FUNGSI
-      </div>
-
-      <div style="margin-bottom:12px">Sesuai kesimpulan dari analisis dan evaluasi terhadap hasil pemeriksaan dokumen dan pemeriksaan kondisi fisik bangunan gedung sebagaimana termuat dalam Laporan Pemeriksaan Kelaikan Fungsi Bangunan Gedung terlampir.</div>
-      
-      <div style="margin-bottom:12px">Surat pernyataan ini berlaku sepanjang tidak ada perubahan yang dilakukan oleh pemilik atau pengguna terhadap bangunan gedung atau penyebab gangguan lainnya yang dibuktikan kemudian.</div>
-      
-      <div style="margin-bottom:12px">
-        <p>Demikian Surat Pernyataan ini kami buat dengan sebenarnya untuk dapat dipergunakan sebagaimana mestinya.</p>
-
-        <div class="sig-director-block" style="margin-top: 40px">
-          <div class="sig-director-content">
-            <!-- e-Materai on the Left per BSN -->
-            <div class="materai-box">
-              <b>MATERAI</b>
-              ELEKTRONIK
-              <div style="font-size:7px; margin-top:4px; opacity:0.7;">SEPULUH RIBU RUPIAH</div>
-            </div>
-            
-            <div class="sig-director-right">
-              <div class="sig-header-text">${escHtml(s.consultant?.name || 'NAMA PERUSAHAAN')}</div>
-              
-              <div class="sig-box-tte" style="height:90px;">
-                ${(() => {
-                  const verifyUrl = `${window.location.origin}${window.location.pathname}#/verify?id=${p.id}&expert=director`;
-                  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verifyUrl)}`;
-                  return `<img src="${qrSrc}" class="sig-img-qr-std">`;
-                })()}
-                
-                ${s.consultant?.signature ? `<img src="${s.consultant.signature}" class="sig-img-signature" style="transform: translateX(30px) translateY(15px);">` : ''}
-              </div>
-
-              <div class="director-name-container">
-                <div class="sig-name">${escHtml(s.consultant?.director_name || 'NAMA DIREKTUR')}</div>
-                <div class="director-job-text">${escHtml(s.consultant?.director_job || 'Direktur')}</div>
-                <div style="font-size:7px; margin-top:8px; opacity:0.5; font-style:italic">Scan untuk Verifikasi Digital (Direktur)</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="sig-3-col">
-        ${['architecture', 'structure', 'mep'].map(type => {
-          const expert = experts[type] || {};
-          const roleLabel = type === 'architecture' ? 'Bidang Arsitektur /<br>Tata Ruang Luar' : type === 'structure' ? 'Bidang Struktur' : 'Bidang Utilitas /<br>MEP';
-          const verifyUrl = `${window.location.origin}${window.location.pathname}#/verify?id=${p.id}&expert=${type}`;
-          const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verifyUrl)}`;
-          
-          return `
-            <div class="sig-cell">
-              <div class="sig-role">${roleLabel}</div>
-              <div class="sig-box-tte">
-                 <img src="${qrSrc}" class="sig-img-qr">
-                 ${expert.signature ? `<img src="${expert.signature}" class="sig-img-signature" style="transform:translateX(20px) translateY(10px);">` : ''}
-              </div>
-              <div class="sig-name">${escHtml(expert.name || 'NAME')}</div>
-              <div class="sig-skk">No. SKK: ${escHtml(expert.skk || '-')}</div>
-              <div style="font-size:7px; margin-top:5px; opacity:0.5; font-style:italic">Scan untuk Verifikasi Digital</div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
-  } else {
-    // Owner version remains similar but styled
-    return `
-      <div class="doc-title-hf" style="margin-top: 40px">
-        <h2>SURAT PERNYATAAN PEMILIK / PENGELOLA</h2>
-        <p>TENTANG KESEDIAAN MEMELIHARA BANGUNAN GEDUNG</p>
-      </div>
-
-      <div style="margin: 30px 0 15px 0;">Yang bertanda tangan di bawah ini:</div>
-
-      <div class="doc-grid-11" style="margin-left:0">
-        <div class="grid-11-row"><div>-</div><div style="width:140px">Nama Pemilik</div><div>:</div><div>${escHtml(p.pemilik || '____________________')}</div></div>
-        <div class="grid-11-row"><div>-</div><div style="width:140px">Nomor Identitas</div><div>:</div><div>${escHtml(p.ktp_pemilik || '____________________')}</div></div>
-        <div class="grid-11-row"><div>-</div><div style="width:140px">Alamat</div><div>:</div><div>${escHtml(p.alamat_pemilik || '____________________')}</div></div>
-      </div>
-
-      <div style="margin-bottom:15px">Adalah selaku pemilik/pengelola bangunan gedung yang berlokasi di:</div>
-
-      <div class="doc-grid-11" style="margin-left:0">
-        <div class="grid-11-row"><div>-</div><div style="width:140px">Nama Bangunan</div><div>:</div><div>${escHtml(p.nama_bangunan)}</div></div>
-        <div class="grid-11-row"><div>-</div><div style="width:140px">Alamat Bangunan</div><div>:</div><div>${escHtml(p.alamat || '-')}</div></div>
-      </div>
-
-      <div style="margin-top:20px; line-height:1.6">
-        Dengan ini menyatakan bahwa saya akan memelihara dan merawat bangunan gedung tersebut sesuai dengan standar teknis dan peruntukannya, serta menjamin kebenaran seluruh dokumen yang disampaikan dalam permohonan SLF melalui sistem SIMBG.
-      </div>
-
-      <div style="margin-top:15px; line-height:1.6">
-        Apabila dikemudian hari ditemukan ketidakbenaran atas pernyataan ini, saya bersedia mempertanggungjawabkannya sesuai ketentuan hukum yang berlaku.
-      </div>
-
-      <div style="display:flex; justify-content:flex-end; margin-top:60px;">
-        <div style="text-align:center; width: 250px;">
-          <div>${p.kota || 'Bandung'}, ${dateStr}</div>
-          <div style="font-weight:bold; margin-top:5px;">Pemilik Bangunan,</div>
-          <div style="height: 100px; display:flex; align-items:center; justify-content:center; opacity:0.3; border: 1px dashed #ccc; margin:15px 0">
-            [Meterai Rp10.000]
-          </div>
-          <div style="border-bottom:1px solid #000; font-weight:bold; text-transform:uppercase">${escHtml(p.pemilik || '____________________')}</div>
-        </div>
-      </div>
-    `;
-  }
+function formatMonth(d) {
+  return d.toLocaleDateString('id-ID', { month: 'long' });
 }
 
-async function fetchProyek(id) {
-  const { data, error } = await supabase.from('proyek').select('*').eq('id', id).single();
-  return error ? null : data;
-}
-
-function initAfterRender(p, s) {
-  const menuItems = document.querySelectorAll('.menu-item');
+/**
+ * Handle Tab switching and UI interactions
+ */
+function initModernHandlers(p, s, findings) {
+  const navCards = document.querySelectorAll('.nav-card');
   const preview = document.getElementById('legal-preview');
   
-  menuItems.forEach(item => {
-    item.onclick = () => {
-      menuItems.forEach(m => m.classList.remove('active'));
-      item.classList.add('active');
-      const type = item.getAttribute('data-type');
-      preview.innerHTML = renderDocTemplate(type, p, s);
+  navCards.forEach(card => {
+    card.onclick = () => {
+      navCards.forEach(c => {
+         c.classList.remove('active');
+         c.querySelector('.nav-card-status i').className = 'fas fa-circle';
+      });
+      card.classList.add('active');
+      card.querySelector('.nav-card-status i').className = 'fas fa-check-circle';
+      
+      const type = card.getAttribute('data-type');
+      preview.innerHTML = renderDocTemplate(type, p, s, findings);
     };
   });
 
-  const btnDownload = document.getElementById('btn-download-docx');
-  if (btnDownload) {
-    btnDownload.onclick = () => downloadAsDocx(p);
-  }
+  // Export Logic
+  document.getElementById('btn-export-word').onclick = () => {
+     downloadDocx(p, s);
+  };
 
+  // Toggle Edit Mode
   const toggleEdit = document.getElementById('toggle-edit-mode');
   if (toggleEdit) {
     toggleEdit.onchange = (e) => {
       preview.setAttribute('contenteditable', e.target.checked ? 'true' : 'false');
       if (e.target.checked) {
-        showSuccess('Mode Edit Aktif. Anda dapat mengubah teks dokumen langsung.');
-        preview.focus();
+         showSuccess("Mode Edit Bebas Aktif. Anda dapat mengetik langsung di kertas.");
+         preview.focus();
       }
     };
   }
 }
 
-async function downloadAsDocx(p) {
-  const preview = document.getElementById('legal-preview');
-  const type = document.querySelector('.menu-item.active')?.getAttribute('data-type') || 'konsultan';
-  
-  showSuccess(`Menyiapkan Word: ${type === 'konsultan' ? 'Pernyataan Konsultan' : 'Pernyataan Pemilik'}...`);
-  
+/**
+ * Robust Rendering Template (Consultant or Owner)
+ */
+function renderDocTemplate(type, p, s, findings = []) {
   try {
-    const { data: sRes, error: sErr } = await supabase
-      .from('settings')
-      .select('data')
-      .eq('id', '00000000-0000-0000-0000-000000000000')
-      .single();
-    
-    if (sErr) throw sErr;
-    const settings = sRes?.data || {};
-    
-    const { downloadLegalDocx } = await import('../lib/surat-pernyataan-service.js');
-    const htmlContent = preview.innerHTML;
-    
-    await downloadLegalDocx(p, settings, type, htmlContent);
-    showSuccess('Dokumen berhasil diunduh.');
+    const experts = s.experts || {};
+    const dateStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    let content = '';
+    if (type === 'konsultan') {
+       content = renderConsultantTemplate(p, s, experts, dateStr);
+    } else {
+       content = renderOwnerTemplate(p, findings, dateStr);
+    }
+
+    return `<div class="paper-page-content">${content}</div>`;
   } catch (err) {
-    console.error("Docx Export Error:", err);
-    showError('Gagal mengunduh: ' + err.message);
+    console.error("Render Failed:", err);
+    return `<div class="p-10 text-center"><h3 class="text-danger">Gagal me-render pratinjau</h3><p>${err.message}</p></div>`;
   }
 }
 
+function renderConsultantTemplate(p, s, experts, dateStr) {
+  return `
+    <div class="hf-doc-header">
+       ${s.consultant?.kop_image 
+         ? `<img src="${s.consultant.kop_image}" style="width:100%; max-height:110px; object-fit:contain;">`
+         : `<div style="text-align:center;">
+              <h1 style="font-size:16pt; margin:0; font-weight:bold">${escHtml(s.consultant?.name || 'KONSULTAN PENGKAJI TEKNIS')}</h1>
+              <p style="font-size:10pt; margin:0">${escHtml(s.consultant?.address || 'Alamat Perusahaan / Instansi')}</p>
+            </div>`
+       }
+    </div>
+
+    <div class="hf-doc-title">
+        SURAT PERNYATAAN KELAIKAN FUNGSI<br>BANGUNAN GEDUNG
+    </div>
+
+    <div class="hf-meta-grid">
+       <div>Nomor</div><div>:</div><div>${escHtml(p.metadata?.nomor_surat || '__________')}</div>
+       <div>Tanggal</div><div>:</div><div>${dateStr}</div>
+       <div>Lampiran</div><div>:</div><div>1 (Satu) Berkas</div>
+    </div>
+
+    <p style="margin-bottom:15px">Pada hari ini, tanggal ${new Date().getDate()} bulan ${formatMonth(new Date())} tahun ${new Date().getFullYear()}, yang bertanda tangan di bawah ini:</p>
+    
+    <div style="margin-left:25px; margin-bottom:15px">
+       <div style="display:flex; margin-bottom:4px; align-items:flex-start">
+          <div style="width:20px"><i class="far fa-check-square"></i></div>
+          <div style="flex:1; font-size:10pt">Penyedia jasa pengkaji teknis / Penyedia jasa pengawas konstruksi / Penyedia jasa manajemen konstruksi / Instansi penyelenggara SLF Pemerintah Daerah <br><i>(coret yang tidak perlu)</i></div>
+       </div>
+       <div class="hf-data-grid" style="margin-top:10px; margin-left:0">
+          <div class="hf-grid-row"><div></div><div>Nama perusahaan</div><div>:</div><div style="font-weight:bold">${escHtml(s.consultant?.name || '-')}</div></div>
+          <div class="hf-grid-row"><div></div><div>Alamat</div><div>:</div><div>${escHtml(s.consultant?.address || '-')}</div></div>
+          <div class="hf-grid-row"><div></div><div>Telepon</div><div>:</div><div>${escHtml(s.consultant?.phone || '-')}</div></div>
+          <div class="hf-grid-row"><div></div><div>Email</div><div>:</div><div>${escHtml(s.consultant?.email || '-')}</div></div>
+       </div>
+    </div>
+
+    <div class="hf-section-title">Pelaksana pemeriksaan kelaikan fungsi bangunan gedung:</div>
+    <div class="hf-data-grid">
+       <div class="hf-grid-row"><div>1)</div><div>Bidang Arsitektur</div><div>:</div><div style="font-weight:bold">Tenaga Ahli Tetap</div></div>
+       <div class="hf-grid-row nested"><div>a)</div><div>Nama</div><div>:</div><div>${escHtml(experts.architecture?.name || '____________________')}</div></div>
+       <div class="hf-grid-row nested"><div>b)</div><div>Nomor SKK</div><div>:</div><div>${escHtml(experts.architecture?.skk || '-')}</div></div>
+
+       <div class="hf-grid-row" style="margin-top:5px"><div>2)</div><div>Bidang Struktur</div><div>:</div><div style="font-weight:bold">Tenaga Ahli Tetap</div></div>
+       <div class="hf-grid-row nested"><div>a)</div><div>Nama</div><div>:</div><div>${escHtml(experts.structure?.name || '____________________')}</div></div>
+       <div class="hf-grid-row nested"><div>b)</div><div>Nomor SKK</div><div>:</div><div>${escHtml(experts.structure?.skk || '-')}</div></div>
+
+       <div class="hf-grid-row" style="margin-top:5px"><div>3)</div><div>Bidang MEP / Utilitas</div><div>:</div><div style="font-weight:bold">Tenaga Ahli Tetap</div></div>
+       <div class="hf-grid-row nested"><div>a)</div><div>Nama</div><div>:</div><div>${escHtml(experts.mep?.name || '____________________')}</div></div>
+       <div class="hf-grid-row nested"><div>b)</div><div>Nomor SKK</div><div>:</div><div>${escHtml(experts.mep?.skk || '-')}</div></div>
+    </div>
+
+    <div class="hf-section-title">Telah melaksanakan pemeriksaan kelaikan fungsi bangunan gedung pada:</div>
+    <div class="hf-data-grid" style="font-size:10pt">
+       <div class="hf-grid-row"><div>1)</div><div>Nama bangunan</div><div>:</div><div style="font-weight:bold">${escHtml(p.nama_bangunan)}</div></div>
+       <div class="hf-grid-row"><div>2)</div><div>Alamat bangunan</div><div>:</div><div>${escHtml(p.alamat || '-')}</div></div>
+       <div class="hf-grid-row"><div>3)</div><div>Posisi koordinat</div><div>:</div><div>Lat: ${p.latitude || '0'}, Lng: ${p.longitude || '0'}</div></div>
+       <div class="hf-grid-row"><div>4)</div><div>Fungsi bangunan</div><div>:</div><div>${escHtml(p.fungsi_bangunan || '-')}</div></div>
+       <div class="hf-grid-row"><div>5)</div><div>Klasifikasi</div><div>:</div><div>${escHtml(p.klasifikasi || 'Bangunan Tidak Sederhana')}</div></div>
+       <div class="hf-grid-row"><div>6)</div><div>Ketinggian bangunan</div><div>:</div><div>${p.ketinggian || '-'} Meter</div></div>
+       <div class="hf-grid-row"><div>7)</div><div>Jumlah lantai</div><div>:</div><div>${p.jumlah_lantai || 1} Lantai</div></div>
+       <div class="hf-grid-row"><div>8)</div><div>Luas lantai</div><div>:</div><div>${p.luas_bangunan || 0} m²</div></div>
+       <div class="hf-grid-row"><div>9)</div><div>Jumlah basement</div><div>:</div><div>${p.jumlah_basement || 0} Lantai</div></div>
+       <div class="hf-grid-row"><div>10)</div><div>Luas basement</div><div>:</div><div>${p.luas_basement || 0} m²</div></div>
+       <div class="hf-grid-row"><div>11)</div><div>Luas lahan</div><div>:</div><div>${p.luas_lahan || 0} m²</div></div>
+    </div>
+
+    <p style="margin-top:10px; font-size:10pt">Berdasarkan hasil pemeriksaan persyaratan kelaikan fungsi yang terdiri dari pemeriksaan dokumen administratif dan teknis (Tata Bangunan & Keandalan Bangunan), dengan ini menyatakan bahwa:</p>
+    
+    <div class="box-result-formal">
+       BANGUNAN GEDUNG DINYATAKAN LAIK FUNGSI
+    </div>
+
+    <p style="font-size:10pt; text-align:justify; line-height:1.4">Sesuai kesimpulan dari analisis terhadap hasil pemeriksaan dokumen dan kondisi lapangan sebagaimana termuat dalam Laporan Pemeriksaan Kelaikan Fungsi terlampir. Surat pernyataan ini berlaku sepanjang tidak ada perubahan fungsi dan struktur. Selanjutnya pemilik dapat menggunakan surat ini untuk permohonan SLF.</p>
+
+    <p style="margin-top:10px; font-size:10pt">Demikian surat pernyataan ini dibuat dengan penuh tanggung jawab profesional sesuai dengan ketentuan dalam <b>Undang-undang Nomor 2 Tahun 2017 tentang Jasa Konstruksi</b>.</p>
+
+    <div style="display:flex; justify-content:center; margin-top:20px; font-size:10.5pt">
+       <div style="width:380px; text-align:center">
+          <div>${p.kota || 'Bandung'}, ${dateStr}</div>
+       </div>
+    </div>
+
+    <!-- AREA DIREKTUR (DI TENGAH & QR DIPERBESAR) -->
+    <div class="sig-director-area">
+       <div class="sig-director-box">
+          <div style="font-weight:bold; margin-bottom:5px; font-size:11pt">${escHtml(s.consultant?.name || 'KONSULTAN')}</div>
+          <div class="sig-director-flex">
+             <div class="ematerai-placeholder">
+                <div style="font-size:7pt; opacity:0.8">INDONESIA</div>
+                <div style="font-weight:900; margin: 3px 0">BEA</div>
+                <div style="font-weight:800">METERAI</div>
+                <div class="val">10000</div>
+                <div style="font-size:6pt; margin-top:3px; font-weight:400">TGL. 2024</div>
+             </div>
+             <div class="sig-box-tte" style="width:auto">
+                ${(() => {
+                   const vUrl = `${window.location.origin}${window.location.pathname}#/verify?id=${p.id}&role=director`;
+                   return `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(vUrl)}" class="sig-qr-small shadow-sm">`;
+                })()}
+                ${s.consultant?.signature ? `<img src="${s.consultant.signature}" style="position:absolute; width:130px; opacity:0.8; transform:translateX(15px) translateY(10px)">` : ''}
+             </div>
+          </div>
+          <div class="sig-name-underline">${escHtml(s.consultant?.director_name || 'NAMA DIREKTUR')}</div>
+          <div style="font-size:10pt">${escHtml(s.consultant?.director_job || 'Direktur Utama')}</div>
+       </div>
+    </div>
+
+    <!-- AREA PARA AHLI -->
+    <div class="sig-experts-container">
+       <div class="sig-experts-title">PELAKSANA PEMERIKSAAN KELAIKAN FUNGSI</div>
+       <div class="sig-experts-grid">
+          ${['architecture', 'structure', 'mep'].map(t => {
+            const ex = experts[t] || {};
+            const role = t === 'architecture' ? 'Bidang Arsitektur' : t === 'structure' ? 'Bidang Struktur' : 'Bidang MEP / Utilitas';
+            const vUrl = `${window.location.origin}${window.location.pathname}#/verify?id=${p.id}&expert=${t}`;
+            return `
+              <div class="sig-expert-card">
+                 <div style="font-weight:bold; min-height:28px; line-height:1.2">${role}</div>
+                 <div class="sig-box-tte">
+                   <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(vUrl)}" class="sig-qr-small">
+                   ${ex.signature ? `<img src="${ex.signature}" style="position:absolute; width:75px; opacity:0.75; transform:translateX(10px) translateY(5px)">` : ''}
+                 </div>
+                 <div class="sig-name-underline" style="font-size:9pt">${escHtml(ex.name || 'NAME')}</div>
+                 <div style="font-size:8pt; margin-top:2px">Tenaga Ahli Tetap</div>
+              </div>
+            `;
+          }).join('')}
+       </div>
+    </div>
+  `;
+}
+
+function renderOwnerTemplate(p, findings, dateStr) {
+  return `
+    <div style="text-align:center; font-weight:bold; font-size:14pt; margin-bottom:40px; text-transform:uppercase">
+        SURAT PERNYATAAN PEMILIK / PENGELOLA<br>
+        <span style="font-size:11pt">TENTANG KESEDIAAN MEMELIHARA BANGUNAN GEDUNG</span>
+    </div>
+
+    <div style="margin-bottom:15px">Yang bertanda tangan di bawah ini:</div>
+    <div style="margin-left:25px; margin-bottom:20px">
+       <div style="display:flex"><div style="width:160px">Nama Pemilik</div><div style="width:10px">:</div><div>${escHtml(p.pemilik || '-')}</div></div>
+       <div style="display:flex"><div style="width:160px">Nomor KTP/NIB</div><div style="width:10px">:</div><div>${escHtml(p.ktp_pemilik || '-')}</div></div>
+       <div style="display:flex"><div style="width:160px">Alamat</div><div style="width:10px">:</div><div>${escHtml(p.alamat_pemilik || '-')}</div></div>
+    </div>
+
+    <div style="margin-bottom:20px">Atas bangunan gedung:</div>
+    <div style="margin-left:25px; margin-bottom:20px">
+       <div style="display:flex"><div style="width:160px">Nama Bangunan</div><div style="width:10px">:</div><div>${escHtml(p.nama_bangunan)}</div></div>
+       <div style="display:flex"><div style="width:160px">Alamat Bangunan</div><div style="width:10px">:</div><div>${escHtml(p.alamat || '-')}</div></div>
+    </div>
+
+    <p style="text-align:justify">Menyatakan dengan sebenarnya bahwa saya akan memelihara bangunan gedung tersebut sesuai dengan standar teknis dan menjamin kebenaran seluruh dokumen yang disampaikan.</p>
+    
+    <p style="text-align:justify">Apabila terdapat temuan teknis hasil pengkajian, saya bersedia menindaklanjuti sesuai dengan rekomendasi dan jangka waktu yang telah ditentukan sebagai berikut:</p>
+
+    <!-- TABEL TEMUAN LAMPIRAN -->
+    <table class="modern-table-temuan">
+       <thead>
+          <tr>
+             <th style="width:30px; text-align:center">No</th>
+             <th style="width:150px">Item / Aspek</th>
+             <th>Kondisi Temuan</th>
+             <th>Rekomendasi Perbaikan</th>
+             <th style="width:90px; text-align:center">Target</th>
+          </tr>
+       </thead>
+       <tbody>
+          ${findings.length === 0 
+            ? '<tr><td colspan="5" style="text-align:center; padding:20px; font-style:italic">Tidak ada temuan ketidaksesuaian kritis. Bangunan dinyatakan laik fungsi tanpa syarat perbaikan mendesak.</td></tr>'
+            : findings.map((f, i) => `
+              <tr>
+                 <td style="text-align:center">${i + 1}</td>
+                 <td style="font-weight:bold">${escHtml(f.nama)}</td>
+                 <td>${escHtml(f.catatan || '-')}</td>
+                 <td style="color:#1e40af; font-weight:500">${escHtml(f.rekomendasi || '-')}</td>
+                 <td style="text-align:center; font-weight:bold; color:#dc2626">${escHtml(f.remedy_time || '-')}</td>
+              </tr>
+            `).join('')
+          }
+       </tbody>
+    </table>
+
+    <p style="margin-top:20px">Demikian surat pernyataan ini saya buat dengan penuh tanggung jawab.</p>
+
+    <div style="display:flex; justify-content:flex-end; margin-top:50px">
+       <div style="text-align:center; width:220px">
+          <div>${p.kota || 'Bandung'}, ${dateStr}</div>
+          <div style="font-weight:bold; margin-top:5px; margin-bottom:80px">Pemilik Bangunan,</div>
+          <div style="border-bottom:1px solid #000; font-weight:bold; text-transform:uppercase">${escHtml(p.pemilik || '____________________')}</div>
+       </div>
+    </div>
+  `;
+}
+
+/**
+ * Handle Word Export
+ */
+async function downloadDocx(p, s) {
+   const activeCard = document.querySelector('.nav-card.active');
+   const type = activeCard ? activeCard.getAttribute('data-type') : 'konsultan';
+   
+   showSuccess(`Sedang mengekspor ${type === 'konsultan' ? 'Pernyataan Konsultan' : 'Pernyataan Pemilik'}...`);
+   
+   try {
+     const { downloadLegalDocx } = await import('../lib/surat-pernyataan-service.js');
+     const preview = document.getElementById('legal-preview');
+     
+     if (!preview) throw new Error("Preview element not found");
+     
+     await downloadLegalDocx(p, s, type, preview.innerHTML);
+     showSuccess("Dokumen Word berhasil dibuat.");
+   } catch (err) {
+     console.error("Export Error:", err);
+     showError("Gagal ekspor: " + err.message);
+   }
+}
+
+/**
+ * Utils
+ */
 function escHtml(str) {
   if (!str) return '';
   return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-}
-
-function formatDate(d) {
-  if (!d) return '-';
-  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-}
-
-function formatMonth(d) {
-  return d.toLocaleDateString('id-ID', { month: 'long' });
 }

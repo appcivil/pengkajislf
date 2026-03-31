@@ -22,6 +22,9 @@ export async function pengaturanPage() {
         <div class="tab-item" onclick="window.switchTab('tab-aplikasi', this)">
           <i class="fas fa-sliders"></i> Pengaturan Aplikasi
         </div>
+        <div class="tab-item" onclick="window.switchTab('tab-watermark', this)">
+          <i class="fas fa-camera-retro"></i> Watermark Kamera
+        </div>
       </div>
 
       <!-- Tab Content: Akun -->
@@ -102,11 +105,15 @@ export async function pengaturanPage() {
                     <input type="text" class="form-input" name="director_job" value="${settings.consultant?.director_job || 'Direktur'}" placeholder="Direktur / Chief Executive">
                   </div>
                 </div>
+                <div class="form-group mt-3" style="padding-top:12px; border-top:1px dashed var(--border-subtle);">
+                  <label class="form-label text-brand-600"><i class="fas fa-barcode"></i> Format Nomor Surat Otomatis</label>
+                  <input type="text" class="form-input font-mono" name="nomor_surat_format" value="${settings.consultant?.nomor_surat_format || '[SEQ]/SP-SLF/[ROMAN_MONTH]/[YEAR]'}" placeholder="[SEQ]/SP-SLF/[ROMAN_MONTH]/[YEAR]">
+                  <p class="text-xs text-tertiary mt-1">Tags: [SEQ], [MONTH], [ROMAN_MONTH], [YEAR]. Contoh: 001/SP-SLF/III/2026</p>
+                </div>
               </div>
 
               <!-- Card: Branding & Signature -->
               <div class="card">
-                <div class="card-title" style="margin-bottom: var(--space-4);">
                 <div class="card-title" style="margin-bottom: var(--space-4);">
                   <i class="fas fa-signature" style="color:var(--brand-400); margin-right:8px;"></i>
                   Digital Seal & Director Signature
@@ -249,6 +256,87 @@ export async function pengaturanPage() {
           </div>
         </form>
       </div>
+      <!-- Tab Content: Watermark -->
+      <div id="tab-watermark" class="tab-content">
+        <form id="watermark-form" onsubmit="handleSaveWatermark(event)">
+          <div class="grid-settings" style="display:grid; grid-template-columns: 1fr 1fr; gap: var(--space-5);">
+            <div class="card">
+              <div class="card-title" style="margin-bottom: var(--space-5);">
+                <i class="fas fa-stamp" style="color:var(--brand-400); margin-right:8px;"></i>
+                Branding Watermark
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nama Perusahaan/Instansi (Watermark)</label>
+                <input type="text" class="form-input" name="wm_company_name" value="${settings.watermark?.company_name || ''}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Teks Verifikasi</label>
+                <input type="text" class="form-input" name="wm_verified_label" value="${settings.watermark?.verified_label || ''}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Label Kegiatan</label>
+                <input type="text" class="form-input" name="wm_activity_prefix" value="${settings.watermark?.activity_prefix || 'Kegiatan:'}">
+              </div>
+              
+              <div class="form-group" style="margin-top:20px;">
+                <label class="form-label">Logo Watermark (PNG Transparan)</label>
+                <div id="wm-logo-preview-container" class="img-upload-preview" style="height:100px; background:var(--bg-100);">
+                  ${settings.watermark?.company_logo ? `<img src="${settings.watermark.company_logo}" style="max-height:100%; object-fit:contain;">` : '<i class="fas fa-image"></i>'}
+                </div>
+                <input type="file" accept="image/*" onchange="window.handleWmLogoUpload(this)" class="mt-2 text-xs">
+                <input type="hidden" name="wm_company_logo" id="wm-company-logo-val" value="${settings.watermark?.company_logo || ''}">
+              </div>
+              
+              <div class="form-group" style="margin-top:20px;">
+                <label class="form-label">Penambahan Tagging Baru (Custom)</label>
+                <textarea class="form-input text-xs" name="wm_custom_tags" rows="4" placeholder="Satu baris per tagging baru...&#10;Contoh:&#10;Area: Basement P1&#10;Metode: NDT Test">${settings.watermark?.custom_tags || ''}</textarea>
+                <p class="text-xs opacity-60 mt-1">Gunakan enter untuk pemisah baris baru.</p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title" style="margin-bottom: var(--space-5);">
+                <i class="fas fa-gear" style="color:var(--brand-400); margin-right:8px;"></i>
+                Konfigurasi Display
+              </div>
+              <div class="form-group flex justify-between items-center" style="padding:10px 0; border-bottom:1px solid var(--border-subtle);">
+                <label class="form-label mb-0">Aktifkan Watermark</label>
+                <input type="checkbox" name="wm_enabled" ${settings.watermark?.enabled ? 'checked' : ''} style="width:20px; height:20px;">
+              </div>
+              <div class="form-group flex justify-between items-center" style="padding:10px 0; border-bottom:1px solid var(--border-subtle);">
+                <label class="form-label mb-0">Tampilkan Koordinat GPS</label>
+                <input type="checkbox" name="wm_show_gps" ${settings.watermark?.show_gps ? 'checked' : ''} style="width:20px; height:20px;">
+              </div>
+              <div class="form-group flex justify-between items-center" style="padding:10px 0; border-bottom:1px solid var(--border-subtle);">
+                <label class="form-label mb-0">Tampilkan Waktu & Tanggal</label>
+                <input type="checkbox" name="wm_show_time" ${settings.watermark?.show_time ? 'checked' : ''} style="width:20px; height:20px;">
+              </div>
+              
+              <div class="form-group mt-4">
+                <label class="form-label">Resolusi & Opasitas</label>
+                <div class="flex gap-4">
+                  <select class="form-input" name="wm_resolution">
+                    <option value="low" ${settings.watermark?.resolution === 'low' ? 'selected' : ''}>Rendah (Cepat)</option>
+                    <option value="medium" ${settings.watermark?.resolution === 'medium' ? 'selected' : ''}>Menengah (Optimal)</option>
+                    <option value="high" ${settings.watermark?.resolution === 'high' ? 'selected' : ''}>Tinggi (Forensik)</option>
+                  </select>
+                  <input type="range" name="wm_opacity" min="0.1" max="1.0" step="0.1" value="${settings.watermark?.opacity || 0.85}" title="Opasitas Banner">
+                </div>
+              </div>
+
+              <div style="margin-top:20px; padding:15px; background:var(--bg-100); border-radius:8px; border:1px dashed var(--border-subtle);">
+                <p class="text-xs opacity-70"><i class="fas fa-info-circle"></i> Watermark akan otomatis digabungkan ke dalam foto saat Anda menggunakan fitur Kamera Live di halaman Checklist.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div style="margin-top:var(--space-6); display:flex; justify-content:flex-end;">
+            <button type="submit" class="btn btn-brand" id="btn-save-watermark" style="min-width: 250px;">
+              <i class="fas fa-check-double"></i> Simpan Pengaturan Watermark
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   `;
 }
@@ -268,6 +356,7 @@ window.handleSigUpload = (input) => handleFileToHidden(input, 'sig-preview-conta
 
 window.handleExpertSigUpload = (input, type) => handleFileToHidden(input, null, `exp-${type}-sig-val`);
 window.handleExpertQrUpload = (input, type) => handleFileToHidden(input, null, `exp-${type}-qr-val`);
+window.handleWmLogoUpload = (input) => handleFileToHidden(input, 'wm-logo-preview-container', 'wm-company-logo-val');
 
 function handleFileToHidden(input, containerId, hiddenId) {
   if (input.files && input.files[0]) {
@@ -302,6 +391,7 @@ window.handleSaveSettings = async function(e) {
         signature: fd.get('consultant_sig'),
         director_name: fd.get('director_name'),
         director_job: fd.get('director_job'),
+        nomor_surat_format: fd.get('nomor_surat_format'),
       },
       ai: {
         defaultModel: fd.get('default_model'),
@@ -338,5 +428,39 @@ window.handleSaveSettings = async function(e) {
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-save"></i> Simpan Seluruh Konfigurasi';
+  }
+};
+
+window.handleSaveWatermark = async function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const btn = document.getElementById('btn-save-watermark');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+
+  try {
+    const fd = new FormData(form);
+    const settings = await getSettings();
+    
+    settings.watermark = {
+      enabled: fd.get('wm_enabled') === 'on',
+      show_gps: fd.get('wm_show_gps') === 'on',
+      show_time: fd.get('wm_show_time') === 'on',
+      company_name: fd.get('wm_company_name'),
+      verified_label: fd.get('wm_verified_label'),
+      activity_prefix: fd.get('wm_activity_prefix'),
+      company_logo: fd.get('wm_company_logo'),
+      resolution: fd.get('wm_resolution'),
+      opacity: parseFloat(fd.get('wm_opacity')),
+      custom_tags: fd.get('wm_custom_tags')
+    };
+
+    await saveSettings(settings);
+    showSuccess('Branding Watermark berhasil diperbarui!');
+  } catch (err) {
+    showError('Gagal menyimpan Watermark: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check-double"></i> Simpan Pengaturan Watermark';
   }
 };

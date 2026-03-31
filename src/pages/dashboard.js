@@ -56,7 +56,7 @@ export async function dashboardPage() {
 
       <!-- Map Overview -->
       <div class="card" style="margin-top:var(--space-5); overflow:hidden; padding:0; display:flex; flex-direction:column">
-        <div class="card-header" style="border-bottom:1px solid var(--border-subtle); background:var(--bg-elevated); z-index:10">
+        <div class="card-header" style="border-bottom:1px solid var(--border-subtle); background:var(--bg-elevated); z-index:10; padding: var(--space-4) var(--space-5); margin-bottom:0;">
           <div>
             <div class="card-title">Peta Distribusi Proyek</div>
             <div class="card-subtitle">Visualisasi spasial lokasi pengkajian SLF</div>
@@ -103,9 +103,14 @@ export async function dashboardPage() {
           <div class="ai-panel">
             <div class="ai-panel-header">
               <div class="ai-icon"><i class="fas fa-brain"></i></div>
-              <div>
-                <div class="ai-panel-title">AI Insight</div>
-                <div class="ai-panel-subtitle">Analisis otomatis sistem</div>
+              <div class="flex-between w-full">
+                <div>
+                  <div class="ai-panel-title">AI Insight</div>
+                  <div class="ai-panel-subtitle">Analisis otomatis sistem</div>
+                </div>
+                <button class="btn btn-ghost btn-xs" onclick="window.analyseFile('test-id-123')" title="Jalankan Tes Analisis">
+                  <i class="fas fa-vial"></i> Test
+                </button>
               </div>
             </div>
             ${renderAIInsights(kpi)}
@@ -459,13 +464,34 @@ export async function afterDashboardRender(kpi) {
 }
 
 export function triggerDashboardMount(projects, kpi) {
-  setTimeout(() => {
+  setTimeout(async () => {
     initCharts(kpi);
-    initMap(projects);
+    await initMap(projects);
   }, 100);
 }
 
-function initMap(projects) {
+/**
+ * Geocode address to lat/lng using Nominatim (OSM)
+ */
+async function geocodeAddress(address) {
+  if (!address) return null;
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+    const res = await fetch(url, { headers: { 'Accept-Language': 'id' } });
+    const data = await res.json();
+    if (data && data.length > 0) {
+      return {
+        lat: parseFloat(data[0].lat),
+        lng: parseFloat(data[0].lon)
+      };
+    }
+  } catch (err) {
+    console.warn("[Geocode] Failed for:", address, err.message);
+  }
+  return null;
+}
+
+async function initMap(projects) {
   if (typeof window.L === 'undefined') return;
   const mapEl = document.getElementById('dashboard-map');
   if (!mapEl) return;
@@ -475,8 +501,14 @@ function initMap(projects) {
     window._dashMap = null;
   }
 
-  const map = window.L.map('dashboard-map', { zoomControl: false });
-  map.setView([-2.5489, 118.0149], 5); // Indonesia center
+  const map = window.L.map('dashboard-map', { 
+    zoomControl: false,
+    scrollWheelZoom: true,
+    maxZoom: 19
+  });
+  
+  // Start with Indonesia focus
+  map.setView([-2.5489, 118.0149], 5); 
   window.L.control.zoom({ position: 'bottomright' }).addTo(map);
   window._dashMap = map;
 
@@ -488,24 +520,47 @@ function initMap(projects) {
 
   const markers = window.L.featureGroup().addTo(map);
 
-  projects.forEach((p) => {
+  // Process all markers (with geocoding if needed)
+  const markerPromises = projects.map(async (p) => {
     let lat = p.latitude;
     let lng = p.longitude;
     
-    // Default fallback if no coordinates
-    if (!lat || !lng) {
-       lat = -6.2088 + (Math.random() * 0.1 - 0.05); // Near Jakarta
-       lng = 106.8456 + (Math.random() * 0.1 - 0.05);
+    // Geocode if missing coords but has address
+    if (!lat || !lng || lat === 0) {
+       const geo = await geocodeAddress(p.alamat || p.kota);
+       if (geo) {
+          lat = geo.lat;
+          lng = geo.lng;
+       } else {
+          // Absolute fallback near Jakarta
+          lat = -6.2088 + (Math.random() * 0.1 - 0.05);
+          lng = 106.8456 + (Math.random() * 0.1 - 0.05);
+       }
     }
 
-    const color = p.status_slf === 'LAIK_FUNGSI' ? '#10b981' : 
-                  p.status_slf === 'TIDAK_LAIK_FUNGSI' ? '#ef4444' : 
-                  p.status_slf === 'LAIK_FUNGSI_BERSYARAT' ? '#f59e0b' : '#3b82f6';
+    const statusConfig = {
+      'LAIK_FUNGSI':           { color: '#10b981', icon: '\uf00c' }, // fa-check
+      'TIDAK_LAIK_FUNGSI':     { color: '#ef4444', icon: '\uf00d' }, // fa-xmark
+      'LAIK_FUNGSI_BERSYARAT': { color: '#f59e0b', icon: '\uf071' }, // fa-triangle-exclamation
+      'DALAM_PENGKAJIAN':      { color: '#3b82f6', icon: '\uf017' }  // fa-clock
+    };
     
+    const cfg = statusConfig[p.status_slf] || { color: '#8b5cf6', icon: '\uf1ad' }; // fa-building
+
     const icon = window.L.divIcon({
-      className: 'custom-marker',
-      html: `<div style="background:${color}; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow:0 0 10px ${color}"></div>`,
-      iconSize: [12, 12]
+      className: 'modern-marker-wrap',
+      html: `
+        <div style="position:relative; width:32px; height:40px; display:flex; align-items:center; justify-content:center; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.4));">
+           <svg width="32" height="40" viewBox="0 0 24 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 0C5.37 0 0 5.37 0 12C0 21 12 30 12 30C12 30 24 21 24 12C24 5.37 18.63 0 12 0Z" fill="${cfg.color}" stroke="white" stroke-width="1.5"/>
+              <circle cx="12" cy="12" r="8" fill="white" fill-opacity="0.2"/>
+              <text x="12" y="16" font-family="'Font Awesome 6 Free'" font-weight="900" font-size="10px" fill="white" text-anchor="middle">${cfg.icon}</text>
+           </svg>
+        </div>
+      `,
+      iconSize: [32, 40],
+      iconAnchor: [16, 40],
+      popupAnchor: [0, -40]
     });
 
     const mk = window.L.marker([lat, lng], { icon }).addTo(markers);
@@ -513,40 +568,43 @@ function initMap(projects) {
     mk.bindPopup(`
       <div style="font-family:'Outfit',sans-serif; min-width:200px; padding:4px">
         <div style="font-weight:800; color:#1e293b; margin-bottom:4px; font-size:14px">${p.nama_bangunan}</div>
-        <div style="font-size:11px; color:#64748b; margin-bottom:10px"><i class="fas fa-location-dot"></i> ${p.kota || 'Lokasi tidak spesifik'}</div>
+        <div style="font-size:11px; color:#64748b; margin-bottom:10px"><i class="fas fa-location-dot"></i> ${p.alamat || p.kota || 'Lokasi tidak spesifik'}</div>
         <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f1f5f9; pt:8px; margin-top:8px">
-           <span style="font-size:9px; font-weight:700; text-transform:uppercase; color:${color}">${p.status_slf?.replace(/_/g, ' ')}</span>
-           <button class="btn btn-primary btn-xs" onclick="window.navigate('proyek-detail', {id:'${p.id}'})" style="padding:2px 8px; font-size:10px">Detail &rarr;</button>
+           <span style="font-size:9px; font-weight:700; text-transform:uppercase; color:${cfg.color}">${p.status_slf?.replace(/_/g, ' ')}</span>
+           <button class="btn btn-primary btn-xs" onclick="window.navigate('proyek-detail', {id:'${p.id}'})" style="padding:2px 8px; font-size:10px; margin-top:4px">Detail &rarr;</button>
         </div>
       </div>
     `);
+    
+    return { lat, lng };
   });
 
+  const resolvedCoords = await Promise.all(markerPromises);
+
   if (projects.length > 0) {
-    const latest = projects[0];
-    const hasRealCoords = latest.latitude && latest.longitude;
+    // Proyek terbaru (paling atas di list)
+    const latestCoord = resolvedCoords[0];
 
     setTimeout(() => { 
       try {
         if (!window._dashMap || !document.getElementById('dashboard-map')) return;
         
-        if (hasRealCoords) {
-          // Fokus ke Proyek Terbaru dengan animasi flyTo (Zoom 15 untuk detail)
-          window._dashMap.flyTo([latest.latitude, latest.longitude], 15, {
+        // Selalu flyTo ke lokasi proyek terbaru dengan zoom 18
+        if (latestCoord && latestCoord.lat) {
+          window._dashMap.flyTo([latestCoord.lat, latestCoord.lng], 18, {
             animate: true,
-            duration: 2
+            duration: 2.5
           });
         } else {
-          // Fallback ke Fit Bounds jika tidak ada koordinat spesifik di proyek terbaru
           const bounds = markers.getBounds();
           if (bounds.isValid()) {
-            window._dashMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 }); 
+            window._dashMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 }); 
           }
         }
       } catch (err) {
-        console.warn("[Dashboard Map] Suppressed focus error:", err.message);
+        console.warn("[Dashboard Map] Focus error:", err.message);
       }
-    }, 800);
+    }, 1000);
   }
 }
 

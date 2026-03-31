@@ -95,3 +95,52 @@ export async function getProjectPIC(proyekId) {
     return profile;
   } catch { return null; }
 }
+
+/**
+ * Membuat profil personil baru (Admin Only)
+ */
+export async function createProfile(profileData) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .insert([{
+      ...profileData,
+      created_at: new Date().toISOString(),
+      status: profileData.status || 'Active'
+    }])
+    .select()
+    .single();
+    
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Update profil personil
+ */
+export async function updateProfile(id, profileData) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({
+      ...profileData,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', id)
+    .select()
+    .single();
+    
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Hapus profil personil
+ */
+export async function deleteProfile(id) {
+  const { error } = await supabase
+    .from('profiles')
+    .delete()
+    .eq('id', id);
+    
+  if (error) throw error;
+  return true;
+}

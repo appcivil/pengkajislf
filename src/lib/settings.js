@@ -20,6 +20,7 @@ const DEFAULT_SETTINGS = {
     kop_text: 'PEMERINTAH KABUPATEN __________\nDINAS PEKERJAAN UMUM DAN PENATAAN RUANG\nJl. Raya No. 123, Kota __________, Prov. __________',
     director_name: '',
     director_job: 'Direktur',
+    nomor_surat_format: '[SEQ]/SP-SLF/[ROMAN_MONTH]/[YEAR]', // Default format
   },
   ai: {
     defaultModel: 'gemini-3.1-flash-lite-preview',
@@ -32,6 +33,18 @@ const DEFAULT_SETTINGS = {
   google: {
     defaultDriveProxy: '',
     templateDocId: '',
+  },
+  watermark: {
+    enabled: true,
+    show_gps: true,
+    show_time: true,
+    company_logo: null,
+    company_name: 'DPUPR KABUPATEN __________',
+    verified_label: 'Diverifikasi oleh SmartAI SLF',
+    activity_prefix: 'Kegiatan:',
+    opacity: 0.85,
+    resolution: 'medium',
+    custom_tags: ''
   }
 };
 
@@ -67,6 +80,7 @@ export async function getSettings() {
     ai:         { ...DEFAULT_SETTINGS.ai, ...settings.ai },
     experts:    settings.experts || DEFAULT_SETTINGS.experts,
     google:     { ...DEFAULT_SETTINGS.google, ...(settings.google || {}) },
+    watermark:  { ...DEFAULT_SETTINGS.watermark, ...(settings.watermark || {}) },
   };
 }
 

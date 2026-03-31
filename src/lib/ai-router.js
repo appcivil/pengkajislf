@@ -6,6 +6,7 @@
 const env = import.meta.env;
 import { SLF_PROMPT_LIBRARY } from './slf-prompt-library.js';
 import { getPromptConfig, injectPromptConfig } from './prompt-config-service.js';
+import { getSettings } from './settings.js';
 
 function getItemConfig(kode) {
   if (!SLF_PROMPT_LIBRARY || !SLF_PROMPT_LIBRARY.modules) return null;
@@ -67,7 +68,9 @@ export const MODELS = {
   SLF_OPUS: {
     id: 'adminskpslf/SLF_OPUS',
     name: 'SLF OPUS Reasoning (Hugging Face)',
-    url: env.VITE_HF_SLF_OPUS_URL || 'https://api-inference.huggingface.co/models/adminskpslf/SLF_OPUS',
+    url: env.VITE_HF_SLF_OPUS_URL || (env.PROD 
+      ? 'https://api-inference.huggingface.co/models/adminskpslf/SLF_OPUS'
+      : '/api/hf/models/adminskpslf/SLF_OPUS'),
     key: env.VITE_HF_API_TOKEN,
     vendor: 'huggingface'
   },
@@ -290,23 +293,31 @@ Output WAJIB JSON MURNI:
  */
 export async function runAspectAnalysis(aspek, items, onProgress, options = {}) {
   const a = aspek.toLowerCase();
+  const settings = await getSettings();
+  const experts = settings.experts || {};
+  
   let roleTitle = 'Digital Technical Consultant SLF';
   let standard = 'NSPK & PP No. 16 Tahun 2021';
   
   let targetModel = MODELS.GEMINI; 
 
-  // Penentuan Role & Standar & Model Khusus (Jika Groq ingin di-override)
+  // Penentuan Role & Standar & Model Khusus Berdasarkan Pengaturan
   if (a.includes('struktur')) {
-    roleTitle = 'Chief Structural Engineer & Seismis Expert';
+    const name = experts.structure?.name ? `(${experts.structure.name})` : '';
+    roleTitle = `Chief Structural Engineer & Seismis Expert ${name}`;
     standard = 'SNI 9273:2025 (Existing Buildings Evaluation)';
-    // Biarkan Struktur tetap pakai Claude jika kunci ada, jika tidak Gemini akan handle di failover
     if (MODELS.CLAUDE.key) targetModel = MODELS.CLAUDE;
   } else if (a.includes('administrasi')) {
     roleTitle = 'Principal Engineering Auditor';
     standard = 'PP No. 16 Tahun 2021 & Perundangan Bangunan';
   } else if (a.includes('arsitektur')) {
-    roleTitle = 'Principal Architect (Building Performance)';
+    const name = experts.architecture?.name ? `(${experts.architecture.name})` : '';
+    roleTitle = `Principal Architect (Building Performance) ${name}`;
     standard = 'NSPK Arsitektur & Estetika';
+  } else if (a.includes('mep') || a.includes('mekanikal') || a.includes('kebakaran')) {
+    const name = experts.mep?.name ? `(${experts.mep.name})` : '';
+    roleTitle = `Senior MEP & Fire Safety Engineer ${name}`;
+    standard = 'NSPK Utilitas & MEP';
   }
 
   const results = [];
@@ -590,7 +601,7 @@ async function fetchOpenAI(model, prompt) {
   return data.choices?.[0]?.message?.content || "{}";
 }
 
-async function fetchOpenRouter(model, prompt) {
+export async function fetchOpenRouter(model, prompt) {
   const res = await fetch(model.url, {
     method: 'POST',
     headers: {

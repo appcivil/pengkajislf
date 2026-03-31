@@ -564,8 +564,9 @@ function renderExpertTeam(settings, proyek) {
     ]
   }));
 
-  // Data
-  settings.experts.forEach((exp, idx) => {
+  // Data (Handling as Object)
+  Object.entries(settings.experts).forEach(([type, exp], idx) => {
+    const roleLabel = type === 'architecture' ? 'Bidang Arsitektur' : type === 'structure' ? 'Bidang Struktur' : 'Bidang MEP';
     rows.push(new TableRow({
       children: [
         dataCell(String(idx + 1), 10, { center: true }),
@@ -574,14 +575,29 @@ function renderExpertTeam(settings, proyek) {
           margins: { top: 100, bottom: 100, left: 100, right: 100 },
           children: [
             new Paragraph({
-              children: [new TextRun({ text: safeText(exp.name), bold: true, size: FONT_SIZE_BODY, font: FONT_MAIN })]
+              children: [new TextRun({ text: safeText(exp.name || 'NAMA AHLI'), bold: true, size: FONT_SIZE_BODY, font: FONT_MAIN })]
             }),
             new Paragraph({
-              children: [new TextRun({ text: `SKA: ${safeText(exp.ska)}`, size: FONT_SIZE_SMALL, font: FONT_MAIN, color: COLOR_MUTED })]
+              children: [
+                new TextRun({ text: `${roleLabel}  |  SKA/SKK: ${safeText(exp.skk || exp.ska || '-')}`, size: FONT_SIZE_SMALL, font: FONT_MAIN, color: COLOR_MUTED }),
+              ]
             }),
           ]
         }),
-        dataCell('', 30), // Empty for signature
+        new TableCell({
+          width: { size: 30, type: WidthType.PERCENTAGE },
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({ text: "TTE VERIFIED", size: 14, bold: true, color: COLOR_SUCCESS }),
+                new dx.Break(),
+                new TextRun({ text: "Digital Certificate", size: 10, color: COLOR_MUTED, italics: true })
+              ]
+            })
+          ],
+          verticalAlign: VerticalAlign.CENTER
+        })
       ]
     }));
   });
@@ -602,32 +618,70 @@ function renderExpertTeam(settings, proyek) {
     bodyText(`Ditetapkan di: ${proyek.kota || 'Jakarta'}`),
     bodyText(`Tanggal: ${formatTanggal(new Date())}`),
     
-    emptyLine(),
-    new Paragraph({
-      alignment: AlignmentType.CENTER,
-      spacing: { before: 400 },
-      children: [
-        new TextRun({ text: 'Mengetahui,', size: FONT_SIZE_BODY, font: FONT_MAIN }),
-        new PageBreak()
-      ]
-    }),
     new Paragraph({
       alignment: AlignmentType.CENTER,
       children: [
+        new TextRun({ text: 'Mengetahui & Mengesahkan,', size: FONT_SIZE_BODY, font: FONT_MAIN }),
+        new dx.Break(),
         new TextRun({ text: settings.consultant.name.toUpperCase(), bold: true, size: FONT_SIZE_BODY, font: FONT_MAIN }),
       ]
     }),
-    ...Array(4).fill(null).map(() => emptyLine()),
-    new Paragraph({
-      alignment: AlignmentType.CENTER,
-      children: [
-        new TextRun({ text: '( __________________________ )', bold: true, size: FONT_SIZE_BODY, font: FONT_MAIN }),
+
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: dx.TableBorders.NONE,
+      rows: [
+        new TableRow({
+          children: [
+            // e-Materai Placeholder
+            new TableCell({
+              width: { size: 40, type: WidthType.PERCENTAGE },
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [
+                    new TextRun({ text: "MATERAI ELEKTRONIK", size: 12, bold: true, color: "3b82f6" }),
+                    new dx.Break(),
+                    new TextRun({ text: "TTE VERIFIED", size: 10, color: "1e40af" }),
+                  ],
+                  border: {
+                    top: { style: BorderStyle.SINGLE, size: 1, color: "3b82f6" },
+                    bottom: { style: BorderStyle.SINGLE, size: 1, color: "3b82f6" },
+                    left: { style: BorderStyle.SINGLE, size: 1, color: "3b82f6" },
+                    right: { style: BorderStyle.SINGLE, size: 1, color: "3b82f6" },
+                  },
+                  shading: { fill: "eff6ff" },
+                  spacing: { before: 200, after: 200 }
+                })
+              ],
+              verticalAlign: VerticalAlign.CENTER
+            }),
+            // Signature Space
+            new TableCell({
+              width: { size: 60, type: WidthType.PERCENTAGE },
+              children: [
+                new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Tanda Tangan Elektronik", size: 11, italics: true, color: "666666" })], spacing: { before: 600 } }),
+              ]
+            })
+          ]
+        })
       ]
     }),
+
     new Paragraph({
       alignment: AlignmentType.CENTER,
       children: [
-        new TextRun({ text: 'Direktur / Penanggung Jawab Teknis', size: FONT_SIZE_SMALL, font: FONT_MAIN, color: COLOR_MUTED }),
+        new TextRun({ text: (settings.consultant?.director_name || 'NAMA DIREKTUR').toUpperCase(), bold: true, size: FONT_SIZE_BODY, font: FONT_MAIN, underline: {} }),
+        new dx.Break(),
+        new TextRun({ text: settings.consultant?.director_job || 'Direktur', size: FONT_SIZE_SMALL, font: FONT_MAIN, color: COLOR_MUTED }),
+      ]
+    }),
+    
+    emptyLine(),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({ text: `ID Dokumen: ${proyek.id.toUpperCase()}`, size: 14, font: FONT_MAIN, color: "888888" }),
       ]
     }),
   ];

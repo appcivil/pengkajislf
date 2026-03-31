@@ -29,9 +29,12 @@ export function renderHeader(route = 'dashboard') {
   return `
     <header class="app-header" id="app-header">
       <div class="header-left">
-        <!-- Mobile hamburger (Managed by CSS Media Queries) -->
-        <button class="btn-icon" id="sidebar-toggle" aria-label="Toggle sidebar">
+        <!-- Sidebar toggle (Mobile & Desktop) -->
+        <button class="btn-icon" id="sidebar-toggle" aria-label="Toggle mobile sidebar">
           <i class="fas fa-bars"></i>
+        </button>
+        <button class="btn-icon" id="sidebar-toggle-desktop" aria-label="Toggle desktop sidebar">
+          <i class="fas fa-indent"></i>
         </button>
 
         <div class="header-breadcrumb">
@@ -115,6 +118,19 @@ export function bindHeaderEvents() {
   if (toggleBtn) {
     toggleBtn.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
     toggleBtn.addEventListener('click', toggleMobileSidebar);
+  }
+
+  const desktopToggle = document.getElementById('sidebar-toggle-desktop');
+  if (desktopToggle) {
+    desktopToggle.style.display = window.innerWidth > 768 ? 'flex' : 'none';
+    desktopToggle.addEventListener('click', () => {
+      document.getElementById('app-layout')?.classList.toggle('sidebar-collapsed');
+      const icon = desktopToggle.querySelector('i');
+      if (icon) {
+        icon.classList.toggle('fa-indent');
+        icon.classList.toggle('fa-outdent');
+      }
+    });
   }
 
   // Profile Dropdown Toggle

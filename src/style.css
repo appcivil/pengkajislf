@@ -522,3 +522,187 @@ body.is-offline .page-header {
   align-items: center;
   gap: 4px;
 }
+
+/* --- MODERN FORM CONTROLS --- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.form-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-left: 2px;
+}
+
+.form-control-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-control-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--tertiary);
+  font-size: 0.9rem;
+  pointer-events: none;
+  transition: color 0.2s;
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-elevated, #f8fafc);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text-h);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+/* Dark mode overrides for inputs if needed */
+@media (prefers-color-scheme: dark) {
+  .form-control {
+    background: #1f2028;
+    border-color: #3f3f46;
+  }
+}
+
+.form-control:hover {
+  border-color: var(--accent);
+}
+
+.form-control:focus {
+  outline: none;
+  background: var(--bg);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-bg);
+}
+
+.form-control:focus + .form-control-icon,
+.form-control-wrap:focus-within .form-control-icon {
+  color: var(--accent);
+}
+
+.form-control::placeholder {
+  color: var(--tertiary);
+  opacity: 0.6;
+}
+
+/* Select specific styling */
+select.form-control {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.form-control.with-icon {
+  padding-left: 42px;
+}
+
+/* --- MODERN MAP MARKERS --- */
+.modern-marker-wrap, .modern-pin-wrap {
+  background: transparent !important;
+  border: none !important;
+  overflow: visible !important;
+}
+
+.modern-marker {
+  position: relative;
+  width: 48px;
+  height: 65px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.6));
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  z-index: 10;
+}
+
+.modern-marker:hover {
+  transform: translateY(-8px) scale(1.2);
+  filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6));
+  z-index: 9999 !important;
+}
+
+.marker-inner {
+  width: 48px;
+  height: 48px;
+  border-radius: 50% 50% 50% 5px; 
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 5;
+  position: relative;
+}
+
+.marker-inner i {
+  transform: rotate(45deg);
+  color: white;
+  font-size: 20px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+/* Status Gradients */
+.marker-laik { background: linear-gradient(135deg, #10b981, #047857) !important; }
+.marker-bersyarat { background: linear-gradient(135deg, #f59e0b, #b45309) !important; }
+.marker-tidak-laik { background: linear-gradient(135deg, #ef4444, #b91c1c) !important; }
+.marker-proses { background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important; }
+.marker-default { background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important; }
+
+.marker-pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  z-index: 1;
+  opacity: 0;
+  animation: marker-pulse-anim 2.5s infinite;
+  pointer-events: none;
+}
+
+@keyframes marker-pulse-anim {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* Form Specific Pin (Draggable) */
+.modern-pin {
+  width: 40px;
+  height: 40px;
+  background: var(--accent);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  border: 3px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 15px rgba(170, 59, 255, 0.4);
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+}
+
+.modern-pin::after {
+  content: '\f3c5';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  color: white;
+  transform: rotate(45deg);
+  font-size: 18px;
+}

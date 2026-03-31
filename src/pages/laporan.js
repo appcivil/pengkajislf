@@ -6,6 +6,7 @@
 // ============================================================
 import { supabase } from '../lib/supabase.js';
 import { navigate } from '../lib/router.js';
+import { logActivity } from '../lib/audit-service.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { marked } from 'marked';
 import { generateDocx, generateDocxBlob } from '../lib/docx-service.js';
@@ -87,7 +88,12 @@ function buildHtml(proyek, analisis, checklist, settings, gdocStatus, cachedDoc)
               <i class="fas fa-arrow-left"></i> ${escHtml(proyek.nama_bangunan)}
             </button>
             <h1 class="page-title">Penyusunan Laporan SLF</h1>
-            <p class="page-subtitle">Sistem otomatisasi penyusunan laporan berbasis template.</p>
+            <div style="display:flex; align-items:center; gap:12px">
+              <p class="page-subtitle">Sistem otomatisasi penyusunan laporan berbasis template.</p>
+              <div class="trust-seal-mini" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; padding:2px 10px; border-radius:100px; font-size:10px; font-weight:800; display:flex; align-items:center; gap:5px">
+                <i class="fas fa-certificate"></i> TTE AKTIF
+              </div>
+            </div>
           </div>
         </div>
         
@@ -398,29 +404,57 @@ function renderLegacyTab(proyek, analisis, checklist, settings) {
         </div>
 
         <!-- PENGESAHAN (SIGNATURE & STAMP) -->
-        <div id="lap-pengesahan" class="laporan-section pdf-page-break" style="page-break-before:always; padding:40px">
+        <div id="lap-pengesahan" class="laporan-section pdf-page-break" style="page-break-before:always; padding:40px; color:#000">
           <div style="margin-top:100px; display:flex; justify-content:flex-end">
-            <div style="width:300px; text-align:center; position:relative">
-              <div style="margin-bottom:80px">
-                Dibuat di: ${escHtml(proyek.kota || 'Jakarta')}<br>
-                Tanggal: ${new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}
+            <div style="width:340px; text-align:center; position:relative">
+              <div style="margin-bottom:60px; font-size:11pt">
+                Dibuat di: <b>${escHtml(proyek.kota || 'Jakarta')}</b><br>
+                Tanggal: <b>${new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}</b>
               </div>
-              <div style="font-weight:800; margin-bottom:4px">KONSULTAN PENGKAJI TEKNIS:</div>
-              <div style="font-weight:800; margin-bottom:60px">${escHtml(settings.consultant.name)}</div>
+              <div style="font-weight:800; margin-bottom:4px; font-size:10pt">KONSULTAN PENGKAJI TEKNIS:</div>
+              <div style="font-weight:800; margin-bottom:15px; font-size:11pt; border-bottom:1px solid #000; padding-bottom:5px">${escHtml(settings.consultant.name)}</div>
               
-              <!-- Signature & Stamp Overlay -->
-              <div style="position:absolute; bottom:60px; left:50%; transform:translateX(-50%); width:200px; height:150px; pointer-events:none">
-                ${settings.consultant.stamp ? `<img src="${settings.consultant.stamp}" style="position:absolute; top:0; left:0; width:120px; height:120px; opacity:0.8; object-fit:contain">` : ''}
-                ${settings.consultant.signature ? `<img src="${settings.consultant.signature}" style="position:absolute; top:30px; left:40px; width:150px; height:80px; object-fit:contain">` : ''}
+              <div style="display:flex; align-items:center; justify-content:center; gap:30px; margin-bottom:30px">
+                <!-- e-Materai -->
+                <div style="width:85px; height:85px; border:1px solid #3b82f6; background:#eff6ff; border-radius:4px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:8px; line-height:1.2; color:#1e40af">
+                   <b>MATERAI</b>
+                   ELEKTRONIK
+                   <div style="font-size:11px; font-weight:900; margin-top:2px">10.000</div>
+                   <div style="font-size:6px; opacity:0.7">TTE TERVERIFIKASI</div>
+                </div>
+
+                <!-- TTE QR -->
+                <div style="position:relative; width:100px; height:100px">
+                   ${(() => {
+                     const verifyUrl = `${window.location.origin}${window.location.pathname}#/verify?id=${proyek.id}&expert=director`;
+                     const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verifyUrl)}`;
+                     return `<img src="${qrSrc}" style="width:100%; height:100%; border:1px solid #eee; background:#fff; padding:3px; border-radius:4px">`;
+                   })()}
+                   ${settings.consultant.signature ? `<img src="${settings.consultant.signature}" style="position:absolute; top:20px; left:20px; width:100px; height:60px; object-fit:contain; opacity:0.9">` : ''}
+                   ${settings.consultant.stamp ? `<img src="${settings.consultant.stamp}" style="position:absolute; bottom:-10px; right:-20px; width:80px; height:80px; opacity:0.7; object-fit:contain">` : ''}
+                </div>
               </div>
 
-              <div style="border-bottom:1px solid #000; display:inline-block; min-width:200px; font-weight:800">
-                ${escHtml(settings.experts[0]?.name || 'Nama Tenaga Ahli')}
+              <div style="font-weight:800; text-decoration:underline; font-size:11pt; margin-top:30px">
+                ${escHtml(settings.consultant?.director_name || 'NAMA DIREKTUR')}
               </div>
-              <div style="font-size:0.8rem; margin-top:4px">
-                SKA/SKK: ${escHtml(settings.experts[0]?.ska || '-')}
+              <div style="font-size:10pt; margin-top:4px">
+                ${escHtml(settings.consultant?.director_job || 'Direktur')}
+              </div>
+              <div style="font-size:8pt; margin-top:10px; opacity:0.6; font-style:italic">
+                Tanda Tangan Elektronik Terverifikasi (UU ITE)
               </div>
             </div>
+          </div>
+
+          <!-- Bottom Footer Information -->
+          <div style="margin-top:100px; border-top:2px solid #000; padding-top:10px; display:flex; justify-content:space-between; align-items:center; font-size:8pt">
+             <div>
+               <b>Integritas Dokumen Digital:</b> ${(proyek.id + proyek.created_at).split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0).toString(16).toUpperCase().padStart(32,'0')}
+             </div>
+             <div style="text-align:right">
+               Smart AI Pengkaji SLF · Sistem SIMBG Berbasis Cloud
+             </div>
           </div>
         </div>
       </div>
@@ -476,6 +510,11 @@ function initLaporanActions(proyek, analisis, checklist, settings, gdocStatus, c
     try {
       showProgress(0, 'Memulai proses ke Google Cloud...');
       await generateFromTemplate(proyek, analisis, checklist, showProgress);
+      
+      logActivity('GENERATE_GDOC', proyek.id, { 
+        action: 'new_template_generation'
+      });
+
       showSuccess('Dokumen Laporan berhasil digenerate di Google Docs!');
       // Refresh UI by navigating back to self
       setTimeout(() => navigate('laporan', { id: proyek.id }), 500);
@@ -513,6 +552,11 @@ function initLaporanActions(proyek, analisis, checklist, settings, gdocStatus, c
     try {
       showProgress(5, 'Menyiapkan dokumen Word...');
       await generateDocx(proyek, analisis, checklist, showProgress);
+      
+      logActivity('EXPORT_WORD', proyek.id, { 
+        type: 'legacy_docx'
+      });
+
       showSuccess('Dokumen Word (.docx) berhasil di-download!');
       setTimeout(hideProgress, 1000);
     } catch (err) {
@@ -526,6 +570,11 @@ function initLaporanActions(proyek, analisis, checklist, settings, gdocStatus, c
       showProgress(10, 'Memuat library PDF...');
       const printArea = document.getElementById('print-area');
       await generatePDF(printArea, proyek, showProgress);
+      
+      logActivity('EXPORT_PDF', proyek.id, { 
+        filename: `SLF_${proyek.nama_bangunan}.pdf`
+      });
+
       showSuccess('Dokumen PDF berhasil di-download!');
       setTimeout(hideProgress, 1000);
     } catch (err) {

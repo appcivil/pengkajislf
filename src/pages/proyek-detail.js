@@ -3,6 +3,8 @@
 //  Hub navigasi per proyek — info, workflow, tab navigasi
 // ============================================================
 import { supabase } from '../lib/supabase.js';
+import { isAdmin }  from '../lib/auth.js';
+import { getAuditLogs } from '../lib/audit-service.js';
 import { navigate }  from '../lib/router.js';
 import { showSuccess, showError } from '../components/toast.js';
 import { confirm }   from '../components/modal.js';
@@ -74,6 +76,7 @@ function buildHtml(p, stats, analisis, pic) {
               <span class="badge ${st.cls}"><i class="fas ${st.icon}" style="margin-right:4px"></i>${st.label}</span>
               <span class="text-sm text-tertiary"><i class="fas fa-map-marker-alt" style="margin-right:4px"></i>${escHtml(p.alamat || '-')}</span>
               ${p.nomor_pbg ? `<span class="text-sm text-tertiary"><i class="fas fa-file-certificate" style="margin-right:4px"></i>PBG: ${escHtml(p.nomor_pbg)}</span>` : ''}
+              ${p.metadata?.nomor_surat ? `<span class="badge badge-info" style="font-size:0.75rem"><i class="fas fa-barcode" style="margin-right:4px"></i>${escHtml(p.metadata.nomor_surat)}</span>` : ''}
             </div>
           </div>
           <div class="flex gap-3">
@@ -229,9 +232,9 @@ function buildHtml(p, stats, analisis, pic) {
               </div>
               <div class="fnc-body">
                 <div class="fnc-title">TODO & Tindak Lanjut</div>
-                <div class="fnc-desc">Task management per proyek</div>
+                <div class="fnc-desc">Penyelesaian temuan & rekomendasi</div>
                 <div class="fnc-meta">
-                  <span class="text-xs text-tertiary" style="margin-top:8px;display:block">Segera hadir</span>
+                  <span class="badge badge-proses" style="margin-top:8px;font-size:0.75rem">Task Management Aktif</span>
                 </div>
               </div>
               <i class="fas fa-arrow-right fnc-arrow"></i>
@@ -523,6 +526,22 @@ function buildHtml(p, stats, analisis, pic) {
               <p class="text-sm text-secondary" style="line-height:1.6">${escHtml(p.catatan)}</p>
             </div>
           ` : ''}
+
+          <!-- Audit Trail (Hanya Administrator) -->
+          ${isAdmin() ? `
+            <div class="card" style="border-top:2px solid var(--brand-400)">
+              <div class="card-title" style="margin-bottom:var(--space-4); display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <i class="fas fa-history" style="color:var(--brand-400);margin-right:8px"></i>Audit Trail
+                </div>
+                <span class="badge badge-info" style="font-size:0.65rem">Admin Only</span>
+              </div>
+              <div id="audit-trail-list" style="display:flex; flex-direction:column; gap:8px; max-height:300px; overflow-y:auto; padding-right:4px;">
+                <div class="skeleton" style="height:40px; margin-bottom:8px"></div>
+                <div class="skeleton" style="height:40px"></div>
+              </div>
+            </div>
+          ` : ''}
         </div>
       </div>
     </div>
@@ -647,6 +666,61 @@ function initAfterRender(p) {
         }
       }
     };
+  }
+
+  // Load Audit Trail if Admin
+  if (isAdmin()) {
+    renderAuditTrail(p.id);
+  }
+}
+
+async function renderAuditTrail(proyekId) {
+  const container = document.getElementById('audit-trail-list');
+  if (!container) return;
+
+  try {
+    const logs = await getAuditLogs(proyekId);
+    
+    // Handle table missing (404)
+    if (logs && logs.isMissing) {
+      container.innerHTML = `
+        <div style="text-align:center; padding:16px; background:rgba(249,115,22,0.05); border:1px dashed #f97316; border-radius:8px;">
+          <i class="fas fa-screwdriver-wrench" style="color:#f97316; margin-bottom:8px; font-size:1.2rem"></i>
+          <p class="text-xs font-bold" style="color:#c2410c">Audit Trail Belum Aktif</p>
+          <p class="text-xs text-tertiary" style="margin-top:4px">Administrator: Silakan hubungkan tabel <b>system_logs</b> di Supabase untuk mengaktifkan pelacakan UU ITE.</p>
+        </div>
+      `;
+      return;
+    }
+
+    if (!logs || logs.length === 0) {
+      container.innerHTML = '<p class="text-xs text-tertiary text-center py-4">Belum ada aktivitas tercatat.</p>';
+      return;
+    }
+    container.innerHTML = logs.map(log => {
+      const date = new Date(log.created_at || log.metadata?.timestamp).toLocaleString('id-ID', { hour:'2-digit', minute:'2-digit', day:'numeric', month:'short' });
+      const actionIcons = {
+        'SIMPAN_CHECKLIST': 'fa-save',
+        'EXPORT_PDF': 'fa-file-pdf',
+        'EXPORT_WORD': 'fa-file-word',
+        'GENERATE_GDOC': 'fa-cloud-arrow-up',
+      };
+      const icon = actionIcons[log.action] || 'fa-fingerprint';
+      
+      return `
+        <div style="background:var(--bg-elevated); padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-subtle); display:flex; align-items:start; gap:10px;">
+          <div style="width:24px; height:24px; border-radius:4px; background:rgba(59,130,246,0.1); color:var(--brand-400); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:0.75rem;">
+            <i class="fas ${icon}"></i>
+          </div>
+          <div style="overflow:hidden">
+            <div class="text-xs font-bold text-primary truncate" style="margin-bottom:2px">${log.action.replace(/_/g, ' ')}</div>
+            <div class="text-xs text-tertiary truncate" style="font-size:0.65rem">${log.user_email} &bullet; ${date}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    container.innerHTML = `<p class="text-xs text-danger text-center py-4">Gagal memuat log: ${err.message}</p>`;
   }
 }
 

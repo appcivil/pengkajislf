@@ -5,29 +5,49 @@
 import { renderSidebar, bindSidebarEvents, updateActiveNav } from './sidebar.js';
 import { renderHeader, bindHeaderEvents, updateHeaderTitle } from './header.js';
 import { getUser } from '../lib/auth.js';
+import { store } from '../lib/store.js';
 
 let _layoutInitialized = false;
 
 /**
  * Render the full app shell (sidebar + header + content slot)
- * Called once when user is authenticated.
+ * @param {HTMLElement} appEl
+ * @param {boolean} isPublic - If true, render a simplified shell without sidebar
  */
-export function renderAppShell(appEl) {
+export function renderAppShell(appEl, isPublic = false) {
   if (_layoutInitialized) return;
   _layoutInitialized = true;
 
+  if (isPublic) {
+    appEl.innerHTML = `
+      <div class="app-layout public-layout" id="app-layout">
+        <main class="main-content no-sidebar" id="main-content" style="margin-left:0; width:100%">
+          <div class="page-container" id="page-root">
+            <!-- Public page content -->
+          </div>
+        </main>
+      </div>
+    `;
+    return;
+  }
+
   appEl.innerHTML = `
-    <div class="app-layout" id="app-layout">
+    <div class="app-layout sidebar-collapsed" id="app-layout">
       ${renderSidebar()}
-      <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+      
       ${renderHeader('dashboard')}
+      
       <div id="sync-banner-container"></div>
+      
       <main class="main-content" id="main-content">
+        <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+        
         <div class="page-container" id="page-root">
           <!-- Page content rendered here by router -->
         </div>
+        
+        ${renderBottomNav()}
       </main>
-      ${renderBottomNav()}
     </div>
   `;
 
@@ -66,8 +86,16 @@ export function onRouteChange(path) {
   updateActiveNav(path);
   updateHeaderTitle(path);
   
+  // Public Portal Mode (Hide Sidebar/Header)
+  const appLayout = document.getElementById('app-layout');
+  if (path === 'verify') {
+    appLayout?.classList.add('public-portal');
+  } else {
+    appLayout?.classList.remove('public-portal');
+  }
+  
   // Close sidebar on mobile after navigation
-  document.getElementById('sidebar')?.classList.remove('open');
+  document.getElementById('app-sidebar')?.classList.remove('open');
   document.getElementById('sidebar-backdrop')?.classList.remove('show');
 
   // Update active state in bottom nav

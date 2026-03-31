@@ -16,7 +16,7 @@ export async function downloadLegalDocx(p, s, type, html) {
       },
       children: type === 'konsultan' ? 
         await buildConsultantDoc(p, s, docx) : 
-        await buildOwnerDoc(p, docx)
+        await buildOwnerDoc(p, docx, s)
     }]
   });
 
@@ -169,15 +169,15 @@ async function buildConsultantDoc(p, s, dx) {
       rows: [
         createProjectDetailRow(dx, "1)", "Nama bangunan", p.nama_bangunan),
         createProjectDetailRow(dx, "2)", "Alamat bangunan", p.alamat || "-"),
-        createProjectDetailRow(dx, "3)", "Posisi koordinat", `${p.latitude || 0}, ${p.longitude || 0}`),
+        createProjectDetailRow(dx, "3)", "Posisi koordinat", `Lat: ${p.latitude || 0}, Lng: ${p.longitude || 0}`),
         createProjectDetailRow(dx, "4)", "Fungsi bangunan", p.fungsi_bangunan || "-"),
-        createProjectDetailRow(dx, "5)", "Klasifikasi kompleksitas", "Sederhana / Tidak Sederhana"),
-        createProjectDetailRow(dx, "6)", "Ketinggian bangunan", "-"),
+        createProjectDetailRow(dx, "5)", "Klasifikasi kompleksitas", p.klasifikasi || "Bangunan Tidak Sederhana"),
+        createProjectDetailRow(dx, "6)", "Ketinggian bangunan", `${p.ketinggian || '-'} Meter`),
         createProjectDetailRow(dx, "7)", "Jumlah lantai bangunan", `${p.jumlah_lantai || 1} Lantai`),
         createProjectDetailRow(dx, "8)", "Luas lantai bangunan", `${p.luas_bangunan || 0} m2`),
-        createProjectDetailRow(dx, "9)", "Jumlah basement", "-"),
-        createProjectDetailRow(dx, "10)", "Luas lantai basement", "-"),
-        createProjectDetailRow(dx, "11)", "Luas tanah", `${p.luas_lahan || 0} m2`),
+        createProjectDetailRow(dx, "9)", "Jumlah basement", `${p.jumlah_basement || 0} Lantai`),
+        createProjectDetailRow(dx, "10)", "Luas lantai basement", `${p.luas_basement || 0} m2`),
+        createProjectDetailRow(dx, "11)", "Luas lahan", `${p.luas_lahan || 0} m2`),
       ],
     }),
 
@@ -229,18 +229,21 @@ async function buildConsultantDoc(p, s, dx) {
                 new Paragraph({
                   alignment: AlignmentType.CENTER,
                   children: [
-                    new TextRun({ text: "MATERAI", size: 16, bold: true, color: "64748b" }),
+                    new TextRun({ text: "MATERAI", size: 16, bold: true, color: "1e40af" }),
                     new dx.Break(),
-                    new TextRun({ text: "ELEKTRONIK", size: 12, color: "64748b" }),
+                    new TextRun({ text: "ELEKTRONIK", size: 12, color: "1e40af" }),
                     new dx.Break(),
-                    new TextRun({ text: "10.000", size: 12, bold: true, color: "94a3b8" }),
+                    new TextRun({ text: "10.000", size: 16, bold: true, color: "1d4ed8" }),
+                    new dx.Break(),
+                    new TextRun({ text: "TTE TERVERIFIKASI", size: 10, italic: true, color: "3b82f6" }),
                   ],
                   spacing: { before: 400, after: 400 },
+                  shading: { fill: "eff6ff" },
                   border: { 
-                    top: { style: BorderStyle.DASHED, size: 1, color: "64748b" },
-                    bottom: { style: BorderStyle.DASHED, size: 1, color: "64748b" },
-                    left: { style: BorderStyle.DASHED, size: 1, color: "64748b" },
-                    right: { style: BorderStyle.DASHED, size: 1, color: "64748b" },
+                    top: { style: BorderStyle.SINGLE, size: 2, color: "3b82f6" },
+                    bottom: { style: BorderStyle.SINGLE, size: 2, color: "3b82f6" },
+                    left: { style: BorderStyle.SINGLE, size: 2, color: "3b82f6" },
+                    right: { style: BorderStyle.SINGLE, size: 2, color: "3b82f6" },
                   }
                 })
               ],
@@ -280,7 +283,7 @@ async function buildConsultantDoc(p, s, dx) {
                     new dx.Break(),
                     new TextRun({ text: s.consultant?.director_job || "Direktur", size: 18 }),
                     new dx.Break(),
-                    new TextRun({ text: "Scan untuk Verifikasi Digital (Direktur)", size: 11, italic: true, color: "888888" }),
+                    new TextRun({ text: "TTE Terverifikasi secara Digital (UU ITE)", size: 10, italic: true, color: "666666" }),
                   ],
                   spacing: { before: 100 }
                 })
@@ -308,9 +311,18 @@ async function buildConsultantDoc(p, s, dx) {
   return children;
 }
 
-async function buildOwnerDoc(p, dx) {
-  // Keeping owner simple but matched style
-  const { Paragraph, TextRun, AlignmentType, HeadingLevel, Table, TableRow, TableCell, BorderStyle, WidthType } = dx;
+async function buildOwnerDoc(p, dx, settings) {
+  // Fetch findings for the table
+  const { supabase } = await import('./supabase.js');
+  const { data: findings } = await supabase
+    .from('checklist_items')
+    .select('*')
+    .eq('proyek_id', p.id)
+    .not('status', 'eq', 'baik')
+    .not('status', 'eq', 'ada_sesuai')
+    .not('status', 'is', null);
+
+  const { Paragraph, TextRun, AlignmentType, HeadingLevel, Table, TableRow, TableCell, BorderStyle, WidthType, ShadingType } = dx;
   const dateStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
   return [
@@ -348,7 +360,47 @@ async function buildOwnerDoc(p, dx) {
     }),
     new Paragraph({ 
       text: "Apabila dikemudian hari ditemukan ketidakbenaran atas pernyataan ini, saya bersedia mempertanggungjawabkannya sesuai ketentuan hukum yang berlaku.",
-      spacing: { after: 800 } 
+      spacing: { after: 300 } 
+    }),
+
+    new Paragraph({ 
+      children: [new TextRun({ text: "LAMPIRAN: DAFTAR TEMUAN DAN REKOMENDASI PERBAIKAN", bold: true, size: 22 })],
+      spacing: { before: 200, after: 100 }
+    }),
+
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({ children: [new Paragraph({ text: "No", bold: true, alignment: AlignmentType.CENTER })], width: { size: 5, type: WidthType.PERCENTAGE }, shading: { fill: "F0F0F0" } }),
+            new TableCell({ children: [new Paragraph({ text: "Aspek Pemeriksaan", bold: true })], width: { size: 25, type: WidthType.PERCENTAGE }, shading: { fill: "F0F0F0" } }),
+            new TableCell({ children: [new Paragraph({ text: "Temuan / Kondisi", bold: true })], shading: { fill: "F0F0F0" } }),
+            new TableCell({ children: [new Paragraph({ text: "Rekomendasi Teknis", bold: true })], shading: { fill: "F0F0F0" } }),
+            new TableCell({ children: [new Paragraph({ text: "Target", bold: true, alignment: AlignmentType.CENTER })], width: { size: 12, type: WidthType.PERCENTAGE }, shading: { fill: "F0F0F0" } }),
+          ]
+        }),
+        ...(findings && findings.length > 0 ? findings.map((f, i) => new TableRow({
+          children: [
+            new TableCell({ children: [new Paragraph({ text: String(i + 1), alignment: AlignmentType.CENTER })] }),
+            new TableCell({ children: [new Paragraph({ text: f.nama || "-", bold: true })] }),
+            new TableCell({ children: [new Paragraph({ text: f.catatan || "-" })] }),
+            new TableCell({ children: [new Paragraph({ text: f.rekomendasi || "-" })] }),
+            new TableCell({ children: [new Paragraph({ text: f.remedy_time || "-", alignment: AlignmentType.CENTER })] }),
+          ]
+        })) : [
+          new TableRow({
+            children: [
+              new TableCell({ 
+                children: [new Paragraph({ text: "Tidak ada temuan ketidaksesuaian yang terdeteksi.", italics: true, alignment: AlignmentType.CENTER })],
+                columnSpan: 5,
+                margins: { top: 200, bottom: 200 }
+              })
+            ]
+          })
+        ])
+      ],
+      spacing: { after: 400 }
     }),
     new Paragraph({ alignment: AlignmentType.RIGHT, text: `${p.kota || 'Bandung'}, ${dateStr}` }),
     new Paragraph({ alignment: AlignmentType.RIGHT, text: "Pemilik Bangunan,", bold: true, spacing: { after: 1000 } }),
@@ -435,7 +487,7 @@ function createSigCell(dx, role, name, skk, sigBuffer, qrBuffer) {
 
   children.push(new dx.Paragraph({ alignment: dx.AlignmentType.CENTER, children: [new dx.TextRun({ text: (name || "NAME").toUpperCase(), bold: true, size: 20, underline: {} })] }));
   children.push(new dx.Paragraph({ alignment: dx.AlignmentType.CENTER, children: [new dx.TextRun({ text: `No. SKK: ${skk || "-"}`, size: 16 })] }));
-  children.push(new dx.Paragraph({ alignment: dx.AlignmentType.CENTER, children: [new dx.TextRun({ text: "Scan untuk Verifikasi Digital", size: 12, italic: true, color: "666666" })] }));
+  children.push(new dx.Paragraph({ alignment: dx.AlignmentType.CENTER, children: [new dx.TextRun({ text: "TTE Terverifikasi secara Digital (UU ITE)", size: 12, italic: true, color: "666666" })] }));
 
   return new dx.TableCell({
     width: { size: 33, type: dx.WidthType.PERCENTAGE },

@@ -88,11 +88,18 @@ export async function loginPage() {
                 <i class="fas fa-hammer"></i> Masuk Tanpa Login (Bypass API)
               </button>
             </form>
-            <div style="margin-top:16px;text-align:center;font-size:0.85rem">
-              Belum punya akun? <a href="#" id="link-to-signup" style="color:var(--brand-400);font-weight:600;text-decoration:none">Daftar sekarang</a>
-            </div>
+            ${APP_CONFIG.features.isPublished 
+              ? `<div style="margin-top:16px;text-align:center;font-size:0.85rem;color:var(--text-tertiary);">
+                  <i class="fas fa-lock" style="margin-right:4px"></i>
+                  Pendaftaran akun baru hanya melalui Administrator sistem.
+                 </div>`
+              : `<div style="margin-top:16px;text-align:center;font-size:0.85rem">
+                  Belum punya akun? <a href="#" id="link-to-signup" style="color:var(--brand-400);font-weight:600;text-decoration:none">Daftar sekarang</a>
+                 </div>`
+            }
           </div>
 
+          ${APP_CONFIG.features.isPublished ? '' : `
           <div id="signup-container" style="display:none;">
             <form id="email-signup-form" style="display:flex;flex-direction:column;gap:12px;margin-top:16px;">
               <div style="text-align:left">
@@ -115,10 +122,11 @@ export async function loginPage() {
               Sudah punya akun? <a href="#" id="link-to-login" style="color:var(--brand-400);font-weight:600;text-decoration:none">Masuk di sini</a>
             </div>
           </div>
+          `}
 
           <div class="auth-disclaimer">
-            Dengan masuk, Anda menyetujui Syarat & Ketentuan penggunaan sistem.<br>
-            &copy; ${year} Smart AI Pengkaji SLF &bullet; v${APP_CONFIG.version}
+            Dengan masuk, Anda menyetujui <a href="#/legal" style="color:var(--brand-400); font-weight:600; text-decoration:underline">Syarat & Ketentuan</a> serta Kebijakan Privasi sistem.<br>
+            &copy; ${year} Smart AI Pengkaji SLF & bullet; v${APP_CONFIG.version}
           </div>
         </div>
       </div>

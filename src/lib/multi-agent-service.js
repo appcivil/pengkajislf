@@ -5,6 +5,7 @@
 import { supabase } from './supabase.js';
 import { runSingleItemAnalysis, MODELS } from './ai-router.js';
 import { getPromptConfig, injectPromptConfig } from './prompt-config-service.js';
+import { getSettings } from './settings.js';
 
 export const AGENT_CONFIG = [
   { 
@@ -100,6 +101,9 @@ export async function runSpecificAgentAnalysis(proyekId, agentId, allResults = {
   const { fetchDriveFiles, fetchFileOCR } = await import('./drive.js');
   
   // 1. Ambil Data Dasar secara Parallel
+  const settings = await getSettings();
+  const experts = settings.experts || {};
+  
   const [dbPrompt, { data: proyek }, { data: items }, driveFiles] = await Promise.all([
     fetchAgentPrompt(agentId),
     supabase.from('proyek').select('*').eq('id', proyekId).single(),
@@ -107,7 +111,20 @@ export async function runSpecificAgentAnalysis(proyekId, agentId, allResults = {
     fetchDriveFiles(proyekId, proyek?.drive_proxy_url)
   ]);
 
-  const persona = dbPrompt?.persona || agent.persona;
+  let persona = dbPrompt?.persona || agent.persona;
+  
+  // Hijack persona based on settings to make it professional and real
+  if (agentId === 'struktur' || agentId === 'geoteknik') {
+    const name = experts.structure?.name ? `(${experts.structure.name})` : '';
+    persona = `Anda adalah Ahli Struktur/Geoteknik Senior ${name}. ${persona}`;
+  } else if (['ruang_dalam', 'ruang_luar', 'laporan', 'legal'].includes(agentId)) {
+    const name = experts.architecture?.name ? `(${experts.architecture.name})` : '';
+    persona = `Anda adalah Ahli Arsitektur/Legal Utama ${name}. ${persona}`;
+  } else {
+    const name = experts.mep?.name ? `(${experts.mep.name})` : '';
+    persona = `Anda adalah Ahli MEP/Utilitas Senior ${name}. ${persona}`;
+  }
+
   const mission = dbPrompt?.mission || DEFAULT_PRINCIPLES.mission;
   const p = dbPrompt?.principles || DEFAULT_PRINCIPLES;
 

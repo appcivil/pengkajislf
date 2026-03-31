@@ -4,6 +4,7 @@
 // ============================================================
 import { supabase } from './supabase.js';
 import { APP_CONFIG } from './config.js';
+import { store } from './store.js';
 
 // State management
 let _currentUser = null;
@@ -13,6 +14,8 @@ const DEV_USER_KEY = 'slf_dev_user';
 // Notify all auth state listeners
 function notifyListeners(user) {
   _listeners.forEach(fn => fn(user));
+  // Global Store Sync
+  store.set({ user });
 }
 
 // Initialize auth - call on app start
@@ -137,9 +140,20 @@ export function getUser() {
   return _currentUser;
 }
 
-// Check if authenticated
 export function isAuthenticated() {
   return !!_currentUser;
+}
+
+// Check if administrator role
+export function isAdmin() {
+  if (!_currentUser) return false;
+  
+  // Super Admin Check (Email-based)
+  const superAdmins = ['admin.skpslf@gmail.com', 'developer@local.host'];
+  if (superAdmins.includes(_currentUser.email?.toLowerCase())) return true;
+  
+  if (_currentUser.is_bypass) return true; // Dev bypass always acts as admin
+  return (_currentUser.user_metadata?.role || '').toLowerCase() === 'administrator';
 }
 
 // Get user display info
@@ -150,7 +164,7 @@ export function getUserInfo() {
     id:        _currentUser.id,
     email:     _currentUser.email,
     name:      meta.full_name || meta.name || _currentUser.email?.split('@')[0] || 'User',
-    role:      meta.role || (_currentUser.is_bypass ? 'Dev Bypass' : 'Pengkaji Teknis'),
+    role:      isAdmin() ? 'Administrator' : (meta.role || 'Pengkaji Teknis'),
     avatar:    meta.avatar_url || meta.picture || null,
     initials:  getInitials(meta.full_name || meta.name || _currentUser.email),
     is_bypass: !!_currentUser.is_bypass
