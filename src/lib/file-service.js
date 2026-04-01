@@ -2,11 +2,12 @@
  * Register file metadata in Supabase (Global Documents & Checklist integration).
  * Ensures consistency across SIMBG Documents, Checklist Items, and Gallery.
  */
+import { supabase } from './supabase.js';
+import { store, updateFiles } from './store.js';
+import { uploadToGoogleDrive } from './drive.js';
+
 export async function registerFileMetadata(proyekId, url, name, category, subcategory = '', driveId = null) {
     try {
-        const { store, updateFiles } = await import('./store.js');
-        const { supabase } = await import('./supabase.js');
-
         // 1. Record in Global Documents (proyek_files)
         const payload = {
             proyek_id: proyekId,
@@ -110,11 +111,6 @@ export async function registerFileMetadata(proyekId, url, name, category, subcat
 
 /**
  * Upload a single file to Google Drive and record in Supabase.
- * @param {File} file 
- * @param {string} proyekId 
- * @param {string} category 
- * @param {string} subcategory 
- * @param {string} driveProxyUrl 
  */
 export async function uploadSingleFile(file, proyekId, category, subcategory, driveProxyUrl) {
   try {
@@ -125,7 +121,7 @@ export async function uploadSingleFile(file, proyekId, category, subcategory, dr
     updateFiles({ syncProgress: 30 });
 
     // 1. Upload to Google Drive (via Proxy)
-    const urls = await uploadToGoogleDrive(
+    const results = await uploadToGoogleDrive(
         [{ base64: b64, mimeType: file.type, name: file.name }], 
         proyekId, 
         category, 
@@ -150,7 +146,6 @@ export async function uploadSingleFile(file, proyekId, category, subcategory, dr
 
 /**
  * Sync Document status with SIMBG Portal (Simulated Real-time Progress)
- * @param {string} proyekId 
  */
 export async function syncWithSIMBG(proyekId) {
     try {
@@ -191,3 +186,4 @@ function fileToBase64(file) {
     reader.onerror = error => reject(error);
   });
 }
+
