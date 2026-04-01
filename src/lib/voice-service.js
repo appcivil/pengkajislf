@@ -49,7 +49,7 @@ export class VoiceService {
   async formalize(rawText) {
     if (!rawText || rawText.length < 5) return rawText;
 
-    const { MODELS, safeCall, fetchGemini, parseAIJson } = await import('./ai-router.js');
+    const { MODELS, fetchGemini } = await import('./ai-router.js');
     
     const prompt = `
       Anda adalah AI Ahli Pengkaji SLF.
@@ -61,12 +61,49 @@ export class VoiceService {
     `;
 
     try {
-      // Use Flash model for speed
       const res = await fetchGemini(MODELS.GEMINI, prompt);
       return res.replace(/["']/g, '').trim();
     } catch (e) {
       console.error("Formalization failed:", e);
-      return rawText; // Fallback to raw
+      return rawText;
+    }
+  }
+
+  /**
+   * INFER STATUS FROM SPEECH (COMMAND ENGINE)
+   * Heuristic + AI identification of checklist status from voice.
+   */
+  async inferStatus(rawText, options = []) {
+    const text = rawText.toLowerCase();
+    
+    // 1. Fast Heuristics (Local, Instant)
+    if (text.includes('sesuai') || text.includes('bagus') || text.includes('aman') || text.includes('berfungsi')) {
+      return 'sesuai';
+    }
+    if (text.includes('tidak ada') || text.includes('belum ada') || text.includes('hilang')) {
+      return 'tidak_ada';
+    }
+    if (text.includes('rusak') || text.includes('retak') || text.includes('patah') || text.includes('bocor')) {
+      return 'rusak';
+    }
+
+    // 2. Intelligent Inference (AI)
+    const { MODELS, fetchGemini } = await import('./ai-router.js');
+    const prompt = `
+      Konteks: Audit Bangunan SLF.
+      Catatan Suara: "${rawText}"
+      Opsi Status: ${options.map(o => o.value).join(', ')}
+      
+      Pilih status paling relevan dari opsi di atas berdasarkan catatan suara tersebut.
+      HANYA OUTPUT NILAI KATA KUNCI STATUS (Tanpa penjelasan):
+    `;
+
+    try {
+      const res = await fetchGemini(MODELS.GEMINI, prompt);
+      const cleaned = res.toLowerCase().trim();
+      return options.find(o => cleaned.includes(o.value.toLowerCase()))?.value || null;
+    } catch (e) {
+      return null;
     }
   }
 }

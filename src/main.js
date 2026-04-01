@@ -45,6 +45,7 @@ import { APP_CONFIG } from './lib/config.js';
 import { startBackgroundSync } from './lib/sync.js';
 import { supabase } from './lib/supabase.js';
 import { uploadToGoogleDrive } from './lib/drive.js';
+import { initSyncIndicator } from './components/sync-ui.js';
 
 // Dependency Injection Setup
 const checklistRepo = new SupabaseChecklistRepository();
@@ -243,6 +244,7 @@ async function bootstrap() {
     onRouteChange(initialPath);
     
     updateSyncUI();
+    initSyncIndicator();
 
     // PWA & Background Sync
     if (navigator.onLine) startBackgroundSync(supabase, uploadToGoogleDrive);

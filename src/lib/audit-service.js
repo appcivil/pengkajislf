@@ -70,3 +70,73 @@ export async function getAuditLogs(proyekId) {
     return { isMissing: true };
   }
 }
+
+/**
+ * Mendapatkan 10 aktivitas terbaru secara global (Untuk Dashboard Feed).
+ */
+export async function getGlobalAuditLogs() {
+  try {
+     const { data, error } = await supabase
+        .from('system_logs')
+        .select('*, proyek:proyek_id(nama_bangunan)')
+        .order('created_at', { ascending: false })
+        .limit(10);
+        
+     if (error) throw error;
+     return data || [];
+  } catch (err) {
+     console.warn('[AuditService] Gagal fetch global log:', err.message);
+     return [];
+  }
+}
+
+/**
+ * Mencatat versi laporan baru (PDF/Word) ke tabel laporan_versions.
+ */
+export async function saveReportVersion(proyekId, fileName, fileUrl, metadata = {}) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    const versionEntry = {
+      proyek_id: proyekId,
+      user_id: user?.id,
+      file_name: fileName,
+      file_url: fileUrl,
+      version_tag: `v${new Date().getTime()}`,
+      metadata: {
+        ...metadata,
+        generated_at: new Date().toISOString(),
+      }
+    };
+
+    const { error } = await supabase.from('laporan_versions').insert([versionEntry]);
+    if (error) throw error;
+    
+    // Juga catat ke log aktivitas umum
+    await logActivity('VERSI_LAPORAN_BARU', proyekId, { fileName });
+
+    return true;
+  } catch (err) {
+    console.error('[AuditService] Save Version Error:', err);
+    return false;
+  }
+}
+
+/**
+ * Mendapatkan daftar riwayat versi laporan untuk proyek tertentu.
+ */
+export async function getReportVersions(proyekId) {
+  try {
+    const { data, error } = await supabase
+      .from('laporan_versions')
+      .select('*')
+      .eq('proyek_id', proyekId)
+      .order('created_at', { ascending: false });
+      
+    if (error) throw error;
+    return data;
+  } catch (err) {
+    console.warn('[AuditService] Gagal fetch riwayat versi.');
+    return [];
+  }
+}

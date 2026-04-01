@@ -80,7 +80,7 @@ export function renderFileGrid(files, catItems, search) {
   const fileCards = files.map(file => {
     const isImage = file?.name?.match(/\.(jpg|jpeg|png|webp|gif)$/i);
     return `
-      <div class="fm-file-card ready" onclick="window.open('${file.file_url}', '_blank')">
+      <div class="fm-file-card ready" onclick="window._quickLookFile('${file.id}')">
         <div class="fm-file-icon ${isImage ? 'image' : ''}" style="width:48px; height:48px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--bg-100); color:var(--text-tertiary)">
            <i class="fas ${isImage ? 'fa-file-image' : 'fa-file-pdf'}" style="font-size:1.5rem"></i>
         </div>
@@ -88,11 +88,16 @@ export function renderFileGrid(files, catItems, search) {
            <div class="fm-file-name" title="${file.subcategory}">${file.subcategory}</div>
            <div class="fm-file-meta" style="font-size:0.7rem; color:var(--text-tertiary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${escHtml(file.name)}</div>
         </div>
-        <div style="display:flex; flex-direction:column; align-items:flex-end">
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px">
            <span class="badge ${file.ai_status === 'Ready' ? 'badge-success' : 'badge-info'}" style="font-size:0.6rem">${file.ai_status || 'Ready'}</span>
-           <button class="btn btn-ghost btn-xs text-danger" style="margin-top:auto" onclick="event.stopPropagation(); window._deletePageFile('${file.id}')">
-             <i class="fas fa-trash"></i>
-           </button>
+           <div style="display:flex; gap:4px">
+             <button class="btn btn-ghost btn-xs" onclick="event.stopPropagation(); window.open('${file.file_url}', '_blank')" title="Buka di Tab Baru">
+               <i class="fas fa-external-link-alt"></i>
+             </button>
+             <button class="btn btn-ghost btn-xs text-danger" onclick="event.stopPropagation(); window._deletePageFile('${file.id}')" title="Hapus">
+               <i class="fas fa-trash"></i>
+             </button>
+           </div>
         </div>
       </div>
     `;

@@ -98,6 +98,15 @@ export function startRouter(mountEl) {
     }
   }
 
+  // GitHub Pages SPA Redirect Support
+  // Logic: Check if we were redirected from 404.html via '?/' pattern
+  const search = window.location.search;
+  if (search.startsWith('?/')) {
+    const redirectPath = search.slice(2).replace(/~and~/g, '&');
+    window.history.replaceState(null, null, window.location.pathname.slice(0, -1) + window.location.hash);
+    window.location.hash = '#/' + redirectPath;
+  }
+
   window.addEventListener('hashchange', resolve);
   resolve(); // initial resolve
 

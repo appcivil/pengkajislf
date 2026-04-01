@@ -1,7 +1,8 @@
-// ============================================================
-//  TEAM WORK MANAGEMENT PAGE
-//  Monitoring beban kerja & monitoring progres tim
-// ============================================================
+/**
+ * TIM KERJA (TEAM MANAGEMENT) PAGE
+ * PRESIDENTIAL CLASS (QUARTZ PREMIUM)
+ * Authorized Personnel Directory & Tactical Workload Monitoring
+ */
 import { fetchTeamMembers, fetchTeamWorkload, createProfile, updateProfile, deleteProfile } from '../lib/team-service.js';
 import { supabase } from '../lib/supabase.js';
 import { navigate } from '../lib/router.js';
@@ -32,158 +33,167 @@ function buildHtml(workload, members) {
     : 0;
 
   return `
-    <div id="tim-kerja-page">
-      <div class="page-header">
+    <div id="tim-kerja-page" style="animation: page-fade-in 0.8s ease-out">
+      
+      <!-- Presidential Header -->
+      <div class="page-header" style="margin-bottom: 40px">
         <div class="flex-between">
           <div>
-            <h1 class="page-title">Manajemen User & Aktivitas Tim</h1>
-            <p class="page-subtitle">Kelola hak akses personil dan pantau distribusi beban kerja secara real-time</p>
+            <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.2rem; letter-spacing:-0.02em; margin-bottom:4px">
+              Team <span class="text-gradient-gold">Consortium</span>
+            </h1>
+            <p class="page-subtitle" style="font-family:var(--font-mono); font-size: 0.7rem; letter-spacing:1px; opacity:0.6; text-transform:uppercase">
+              AUTHORIZED PERSONNEL DIRECTORY & REAL-TIME LOAD MONITORING
+            </p>
           </div>
-          <div class="flex gap-2">
-             <button class="btn btn-outline" onclick="window.location.reload()">
-              <i class="fas fa-rotate"></i> Refresh
-            </button>
-            ${isAdmin() ? `
-              <button class="btn btn-primary" onclick="window._showAddMemberModal()">
-                <i class="fas fa-plus"></i> Anggota Baru
-              </button>
-            ` : ''}
+          <div class="flex gap-4">
+             <button class="btn btn-outline" style="height:44px; padding:0 20px; border-radius:12px" onclick="window.location.reload()">
+                <i class="fas fa-rotate"></i>
+             </button>
+             ${isAdmin() ? `
+               <button class="btn-presidential gold" style="height:44px; padding:0 24px; border-radius:12px" onclick="window._showAddMemberModal()">
+                 <i class="fas fa-user-plus" style="margin-right:12px"></i> ADD AGENT
+               </button>
+             ` : ''}
           </div>
         </div>
       </div>
 
-      <!-- Team Stats -->
-      <div class="kpi-grid" style="margin-bottom:var(--space-6)">
-        <div class="kpi-card">
-          <div class="kpi-icon-wrap kpi-blue"><i class="fas fa-users"></i></div>
-          <div class="kpi-value">${members.length}</div>
-          <div class="kpi-label">Total Personil</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-icon-wrap kpi-indigo"><i class="fas fa-briefcase"></i></div>
-          <div class="kpi-value">${totalProjects}</div>
-          <div class="kpi-label">Proyek Terdelegasi</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-icon-wrap kpi-green"><i class="fas fa-chart-line"></i></div>
-          <div class="kpi-value">${avgProgress}%</div>
-          <div class="kpi-label">Rata-rata Progres</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-icon-wrap kpi-purple"><i class="fas fa-check-double"></i></div>
-          <div class="kpi-value">${workload.filter(w => w.status === 'Active').length}</div>
-          <div class="kpi-label">Personil Siaga</div>
-        </div>
+      <!-- Strategic Metrics -->
+      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom:40px">
+        ${[
+          { label: 'ACTIVE AGENTS', val: members.length, icon: 'fa-users-gear', color: 'var(--brand-400)' },
+          { label: 'DELEGATED ASSETS', val: totalProjects, icon: 'fa-building-shield', color: 'var(--gold-400)' },
+          { label: 'CONSENSUS PROGRESS', val: `${avgProgress}%`, icon: 'fa-chart-network', color: 'var(--success-400)' },
+          { label: 'READY FOR DEPLOY', val: workload.filter(w => w.status === 'Active').length, icon: 'fa-shield-check', color: 'var(--brand-300)' }
+        ].map(k => `
+          <div class="card-quartz" style="padding:24px; display:flex; align-items:center; gap:20px">
+             <div style="width:52px; height:52px; border-radius:14px; background:hsla(220, 20%, 100%, 0.03); display:flex; align-items:center; justify-content:center; color:${k.color}; font-size:1.4rem; border:1px solid hsla(220, 20%, 100%, 0.05)">
+                <i class="fas ${k.icon}"></i>
+             </div>
+             <div>
+                <div style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--text-tertiary); letter-spacing:1px">${k.label}</div>
+                <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.6rem; color:white; line-height:1">${k.val}</div>
+             </div>
+          </div>
+        `).join('')}
       </div>
 
-      <!-- Team Workload Grid -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Distribusi Beban Kerja Tim</div>
-          <div class="card-subtitle">Menampilkan jumlah proyek aktif per personil</div>
-        </div>
-        <div class="table-container">
-          <table class="team-table">
-            <thead>
-              <tr>
-                <th style="width:50px"></th>
-                <th>Nama Personil</th>
-                <th>Spesialisasi / Role</th>
-                <th>Proyek Aktif</th>
-                <th>Rerata Progres</th>
-                <th style="width:100px">Status</th>
-                <th style="text-align:right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${workload.length === 0 ? `<tr><td colspan="7" style="text-align:center;padding:40px">Belum ada data anggota tim terdaftar.</td></tr>` : ''}
-              ${workload.map(m => renderMemberRow(m)).join('')}
-            </tbody>
-          </table>
-        </div>
+      <!-- Expert Registry Matrix -->
+      <div class="card-quartz" style="padding:0; overflow:hidden">
+         <div style="padding:24px 32px; background:hsla(224, 25%, 4%, 0.6); border-bottom:1px solid hsla(220, 20%, 100%, 0.05); display:flex; justify-content:space-between; align-items:center">
+            <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:white">Credentialed Expert Matrix</h3>
+            <div style="font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">SYNC: REAL-TIME SECURE FEED</div>
+         </div>
+         
+         <div style="overflow-x:auto">
+            <table style="width:100%; border-collapse:collapse">
+               <thead style="background:hsla(220, 20%, 100%, 0.02)">
+                  <tr>
+                     <th style="padding:20px 32px; text-align:left; font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">AUTHORIZED AGENT</th>
+                     <th style="padding:20px 32px; text-align:left; font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">SPECIALIZATION</th>
+                     <th style="padding:20px 32px; text-align:left; font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">ACTIVE LOAD</th>
+                     <th style="padding:20px 32px; text-align:left; font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">EFFICIENCY</th>
+                     <th style="padding:20px 32px; text-align:left; font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">CLEARANCE</th>
+                     <th style="padding:20px 32px; text-align:right; font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">ACTIONS</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  ${workload.length === 0 ? `<tr><td colspan="6" style="padding:100px; text-align:center; color:var(--text-tertiary)">NO REGISTERED PERSONNEL IN LOCAL NODE.</td></tr>` : ''}
+                  ${workload.map(m => renderMemberRow(m)).join('')}
+               </tbody>
+            </table>
+         </div>
       </div>
 
-      <!-- Activity Feed Placeholder -->
-      <div class="grid-2-1" style="margin-top:var(--space-6)">
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title">Beban Kerja Visual</div>
+      <!-- Tactical Visual Load -->
+      <div style="display:grid; grid-template-columns: 2fr 1fr; gap:32px; margin-top:40px">
+         
+         <div class="card-quartz" style="padding:32px">
+            <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:white; margin-bottom:32px">Strategic Distribution Chart</div>
+            <div style="height:300px; display:flex; align-items:flex-end; gap:32px; justify-content:space-around; padding:0 40px">
+               ${workload.map(m => `
+                  <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:20px">
+                     <div style="width:40px; border-radius:8px 8px 4px 4px; background:var(--gradient-brand); height:${Math.max(5, (m.activeProjects / (totalProjects || 1)) * 250)}px; transition:height 1s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow:var(--shadow-sapphire); position:relative">
+                        <div style="position:absolute; top:-30px; left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--brand-300)">${m.activeProjects || 0}</div>
+                     </div>
+                     <div style="font-family:var(--font-mono); font-size:8px; font-weight:800; color:var(--text-tertiary); text-align:center; text-transform:uppercase; letter-spacing:1px">${m.full_name?.split(' ')[0]}</div>
+                  </div>
+               `).join('')}
             </div>
-            <div style="padding:20px; height:300px; display:flex; align-items:flex-end; gap:20px; justify-content:space-around">
-                ${workload.map(m => `
-                    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:10px">
-                        <div class="progress-wrap" style="width:20px; height:200px; flex-direction:column; justify-content:flex-end">
-                            <div class="progress-fill blue" style="width:100%; height:${(m.activeProjects / (totalProjects || 1)) * 100}%"></div>
-                        </div>
-                        <div class="text-xs font-bold" style="text-align:center">${m.full_name?.split(' ')[0]}</div>
-                    </div>
-                `).join('')}
+         </div>
+
+         <div class="card-quartz" style="padding:32px">
+            <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:white; margin-bottom:24px">Availability Overwatch</div>
+            <div style="display:flex; flex-direction:column; gap:16px">
+               ${members.map(m => `
+                  <div style="display:flex; align-items:center; justify-content:space-between; padding:16px; background:hsla(220, 20%, 100%, 0.02); border-radius:12px; border:1px solid hsla(220, 20%, 100%, 0.05)">
+                     <div style="display:flex; align-items:center; gap:12px">
+                        <div class="animate-pulse" style="width:8px; height:8px; border-radius:50%; background:${m.status === 'Active' ? 'var(--success-500)' : 'var(--gold-500)'}"></div>
+                        <span style="font-family:'Outfit', sans-serif; font-weight:700; font-size:0.9rem; color:white">${m.full_name}</span>
+                     </div>
+                     <span style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); letter-spacing:1px">${m.role?.toUpperCase()}</span>
+                  </div>
+               `).join('')}
             </div>
-        </div>
-        <div class="card">
-             <div class="card-header">
-                <div class="card-title">Ketersediaan Personil</div>
-            </div>
-            <div style="padding:10px 20px">
-                ${members.map(m => `
-                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--border-subtle)">
-                        <div style="display:flex; align-items:center; gap:10px">
-                            <div style="width:10px; height:10px; border-radius:50%; background:${m.status === 'Active' ? 'var(--success-400)' : 'var(--warning-400)'}"></div>
-                            <span class="text-sm font-semibold">${m.full_name}</span>
-                        </div>
-                        <span class="text-xs text-tertiary">${m.role}</span>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
+         </div>
+
       </div>
+
     </div>
   `;
 }
 
 function renderMemberRow(m) {
   return `
-    <tr class="member-row">
-      <td>
-        <div class="avatar-sm" style="background:var(--bg-elevated); color:var(--text-primary); border:1px solid var(--border-subtle)">
-          ${m.avatar_url ? `<img src="${m.avatar_url}" style="width:100%;height:100%;border-radius:50%">` : `<i class="fas fa-user-tie"></i>`}
-        </div>
+    <tr style="border-bottom:1px solid hsla(220, 20%, 100%, 0.03); transition:background 0.2s" onmouseover="this.style.background='hsla(220, 20%, 100%, 0.02)'" onmouseout="this.style.background='transparent'">
+      <td style="padding:20px 32px">
+         <div style="display:flex; align-items:center; gap:16px">
+            <div style="width:40px; height:40px; border-radius:12px; background:var(--gradient-dark); border:1px solid hsla(220, 20%, 100%, 0.1); display:flex; align-items:center; justify-content:center; color:white; font-size:1.1rem; font-weight:800">
+               ${m.avatar_url ? `<img src="${m.avatar_url}" style="width:100%; height:100%; border-radius:12px">` : m.full_name?.charAt(0) || 'U'}
+            </div>
+            <div>
+               <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1rem; color:white">${m.full_name}</div>
+               <div style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); letter-spacing:1px">UID: ${m.id?.substring(0,8).toUpperCase()}</div>
+            </div>
+         </div>
       </td>
-      <td>
-        <div class="font-bold text-primary">${m.full_name}</div>
-        <div class="text-xs text-tertiary">ID: ${m.id}</div>
+      <td style="padding:20px 32px">
+         <span class="badge" style="background:hsla(45, 90%, 60%, 0.1); color:var(--gold-400); border:1px solid hsla(45, 90%, 60%, 0.2); font-size:9px; font-weight:800; letter-spacing:1px">${m.role?.toUpperCase() || 'PENGKAJI'}</span>
       </td>
-      <td>
-        <span class="badge badge-proses" style="background:var(--bg-elevated); color:var(--text-secondary)">${m.role || 'Tenaga Ahli'}</span>
+      <td style="padding:20px 32px">
+         <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--brand-400)">${m.activeProjects || 0} <span style="font-size:0.7rem; color:var(--text-tertiary); font-weight:500; font-family:var(--font-mono)">ACTIVE</span></div>
       </td>
-      <td>
-        <div class="font-bold" style="font-size:1.1rem; color:var(--brand-400)">${m.activeProjects || 0} <span class="text-xs font-normal text-tertiary">Proyek</span></div>
+      <td style="padding:20px 32px">
+         <div style="width:140px">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px">
+               <span style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:white">${m.avgProgress || 0}%</span>
+            </div>
+            <div style="height:4px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px; overflow:hidden">
+               <div style="width:${m.avgProgress || 0}%; height:100%; background:var(--gradient-brand); border-radius:10px"></div>
+            </div>
+         </div>
       </td>
-      <td>
-        <div class="flex-between mb-1" style="width:120px">
-          <span class="text-xs text-secondary">${m.avgProgress || 0}%</span>
-        </div>
-        <div class="progress-wrap" style="width:120px; height:6px">
-          <div class="progress-fill ${m.avgProgress > 70 ? 'green' : 'blue'}" style="width:${m.avgProgress || 0}%"></div>
-        </div>
+      <td style="padding:20px 32px">
+         <div style="display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:9px; font-weight:800; color:${m.status === 'Active' ? 'var(--success-400)' : 'var(--gold-400)'}">
+            <div style="width:6px; height:6px; border-radius:50%; background:currentColor"></div>
+            ${m.status?.toUpperCase() || 'ACTIVE'}
+         </div>
       </td>
-      <td>
-        <span class="badge ${m.status === 'Active' ? 'badge-laik' : 'badge-bersyarat'}">${m.status || 'Active'}</span>
-      </td>
-      <td style="text-align:right">
-        <div class="flex gap-1" style="justify-content:flex-end">
-          <button class="btn btn-icon" onclick="window.navigate('proyek', {PIC: '${m.id}'})" title="Lihat Proyek">
-            <i class="fas fa-folder-open"></i>
-          </button>
-          ${isAdmin() ? `
-            <button class="btn btn-icon text-primary" onclick="window._showEditMemberModal('${m.id}')" title="Edit Personil">
-              <i class="fas fa-user-pen"></i>
+      <td style="padding:20px 32px; text-align:right">
+         <div style="display:flex; gap:8px; justify-content:flex-end">
+            <button class="btn btn-icon" onclick="window.navigate('proyek', {PIC: '${m.id}'})" style="width:36px; height:36px; border-radius:10px; color:var(--brand-300); border-color:hsla(220, 20%, 100%, 0.05)">
+               <i class="fas fa-folder-tree"></i>
             </button>
-            <button class="btn btn-icon text-danger" onclick="window._deleteMember('${m.id}', '${m.full_name}')" title="Hapus Personil">
-              <i class="fas fa-trash-can"></i>
-            </button>
-          ` : ''}
-        </div>
+            ${isAdmin() ? `
+               <button class="btn btn-icon" onclick="window._showEditMemberModal('${m.id}')" style="width:36px; height:36px; border-radius:10px; color:white; border-color:hsla(220, 20%, 100%, 0.05)">
+                  <i class="fas fa-user-pen"></i>
+               </button>
+               <button class="btn btn-icon" onclick="window._deleteMember('${m.id}', '${m.full_name}')" style="width:36px; height:36px; border-radius:10px; color:var(--danger-400); border-color:hsla(0, 85%, 60%, 0.1)">
+                  <i class="fas fa-trash-can"></i>
+               </button>
+            ` : ''}
+         </div>
       </td>
     </tr>
   `;
@@ -197,103 +207,82 @@ function initEvents() {
       const { data: member } = await supabase.from('profiles').select('*').eq('id', id).single();
       renderMemberModal(member);
     } catch (err) {
-      showError('Gagal mengambil data personil: ' + err.message);
+      showError('Registry failure: ' + err.message);
     }
   };
 
   window._deleteMember = async (id, name) => {
     const ok = await confirm({
-      title: 'Hapus Personil',
-      message: `Apakah Anda yakin ingin menghapus <strong>${name}</strong> dari daftar tim? Akses ke proyek mungkin terganggu.`,
-      confirmText: 'Hapus',
+      title: 'Remove Authorized Personnel',
+      message: `De-authorize <strong>${name}</strong>? This action will revoke all registry access and re-route active delegations.`,
+      confirmText: 'DE-AUTHORIZE',
       danger: true
     });
     if (!ok) return;
 
     try {
       await deleteProfile(id);
-      showSuccess(`Personil ${name} telah dihapus.`);
-      timKerjaPage(); // Refresh
+      showSuccess(`Agent ${name} purged from consortium.`);
+      timKerjaPage();
     } catch (err) {
-      showError('Gagal hapus: ' + err.message);
+      showError('Purge failure: ' + err.message);
     }
   };
 }
 
-/**
- * Renders the Create/Edit Modal
- */
 function renderMemberModal(member = null) {
   const isEdit = !!member;
   const roles = Object.entries(APP_CONFIG.roles);
   
   const modalHtml = `
-    <div id="member-modal-overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(6px); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px; animation: fade-in 0.3s ease;">
-      <div style="background:var(--bg-card); width:100%; max-width:450px; border-radius:20px; box-shadow:0 25px 70px rgba(0,0,0,0.4); border:1px solid var(--border-subtle); overflow:hidden; animation: modal-up 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">
-        <div style="padding:24px; border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center; background:linear-gradient(to right, var(--bg-card), var(--bg-elevated));">
-          <h3 style="margin:0; font-size:1.25rem; font-weight:900; color:var(--text-h); letter-spacing:-0.02em;">
-            ${isEdit ? 'Edit Data Personil' : 'Tambah Anggota Tim Baru'}
+    <div id="member-modal-overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(15px); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px; animation: fade-in 0.3s ease;">
+      <div class="card-quartz" style="width:100%; max-width:480px; padding:40px; animation: modal-up 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px">
+          <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.4rem; color:white; margin:0">
+            ${isEdit ? 'Update Personnel Registry' : 'New Agent Induction'}
           </h3>
-          <button onclick="document.getElementById('member-modal-overlay').remove()" style="background:rgba(0,0,0,0.05); border:none; width:32px; height:32px; border-radius:50%; color:var(--text-tertiary); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">
+          <button onclick="document.getElementById('member-modal-overlay').remove()" style="background:transparent; border:none; color:var(--text-tertiary); cursor:pointer; font-size:1.2rem">
             <i class="fas fa-times"></i>
           </button>
         </div>
         
-        <form id="member-form" style="padding:24px; display:flex; flex-direction:column; gap:20px;">
+        <form id="member-form" style="display:flex; flex-direction:column; gap:24px;">
           <div class="form-group">
-            <label class="form-label">Nama Lengkap & Gelar</label>
-            <div class="form-control-wrap">
-              <i class="fas fa-user-tie form-control-icon"></i>
-              <input type="text" name="full_name" class="form-control with-icon" placeholder="Ir. Budi Santoso, M.T." required value="${member?.full_name || ''}">
-            </div>
+            <label class="form-label">LEGAL NAME & CERTS</label>
+            <input type="text" name="full_name" class="form-input" placeholder="e.g. Ir. Budi Santoso, M.T." required value="${member?.full_name || ''}">
           </div>
           
           <div class="form-group">
-            <label class="form-label">Alamat Email Resmi</label>
-            <div class="form-control-wrap">
-              <i class="fas fa-envelope form-control-icon"></i>
-              <input type="email" name="email" class="form-control with-icon" placeholder="budi@pengkaji.com" required value="${member?.email || ''}" ${isEdit ? 'readonly' : ''}>
-            </div>
-            ${isEdit ? '<div style="font-size:10px; color:var(--tertiary); padding-left:2px; margin-top:2px;">Email tidak dapat diubah oleh Admin.</div>' : ''}
+            <label class="form-label">OFFICIAL ENCRYPTED EMAIL</label>
+            <input type="email" name="email" class="form-input" placeholder="agent@consortium.com" required value="${member?.email || ''}" ${isEdit ? 'readonly' : ''}>
           </div>
 
-          <div style="display:grid; grid-template-columns:1px 1fr 1fr; gap:16px;">
-            <div style="grid-column: 2/3" class="form-group">
-              <label class="form-label">Jabatan</label>
-              <div class="form-control-wrap">
-                <i class="fas fa-id-badge form-control-icon"></i>
-                <select name="role" class="form-control with-icon" required>
-                  ${roles.map(([val, label]) => `<option value="${label}" ${member?.role === label ? 'selected' : ''}>${label}</option>`).join('')}
-                </select>
-              </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+            <div class="form-group">
+              <label class="form-label">ASSIGNED ROLE</label>
+              <select name="role" class="form-select" required>
+                ${roles.map(([val, label]) => `<option value="${label}" ${member?.role === label ? 'selected' : ''}>${label.toUpperCase()}</option>`).join('')}
+              </select>
             </div>
-            <div style="grid-column: 3/4" class="form-group">
-              <label class="form-label">Status</label>
-              <div class="form-control-wrap">
-                <i class="fas fa-circle-check form-control-icon"></i>
-                <select name="status" class="form-control with-icon">
-                  <option value="Active" ${member?.status === 'Active' ? 'selected' : ''}>Active / Siaga</option>
-                  <option value="Away" ${member?.status === 'Away' ? 'selected' : ''}>Ijin / Sakit</option>
-                  <option value="Busy" ${member?.status === 'Busy' ? 'selected' : ''}>Di Lapangan</option>
-                </select>
-              </div>
+            <div class="form-group">
+              <label class="form-label">STATUS</label>
+              <select name="status" class="form-select">
+                <option value="Active" ${member?.status === 'Active' ? 'selected' : ''}>ACTIVE / READY</option>
+                <option value="Away" ${member?.status === 'Away' ? 'selected' : ''}>LEAVE / INACTIVE</option>
+                <option value="Busy" ${member?.status === 'Busy' ? 'selected' : ''}>ON FIELD AUDIT</option>
+              </select>
             </div>
           </div>
 
-          <div style="margin-top:12px; display:flex; gap:12px; justify-content:flex-end; align-items:center;">
-             <a href="javascript:void(0)" onclick="document.getElementById('member-modal-overlay').remove()" style="color:var(--text-tertiary); font-size:14px; font-weight:700; text-decoration:none;">Batal</a>
-             <button type="submit" class="btn btn-primary" id="btn-save-member" style="padding:12px 24px; border-radius:14px; box-shadow: 0 10px 20px -5px var(--accent-bg);">
-              <i class="fas fa-save" style="margin-right:8px"></i> Simpan Data
+          <div style="margin-top:24px; display:flex; gap:16px; justify-content:flex-end">
+             <button type="button" onclick="document.getElementById('member-modal-overlay').remove()" class="btn btn-ghost" style="color:var(--text-tertiary)">CANCEL</button>
+             <button type="submit" class="btn-presidential gold" id="btn-save-member" style="height:48px; border-radius:12px; padding:0 32px">
+              <i class="fas fa-shield-check" style="margin-right:12px"></i> AUTHORIZE AGENT
             </button>
           </div>
         </form>
       </div>
     </div>
-    <style>
-      @keyframes modal-up { from { opacity:0; transform:translateY(30px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
-      @keyframes fade-in { from { opacity:0; } to { opacity:1; } }
-      #member-modal-overlay button:hover { background:rgba(0,0,0,0.1); color:var(--error); transform:rotate(90deg); }
-    </style>
   `;
 
   document.body.insertAdjacentHTML('beforeend', modalHtml);
@@ -302,7 +291,7 @@ function renderMemberModal(member = null) {
     e.preventDefault();
     const btn = document.getElementById('btn-save-member');
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> INDUCTING...';
 
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
@@ -310,30 +299,27 @@ function renderMemberModal(member = null) {
     try {
       if (isEdit) {
         await updateProfile(member.id, data);
-        showSuccess('Data personil berhasil diperbarui.');
+        showSuccess('Registry updated.');
       } else {
         await createProfile(data);
-        showSuccess('Anggota baru berhasil ditambahkan.');
+        showSuccess('New agent inducted into consortium.');
       }
       document.getElementById('member-modal-overlay').remove();
-      timKerjaPage(); // Refresh UI
+      timKerjaPage();
     } catch (err) {
-      showError('Gagal menyimpan: ' + err.message);
+      showError('Induction failure: ' + err.message);
       btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-save"></i> Simpan Data';
+      btn.innerHTML = '<i class="fas fa-shield-check"></i> AUTHORIZE AGENT';
     }
   };
 }
 
 function renderSkeleton() {
   return `
-    <div class="page-header">
-      <div class="skeleton" style="height:36px;width:300px;margin-bottom:8px"></div>
-      <div class="skeleton" style="height:20px;width:400px"></div>
+    <div style="margin-bottom:40px"><div class="card-quartz" style="height:100px"></div></div>
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:24px; margin-bottom:40px">
+       ${Array(4).fill(0).map(()=>`<div class="card-quartz" style="height:110px"></div>`).join('')}
     </div>
-    <div class="kpi-grid">
-      ${Array(4).fill(0).map(() => `<div class="skeleton" style="height:120px;border-radius:var(--radius-lg)"></div>`).join('')}
-    </div>
-    <div class="skeleton" style="height:400px;margin-top:20px;border-radius:var(--radius-lg)"></div>
+    <div class="card-quartz" style="height:500px"></div>
   `;
 }

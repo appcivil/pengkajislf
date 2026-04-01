@@ -8,85 +8,83 @@
 
 /* --- CSS Custom Properties (Design Tokens) --- */
 :root {
-  /* Brand Colors */
-  --brand-50:  hsl(220, 90%, 96%);
-  --brand-100: hsl(220, 85%, 90%);
-  --brand-200: hsl(220, 80%, 80%);
-  --brand-300: hsl(220, 75%, 68%);
-  --brand-400: hsl(220, 72%, 56%);
-  --brand-500: hsl(220, 70%, 48%);
-  --brand-600: hsl(220, 72%, 40%);
-  --brand-700: hsl(220, 74%, 32%);
-  --brand-800: hsl(220, 76%, 24%);
-  --brand-900: hsl(220, 80%, 16%);
+  /* Presidential Palette - Obsidian & Royal */
+  --brand-50:  hsl(220, 30%, 96%);
+  --brand-100: hsl(220, 25%, 90%);
+  --brand-200: hsl(220, 20%, 80%);
+  --brand-300: hsl(220, 60%, 68%);
+  --brand-400: hsl(220, 80%, 56%);
+  --brand-500: hsl(220, 95%, 52%); /* Royal Sapphire */
+  --brand-600: hsl(220, 90%, 40%);
+  
+  /* Presidential Accents (Gold & Platinum) */
+  --gold-400:  hsl(45, 95%, 65%);
+  --gold-500:  hsl(45, 90%, 60%);   /* Royal Gold */
+  --gold-600:  hsl(43, 85%, 45%);
+  
+  --silver-400: hsl(220, 10%, 80%);
+  --silver-500: hsl(220, 10%, 70%);
 
-  /* Accent (Electric Indigo) */
-  --accent-400: hsl(258, 90%, 66%);
-  --accent-500: hsl(258, 84%, 58%);
-  --accent-600: hsl(258, 78%, 50%);
+  /* Semantic Colors - High End Palette */
+  --success-400: hsl(158, 80%, 55%);  /* Emerald Glow */
+  --success-500: hsl(158, 85%, 45%);
+  --success-bg:  hsla(158, 85%, 15%, 0.12);
+  
+  --warning-400: var(--gold-400); 
+  --warning-500: var(--gold-500); 
+  --warning-bg:  hsla(45, 90%, 15%, 0.12);
+  
+  --danger-400:  hsl(350, 90%, 60%);  /* Crimson Rose */
+  --danger-500:  hsl(350, 95%, 52%);
+  --danger-bg:   hsla(350, 95%, 15%, 0.12);
+  
+  /* Dark Theme Obsidian Neutrals */
+  --bg-base:       hsl(224, 30%, 4%);   /* Absolute Obsidian */
+  --bg-elevated:   hsl(224, 25%, 7%);
+  --bg-card:       hsla(224, 25%, 10%, 0.6);
+  --bg-card-hover: hsla(224, 25%, 12%, 0.8);
+  --bg-input:      hsl(224, 25%, 10%);
+  --bg-overlay:    hsla(224, 30%, 2%, 0.9);
 
-  /* Semantic Colors */
-  --success-400: hsl(160, 70%, 46%);
-  --success-500: hsl(160, 74%, 38%);
-  --success-bg:  hsl(160, 60%, 12%);
-  --warning-400: hsl(40, 90%, 58%);
-  --warning-500: hsl(40, 85%, 50%);
-  --warning-bg:  hsl(40, 60%, 12%);
-  --danger-400:  hsl(0, 80%, 62%);
-  --danger-500:  hsl(0, 74%, 52%);
-  --danger-bg:   hsl(0, 60%, 12%);
-  --info-400:    hsl(200, 80%, 58%);
-  --info-500:    hsl(200, 75%, 50%);
-  --info-bg:     hsl(200, 60%, 12%);
+  /* Borders - Presidential Sub-pixel */
+  --border-subtle:  hsla(220, 20%, 80%, 0.05);
+  --border-default: hsla(220, 20%, 80%, 0.12);
+  --border-strong:  hsla(220, 20%, 80%, 0.25);
+  --border-brand:   hsla(220, 90%, 56%, 0.40);
+  --border-gold:    hsla(45, 90%, 60%, 0.35);
 
-  /* Dark Theme Neutrals */
-  --bg-base:       hsl(224, 20%, 8%);
-  --bg-elevated:   hsl(224, 18%, 11%);
-  --bg-card:       hsl(224, 16%, 14%);
-  --bg-card-hover: hsl(224, 16%, 17%);
-  --bg-input:      hsl(224, 16%, 16%);
-  --bg-overlay:    hsl(224, 20%, 6%);
-
-  /* Borders */
-  --border-subtle:  hsla(220, 20%, 50%, 0.12);
-  --border-default: hsla(220, 20%, 50%, 0.20);
-  --border-strong:  hsla(220, 20%, 50%, 0.35);
-  --border-brand:   hsla(220, 70%, 56%, 0.50);
-
-  /* Text */
-  --text-primary:   hsl(220, 20%, 96%);
-  --text-secondary: hsl(220, 12%, 70%);
-  --text-tertiary:  hsl(220, 10%, 50%);
-  --text-disabled:  hsl(220, 8%, 36%);
+  /* Text - High Clarity */
+  --text-primary:   hsl(220, 20%, 98%);
+  --text-secondary: hsl(220, 10%, 75%);
+  --text-tertiary:  hsl(220, 10%, 55%);
+  --text-disabled:  hsl(220, 5%, 38%);
   --text-brand:     var(--brand-400);
-  --text-accent:    var(--accent-400);
+  --text-gold:      var(--gold-400);
 
-  /* Glass Morphism */
-  --glass-bg:     hsla(224, 20%, 14%, 0.85);
-  --glass-border: hsla(220, 30%, 60%, 0.15);
-  --glass-blur:   12px;
+  /* Presidential Glass Morphism */
+  --glass-bg:     hsla(224, 25%, 8%, 0.85);
+  --glass-border: hsla(220, 20%, 100%, 0.08); /* White sub-border */
+  --glass-blur:   20px; /* High blur for lux feel */
 
   /* Gradients */
-  --gradient-brand:   linear-gradient(135deg, hsl(220,70%,48%) 0%, hsl(258,80%,56%) 100%);
-  --gradient-success: linear-gradient(135deg, hsl(160,70%,38%) 0%, hsl(190,70%,38%) 100%);
-  --gradient-warning: linear-gradient(135deg, hsl(40,85%,50%) 0%, hsl(30,85%,50%) 100%);
-  --gradient-danger:  linear-gradient(135deg, hsl(0,74%,52%)  0%, hsl(330,74%,52%) 100%);
-  --gradient-hero:    linear-gradient(135deg, hsl(224,20%,8%) 0%, hsl(240,20%,10%) 50%, hsl(258,20%,8%) 100%);
+  --gradient-brand:   linear-gradient(135deg, var(--brand-500) 0%, hsl(258,95%,60%) 100%);
+  --gradient-gold:    linear-gradient(135deg, var(--gold-400) 0%, var(--gold-600) 100%);
+  --gradient-dark:    linear-gradient(135deg, hsla(224,30%,6%,0.95) 0%, hsla(224,30%,10%,0.95) 100%);
 
-  /* Shadows */
-  --shadow-xs:  0 1px 2px hsla(0,0%,0%,0.3);
-  --shadow-sm:  0 2px 8px hsla(0,0%,0%,0.35);
-  --shadow-md:  0 4px 16px hsla(0,0%,0%,0.40);
-  --shadow-lg:  0 8px 32px hsla(0,0%,0%,0.45);
-  --shadow-xl:  0 16px 48px hsla(0,0%,0%,0.50);
-  --shadow-brand: 0 4px 20px hsla(220,70%,48%,0.35);
-  --shadow-glow:  0 0 30px hsla(258,80%,56%,0.25);
+  /* Shadows - Layered Elevation */
+  --shadow-xs:  0 1px 2px hsla(0,0%,0%,0.5);
+  --shadow-sm:  0 4px 12px hsla(0,0%,0%,0.6);
+  --shadow-md:  0 10px 25px hsla(0,0%,0%,0.7);
+  --shadow-lg:  0 20px 50px hsla(0,0%,0%,0.8);
+  --shadow-xl:  0 30px 80px hsla(0,0%,0%,0.9);
+  --shadow-gold: 0 0 30px hsla(45,90%,60%,0.15);
+  --shadow-sapphire: 0 0 30px hsla(220,95%,52%,0.2);
 
-  /* Layout */
-  --sidebar-width: 260px;
-  --sidebar-collapsed: 64px;
-  --header-height: 64px;
-  --content-max:   1400px;
+  /* Formatting & Spacing (Presidential Spacing) */
+  --sidebar-width: 280px;
+  --sidebar-collapsed: 72px;
+  --header-height: 72px;
+  --content-max:   1600px;
 
   /* Spacing */
   --space-1: 4px;
@@ -101,10 +99,10 @@
   --space-16: 64px;
 
   /* Border Radius */
-  --radius-sm:  6px;
-  --radius-md:  10px;
-  --radius-lg:  14px;
-  --radius-xl:  20px;
+  --radius-sm:  8px;
+  --radius-md:  14px;
+  --radius-lg:  22px;
+  --radius-xl:  30px;
   --radius-2xl: 28px;
   --radius-full: 9999px;
 
@@ -112,10 +110,10 @@
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* Transitions */
-  --transition-fast:   150ms ease;
-  --transition-base:   250ms ease;
-  --transition-slow:   400ms ease;
+  /* Transitions - Cinematic Slow */
+  --transition-fast:   180ms ease;
+  --transition-base:   350ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow:   600ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-spring: 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -140,6 +138,21 @@ body {
   line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
+  animation: page-fade-in 0.6s ease-out;
+}
+
+@keyframes page-fade-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.route-fade {
+  animation: route-enter 0.4s ease-out forwards;
+}
+
+@keyframes route-enter {
+  from { opacity: 0; filter: blur(4px); transform: scale(0.99); }
+  to { opacity: 1; filter: blur(0); transform: scale(1); }
 }
 
 /* Scrollbar Styling */
@@ -2987,9 +3000,23 @@ tbody tr:hover { background: var(--bg-elevated); }
   background: hsla(220, 70%, 48%, 0.1);
 }
 .notif-item.unread:hover {
-  background: hsla(220, 70%, 48%, 0.15);
+/* --- Skeleton Effects --- */
+.skeleton {
+  background: linear-gradient(
+    90deg, 
+    var(--bg-card) 25%, 
+    var(--bg-card-hover) 50%, 
+    var(--bg-card) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.8s infinite linear;
+  border-radius: var(--radius-md);
 }
-.ni-icon {
+
+@keyframes skeleton-pulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
   width: 32px;
   height: 32px;
   border-radius: var(--radius-full);
@@ -3048,9 +3075,16 @@ tbody tr:hover { background: var(--bg-elevated); }
 }
 
 
+
+/* Global Hide for Bottom Nav (Desktop) */
+.bottom-nav {
+  display: none !important;
+}
+
 /* ============================================================
    RESPONSIVENESS (MOBILE & TABLET SUPPORT)
    ============================================================ */
+
 @media (max-width: 768px) {
   /* Layout adjustments */
   .app-layout {
@@ -3111,7 +3145,10 @@ tbody tr:hover { background: var(--bg-elevated); }
   }
   .header-page-title {
     font-size: 0.95rem;
+    color: var(--text-primary);
+    font-weight: 800;
   }
+
 
   /* Hide/Show specific header items */
   #btn-notif, #btn-ai-status, .notif-dot, .header-search, #btn-quick-add { 
@@ -3232,18 +3269,47 @@ tbody tr:hover { background: var(--bg-elevated); }
     grid-template-rows: var(--header-height) 1fr;
   }
 
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 280px;
-    transform: translateX(-100%);
-    z-index: 2000;
-    transition: transform var(--transition-spring);
-    grid-row: auto;
+  .sidebar.open { 
+    transform: translateX(0);
+    box-shadow: 10px 0 40px hsla(0,0%,0%,0.8);
   }
-  .sidebar.open { transform: translateX(0); }
+
+  /* Override desktop collapsed state when open in mobile */
+  .sidebar.open .sidebar-title,
+  .sidebar.open .sidebar-subtitle,
+  .sidebar.open .sidebar-header > div:not(.sidebar-logo) {
+    display: block !important;
+  }
+  .sidebar.open .nav-item span,
+  .sidebar.open .nav-section-label span,
+  .sidebar.open .nav-badge,
+  .sidebar.open .badge-text,
+  .sidebar.open .user-info-wrap,
+  .sidebar.open .logout-icon {
+    display: block !important;
+    opacity: 1 !important;
+  }
+  .sidebar.open .nav-item {
+    justify-content: flex-start !important;
+    padding: var(--space-3) var(--space-4) !important;
+  }
+  .sidebar.open .nav-section-label {
+    justify-content: flex-start !important;
+    padding: var(--space-3) var(--space-4) !important;
+  }
+  .sidebar.open .user-card {
+    justify-content: flex-start !important;
+    padding: var(--space-3) !important;
+  }
+  .sidebar.open .verified-badge {
+    display: flex !important;
+    padding: 12px 16px !important;
+  }
+  .sidebar.open .sidebar-header {
+    justify-content: flex-start !important;
+    padding: 0 var(--space-5) !important;
+  }
+
 
   .main-content {
     grid-column: 1;
@@ -3270,25 +3336,30 @@ tbody tr:hover { background: var(--bg-elevated); }
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur));
     border-top: 1px solid var(--border-subtle);
-    display: flex;
+    display: flex !important;
     justify-content: space-around;
     align-items: center;
     z-index: 1000;
     padding: 0 var(--space-2);
   }
+
   .bnav-item {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    color: var(--text-tertiary);
+    color: var(--text-secondary); /* Upgraded from tertiary for legibility */
     text-decoration: none;
     font-size: 0.65rem;
-    font-weight: 600;
-    transition: color var(--transition-fast);
+    font-weight: 700;
+    transition: all var(--transition-fast);
   }
-  .bnav-item.active { color: var(--brand-400); }
+  .bnav-item.active { 
+    color: var(--gold-400); /* Presidential Gold Active State */
+    text-shadow: 0 0 10px hsla(45, 90%, 60%, 0.3);
+  }
   .bnav-item i { font-size: 1.2rem; }
+
 
   /* Hide Desktop elements */
   .sidebar-header i#sidebar-toggle-desktop { display: none; }
@@ -3401,4 +3472,90 @@ tbody tr:hover { background: var(--bg-elevated); }
 .ai-panel {
   background: linear-gradient(135deg, hsla(258,80%,56%,0.05) 0%, hsla(220,70%,48%,0.05) 100%);
   border: 1px solid hsla(258,80%,56%,0.2);
+}
+
+/* --- Modern Presidential Core Components --- */
+
+.card-quartz {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-quartz::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsla(220, 100%, 80%, 0.1), transparent);
+}
+
+.card-quartz:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl), var(--shadow-sapphire);
+}
+
+.card-quartz.gold {
+  border-color: var(--border-gold);
+  box-shadow: var(--shadow-lg), var(--shadow-gold);
+}
+
+.btn-presidential {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-8);
+  background: var(--gradient-brand);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sapphire);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-presidential:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 24px hsla(220, 95%, 52%, 0.4);
+  filter: brightness(1.1);
+}
+
+.btn-presidential.gold {
+  background: var(--gradient-gold);
+  box-shadow: var(--shadow-gold);
+}
+
+.btn-presidential.gold:hover {
+  box-shadow: 0 12px 24px hsla(45, 90%, 60%, 0.4);
+}
+
+.text-gradient-gold {
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}
+
+.text-gradient-sapphire {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
 }

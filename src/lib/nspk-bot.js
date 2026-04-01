@@ -66,7 +66,7 @@ export async function runNSPKBot(itemName, proyekId) {
     });
     const searchData = await searchRes.json();
 
-    if (searchData.status !== 'success' || !searchData.results.length) {
+    if (searchData.status !== 'success' || !searchData.results || !searchData.results.length) {
       console.warn('[NSPK Bot] Tidak ditemukan dokumen spesifik di Drive.');
       return { status: 'not_found', query };
     }

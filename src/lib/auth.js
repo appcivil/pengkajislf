@@ -21,9 +21,14 @@ function notifyListeners(user) {
 // Initialize auth - call on app start
 export async function initAuth() {
   // Listen to Supabase auth changes
-  supabase.auth.onAuthStateChange(async (_event, session) => {
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    // console.log(`[Auth] Event: ${event}`);
+    
     if (session?.user) {
       _currentUser = session.user;
+      localStorage.removeItem(DEV_USER_KEY);
+    } else if (event === 'SIGNED_OUT') {
+      _currentUser = null;
       localStorage.removeItem(DEV_USER_KEY);
     } else {
       const savedDevUser = localStorage.getItem(DEV_USER_KEY);
@@ -36,11 +41,14 @@ export async function initAuth() {
     notifyListeners(_currentUser);
   });
 
-  // Get initial session
+  // Get initial session explicitly once
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) throw error;
+
     if (session?.user) {
       _currentUser = session.user;
+      localStorage.removeItem(DEV_USER_KEY);
     } else {
       const savedDevUser = localStorage.getItem(DEV_USER_KEY);
       if (savedDevUser) {
@@ -48,7 +56,7 @@ export async function initAuth() {
       }
     }
   } catch (err) {
-    console.error('[Auth] getSession error:', err);
+    // console.warn('[Auth] Initial session check failed:', err.message);
   }
   
   return _currentUser;
@@ -114,6 +122,9 @@ export async function signUpWithEmail(email, password, fullName) {
 
 // Dev Mode Bypass SignIn (No Backend Required)
 export async function devModeBypass() {
+  if (!APP_CONFIG.features.devBypass || !import.meta.env.DEV) {
+    throw new Error("Bypass Dev Mode dinonaktifkan di lingkungan produksi.");
+  }
   _currentUser = {
     id: '00000000-0000-0000-0000-000000000001',
     email: 'developer@local.host',

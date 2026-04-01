@@ -20,7 +20,8 @@ import {
   takePhoto,
   flipCamera,
   showLightbox,
-  autoSyncProjectData
+  autoSyncProjectData,
+  fetchItemData
 } from '../lib/checklist-ai-service.js';
 import { 
   renderChecklistShell, 
@@ -37,15 +38,28 @@ import {
 
 export async function checklistPage(params) {
   const proyekId = params.id;
-  if (!proyekId) { navigate('proyek'); return ''; }
+  if (!proyekId || proyekId === 'undefined') { 
+    console.warn("[Checklist] Invalid Proyek ID provided");
+    navigate('proyek'); 
+    return ''; 
+  }
 
   const root = document.getElementById('page-root');
-  if (root) root.innerHTML = '<div class="skeleton" style="height:500px"></div>';
+  if (root) root.innerHTML = `
+    <div class="page-container route-fade">
+        <div class="skeleton" style="height:100px; margin-bottom:20px"></div>
+        <div class="skeleton" style="height:400px"></div>
+    </div>`;
 
   try {
     // 1. Fetch Project Basics
-    const { data: proyek } = await supabase.from('proyek').select('*').eq('id', proyekId).single();
-    if (!proyek) { navigate('proyek'); return; }
+    const { data: proyek, error } = await supabase.from('proyek').select('*').eq('id', proyekId).maybeSingle();
+    
+    if (error || !proyek) { 
+        console.error("[Checklist] Project not found:", error);
+        navigate('proyek'); 
+        return; 
+    }
 
     // 2. Load Checklist Data & Sync Store
     store.set({ currentProyek: proyek, currentProyekId: proyekId });
@@ -53,7 +67,7 @@ export async function checklistPage(params) {
 
     render();
   } catch (err) {
-    console.error(err);
+    console.error("[Checklist] Initialization error:", err);
     navigate('proyek');
   }
 }
@@ -175,4 +189,32 @@ window._runBatchSmartEngine = (kategori) => {
 
 window._triggerGlobalAiSync = () => {
     autoSyncProjectData().then(() => render());
+};
+
+window._fetchItemData = (kode, nama) => {
+    fetchItemData(kode, nama).then(() => render());
+};
+
+window._removeFile = (kode, url) => {
+    if (!confirm("Hapus lampiran ini dari daftar simak?")) return;
+    
+    const { checklist } = store.get();
+    const item = checklist.dataMap[kode];
+    if (!item || !item.foto_urls) return;
+    
+    const updatedUrls = (item.foto_urls || []).filter(u => u !== url);
+    const updatedEvidence = (item.evidence_links || []).filter(ev => ev.url !== url);
+    
+    const updatedItem = { 
+      ...item, 
+      foto_urls: updatedUrls,
+      evidence_links: updatedEvidence
+    };
+    
+    updateChecklist({ 
+       dataMap: { ...checklist.dataMap, [kode]: updatedItem } 
+    });
+    
+    markDirty(kode);
+    render();
 };

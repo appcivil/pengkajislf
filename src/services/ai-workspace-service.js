@@ -55,14 +55,14 @@ export async function analyzeDocumentIntelligence(fileId) {
     }
 
     const aiData = {
-        ai_status: 'Analyzed',
+        ai_status: 'ready',
         category: aiResult.category || file.category,
         subcategory: aiResult.subcategory || file.subcategory,
         ai_summary: aiResult.ai_summary,
         completeness: aiResult.completeness || 0,
         status: aiResult.status || 'Draft',
         metadata: {
-            ...file.metadata,
+            ...(file.metadata || {}),
             ai_last_run: new Date().toISOString(),
             provider: 'OpenRouter-Gemini'
         }

@@ -443,7 +443,7 @@ window._saveKondisi = async () => {
     btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Sinkronisasi & Menyimpan...';
 
     // 1. Save Checklist Items (Individual)
-    const { error: clErr } = await supabase.from('checklist_items').upsert(items, { onConflict: 'proyek_id, kode' });
+    const { error: clErr } = await supabase.from('checklist_items').upsert(items, { onConflict: 'proyek_id,kode' });
     if (clErr) throw clErr;
 
     // 2. Integration: Update Hasil Analisis Scores

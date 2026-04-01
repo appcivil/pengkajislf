@@ -130,7 +130,16 @@ export async function startBackgroundSync(supabase, uploadToDrive) {
   for (const draft of drafts) {
     try {
       const { id, ...data } = draft;
-      const { error } = await supabase.from('checklist_items').upsert(data, { onConflict: 'proyek_id,kode' });
+      
+      // Data Integrity Fallback for legacy drafts missing 'nama' or other fields
+      const syncData = {
+        ...data,
+        nama: data.nama || 'Item Pemeriksaan',
+        foto_urls: data.foto_urls || [],
+        metadata: data.metadata || {}
+      };
+
+      const { error } = await supabase.from('checklist_items').upsert(syncData, { onConflict: 'proyek_id,kode' });
       if (!error) await clearSyncedDrafts([id]);
     } catch (e) { console.error("Sync failed for item:", draft.kode, e); }
   }

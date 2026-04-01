@@ -59,14 +59,24 @@ export async function analyzeChecklistImage(filesData, componentName, kategori =
   let systemPrompt = '';
   if (kategori === 'administrasi') {
     systemPrompt = `Anda adalah seorang Auditor Administrasi Tingkat Lanjut untuk Sertifikat Laik Fungsi (SLF) Bangunan Gedung di Indonesia.
-Gunakan mekanisme "Deep Reasoning Engineering" untuk menelaah secara komprehensif terhadap ${filesData.length} file dokumen pada komponen: "${componentName}".
+Gunakan mekanisme "Deep Reasoning Engineering" untuk menelaah secara komprehensif terhadap ${filesData.length} sampel dokumen pada komponen: "${componentName}".
 Verifikasi kesesuaian berdasarkan PP No. 16 Tahun 2021.
-Format JSON wajib: { "status": "ada_sesuai|ada_tidak_sesuai|tidak_ada", "catatan": "<abstraksi teknis padat>" }`;
+Format JSON wajib: { 
+  "status": "ada_sesuai|ada_tidak_sesuai|tidak_ada", 
+  "catatan": "<deskripsi teknis temuan/isi dokumen yang terlihat>", 
+  "rekomendasi": "<saran kelengkapan dokumen atau perbaikan>" 
+}
+PENTING: Isi 'catatan' meskipun status 'ada_sesuai' (jelaskan apa yang ada).`;
   } else {
     systemPrompt = `Anda adalah seorang Insinyur Sipil/Struktur Ahli Audit Keandalan Bangunan (SNI 9273:2025).
 Gunakan "Deep Reasoning Engineering" untuk mendiagnosa ${filesData.length} sampel visual dari komponen: "${componentName}".
-Analisis patologi material dan risiko kegagalan.
-Format JSON wajib: { "status": "baik|sedang|buruk|kritis", "catatan": "<diagnosa teknis padat>" }`;
+Analisis patologi material, risiko kegagalan, dan integritas struktur.
+Format JSON wajib: { 
+  "status": "baik|sedang|buruk|kritis", 
+  "catatan": "<analisis teknis visual dari kondisi material/komponen>", 
+  "rekomendasi": "<saran engineering untuk pemeliharaan/perbaikan/penggantian>" 
+}
+PENTING: Isi 'catatan' dengan deskripsi kondisi fisik yang terlihat meskipun status 'baik'.`;
   }
 
   // 3. Eksekusi dengan Failover Otomatis

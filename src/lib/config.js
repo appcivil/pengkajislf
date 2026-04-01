@@ -4,17 +4,19 @@
 export const APP_CONFIG = {
   name:    import.meta.env.VITE_APP_NAME    || 'Smart AI Pengkaji SLF',
   version: import.meta.env.VITE_APP_VERSION || '1.0.0',
-  baseUrl: import.meta.env.VITE_BASE_URL    || '',
+  baseUrl: import.meta.env.VITE_BASE_URL    || (typeof window !== 'undefined' ? `${window.location.origin}/smartaipengkaji` : ''),
   base:    '/smartaipengkaji',
+  isDev:   import.meta.env.DEV,
 
   // Google Apps Script (opsional)
-  gasApiUrl: import.meta.env.VITE_GAS_API_URL || '',
+  gasApiUrl: import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL || '',
 
   // Feature Flags
   features: {
     aiEnabled:        import.meta.env.VITE_ENABLE_AI            !== 'false',
-    gasIntegration:   import.meta.env.VITE_ENABLE_GAS_INTEGRATION === 'true',
-    isPublished:      true, // Set true untuk menyembunyikan pendaftaran publik
+    gasIntegration:   !!(import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL),
+    isPublished:      !import.meta.env.DEV, // Set true di produksi untuk sembunyikan pendaftaran publik
+    devBypass:        import.meta.env.DEV, // Aktifkan hanya di local
   },
 
   // SLF Status Options

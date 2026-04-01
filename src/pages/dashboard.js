@@ -1,6 +1,7 @@
 // ============================================================
 //  DASHBOARD PAGE
 //  KPI overview, charts, AI insight, todo monitoring
+//  PRESIDENTIAL CLASS (QUARTZ PREMIUM)
 // ============================================================
 import { supabase } from '../lib/supabase.js';
 import { getUserInfo } from '../lib/auth.js';
@@ -8,6 +9,7 @@ import { navigate } from '../lib/router.js';
 import { APP_CONFIG } from '../lib/config.js';
 import { showError } from '../components/toast.js';
 import { fetchTeamMembers, fetchTeamWorkload } from '../lib/team-service.js';
+import { getGlobalAuditLogs } from '../lib/audit-service.js';
 
 export async function dashboardPage() {
   // Render skeleton immediately
@@ -30,156 +32,141 @@ export async function dashboardPage() {
   triggerDashboardMount(projects, kpi);
 
   return `
-    <div id="dashboard-page">
+    <div id="dashboard-page" style="animation: page-fade-in 0.8s ease-out">
       <!-- Page Header -->
-      <div class="page-header">
+      <div class="page-header" style="margin-bottom: var(--space-8)">
         <div class="flex-between">
           <div>
-            <h1 class="page-title">${greeting}, ${user?.name?.split(' ')[0] || 'User'}! 👋</h1>
-            <p class="page-subtitle">Monitoring pengkajian SLF &bull; ${formatDate(now)}</p>
+            <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.2rem; letter-spacing:-0.02em; margin-bottom:4px">
+              ${greeting}, <span class="text-gradient-gold">${user?.name?.split(' ')[0] || 'User'}</span>!
+            </h1>
+            <p class="page-subtitle" style="font-family:var(--font-mono); font-size: 0.75rem; letter-spacing:1px; opacity:0.6; text-transform:uppercase">
+              PRESIDENTIAL COMMAND CENTER &bull; <i class="fas fa-calendar-day" style="color:var(--brand-400); margin-right:4px"></i> ${formatDate(now)}
+            </p>
           </div>
-          <div class="flex gap-3">
-            <button class="btn btn-secondary" onclick="window.navigate('laporan')">
-              <i class="fas fa-file-export"></i> Export Laporan
+          <div class="flex gap-4">
+            <button class="btn btn-outline" onclick="window.navigate('laporan')" style="height:44px; padding:0 24px; border-radius:12px; font-weight:700">
+              <i class="fas fa-file-export" style="margin-right:8px"></i> Export Analytics
             </button>
-            <button class="btn btn-primary" onclick="window.navigate('proyek-baru')">
-              <i class="fas fa-plus"></i> Proyek Baru
+            <button class="btn-presidential gold" onclick="window.navigate('proyek-baru')" style="height:44px; padding:0 24px; border-radius:12px">
+              <i class="fas fa-plus" style="margin-right:8px"></i> Proyek Baru
             </button>
           </div>
         </div>
       </div>
 
       <!-- KPI Grid -->
-      <div class="kpi-grid">
+      <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); gap: var(--space-6)">
         ${renderKPICards(kpi)}
       </div>
 
-      <!-- Map Overview -->
-      <div class="card" style="margin-top:var(--space-5); overflow:hidden; padding:0; display:flex; flex-direction:column">
-        <div class="card-header" style="border-bottom:1px solid var(--border-subtle); background:var(--bg-elevated); z-index:10; padding: var(--space-4) var(--space-5); margin-bottom:0;">
-          <div>
-            <div class="card-title">Peta Distribusi Proyek</div>
-            <div class="card-subtitle">Visualisasi spasial lokasi pengkajian SLF</div>
+      <!-- Main Layout Grid -->
+      <div class="grid-main-responsive" style="margin-top:var(--space-8); display:grid; grid-template-columns: 1fr 380px; gap: var(--space-8)">
+        
+        <!-- Left Column: Operations Map -->
+        <div class="card-quartz" style="padding:0; display:flex; flex-direction:column; min-height:600px; border: 1px solid var(--border-strong);">
+          <div class="card-header" style="padding: var(--space-5) var(--space-6); border-bottom:1px solid var(--border-subtle); background: hsla(220, 20%, 100%, 0.02); display:flex; justify-content:space-between; align-items:center">
+            <div>
+              <div class="card-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 1.1rem; letter-spacing: 0.05em">STRATEGIC OPERATIONS MAP</div>
+              <div class="card-subtitle" style="font-size: 0.7rem; opacity:0.5; text-transform:uppercase; letter-spacing:1px">Real-time geospatial project distribution</div>
+            </div>
+            <div style="width:40px; height:40px; border-radius:10px; background:hsla(220, 95%, 52%, 0.1); display:flex; align-items:center; justify-content:center; border:1px solid hsla(220, 95%, 52%, 0.2)">
+              <i class="fas fa-earth-asia" style="color:var(--brand-400)"></i>
+            </div>
+          </div>
+          <div id="dashboard-map" style="width:100%; flex:1; filter: contrast(1.1); opacity: 0.9">
+             <div class="map-legend-modern" style="bottom:20px; right:20px; background:var(--bg-card); border:1px solid var(--glass-border); backdrop-filter:blur(10px); padding:12px; border-radius:12px; z-index:1000; position:absolute; display:flex; gap:16px;">
+                <div class="leg-item" style="display:flex; align-items:center; gap:6px; font-size:10px; font-weight:700; color:white;"><div class="leg-clr" style="width:8px; height:8px; border-radius:50%; background:var(--success-500)"></div> Laik</div>
+                <div class="leg-item" style="display:flex; align-items:center; gap:6px; font-size:10px; font-weight:700; color:white;"><div class="leg-clr" style="width:8px; height:8px; border-radius:50%; background:var(--gold-500)"></div> Bersyarat</div>
+                <div class="leg-item" style="display:flex; align-items:center; gap:6px; font-size:10px; font-weight:700; color:white;"><div class="leg-clr" style="width:8px; height:8px; border-radius:50%; background:var(--danger-500)"></div> Kritis</div>
+                <div class="leg-item" style="display:flex; align-items:center; gap:6px; font-size:10px; font-weight:700; color:white;"><div class="leg-clr" style="width:8px; height:8px; border-radius:50%; background:var(--brand-500)"></div> Aktif</div>
+             </div>
           </div>
         </div>
-        <div id="dashboard-map" style="width:100%; height:320px; z-index:1"></div>
+
+        <!-- Right Column: AI Intel & Activity -->
+        <div style="display:flex; flex-direction:column; gap:var(--space-6)">
+           <!-- AI Power Panel -->
+           <div class="card-quartz" style="padding: var(--space-6); background: var(--gradient-dark); border-color: hsla(220, 95%, 52%, 0.2)">
+              <div style="display:flex; align-items:center; gap:16px; margin-bottom: 24px">
+                <div style="width:48px; height:48px; border-radius:14px; background:var(--gradient-brand); display:flex; align-items:center; justify-content:center; box-shadow: var(--shadow-sapphire)">
+                  <i class="fas fa-brain-circuit" style="color:white; font-size: 1.4rem"></i>
+                </div>
+                <div>
+                  <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 1.1rem; color:white">AI PORTFOLIO PULSE</div>
+                  <div style="font-size: 0.7rem; color:var(--brand-300); text-transform:uppercase; letter-spacing:1px; font-weight:700">Risk Matrix Analysis</div>
+                </div>
+              </div>
+              
+              <div class="radar-wrap" style="height:220px; margin-bottom: 24px">
+                 <canvas id="chart-risiko-radar"></canvas>
+              </div>
+              
+              <div style="display:flex; flex-direction:column; gap:8px">
+                 ${renderAIInsights(kpi)}
+              </div>
+           </div>
+
+           <!-- Recent Intel Feed -->
+           <div class="card-quartz" style="flex:1">
+              <div class="flex-between" style="margin-bottom: 20px">
+                 <div class="card-title" style="font-size: 0.9rem; font-weight:700; letter-spacing:0.05em">LIVE AUDIT FEED</div>
+                 <i class="fas fa-bolt" style="color:var(--gold-500); font-size: 0.8rem"></i>
+              </div>
+              ${renderFieldFeed(kpi.logs || [])}
+           </div>
+        </div>
       </div>
 
-      <!-- Main Grid (Responsive 3-to-1) -->
-      <div class="grid-3-1" style="margin-top:var(--space-5)">
-
-        <!-- Chart: Distribusi Temuan -->
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Distribusi Temuan per Aspek</div>
-              <div class="card-subtitle">Berdasarkan seluruh proyek aktif</div>
+      <!-- Secondary Metrics Grid -->
+      <div class="grid-3-1" style="margin-top:var(--space-8); display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap: var(--space-6)">
+         <!-- Findings Distribution -->
+         <div class="card-quartz">
+            <div class="flex-between" style="margin-bottom: 20px">
+               <div class="card-title" style="font-size: 0.9rem; font-weight:700">SEBARAN TEMUAN</div>
+               <span class="badge" style="background:hsla(220,95%,52%,0.1); color:var(--brand-400); border:1px solid hsla(220,95%,52%,0.2)">TECHNICAL</span>
             </div>
-            <button class="btn btn-ghost btn-sm" onclick="refreshCharts()">
-              <i class="fas fa-rotate"></i>
-            </button>
-          </div>
-          <div class="chart-wrap">
-            <canvas id="chart-distribusi"></canvas>
-          </div>
-        </div>
-
-        <!-- Chart: Risiko -->
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Level Risiko</div>
-              <div class="card-subtitle">Agregat semua temuan</div>
+            <div class="chart-wrap" style="height:250px">
+               <canvas id="chart-distribusi"></canvas>
             </div>
-          </div>
-          <div class="chart-wrap">
-            <canvas id="chart-risiko"></canvas>
-          </div>
-        </div>
-
-        <!-- Right: AI Panel + TODO -->
-        <div style="display:flex;flex-direction:column;gap:var(--space-4)">
-          <!-- AI Insight Panel -->
-          <div class="ai-panel">
-            <div class="ai-panel-header">
-              <div class="ai-icon"><i class="fas fa-brain"></i></div>
-              <div class="flex-between w-full">
-                <div>
-                  <div class="ai-panel-title">AI Insight</div>
-                  <div class="ai-panel-subtitle">Analisis otomatis sistem</div>
-                </div>
-                <button class="btn btn-ghost btn-xs" onclick="window.analyseFile('test-id-123')" title="Jalankan Tes Analisis">
-                  <i class="fas fa-vial"></i> Test
-                </button>
-              </div>
-            </div>
-            ${renderAIInsights(kpi)}
-          </div>
-
-          <!-- SLF Status Summary -->
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title">Status SLF</div>
-              <button class="btn btn-ghost btn-sm" onclick="window.navigate('proyek')">
-                Lihat Semua →
-              </button>
-            </div>
-            ${renderSLFStatus(kpi)}
-          </div>
-
-          <!-- Team Workload Widget -->
-          <div class="card" style="border-left:3px solid var(--brand-400)">
-            <div class="card-header">
-              <div class="card-title">Beban Kerja Tim</div>
-              <button class="btn btn-ghost btn-sm" onclick="window.navigate('tim-kerja')">
-                Manajemen →
-              </button>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:12px">
-              ${workload.slice(0, 4).map(w => `
-                <div style="display:flex; align-items:center; justify-content:space-between">
-                  <div class="text-xs font-semibold text-secondary truncate" style="max-width:120px">${w.full_name}</div>
-                  <div style="display:flex; align-items:center; gap:8px; flex:1; justify-content:flex-end">
-                    <div class="progress-wrap" style="height:4px; max-width:60px">
-                      <div class="progress-fill blue" style="width:${(w.activeProjects / 5) * 100}%"></div>
+         </div>
+         
+         <!-- Team Workload -->
+         <div class="card-quartz">
+            <div class="card-title" style="font-size: 0.9rem; font-weight:700; margin-bottom:20px">ELITE TEAM WORKLOAD</div>
+            <div style="display:flex; flex-direction:column; gap:16px">
+               ${workload.slice(0, 5).map(w => `
+                 <div>
+                    <div class="flex-between mb-2">
+                       <span style="font-size: 0.75rem; font-weight:600; color:var(--text-secondary)">${w.full_name}</span>
+                       <span style="font-size: 0.7rem; font-weight:700; color:var(--brand-400); font-family:var(--font-mono)">${w.activeProjects} PROJECTS</span>
                     </div>
-                    <span class="text-xs font-bold text-primary">${w.activeProjects}</span>
-                  </div>
+                    <div class="progress-wrap" style="height:6px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px">
+                       <div class="progress-fill" style="width:${Math.min((w.activeProjects / 5) * 100, 100)}%; background:var(--gradient-brand); border-radius:10px; box-shadow: var(--shadow-sapphire)"></div>
+                    </div>
+                 </div>
+               `).join('')}
+            </div>
+         </div>
+
+         <!-- Active Projects Mini List -->
+         <div class="card-quartz" style="grid-column: span 1">
+           <div class="flex-between" style="margin-bottom: 20px">
+              <div class="card-title" style="font-size: 0.9rem; font-weight:700">RECENT OPS</div>
+              <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek')" style="color:var(--text-tertiary)">VIEW ALL</button>
+           </div>
+           <div style="display:flex; flex-direction:column; gap:12px">
+              ${projects.slice(0, 5).map(p => `
+                <div class="flex-between clickable" onclick="window.navigate('proyek-detail', {id:'${p.id}'})" style="padding:8px; border-radius:8px; background:hsla(220, 20%, 100%, 0.02); border:1px solid transparent; transition:all 0.2s">
+                   <div style="overflow:hidden">
+                      <div style="font-size: 0.8rem; font-weight:700; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${p.nama_bangunan}</div>
+                      <div style="font-size: 0.65rem; color:var(--text-tertiary); text-transform:uppercase">${p.kota}</div>
+                   </div>
+                   <div style="font-size: 0.75rem; font-weight:800; color:var(--brand-400)">${p.progress}%</div>
                 </div>
               `).join('')}
-              ${workload.length === 0 ? '<p class="text-xs text-tertiary">Belum ada data tim.</p>' : ''}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bottom Grid (Responsive 2-to-1) -->
-      <div class="grid-2-1" style="margin-top:var(--space-5)">
-
-        <!-- Recent Projects -->
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Proyek Terkini</div>
-              <div class="card-subtitle">${projects.length} dari ${kpi.totalProyek || 0} proyek</div>
-            </div>
-            <button class="btn btn-secondary btn-sm" onclick="window.navigate('proyek')">
-              Semua Proyek
-            </button>
-          </div>
-          ${renderProjectTable(projects)}
-        </div>
-
-        <!-- TODO Monitoring -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">TODO Monitoring</div>
-            <button class="btn btn-ghost btn-sm" onclick="window.navigate('todo')">
-              Lihat Semua →
-            </button>
-          </div>
-          ${renderTodoList(todos)}
-        </div>
+           </div>
+         </div>
       </div>
     </div>
   `;
@@ -188,25 +175,27 @@ export async function dashboardPage() {
 // ── KPI Cards ──────────────────────────────────────────────
 function renderKPICards(kpi) {
   const cards = [
-    { label: 'Total Proyek',     value: kpi.totalProyek     || 0, icon: 'fa-folder-open',       color: 'kpi-blue',   trend: null },
-    { label: 'Proyek Aktif',     value: kpi.proyekAktif     || 0, icon: 'fa-play-circle',        color: 'kpi-green',  trend: null },
-    { label: 'Laik Fungsi',      value: kpi.laikFungsi      || 0, icon: 'fa-circle-check',       color: 'kpi-green',  trend: '+2' },
-    { label: 'Laik Bersyarat',   value: kpi.laikBersyarat   || 0, icon: 'fa-triangle-exclamation',color: 'kpi-yellow', trend: null },
-    { label: 'Tidak Laik',       value: kpi.tidakLaik       || 0, icon: 'fa-circle-xmark',       color: 'kpi-red',    trend: null },
-    { label: 'Task Selesai',     value: kpi.taskSelesai     || 0, icon: 'fa-check-double',       color: 'kpi-purple', trend: '+5' },
-    { label: 'Task Terlambat',   value: kpi.taskTerlambat   || 0, icon: 'fa-clock',              color: 'kpi-red',    trend: null },
-    { label: 'Analisis AI',      value: kpi.totalAnalisis   || 0, icon: 'fa-brain',              color: 'kpi-purple', trend: null },
-    { label: 'Anggota Tim',     value: kpi.memberCount      || 0, icon: 'fa-user-group',         color: 'kpi-blue',   trend: null },
+    { label: 'OP-COMMAND PORTFOLIO', value: kpi.totalProyek || 0, icon: 'fa-briefcase', color: 'var(--brand-400)', bg: 'hsla(220, 95%, 52%, 0.1)' },
+    { label: 'STRUCTURAL COMPLIANCE', value: kpi.laikFungsi || 0, icon: 'fa-shield-check', color: 'var(--success-400)', bg: 'hsla(158, 85%, 45%, 0.1)' },
+    { label: 'ACTIVE FIELD OPS', value: kpi.proyekAktif || 0, icon: 'fa-location-dot', color: 'var(--gold-400)', bg: 'hsla(45, 90%, 60%, 0.1)' },
+    { label: 'REMEDIAL ACTIONS', value: kpi.tidakLaik || 0, icon: 'fa-triangle-exclamation', color: 'var(--danger-400)', bg: 'hsla(350, 95%, 52%, 0.1)' },
   ];
 
   return cards.map(c => `
-    <div class="kpi-card" onclick="window.navigate('proyek')">
-      <div class="kpi-icon-wrap ${c.color}">
-        <i class="fas ${c.icon}"></i>
+    <div class="card-quartz" style="display:flex; flex-direction:column; gap:16px; min-width:200px; cursor:pointer;" onclick="window.navigate('proyek')">
+      <div class="flex-between">
+        <div style="width:40px; height:40px; border-radius:10px; background:${c.bg}; display:flex; align-items:center; justify-content:center; border:1px solid ${c.color}33">
+          <i class="fas ${c.icon}" style="color:${c.color}; font-size:1.1rem"></i>
+        </div>
+        <div style="font-family:var(--font-mono); font-size:9px; font-weight:700; color:var(--text-tertiary); letter-spacing:1px">DATA LIVE</div>
       </div>
-      <div class="kpi-value" style="color:inherit">${c.value}</div>
-      <div class="kpi-label">${c.label}</div>
-      ${c.trend ? `<div class="kpi-trend up"><i class="fas fa-arrow-trend-up"></i> ${c.trend} bulan ini</div>` : ''}
+      <div>
+        <div style="font-size: 2.2rem; font-weight:800; color:var(--text-primary); font-family:'Outfit', sans-serif; line-height:1">${c.value}</div>
+        <div style="font-size: 0.65rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px; margin-top:8px">${c.label}</div>
+      </div>
+      <div style="height:2px; width:100%; background:hsla(220, 20%, 100%, 0.03); border-radius:2px; margin-top:4px">
+        <div style="height:100%; width:70%; background:${c.color}; box-shadow:0 0 10px ${c.color}66; border-radius:2px"></div>
+      </div>
     </div>
   `).join('');
 }
@@ -235,9 +224,9 @@ function renderAIInsights(kpi) {
   }
 
   return insights.slice(0, 4).map(i => `
-    <div class="ai-finding ${i.type}">
-      <i class="fas ${i.type === 'critical' ? 'fa-triangle-exclamation' : i.type === 'warning' ? 'fa-exclamation' : i.type === 'success' ? 'fa-circle-check' : 'fa-circle-info'}" style="margin-right:6px"></i>
-      ${i.text}
+    <div class="ai-finding ${i.type}" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:10px; margin-bottom:8px">
+      <i class="fas ${i.type === 'critical' ? 'fa-triangle-exclamation' : i.type === 'warning' ? 'fa-exclamation' : i.type === 'success' ? 'fa-circle-check' : 'fa-circle-info'}" style="margin-right:8px; color:var(--text-tertiary)"></i>
+      <span style="font-size:0.75rem; color:var(--text-secondary)">${i.text}</span>
     </div>
   `).join('');
 }
@@ -354,16 +343,16 @@ function renderTodoList(todos) {
 // ── Skeleton ─────────────────────────────────────────────────
 function renderSkeleton() {
   return `
-    <div class="page-header">
-      <div class="skeleton" style="height:36px;width:300px;margin-bottom:8px"></div>
-      <div class="skeleton" style="height:20px;width:200px"></div>
+    <div class="page-header" style="margin-bottom: var(--space-8)">
+      <div class="skeleton" style="height:48px;width:400px;margin-bottom:12px"></div>
+      <div class="skeleton" style="height:20px;width:250px"></div>
     </div>
     <div class="kpi-grid">
-      ${Array(8).fill(0).map(() => `
-        <div class="kpi-card">
-          <div class="skeleton" style="height:44px;width:44px;border-radius:10px;margin-bottom:12px"></div>
-          <div class="skeleton" style="height:40px;width:60px;margin-bottom:8px"></div>
-          <div class="skeleton" style="height:16px;width:100px"></div>
+      ${Array(4).fill(0).map(() => `
+        <div class="card-quartz" style="height:160px">
+          <div class="skeleton" style="height:40px;width:40px;border-radius:10px;margin-bottom:12px"></div>
+          <div class="skeleton" style="height:40px;width:80px;margin-bottom:8px"></div>
+          <div class="skeleton" style="height:16px;width:120px"></div>
         </div>
       `).join('')}
     </div>
@@ -394,14 +383,16 @@ async function fetchKPI() {
     getCount('todo_tasks', q => q.eq('status', 'Done')),
     getCount('todo_tasks', q => q.lt('due_date', new Date().toISOString()).neq('status', 'Done')),
     getCount('hasil_analisis'),
-    getCount('profiles'),
-    // Agregat Aspek & Risiko untuk Chart
-    supabase.from('hasil_analisis').select('skor_administrasi, skor_struktur, skor_arsitektur, skor_mep, skor_kebakaran, skor_kesehatan, skor_kenyamanan, skor_kemudahan, risk_level')
+    getCount('profiles')
   ]);
 
-  const hData = results[9].data || [];
+  const [hRes, logs] = await Promise.all([
+    supabase.from('hasil_analisis').select('skor_administrasi, skor_struktur, skor_arsitektur, skor_mep, skor_kebakaran, skor_kesehatan, skor_kenyamanan, skor_kemudahan, risk_level'),
+    getGlobalAuditLogs()
+  ]);
+
+  const hData = hRes.data || [];
   
-  // Hitung distribusi temuan (Skor < 65 dianggap temuan)
   const distribusi = {
     administrasi: hData.filter(d => d.skor_administrasi < 65 && d.skor_administrasi > 0).length,
     struktur: hData.filter(d => d.skor_struktur < 65 && d.skor_struktur > 0).length,
@@ -411,13 +402,6 @@ async function fetchKPI() {
     kesehatan: hData.filter(d => d.skor_kesehatan < 65 && d.skor_kesehatan > 0).length,
     kenyamanan: hData.filter(d => d.skor_kenyamanan < 65 && d.skor_kenyamanan > 0).length,
     kemudahan: hData.filter(d => d.skor_kemudahan < 65 && d.skor_kemudahan > 0).length,
-  };
-
-  const risiko = {
-    low: hData.filter(d => d.risk_level === 'low').length,
-    medium: hData.filter(d => d.risk_level === 'medium').length,
-    high: hData.filter(d => d.risk_level === 'high').length,
-    critical: hData.filter(d => d.risk_level === 'critical').length,
   };
 
   return {
@@ -430,7 +414,8 @@ async function fetchKPI() {
     taskTerlambat: results[6],
     totalAnalisis: results[7],
     memberCount:   results[8] || 4,
-    chartData: { distribusi, risiko }
+    chartData: { distribusi },
+    logs: logs
   };
 }
 
@@ -439,7 +424,7 @@ async function fetchRecentProjects() {
     const { data } = await supabase
       .from('proyek')
       .select('id, nama_bangunan, kota, alamat, pemilik, status_slf, progress, latitude, longitude, updated_at')
-      .not('latitude', 'is', null) // Prioritaskan yang ada koordinat
+      .not('latitude', 'is', null)
       .order('updated_at', { ascending: false })
       .limit(30);
     return data || [];
@@ -458,11 +443,6 @@ async function fetchRecentTodos() {
   } catch { return []; }
 }
 
-// ── After Render: init charts & map ───────────────────────────
-export async function afterDashboardRender(kpi) {
-  // Dipanggil melalui setTimeout di atas jika diperlukan
-}
-
 export function triggerDashboardMount(projects, kpi) {
   setTimeout(async () => {
     initCharts(kpi);
@@ -470,9 +450,6 @@ export function triggerDashboardMount(projects, kpi) {
   }, 100);
 }
 
-/**
- * Geocode address to lat/lng using Nominatim (OSM)
- */
 async function geocodeAddress(address) {
   if (!address) return null;
   try {
@@ -507,7 +484,6 @@ async function initMap(projects) {
     maxZoom: 19
   });
   
-  // Start with Indonesia focus
   map.setView([-2.5489, 118.0149], 5); 
   window.L.control.zoom({ position: 'bottomright' }).addTo(map);
   window._dashMap = map;
@@ -520,37 +496,34 @@ async function initMap(projects) {
 
   const markers = window.L.featureGroup().addTo(map);
 
-  // Process all markers (with geocoding if needed)
   const markerPromises = projects.map(async (p) => {
     let lat = p.latitude;
     let lng = p.longitude;
     
-    // Geocode if missing coords but has address
     if (!lat || !lng || lat === 0) {
        const geo = await geocodeAddress(p.alamat || p.kota);
        if (geo) {
           lat = geo.lat;
           lng = geo.lng;
        } else {
-          // Absolute fallback near Jakarta
           lat = -6.2088 + (Math.random() * 0.1 - 0.05);
           lng = 106.8456 + (Math.random() * 0.1 - 0.05);
        }
     }
 
     const statusConfig = {
-      'LAIK_FUNGSI':           { color: '#10b981', icon: '\uf00c' }, // fa-check
-      'TIDAK_LAIK_FUNGSI':     { color: '#ef4444', icon: '\uf00d' }, // fa-xmark
-      'LAIK_FUNGSI_BERSYARAT': { color: '#f59e0b', icon: '\uf071' }, // fa-triangle-exclamation
-      'DALAM_PENGKAJIAN':      { color: '#3b82f6', icon: '\uf017' }  // fa-clock
+      'LAIK_FUNGSI':           { color: 'var(--success-500)', icon: '\uf00c' },
+      'TIDAK_LAIK_FUNGSI':     { color: 'var(--danger-500)', icon: '\uf00d' },
+      'LAIK_FUNGSI_BERSYARAT': { color: 'var(--gold-500)', icon: '\uf071' },
+      'DALAM_PENGKAJIAN':      { color: 'var(--brand-500)', icon: '\uf017' }
     };
     
-    const cfg = statusConfig[p.status_slf] || { color: '#8b5cf6', icon: '\uf1ad' }; // fa-building
+    const cfg = statusConfig[p.status_slf] || { color: '#8b5cf6', icon: '\uf1ad' };
 
     const icon = window.L.divIcon({
       className: 'modern-marker-wrap',
       html: `
-        <div style="position:relative; width:32px; height:40px; display:flex; align-items:center; justify-content:center; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.4));">
+        <div style="position:relative; width:32px; height:40px; display:flex; align-items:center; justify-content:center;">
            <svg width="32" height="40" viewBox="0 0 24 30" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 0C5.37 0 0 5.37 0 12C0 21 12 30 12 30C12 30 24 21 24 12C24 5.37 18.63 0 12 0Z" fill="${cfg.color}" stroke="white" stroke-width="1.5"/>
               <circle cx="12" cy="12" r="8" fill="white" fill-opacity="0.2"/>
@@ -569,9 +542,9 @@ async function initMap(projects) {
       <div style="font-family:'Outfit',sans-serif; min-width:200px; padding:4px">
         <div style="font-weight:800; color:#1e293b; margin-bottom:4px; font-size:14px">${p.nama_bangunan}</div>
         <div style="font-size:11px; color:#64748b; margin-bottom:10px"><i class="fas fa-location-dot"></i> ${p.alamat || p.kota || 'Lokasi tidak spesifik'}</div>
-        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f1f5f9; pt:8px; margin-top:8px">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f1f5f9; padding-top:8px; margin-top:8px">
            <span style="font-size:9px; font-weight:700; text-transform:uppercase; color:${cfg.color}">${p.status_slf?.replace(/_/g, ' ')}</span>
-           <button class="btn btn-primary btn-xs" onclick="window.navigate('proyek-detail', {id:'${p.id}'})" style="padding:2px 8px; font-size:10px; margin-top:4px">Detail &rarr;</button>
+           <button class="btn btn-primary btn-xs" onclick="window.navigate('proyek-detail', {id:'${p.id}'})" style="padding:4px 10px; font-size:10px;">Detail &rarr;</button>
         </div>
       </div>
     `);
@@ -582,28 +555,14 @@ async function initMap(projects) {
   const resolvedCoords = await Promise.all(markerPromises);
 
   if (projects.length > 0) {
-    // Proyek terbaru (paling atas di list)
     const latestCoord = resolvedCoords[0];
-
     setTimeout(() => { 
       try {
         if (!window._dashMap || !document.getElementById('dashboard-map')) return;
-        
-        // Selalu flyTo ke lokasi proyek terbaru dengan zoom 18
         if (latestCoord && latestCoord.lat) {
-          window._dashMap.flyTo([latestCoord.lat, latestCoord.lng], 18, {
-            animate: true,
-            duration: 2.5
-          });
-        } else {
-          const bounds = markers.getBounds();
-          if (bounds.isValid()) {
-            window._dashMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 }); 
-          }
+          window._dashMap.flyTo([latestCoord.lat, latestCoord.lng], 18, { animate: true, duration: 2.5 });
         }
-      } catch (err) {
-        console.warn("[Dashboard Map] Focus error:", err.message);
-      }
+      } catch (err) {}
     }, 1000);
   }
 }
@@ -612,65 +571,128 @@ async function initCharts(kpi) {
   if (typeof window.Chart === 'undefined' || !kpi.chartData) return;
 
   const distribusiCtx = document.getElementById('chart-distribusi');
-  const risikoCtx     = document.getElementById('chart-risiko');
+  const radarCtx      = document.getElementById('chart-risiko-radar');
   const d = kpi.chartData;
 
   if (window._distChart) { window._distChart.destroy(); }
-  if (window._riskChart) { window._riskChart.destroy(); }
+  if (window._radarChart) { window._radarChart.destroy(); }
+
+  const gold = 'hsl(45, 90%, 60%)';
+  const sapphire = 'hsl(220, 95%, 52%)';
+
+  if (radarCtx) {
+     window._radarChart = new window.Chart(radarCtx, {
+        type: 'radar',
+        data: {
+           labels: ['STRUKTUR', 'ARSITEKTUR', 'ADMIN', 'MEP', 'KESEHATAN', 'KENYAMANAN'],
+           datasets: [{
+              label: 'Risk Pulse',
+              data: [
+                 100 - (d.distribusi.struktur * 10), 
+                 100 - (d.distribusi.arsitektur * 10),
+                 100 - (d.distribusi.administrasi * 10),
+                 100 - (d.distribusi.mep * 10),
+                 100 - (d.distribusi.kesehatan * 10),
+                 100 - (d.distribusi.kenyamanan * 10)
+              ],
+              fill: true,
+              backgroundColor: 'rgba(220, 95, 52, 0.15)',
+              borderColor: sapphire,
+              pointBackgroundColor: gold,
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              tension: 0.2
+           }]
+        },
+        options: {
+           scales: {
+              r: {
+                 angleLines: { color: 'rgba(255,255,255,0.05)' },
+                 grid: { color: 'rgba(255,255,255,0.05)' },
+                 pointLabels: { 
+                   color: 'rgba(255,255,255,0.5)', 
+                   font: { family: 'var(--font-mono)', size: 9, weight: 'bold' } 
+                 },
+                 ticks: { display: false },
+                 suggestedMin: 0, suggestedMax: 100
+              }
+           },
+           plugins: { legend: { display: false } }
+        }
+     });
+  }
 
   if (distribusiCtx) {
     window._distChart = new window.Chart(distribusiCtx, {
       type: 'doughnut',
       data: {
-        labels: ['Admin', 'Pemanfaatan', 'Arsitektur', 'Struktur', 'MEP', 'Kesehatan', 'Kenyamanan', 'Kemudahan'],
+        labels: ['Admin', 'Arsitektur', 'Struktur', 'MEP', 'Kesehatan', 'Kenyamanan', 'Kemudahan'],
         datasets: [{
           data: [
-            d.distribusi.administrasi, d.distribusi.pemanfaatan || 0, d.distribusi.arsitektur,
+            d.distribusi.administrasi, d.distribusi.arsitektur,
             d.distribusi.struktur, d.distribusi.mep || d.distribusi.kebakaran, d.distribusi.kesehatan,
             d.distribusi.kenyamanan, d.distribusi.kemudahan
           ],
           backgroundColor: [
-            '#3b82f6', '#8b5cf6', '#ef4444', '#f59e0b', '#dc2626', '#10b981', '#f59e0b', '#06b6d4'
+            '#3b82f6', '#ef4444', '#f59e0b', '#dc2626', '#10b981', '#f59e0b', '#06b6d4'
           ],
+          hoverOffset: 15,
           borderWidth: 0,
         }],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '65%',
+        cutout: '82%',
         plugins: {
-          legend: { position: 'right', labels: { color: 'hsl(220,12%,70%)', usePointStyle: true, font: { size: 10 } } },
+          legend: { 
+            position: 'right', 
+            labels: { 
+              color: 'rgba(255,255,255,0.7)', 
+              usePointStyle: true, 
+              padding: 20,
+              font: { family: 'var(--font-sans)', size: 10, weight: '600' } 
+            } 
+          },
         },
-      },
-    });
-  }
-
-  if (risikoCtx) {
-    window._riskChart = new window.Chart(risikoCtx, {
-      type: 'bar',
-      data: {
-        labels: ['Rendah', 'Sedang', 'Tinggi', 'Kritis'],
-        datasets: [{
-          data: [d.risiko.low, d.risiko.medium, d.risiko.high, d.risiko.critical],
-          backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#7f1d1d'],
-          borderRadius: 8,
-        }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-          x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
-        }
       },
     });
   }
 }
 
-// ── Helpers ──────────────────────────────────────────────────
+function renderFieldFeed(logs) {
+   if (!logs || !logs.length) {
+      return `<div class="empty-state" style="padding:40px"><p class="text-xs text-tertiary">Belum ada aktivitas tercatat.</p></div>`;
+   }
+
+   return `<div class="field-feed">
+     ${logs.map(log => {
+        const actionMap = {
+           'FINALISASI_DOKUMEN': { icon: 'fa-shield-halved', label: 'Penyegelan Dokumen', color: 'var(--success-400)' },
+           'TTE_SIGNATURE':       { icon: 'fa-pen-nib',       label: 'Tanda Tangan TTE', color: 'var(--brand-400)' },
+           'VERSI_LAPORAN_BARU': { icon: 'fa-file-pdf',      label: 'Generasi Laporan', color: 'var(--danger-400)' },
+           'LOGIN':               { icon: 'fa-user-clock',    label: 'Akses Sistem',     color: 'var(--text-tertiary)' }
+        };
+        const cfg = actionMap[log.action] || { icon: 'fa-clock', label: log.action, color: 'var(--text-tertiary)' };
+        
+        const diff = new Date() - new Date(log.created_at);
+        const mins = Math.floor(diff / 60000);
+        const timeStr = mins < 1 ? 'Just now' : mins < 60 ? `${mins}m ago` : `${Math.floor(mins/60)}h ago`;
+
+        return `
+          <div class="feed-item" style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+             <div class="feed-item-icon" style="width:32px; height:32px; border-radius:8px; background:hsla(220, 20%, 100%, 0.03); display:flex; align-items:center; justify-content:center; color:${cfg.color}; border:1px solid hsla(220, 20%, 100%, 0.05)"><i class="fas ${cfg.icon}" style="font-size:0.8rem"></i></div>
+             <div style="flex:1; overflow:hidden">
+                <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-primary)">${cfg.label}</div>
+                <div style="font-size: 0.65rem; color: var(--text-tertiary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${log.proyek?.nama_bangunan || 'Ops System'}</div>
+             </div>
+             <div style="font-size: 9px; color: var(--text-tertiary); opacity:0.5; font-family:var(--font-mono)">${timeStr}</div>
+          </div>
+        `;
+     }).join('')}
+   </div>`;
+}
+
 function getGreeting(hour) {
   if (hour < 11) return 'Selamat Pagi';
   if (hour < 15) return 'Selamat Siang';
@@ -679,9 +701,8 @@ function getGreeting(hour) {
 }
 
 function formatDate(d) {
-  return d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-// Expose navigate globally for onclick handlers
 window.navigate = navigate;
 window.refreshCharts = () => window.location.reload();

@@ -6,9 +6,9 @@ import { voiceService } from './voice-service.js';
 import { analyzeChecklistImage, analyzeComparativeAudit } from './gemini.js';
 import { uploadToGoogleDrive } from './drive.js';
 import { store, updateChecklist } from './store.js';
-import { showSuccess, showError, showInfo } from '../components/toast.js';
-import { markDirty } from './checklist-service.js';
 import { getSettings } from './settings.js';
+import { registerFileMetadata } from './file-service.js';
+import { ADMIN_OPTIONS, CONDITION_OPTIONS } from './checklist-data.js';
 
 // Import correctly from store
 const getChecklistState = () => store.get().checklist;
@@ -92,20 +92,13 @@ export async function takePhoto() {
         await drawWatermark(ctx, canvas.width, canvas.height, settings);
     }
     
-    // 3. Convert to Blob & Process
-    const quality = wm.resolution === 'high' ? 0.9 : (wm.resolution === 'low' ? 0.5 : 0.75);
+    // 3. Convert to Blob & Process (SMART COMPRESSION)
+    // 0.6 is the "sweet spot" for technical photos: 4x-5x smaller than raw, but clear enough for cracks.
+    const quality = 0.65; 
     const dataUrl = canvas.toDataURL('image/jpeg', quality);
     
     // 4. Cleanup & Save
     closeViewfinder();
-    
-    // Trigger Auto-Download
-    const link = document.createElement('a');
-    link.href = dataUrl;
-    link.download = `SLF_AUDIT_${_currentCameraCtx.kode}_${Date.now()}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
     
     // Standard Upload Flow
     const cleanB64 = dataUrl.split(',')[1];
@@ -136,20 +129,26 @@ async function drawWatermark(ctx, w, h, settings) {
     const totalLines = baseLines + tagsArr.length;
     const headerHeight = 80;
     const footerHeight = 40;
+    const footerPadding = 15;
     const boxW = Math.min(w * 0.85, 520);
     const boxH = headerHeight + (totalLines * lineSpacing) + footerPadding + footerHeight;
     const x = padding;
     const y = h - boxH - padding;
-    const footerPadding = 15;
 
-    // 2. Draw Glassmorphism Box
+    // 2. Draw Glassmorphism Box with Gradient
     ctx.save();
-    ctx.fillStyle = `rgba(18, 22, 33, ${wm.opacity || 0.85})`;
-    ctx.shadowBlur = 25;
+    
+    // Draw Background Gradient
+    const gradient = ctx.createLinearGradient(x, y, x + boxW, y + boxH);
+    gradient.addColorStop(0, `rgba(10, 15, 25, ${wm.opacity || 0.85})`);
+    gradient.addColorStop(1, `rgba(25, 30, 45, ${wm.opacity || 0.85})`);
+    
+    ctx.fillStyle = gradient;
+    ctx.shadowBlur = 30;
     ctx.shadowColor = 'rgba(0,0,0,0.6)';
     
     // Rounded Rect Path
-    const r = 16;
+    const r = 20;
     ctx.beginPath();
     ctx.moveTo(x+r, y); ctx.lineTo(x+boxW-r, y); ctx.quadraticCurveTo(x+boxW, y, x+boxW, y+r);
     ctx.lineTo(x+boxW, y+boxH-r); ctx.quadraticCurveTo(x+boxW, y+boxH, x+boxW-r, y+boxH);
@@ -158,9 +157,9 @@ async function drawWatermark(ctx, w, h, settings) {
     ctx.closePath();
     ctx.fill();
     
-    // Accent Border (Left)
-    ctx.fillStyle = '#ffb300';
-    ctx.fillRect(x, y, 6, boxH);
+    // Accent Border (Gold Left Stripe)
+    ctx.fillStyle = '#f59e0b'; // Amber-500
+    ctx.fillRect(x, y + r, 8, boxH - (r*2));
     ctx.restore();
     
     // 3. Draw Brand Header
@@ -319,19 +318,34 @@ export async function runVisionAnalysis(input, kode, componentName, kategori, as
         mimeType: img.mimeType, 
         name: `SLF_${kategori}_${kode}_${Date.now()}` 
      }));
-     const urls = await uploadToGoogleDrive(payload, currentProyekId, aspek, kode, currentProyek.drive_proxy_url);
-     if (urls?.length) {
-         const checklist = getChecklistState();
-         const currentItem = checklist.dataMap[kode] || { kode, kategori, aspek };
-         const existingUrls = currentItem.foto_urls || [];
-         const updatedItem = {
-             ...currentItem,
-             foto_urls: [...new Set([...existingUrls, ...urls])],
-             metadata: { ...(currentItem.metadata || {}), has_new_media: true }
-         };
-         updateChecklist({ dataMap: { ...checklist.dataMap, [kode]: updatedItem } });
-         markDirty(kode);
-         showSuccess(`Bukti ${componentName} berhasil diamankan.`);
+     const driveResults = await uploadToGoogleDrive(payload, currentProyekId, aspek, kode, currentProyek.drive_proxy_url);
+     if (driveResults?.length) {
+          const checklist = getChecklistState();
+          const currentItem = checklist.dataMap[kode] || { kode, kategori, aspek };
+          const existingUrls = currentItem.foto_urls || [];
+          const existingEvidence = currentItem.evidence_links || [];
+          
+          let newEvidence = [...existingEvidence];
+          const newUrls = [...existingUrls];
+
+          // Cross-Sync: Register to Global Files automatically
+          for (const res of driveResults) {
+              const fileRecord = await registerFileMetadata(currentProyekId, res.url, payload[0].name, 'lapangan', componentName, res.id);
+              if (fileRecord) {
+                newEvidence.push({ id: fileRecord.id, url: res.url, name: fileRecord.name });
+              }
+              newUrls.push(res.url);
+          }
+
+          const updatedItem = {
+              ...currentItem,
+              foto_urls: [...new Set(newUrls)],
+              evidence_links: newEvidence,
+              metadata: { ...(currentItem.metadata || {}), has_new_media: true }
+          };
+          updateChecklist({ dataMap: { ...checklist.dataMap, [kode]: updatedItem } });
+          markDirty(kode);
+          showSuccess(`Bukti ${componentName} berhasil diamankan.`);
      }
   } catch (err) {
      showError("Gagal sinkron bukti: " + err.message);
@@ -362,6 +376,25 @@ export async function autoFillFromAgents() {
 }
 
 /**
+ * Helper to convert a remote/proxy URL to ImageData (base64 + mime)
+ */
+async function urlToImageData(url) {
+    try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const b64 = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result.split(',')[1]);
+            reader.readAsDataURL(blob);
+        });
+        return { base64: b64, mimeType: blob.type };
+    } catch (e) {
+        console.error("Gagal convert URL to ImageData:", e);
+        return null;
+    }
+}
+
+/**
  * RESTORED: Smart Hybrid Engine (Batch Analysis)
  */
 export async function runBatchSmartEngine(kategori) {
@@ -374,13 +407,22 @@ export async function runBatchSmartEngine(kategori) {
   showInfo(`Menjalankan Smart Hybrid Engine untuk ${items.length} item...`);
   for (const item of items) {
     try {
-      const result = await analyzeChecklistImage(item.foto_urls[0], item.nama, currentProyek);
-      const currentItem = store.get().checklist.dataMap[item.kode];
+      // Convert URL to Base64 for Gemini/AI
+      const imageData = await urlToImageData(item.foto_urls[0]);
+      if (!imageData) continue;
+
+      const result = await analyzeChecklistImage([imageData], item.nama, item.kategori, item.aspek);
+      console.log(`[AI Engine] Result for ${item.kode}:`, result);
+      
+      const currentItem = store.get().checklist.dataMap[item.kode] || { kode: item.kode };
+      const oldCatatan = currentItem.catatan || '';
+      const newCatatan = result.catatan ? (oldCatatan + (oldCatatan ? '\n' : '') + `[AI ANALYSIS]: ${result.catatan}`) : oldCatatan;
+      
       const updatedItem = {
         ...currentItem,
-        status: result.status || 'Sesuai',
-        catatan: (currentItem.catatan || '') + `\n[AI ANALYSIS]: ${result.analysis}`,
-        rekomendasi: result.recommendation || ''
+        status: result.status || currentItem.status || 'Sesuai',
+        catatan: newCatatan,
+        rekomendasi: result.rekomendasi || result.recommendation || currentItem.rekomendasi || ''
       };
       const newMap = { ...store.get().checklist.dataMap, [item.kode]: updatedItem };
       updateChecklist({ dataMap: newMap });
@@ -419,18 +461,33 @@ export async function toggleVoiceAudit(kode) {
         return;
     }
     updateChecklist({ dataMap: { ...checklist.dataMap, [kode]: { ...item, isRecording: true } } });
-    showInfo("Mendengarkan... Klik ikon Kotak untuk berhenti.");
+    showInfo("Mendengarkan... Katakan temuan Bapak (Sebutkan 'Sesuai' atau 'Rusak' untuk set status).");
+    
     voiceService.start(async (transcript) => {
         showInfo("Memproses narasi teknis...");
         try {
+            // 1. Formalize Narrative
             const formal = await voiceService.formalize(transcript);
+            
+            // 2. Infer Status (Smart Command)
+            const options = item.kategori === 'administrasi' ? ADMIN_OPTIONS : CONDITION_OPTIONS;
+            const inferredStatus = await voiceService.inferStatus(transcript, options);
+
             const state = store.get().checklist;
             const currentItem = state.dataMap[kode] || { kode };
+            
             const updatedItem = {
                 ...currentItem,
                 catatan: (currentItem.catatan ? currentItem.catatan + '\n' : '') + `[VOICE AUDIT]: ${formal}`,
                 isRecording: false
             };
+
+            // Apply inferred status if found
+            if (inferredStatus) {
+                updatedItem.status = inferredStatus;
+                showInfo(`Status otomatis diatur ke: ${inferredStatus.replace('_', ' ').toUpperCase()}`);
+            }
+
             updateChecklist({ dataMap: { ...state.dataMap, [kode]: updatedItem } });
             markDirty(kode);
             showSuccess("Catatan diperbarui dengan bahasa ahli.");
@@ -443,81 +500,130 @@ export async function toggleVoiceAudit(kode) {
 }
 
 /**
- * FETCH AND SYNC ITEM DATA FROM DRIVE (AUTO-MATCHING)
+ * FETCH AND SYNC ITEM DATA (INTELLIGENT EXTRACTION)
+ * Scans local state (Photos/Voice) and Drive for evidence, then extracts findings.
  */
 export async function fetchItemData(kode, nama) {
   const { currentProyekId, currentProyek, checklist } = store.get();
   if (!currentProyekId) return;
 
   try {
-    showInfo(`Mencari data ${nama} di Drive Proyek...`);
+    const item = checklist.dataMap[kode] || { kode };
     
-    // 1. Fetch ALL project files (Discovery)
+    // 1. Check for LOCAL evidence first (Photos from Camera/Upload)
+    if (item.foto_urls?.length > 0 && !item.status) {
+       showInfo(`Mengekstrak temuan dari foto yang ada...`);
+       try {
+           const imageData = await urlToImageData(item.foto_urls[0]);
+           if (imageData) {
+               const result = await analyzeChecklistImage([imageData], nama, item.kategori, item.aspek);
+               console.log(`[AI Vision] Result for ${kode}:`, result);
+               
+               const state = store.get().checklist;
+               const current = state.dataMap[kode] || { kode };
+               
+               const oldCatatan = current.catatan || '';
+               const aiNote = result.catatan || result.findings || '';
+               const aiRemedy = result.rekomendasi || result.recommendation || '';
+               
+               let finalAiNote = aiNote;
+               if (!finalAiNote && aiRemedy) finalAiNote = `[TEMUAN TERDETEKSI]: Membutuhkan ${aiRemedy}`;
+               
+               const newCatatan = finalAiNote ? (oldCatatan + (oldCatatan ? '\n' : '') + `[AI VISION]: ${finalAiNote}`) : oldCatatan;
+
+               const updated = {
+                   ...current,
+                   status: result.status || current.status || 'ada_sesuai',
+                   catatan: newCatatan,
+                   rekomendasi: aiRemedy || current.rekomendasi || '',
+                   metadata: { ...(current.metadata || {}), ai_processed: true }
+               };
+               updateChecklist({ dataMap: { ...state.dataMap, [kode]: updated } });
+               markDirty(kode);
+               showSuccess("Temuan dari foto berhasil ditarik.");
+           }
+       } catch (e) {
+           console.warn("Local photo analysis failed:", e);
+       }
+    }
+
+    // 2. Fetch DISCOVERY from Drive Proyek (SIMBG)
+    showInfo(`Mengkoneksikan berkas Drive untuk ${nama}...`);
     const files = await import('./drive.js').then(m => m.fetchDriveFiles(currentProyekId, currentProyek.drive_proxy_url));
     
-    if (!files?.length) {
-      showInfo(`Tidak ditemukan berkas di Drive Proyek.`);
-      return;
-    }
+    if (files?.length) {
+      const matchingFiles = files.filter(f => 
+        f.name.toUpperCase().includes(kode.toUpperCase()) || 
+        f.name.toLowerCase().includes(kode.toLowerCase())
+      );
 
-    // 2. Discover files matching the Code (e.g. SLF_Admin_A01)
-    const matchingFiles = files.filter(f => 
-      f.name.toUpperCase().includes(kode.toUpperCase()) || 
-      f.name.toLowerCase().includes(kode.toLowerCase())
-    );
+      if (matchingFiles.length) {
+        const urls = matchingFiles.map(f => f.url);
+        const existingUrls = item.foto_urls || [];
+        const uniqueUrls = [...new Set([...existingUrls, ...urls])];
 
-    if (!matchingFiles.length) {
-      showInfo(`Tidak ada berkas spesifik untuk kode ${kode}.`);
-      return;
-    }
+        if (uniqueUrls.length > existingUrls.length) {
+           const state = store.get().checklist;
+           const current = state.dataMap[kode] || { kode, foto_urls: [] };
+           
+           const updatedItem = {
+             ...current,
+             foto_urls: uniqueUrls,
+             metadata: { ...(current.metadata || {}), last_sync: new Date().toISOString() }
+           };
+           
+           updateChecklist({ dataMap: { ...state.dataMap, [kode]: updatedItem } });
+           markDirty(kode);
+           showSuccess(`Sinkron Berhasil: ${matchingFiles.length} berkas Drive terdeteksi.`);
 
-    // 3. Update Checklist Store
-    const urls = matchingFiles.map(f => f.url);
-    const item = checklist.dataMap[kode] || { kode };
-    const existingUrls = item.foto_urls || [];
-    const uniqueUrls = [...new Set([...existingUrls, ...urls])];
+            // Auto-analyze NEW Drive Image if status still empty
+            const firstImg = matchingFiles.find(f => f.mimeType.startsWith('image/'));
+            if (firstImg && !updatedItem.status) {
+               showInfo(`Mengekstrak temuan dari berkas Drive...`);
+               const imageData = await urlToImageData(firstImg.url);
+               if (imageData) {
+                  const res = await analyzeChecklistImage([imageData], nama, updatedItem.kategori, updatedItem.aspek);
+                  console.log(`[AI Drive] Result for ${kode}:`, res);
+                  
+                  const refreshedState = store.get().checklist;
+                  const refreshedItem = refreshedState.dataMap[kode] || { kode };
+                  
+                   const oldCatatan = refreshedItem.catatan || '';
+                  const aiNote = res.catatan || res.findings || '';
+                  const aiRemedy = res.rekomendasi || res.recommendation || '';
+                  
+                  // Logic: If AI gives diagnosis/findings, use that. If empty but has remedy, use remedy as fallback notes.
+                  let finalAiNote = aiNote;
+                  if (!finalAiNote && aiRemedy) finalAiNote = `[TEMUAN TERDETEKSI]: Berdasarkan analisis, diperlukan: ${aiRemedy}`;
+                  
+                  const newCatatan = finalAiNote ? (oldCatatan + (oldCatatan ? '\n' : '') + `[AI DRIVE]: ${finalAiNote}`) : oldCatatan;
 
-    if (uniqueUrls.length > existingUrls.length) {
-      const updatedItem = {
-        ...item,
-        foto_urls: uniqueUrls,
-        metadata: { ...(item.metadata || {}), last_sync: new Date().toISOString() }
-      };
-      
-      updateChecklist({ dataMap: { ...checklist.dataMap, [kode]: updatedItem } });
-      markDirty(kode);
-      showSuccess(`Ditemukan ${matchingFiles.length} berkas baru untuk ${nama}.`);
-      
-      // 4. Auto-Analyze if image is found
-      const firstImg = matchingFiles.find(f => f.mimeType.startsWith('image/'));
-      if (firstImg && !item.status) {
-        showInfo(`Menjalankan AI Vision pada bukti yang ditemukan...`);
-        try {
-          const result = await analyzeChecklistImage(firstImg.url, nama, currentProyek);
-          const state = store.get().checklist;
-          const current = state.dataMap[kode];
-          updateChecklist({ 
-            dataMap: { 
-              ...state.dataMap, 
-              [kode]: { 
-                ...current, 
-                status: result.status || current.status,
-                catatan: (current.catatan || '') + `\n[AI SYNC]: ${result.analysis}`,
-                rekomendasi: result.recommendation || current.rekomendasi
-              } 
-            } 
-          });
-          markDirty(kode);
-          showSuccess(`Analisis sinkronisasi ${kode} selesai.`);
-        } catch (e) {
-          console.warn("Auto-sync analysis failed:", e);
+                  const updatedFull = { 
+                        ...refreshedItem, 
+                        status: res.status || refreshedItem.status || 'ada_sesuai',
+                        catatan: newCatatan,
+                        rekomendasi: aiRemedy || refreshedItem.rekomendasi || ''
+                  };
+
+                  updateChecklist({ 
+                    dataMap: { 
+                      ...refreshedState.dataMap, 
+                      [kode]: updatedFull
+                    } 
+                  });
+                  markDirty(kode);
+               }
+            }
+        } else {
+           showInfo(`Semua berkas Drive sudah sinkron.`);
         }
+      } else {
+        showInfo(`Tidak ditemukan berkas spesifik di Drive.`);
       }
-    } else {
-      showInfo(`Data ${kode} sudah sinkron.`);
     }
 
   } catch (err) {
+    console.error("FetchItemData Error:", err);
     showError("Gagal sinkron data: " + err.message);
   }
 }
@@ -564,9 +670,20 @@ export async function autoSyncProjectData() {
         const uniqueUrls = [...new Set([...existingUrls, ...urls])];
 
         if (uniqueUrls.length > existingUrls.length) {
+          let newEvidence = [...(item.evidence_links || [])];
+
+          // Register in Global Files too (Consistency)
+          for (const f of matchingFiles) {
+             const fileRecord = await registerFileMetadata(currentProyekId, f.url, f.name, 'lapangan', item.nama, f.id);
+             if (fileRecord) {
+                newEvidence.push({ id: fileRecord.id, url: f.url, name: f.name });
+             }
+          }
+
           newMap[kode] = {
             ...item,
             foto_urls: uniqueUrls,
+            evidence_links: newEvidence,
             metadata: { 
               ...(item.metadata || {}), 
               is_ai_draft: true,
@@ -603,19 +720,32 @@ export async function autoSyncProjectData() {
       
       for (const task of topItems) {
         try {
-          const result = await analyzeChecklistImage(task.url, task.nama, currentProyek);
-          const state = store.get().checklist;
-          const current = state.dataMap[task.kode];
-          if (current) {
-            const updated = {
-              ...current,
-              status: result.status || 'Sesuai',
-              catatan: (current.catatan || '') + `\n[AI AUTO-DRAFT]: ${result.analysis}`,
-              rekomendasi: result.recommendation || '',
-              metadata: { ...(current.metadata || {}), ai_analyzed: true }
-            };
-            updateChecklist({ dataMap: { ...state.dataMap, [task.kode]: updated } });
-            markDirty(task.kode);
+          const imageData = await urlToImageData(task.url);
+          if (imageData) {
+            const currentItem = store.get().checklist.dataMap[task.kode] || { kode: task.kode };
+            const result = await analyzeChecklistImage([imageData], task.nama, currentItem.kategori || 'teknis', currentItem.aspek || 'Teknis');
+            const state = store.get().checklist;
+            const current = state.dataMap[task.kode] || { kode: task.kode };
+            if (current) {
+              const oldCatatan = current.catatan || '';
+              const aiNote = result.catatan || result.findings || '';
+              const aiRemedy = result.rekomendasi || result.recommendation || '';
+              
+              let finalAiNote = aiNote;
+              if (!finalAiNote && aiRemedy) finalAiNote = `[DRAF TEMUAN]: Membutuhkan ${aiRemedy}`;
+              
+              const newCatatan = finalAiNote ? (oldCatatan + (oldCatatan ? '\n' : '') + `[AI AUTO-DRAFT]: ${finalAiNote}`) : oldCatatan;
+
+              const updated = {
+                ...current,
+                status: result.status || 'Sesuai',
+                catatan: newCatatan,
+                rekomendasi: aiRemedy || '',
+                metadata: { ...(current.metadata || {}), ai_analyzed: true }
+              };
+              updateChecklist({ dataMap: { ...state.dataMap, [task.kode]: updated } });
+              markDirty(task.kode);
+            }
           }
         } catch (e) {
           console.warn(`Auto-analysis failed for ${task.kode}:`, e);

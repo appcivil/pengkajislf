@@ -512,10 +512,10 @@ export function parseAIJson(text) {
 export async function runOCRAnalysis(base64Data, mimeType) {
   const model = MODELS.GEMINI;
   const prompt = `
-    Anda adalah AI Data Entry Spesialis Perizinan Bangunan (SIMBG).
-    Tugas: Ekstrak data teknis dari dokumen IMB/PBG/Sertifikat Tanah yang terlampir.
+    Anda adalah AI Data Entry Spesialis Perizinan Bangunan (IMB/PBG) di Indonesia.
+    Tugas: Ekstrak data teknis secara presisi dari dokumen yang diberikan (Scan IMB/PBG/Sertifikat).
     
-    Ekstrak field berikut dalam format JSON:
+    Ekstrak field berikut dalam format JSON murni:
     {
       "nama_bangunan": "...",
       "pemilik": "...",
@@ -523,7 +523,6 @@ export async function runOCRAnalysis(base64Data, mimeType) {
       "luas_bangunan": 0,
       "luas_lahan": 0,
       "jumlah_lantai": 0,
-      "tahun_dibangun": 0,
       "nomor_pbg": "...",
       "fungsi_bangunan": "...",
       "gsb": 0,
@@ -532,7 +531,11 @@ export async function runOCRAnalysis(base64Data, mimeType) {
       "kdh": 0
     }
     
-    PENTING: Jika data tidak ditemukan, berikan nilai null atau 0. Kembalikan HANYA JSON.
+    PENTING: 
+    - Nama Bangunan biasanya ada setelah kata 'Membangun Baru' atau judul dokumen.
+    - Luas bangunan dalam m2 (meter persegi).
+    - Jika data tidak ditemukan, berikan nilai null. 
+    - Kembalikan HANYA JSON tanpa teks penjelasan.
   `;
 
   const resText = await fetchGeminiVision(model, prompt, base64Data, mimeType);

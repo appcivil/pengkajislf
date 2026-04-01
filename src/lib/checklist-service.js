@@ -13,6 +13,7 @@ import { saveOfflineDrafts } from './sync.js';
  */
 export async function loadChecklistData(proyekId) {
   try {
+
     const { data, error } = await supabase
       .from('checklist_items')
       .select('*')
@@ -63,55 +64,93 @@ export async function doSave(showToast = true) {
   const { currentProyekId, checklist } = state;
   if (!currentProyekId) return;
 
-  if (showToast) updateChecklist({ isSaving: true });
+  // Set saving state for UI feedback
+  updateChecklist({ isSaving: true });
 
-  // 1. Prepare Payload
-  const validItems = Object.values(checklist.dataMap)
+  // 1. Prepare Payload (Cleanup and ensure consistent types)
+  const itemsMap = new Map();
+  
+  Object.values(checklist.dataMap)
     .filter(item => item.status && item.status !== '')
-    .map(item => ({
-       ...item,
-       proyek_id: currentProyekId,
-       updated_at: new Date().toISOString()
-    }));
+    .forEach(item => {
+        const cleaned = { 
+           kode: item.kode,
+           nama: item.nama || 'Item Pemeriksaan',
+           status: item.status || null,
+           catatan: item.catatan || null,
+           rekomendasi: item.rekomendasi || null,
+           remedy_time: item.remedy_time || null,
+           foto_urls: Array.isArray(item.foto_urls) ? item.foto_urls : [],
+           evidence_links: Array.isArray(item.evidence_links) ? item.evidence_links : [],
+           nilai: Number(item.nilai) || 0,
+           bobot: Number(item.bobot) || 0,
+           is_wajib: Boolean(item.is_wajib),
+           metadata: typeof item.metadata === 'object' ? item.metadata : {},
+           kategori: item.kategori || 'teknis',
+           sub_kategori: item.sub_kategori || null,
+           aspek: item.aspek || null,
+           proyek_id: currentProyekId
+        };
+        
+        // ONLY send ID if it's a valid UUID
+        if (item.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id)) {
+           cleaned.id = item.id;
+        }
+
+        // Deduplicate by kode (latest one wins)
+        itemsMap.set(item.kode, cleaned);
+    });
+
+  const validItems = Array.from(itemsMap.values());
 
   if (validItems.length === 0) {
-    if (showToast) {
-        showInfo('Pekerjaan disimpan. (Belum ada status terisi)');
-        updateChecklist({ isSaving: false });
-    }
+    if (showToast) showInfo('Pekerjaan disimpan.');
+    updateChecklist({ isSaving: false });
     return;
   }
 
   try {
-    // 2. ALWAYS Save to Offline Storage first (Backup)
+    // 2. ALWAYS Save to Offline Storage (IndexedDB/Cache)
     await saveOfflineDrafts(validItems);
 
     // 3. If Online, Sync to Supabase
     if (navigator.onLine) {
       const { error } = await supabase.from('checklist_items').upsert(
         validItems, 
-        { onConflict: 'proyek_id, kode' }
+        { onConflict: 'proyek_id,kode' }
       );
 
       if (error) throw error;
 
       // Update Project Progress (Calculated weight)
-      const clPct = Math.round((validItems.length / 70) * 100); // 70 is a rough total
-      const progress = Math.min(40, Math.round(clPct * 0.4));
+      // Assuming 120 items total for a full building audit
+      const progress = Math.min(45, Math.round((validItems.length / 120) * 100));
       await supabase.from('proyek').update({ progress }).eq('id', currentProyekId);
 
       if (showToast) {
         logActivity('SIMPAN_CHECKLIST', currentProyekId, { items_count: validItems.length });
-        showSuccess('Data berhasil disinkronkan ke Cloud!');
+        showSuccess('Data berhasil disinkronkan!');
       }
       
-      updateChecklist({ isDirty: false, dirtyKodes: new Set(), lastSaveTime: new Date().toISOString() });
+      updateChecklist({ 
+        isDirty: false, 
+        dirtyKodes: new Set(), 
+        lastSaveTime: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) 
+      });
     } else {
-      if (showToast) showInfo('Mode Offline: Data disimpan di antrean perangkat.');
+      if (showToast) showInfo('Mode Offline: Tersimpan di perangkat.');
     }
   } catch (err) {
-    showError('Kesalahan sinkronisasi: ' + err.message);
+    console.error("[SaveError]", err);
+    let msg = err.message;
+    if (msg.includes("column") && msg.includes("not found")) {
+      msg = `Kolom database belum sinkron. Harap jalankan SQL Update v14.1 (Error: ${msg})`;
+    }
+    if (showToast) showError('Gagal menyimpan: ' + msg);
   } finally {
-    if (showToast) updateChecklist({ isSaving: false });
+    // Small delay to prevent flickering on fast connections
+    setTimeout(() => {
+        updateChecklist({ isSaving: false });
+    }, 800);
   }
 }

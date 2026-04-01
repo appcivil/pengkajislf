@@ -1,12 +1,13 @@
 // ============================================================
 //  PROYEK DETAIL PAGE
-//  Hub navigasi per proyek — info, workflow, tab navigasi
+//  PRESIDENTIAL CLASS (QUARTZ PREMIUM)
+//  Strategic Management Hub for Building Assets
 // ============================================================
 import { supabase } from '../lib/supabase.js';
 import { isAdmin }  from '../lib/auth.js';
-import { getAuditLogs } from '../lib/audit-service.js';
+import { getAuditLogs, getReportVersions } from '../lib/audit-service.js';
 import { navigate }  from '../lib/router.js';
-import { showSuccess, showError } from '../components/toast.js';
+import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { confirm }   from '../components/modal.js';
 import { APP_CONFIG } from '../lib/config.js';
 import { syncWithSIMBG, pushToSIMBG } from '../lib/simbg.js';
@@ -35,7 +36,7 @@ export async function proyekDetailPage(params = {}) {
   const html = buildHtml(proyek, checklistStats, analisisData, pic);
   if (root) {
     root.innerHTML = html;
-    initAfterRender(proyek, checklistStats, analisisData);
+    initProyekDetailAfterRender(proyek, checklistStats, analisisData);
   }
   return html;
 }
@@ -43,635 +44,603 @@ export async function proyekDetailPage(params = {}) {
 // ── HTML Builder ─────────────────────────────────────────────
 function buildHtml(p, stats, analisis, pic) {
   const statusMap = {
-    LAIK_FUNGSI:           { label: 'Laik Fungsi',       cls: 'badge-laik',       icon: 'fa-circle-check' },
-    LAIK_FUNGSI_BERSYARAT: { label: 'Laik Bersyarat',    cls: 'badge-bersyarat',  icon: 'fa-triangle-exclamation' },
-    TIDAK_LAIK_FUNGSI:     { label: 'Tidak Laik Fungsi', cls: 'badge-tidak-laik', icon: 'fa-circle-xmark' },
-    DALAM_PENGKAJIAN:      { label: 'Dalam Pengkajian',  cls: 'badge-proses',     icon: 'fa-clock' },
+    LAIK_FUNGSI:           { label: 'LAIK FUNGSI',       cls: 'badge-laik',       icon: 'fa-shield-check',   color: 'var(--success-400)' },
+    LAIK_FUNGSI_BERSYARAT: { label: 'LAIK BERSYARAT',    cls: 'badge-bersyarat',  icon: 'fa-triangle-exclamation', color: 'var(--gold-400)' },
+    TIDAK_LAIK_FUNGSI:     { label: 'TIDAK LAIK',        cls: 'badge-tidak-laik', icon: 'fa-circle-xmark',   color: 'var(--danger-400)' },
+    DALAM_PENGKAJIAN:      { label: 'DALAM PENGKAJIAN',  cls: 'badge-proses',     icon: 'fa-clock',          color: 'var(--brand-400)' },
   };
   const st = statusMap[p.status_slf] || statusMap['DALAM_PENGKAJIAN'];
   const prog = p.progress || 0;
 
   const workflowSteps = [
-    { label: 'Input Data',          icon: 'fa-file-pen',          key: 'input' },
-    { label: 'Checklist',           icon: 'fa-clipboard-check',   key: 'checklist' },
-    { label: 'Analisis AI',         icon: 'fa-brain',             key: 'analisis' },
-    { label: 'Laporan Draft',       icon: 'fa-file-alt',          key: 'laporan' },
-    { label: 'Finalisasi SLF',      icon: 'fa-certificate',       key: 'final' },
+    { label: 'INTEGRITAS DATA', icon: 'fa-database',       key: 'input' },
+    { label: 'AUDIT TEKNIS',    icon: 'fa-clipboard-check', key: 'checklist' },
+    { label: 'AI ANALYTICS',    icon: 'fa-brain-circuit',   key: 'analisis' },
+    { label: 'EXECUTIVE RPT',   icon: 'fa-file-seal',       key: 'laporan' },
+    { label: 'CERTIFICATION',   icon: 'fa-certificate',     key: 'final' },
   ];
 
   const currentStep = prog < 20 ? 0 : prog < 40 ? 1 : prog < 60 ? 2 : prog < 80 ? 3 : 4;
 
   return `
-    <div id="proyek-detail-page">
+    <div id="proyek-detail-page" style="animation: page-fade-in 0.8s ease-out">
+      
+      <!-- Presidential Hero Header -->
+      <div class="card-quartz" style="padding: var(--space-8); margin-bottom: var(--space-8); background: var(--gradient-dark); border-color: hsla(220, 95%, 52%, 0.2); position:relative; overflow:hidden">
+         <!-- Abstract Background Effect -->
+         <div style="position:absolute; right:-100px; top:-100px; width:400px; height:400px; border-radius:50%; background:radial-gradient(circle, hsla(220, 95%, 52%, 0.1) 0%, transparent 70%); pointer-events:none"></div>
 
-      <!-- Back + Actions -->
-      <div class="page-header">
-        <div class="flex-between">
-          <div>
-            <button class="btn btn-ghost btn-sm" onclick="window.navigate('proyek')" style="margin-bottom:8px">
-              <i class="fas fa-arrow-left"></i> Semua Proyek
-            </button>
-            <h1 class="page-title" style="margin-bottom:4px">${escHtml(p.nama_bangunan)}</h1>
-            <div class="flex gap-3" style="align-items:center;flex-wrap:wrap">
-              <span class="badge ${st.cls}"><i class="fas ${st.icon}" style="margin-right:4px"></i>${st.label}</span>
-              <span class="text-sm text-tertiary"><i class="fas fa-map-marker-alt" style="margin-right:4px"></i>${escHtml(p.alamat || '-')}</span>
-              ${p.nomor_pbg ? `<span class="text-sm text-tertiary"><i class="fas fa-file-certificate" style="margin-right:4px"></i>PBG: ${escHtml(p.nomor_pbg)}</span>` : ''}
-              ${p.metadata?.nomor_surat ? `<span class="badge badge-info" style="font-size:0.75rem"><i class="fas fa-barcode" style="margin-right:4px"></i>${escHtml(p.metadata.nomor_surat)}</span>` : ''}
-            </div>
-          </div>
-          <div class="flex gap-3">
-            <button class="btn btn-ghost btn-sm" onclick="window.navigate('proyek-edit', {id:'${p.id}'})">
-              <i class="fas fa-pen"></i> Edit
-            </button>
-            <button class="btn btn-danger btn-sm" onclick="window._hapusProyek('${p.id}')">
-              <i class="fas fa-trash"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Workflow Timeline -->
-      <div class="card" style="margin-bottom:var(--space-5);padding:var(--space-5)">
-        <div class="card-title" style="margin-bottom:var(--space-4)">
-          <i class="fas fa-route" style="color:var(--brand-400);margin-right:8px"></i>Alur Pengkajian SLF
-        </div>
-        <div class="workflow-timeline">
-          ${workflowSteps.map((s, i) => `
-            <div class="workflow-step ${i < currentStep ? 'done' : i === currentStep ? 'active' : ''}">
-              <div class="wf-icon"><i class="fas ${s.icon}"></i></div>
-              <div class="wf-label">${s.label}</div>
-              ${i < workflowSteps.length - 1 ? '<div class="wf-connector"></div>' : ''}
-            </div>
-          `).join('')}
-        </div>
-        <div style="margin-top:var(--space-4)">
-          <div class="flex-between mb-1">
-            <span class="text-sm text-secondary">Progress Keseluruhan</span>
-            <span class="text-sm font-semibold text-primary">${prog}%</span>
-          </div>
-          <div class="progress-wrap" style="height:8px">
-            <div class="progress-fill ${prog >= 80 ? 'green' : prog >= 40 ? 'blue' : 'yellow'}"
-                 style="width:${prog}%;transition:width 1s ease"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Main Grid (Responsive) -->
-      <div class="grid-main-responsive" style="display:grid;gap:var(--space-5)">
-
-        <!-- Left: Tab Navigasi Fitur -->
-        <div style="display:flex;flex-direction:column;gap:var(--space-4)">
-
-          <!-- Quick Nav Cards (Responsive 2-to-1) -->
-          <div class="grid-2-1">
-
-            <!-- Checklist -->
-            <div class="feature-nav-card" onclick="window.navigate('checklist',{id:'${p.id}'})">
-              <div class="fnc-icon" style="background:linear-gradient(135deg,hsl(220,70%,45%),hsl(220,70%,60%))">
-                <i class="fas fa-clipboard-check"></i>
-              </div>
-              <div class="fnc-body">
-                <div class="fnc-title">Checklist Pemeriksaan</div>
-                <div class="fnc-desc">Administrasi · Teknis · Lapangan</div>
-                <div class="fnc-meta">
-                  <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
-                    <div class="progress-wrap" style="flex:1;height:5px">
-                      <div class="progress-fill blue" style="width:${stats.pct}%"></div>
-                    </div>
-                    <span class="text-xs text-tertiary">${stats.done}/${stats.total}</span>
-                  </div>
-                </div>
-              </div>
-              <i class="fas fa-arrow-right fnc-arrow"></i>
-            </div>
-
-            <!-- Pemeriksaan Kondisi (Permen PU 16/2010) -->
-            <div class="feature-nav-card" onclick="window.navigate('kondisi', {id:'${p.id}'})">
-              <div class="fnc-icon" style="background:linear-gradient(135deg,hsl(20,80%,45%),hsl(20,80%,60%))">
-                <i class="fas fa-house-medical-check"></i>
-              </div>
-              <div class="fnc-body">
-                <div class="fnc-title">Pemeriksaan Kondisi</div>
-                <div class="fnc-desc">Permen PU 16/2010 · Bobot Kerusakan</div>
-                <div class="fnc-meta">
-                  <span class="badge badge-proses" style="margin-top:8px;font-size:0.7rem">Nilai IKF / Kondisi Fisik</span>
-                </div>
-              </div>
-              <i class="fas fa-arrow-right fnc-arrow"></i>
-            </div>
-
-            <!-- Galeri Foto & Bukti Visual -->
-            <div class="feature-nav-card" onclick="window.navigate('galeri', {id:'${p.id}'})">
-              <div class="fnc-icon" style="background:linear-gradient(135deg,hsl(200,80%,45%),hsl(200,80%,60%))">
-                <i class="fas fa-images"></i>
-              </div>
-              <div class="fnc-body">
-                <div class="fnc-title">Galeri Bukti Visual</div>
-                <div class="fnc-desc">Manajemen Foto · Lampiran Laporan</div>
-                <div class="fnc-meta">
-                  <span class="badge badge-info" style="margin-top:8px;font-size:0.7rem">Foto Temuan & Audit</span>
-                </div>
-              </div>
-              <i class="fas fa-arrow-right fnc-arrow"></i>
-            </div>
-
-            <!-- Analisis -->
-            <div class="feature-nav-card" onclick="window.navigate('analisis',{id:'${p.id}'})">
-              <div class="fnc-icon" style="background:linear-gradient(135deg,hsl(258,70%,45%),hsl(258,70%,60%))">
-                <i class="fas fa-brain"></i>
-              </div>
-              <div class="fnc-body">
-                <div class="fnc-title">Analisis AI</div>
-                <div class="fnc-desc">Rule-based · Risk Scoring · Rekomendasi</div>
-                <div class="fnc-meta">
-                  ${analisis
-                    ? `<span class="badge badge-laik" style="margin-top:8px;font-size:0.7rem">Skor ${analisis.skor_total}/100</span>`
-                    : `<span class="text-xs text-tertiary" style="margin-top:8px;display:block">Belum dianalisis</span>`
-                  }
-                </div>
-              </div>
-              <i class="fas fa-arrow-right fnc-arrow"></i>
-            </div>
-
-            <!-- Laporan -->
-            <div class="feature-nav-card" onclick="window.navigate('laporan',{id:'${p.id}'})">
-              <div class="fnc-icon" style="background:linear-gradient(135deg,hsl(160,65%,35%),hsl(160,65%,50%))">
-                <i class="fas fa-file-invoice"></i>
-              </div>
-              <div class="fnc-body">
-                <div class="fnc-title">Laporan Kajian SLF</div>
-                <div class="fnc-desc">Preview · Export PDF · Word</div>
-                <div class="fnc-meta">
-                  <span class="text-xs text-tertiary" style="margin-top:8px;display:block">
-                    ${analisis ? 'Data analisis tersedia' : 'Lengkapi analisis terlebih dahulu'}
+         <div class="flex-between" style="align-items:flex-start; position:relative; z-index:2">
+            <div>
+               <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek')" style="margin-bottom:20px; color:var(--brand-300); padding:0; font-weight:700; letter-spacing:1px">
+                 <i class="fas fa-arrow-left" style="margin-right:8px"></i> SEMUA ASSET STRATEGIS
+               </button>
+               <h1 style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.4rem; color:white; letter-spacing:-0.03em; margin:0; line-height:1.1">
+                 ${escHtml(p.nama_bangunan)}
+               </h1>
+               <div style="display:flex; gap:16px; margin-top:20px; align-items:center">
+                  <span class="badge" style="background:${st.color}1a; border:1px solid ${st.color}44; color:${st.color}; font-weight:800; font-family:var(--font-mono); font-size:11px; padding:6px 12px">
+                    <i class="fas ${st.icon}" style="margin-right:6px"></i> ${st.label}
                   </span>
-                </div>
-              </div>
-              <i class="fas fa-arrow-right fnc-arrow"></i>
-            </div>
-
-            <!-- Surat Pernyataan (PP 16/2021) -->
-            <div class="feature-nav-card" onclick="window.navigate('surat-pernyataan',{id:'${p.id}'})">
-              <div class="fnc-icon" style="background:linear-gradient(135deg,hsl(210,80%,40%),hsl(210,80%,55%))">
-                <i class="fas fa-file-contract"></i>
-              </div>
-              <div class="fnc-body">
-                <div class="fnc-title">Surat Pernyataan</div>
-                <div class="fnc-desc">Formal PP 16/2021 · Konsultan & Pemilik</div>
-                <div class="fnc-meta">
-                  <span class="badge badge-info" style="margin-top:8px;font-size:0.7rem">Format Legal SIMBG</span>
-                </div>
-              </div>
-              <i class="fas fa-arrow-right fnc-arrow"></i>
-            </div>
-
-            <!-- TODO -->
-            <div class="feature-nav-card" onclick="window.navigate('todo',{proyekId:'${p.id}'})">
-              <div class="fnc-icon" style="background:linear-gradient(135deg,hsl(40,80%,40%),hsl(40,80%,55%))">
-                <i class="fas fa-list-check"></i>
-              </div>
-              <div class="fnc-body">
-                <div class="fnc-title">TODO & Tindak Lanjut</div>
-                <div class="fnc-desc">Penyelesaian temuan & rekomendasi</div>
-                <div class="fnc-meta">
-                  <span class="badge badge-proses" style="margin-top:8px;font-size:0.75rem">Task Management Aktif</span>
-                </div>
-              </div>
-              <i class="fas fa-arrow-right fnc-arrow"></i>
-            </div>
-
-            <!-- Manajemen Berkas SIMBG -->
-            <div class="feature-nav-card" onclick="window.navigate('proyek-files',{id:'${p.id}'})">
-              <div class="fnc-icon" style="background:linear-gradient(135deg,hsl(30,80%,45%),hsl(30,80%,60%))">
-                <i class="fas fa-folder-tree"></i>
-              </div>
-              <div class="fnc-body">
-                <div class="fnc-title">Manajemen Berkas SIMBG</div>
-                <div class="fnc-desc">Arsitektur · Struktur · MEP · Umum</div>
-                <div class="fnc-meta">
-                  <span class="text-xs text-secondary" style="margin-top:8px;display:block">
-                    <i class="fas fa-check-circle" style="color:var(--brand-400)"></i> Sesuai standar Dokumen SIMBG
+                  <span class="badge" style="background:hsla(220, 20%, 100%, 0.05); border:1px solid hsla(220, 20%, 100%, 0.1); color:var(--text-secondary); font-weight:700; font-size:11px; padding:6px 12px">
+                    <i class="fas fa-location-dot" style="margin-right:6px; color:var(--brand-400)"></i> ${escHtml(p.kota || 'INDONESIA')}
                   </span>
-                </div>
-              </div>
-              <i class="fas fa-arrow-right fnc-arrow"></i>
+                  <div style="width:1px; height:20px; background:hsla(220, 20%, 100%, 0.1)"></div>
+                  <span style="font-family:var(--font-mono); font-size:11px; font-weight:800; color:var(--gold-400); letter-spacing:1px">
+                    ${p.nomor_pbg || 'NO REGISTRATION'}
+                  </span>
+               </div>
             </div>
-          </div>
+            
+            <div class="flex gap-3">
+               <button class="btn btn-outline" style="height:48px; border-radius:14px; border-color:hsla(220, 20%, 100%, 0.1); color:white" onclick="window.navigate('proyek-edit', {id:'${p.id}'})">
+                 <i class="fas fa-pen-nib" style="margin-right:8px"></i> Edit Manifest
+               </button>
+               <button class="btn btn-ghost" style="height:48px; width:48px; padding:0; border-radius:14px; background:hsla(0, 85%, 60%, 0.1); color:var(--danger-400)" onclick="window._hapusProyek('${p.id}')">
+                 <i class="fas fa-trash-can"></i>
+               </button>
+            </div>
+         </div>
 
-          <!-- Data Teknis Bangunan -->
-          <div class="card">
-            <div class="card-title" style="margin-bottom:var(--space-4)">
-              <i class="fas fa-building" style="color:var(--brand-400);margin-right:8px"></i>Data Teknis Bangunan
-            </div>
-            <div class="grid-2-1" style="gap:var(--space-3)">
-              ${[
-                ['Jenis Bangunan',   p.jenis_bangunan   || '-', 'fa-tag'],
-                ['Jenis Konstruksi', p.jenis_konstruksi || '-', 'fa-layer-group'],
-                ['Jumlah Lantai',    p.jumlah_lantai ? `${p.jumlah_lantai} lantai` : '-', 'fa-stairs'],
-                ['Luas Bangunan',    p.luas_bangunan ? `${Number(p.luas_bangunan).toLocaleString('id-ID')} m²` : '-', 'fa-ruler-combined'],
-                ['Luas Lahan',       p.luas_lahan ? `${Number(p.luas_lahan).toLocaleString('id-ID')} m²` : '-', 'fa-expand'],
-                ['Tahun Dibangun',   p.tahun_dibangun || '-', 'fa-calendar'],
-                ['Fungsi Bangunan',  p.fungsi_bangunan || '-', 'fa-building-columns', true],
-                ['Nomor PBG/IMB',    p.nomor_pbg || '-', 'fa-file-certificate'],
-                ['Kota/Provinsi',    [p.kota, p.provinsi].filter(Boolean).join(', ') || '-', 'fa-location-dot'],
-              ].map(([k, v, ic, span]) => `
-                <div style="background:var(--bg-elevated);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);${span ? 'grid-column:1/-1' : ''}">
-                  <div class="text-xs text-tertiary" style="margin-bottom:2px">
-                    <i class="fas ${ic}" style="margin-right:4px;opacity:0.6"></i>${k}
+         <!-- Immersive Workflow Bar -->
+         <div style="margin-top: 40px; padding-top: 40px; border-top: 1px solid hsla(220, 20%, 100%, 0.05)">
+            <div class="workflow-timeline" style="margin-bottom:12px">
+              ${workflowSteps.map((s, i) => `
+                <div class="workflow-step ${i < currentStep ? 'done' : i === currentStep ? 'active' : ''}" style="flex:1; position:relative; text-align:center">
+                  <div style="width:36px; height:36px; border-radius:50%; background:${i <= currentStep ? 'var(--brand-500)' : 'hsla(220, 20%, 100%, 0.05)'}; margin:0 auto; display:flex; align-items:center; justify-content:center; color:white; border:4px solid ${i <= currentStep ? 'hsla(220, 95%, 52%, 0.2)' : 'transparent'}; z-index:2; position:relative; box-shadow: ${i === currentStep ? '0 0 20px var(--brand-500)' : 'none'}">
+                    <i class="fas ${s.icon}" style="font-size:0.85rem"></i>
                   </div>
-                  <div class="text-sm font-semibold text-primary ${span ? '' : 'truncate'}">${escHtml(v)}</div>
+                  <div style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:${i <= currentStep ? 'white' : 'var(--text-tertiary)'}; margin-top:12px; letter-spacing:1px">${s.label}</div>
+                  ${i < workflowSteps.length - 1 ? `<div style="position:absolute; top:18px; left:50%; width:100%; height:2px; background:${i < currentStep ? 'var(--brand-500)' : 'hsla(220, 20%, 100%, 0.05)'}; z-index:1"></div>` : ''}
                 </div>
               `).join('')}
+            </div>
+         </div>
+      </div>
+
+      <!-- Main Workspace Grid -->
+      <div class="grid-main-responsive" style="display:grid; grid-template-columns: 1fr 380px; gap: var(--space-8)">
+        
+        <!-- Left: Operations & Data -->
+        <div style="display:flex; flex-direction:column; gap:var(--space-8)">
+          
+          <!-- Functional Modules Grid -->
+          <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-6)">
+            
+            <!-- Remedial Tasks -->
+            <div class="card-quartz clickable" onclick="window.navigate('task',{id:'${p.id}'})" style="padding: var(--space-6)">
+              <div class="flex-between" style="margin-bottom:12px">
+                <i class="fas fa-list-check" style="color:var(--gold-400)"></i>
+                <span style="font-family:var(--font-mono); font-size:10px; opacity:0.6">TASKS</span>
+              </div>
+              <h4 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:0.9rem; color:white">Remedial Action</h4>
+            </div>
+
+            <!-- SIMBG Data Synergy Card -->
+            <div class="card-quartz" style="padding: var(--space-6); background: linear-gradient(135deg, hsla(220, 95%, 52%, 0.05) 0%, transparent 100%); border-color: hsla(220, 95%, 52%, 0.2)">
+              <div class="flex-between" style="margin-bottom:12px">
+                <i class="fas fa-cloud-arrow-down" style="color:var(--brand-400); cursor:pointer" onclick="window._syncProjectWithSIMBG('${p.id}')"></i>
+                <div class="flex gap-2">
+                  <button class="btn btn-ghost btn-xs" onclick="window._openSIMBGConfig('${p.id}', '${p.simbg_id || ''}', '${p.simbg_email || ''}', '${p.simbg_password || ''}')" title="Configure Account">
+                    <i class="fas fa-cog" style="color:var(--text-tertiary)"></i>
+                  </button>
+                  <span id="simbg-sync-status" style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--brand-300); cursor:pointer" onclick="window._syncProjectWithSIMBG('${p.id}')">
+                    ${p.simbg_last_sync ? 'SYNCED' : 'READY'}
+                  </span>
+                </div>
+              </div>
+              <div class="clickable" onclick="window._syncProjectWithSIMBG('${p.id}')">
+                <h4 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:0.9rem; color:white; margin-bottom:4px">SIMBG Data Synergy</h4>
+                <p style="font-size:0.7rem; color:var(--text-tertiary); line-height:1.4">Sync technical data & land docs from national portal.</p>
+              </div>
+            </div>
+
+            <!-- Checklist Card -->
+            <div class="card-quartz clickable" onclick="window.navigate('checklist',{id:'${p.id}'})" style="padding: var(--space-6)">
+              <div class="flex-between" style="margin-bottom:20px">
+                <div style="width:48px; height:48px; border-radius:14px; background:hsla(220, 95%, 52%, 0.1); display:flex; align-items:center; justify-content:center; color:var(--brand-400)">
+                  <i class="fas fa-clipboard-list-check" style="font-size:1.4rem"></i>
+                </div>
+                <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--brand-400)">PHASE 02</div>
+              </div>
+              <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--text-primary); margin-bottom:4px">Audit Teknis Lapangan</h3>
+              <p style="font-size:0.75rem; color:var(--text-tertiary); line-height:1.5">Inspeksi menyeluruh terhadap komponen arsitektur, struktur dan MEP.</p>
               
-              <!-- SIMBG Intensity Sub-grid (Fluid) -->
-              <div style="grid-column:1/-1; display:grid; grid-template-columns:repeat(auto-fit, minmax(70px, 1fr)); gap:8px; margin-top:8px; padding-top:12px; border-top:1px solid var(--border-subtle)">
-                <div class="text-center">
-                  <div class="text-xs text-tertiary">GSB</div>
-                  <div class="text-xs font-bold">${p.gsb || '-'} m</div>
+              <div style="margin-top:20px">
+                <div class="flex-between" style="margin-bottom:8px">
+                  <span style="font-size:0.7rem; font-weight:700; color:var(--text-tertiary)">COMPLETION RATE</span>
+                  <span style="font-size:0.7rem; font-weight:800; color:var(--brand-400)">${stats.done}/${stats.total} ITEMS</span>
                 </div>
-                <div class="text-center">
-                  <div class="text-xs text-tertiary">KDB</div>
-                  <div class="text-xs font-bold">${p.kdb || '-'} %</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-xs text-tertiary">KLB</div>
-                  <div class="text-xs font-bold">${p.klb || '-'}</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-xs text-tertiary">KDH</div>
-                  <div class="text-xs font-bold">${p.kdh || '-'} %</div>
+                <div style="height:6px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px">
+                  <div style="width:${stats.pct}%; height:100%; border-radius:10px; background:var(--gradient-brand); box-shadow: var(--shadow-sapphire)"></div>
                 </div>
               </div>
             </div>
-            ${p.kondisi_umum ? `
-              <div style="margin-top:var(--space-4);padding:var(--space-4);background:var(--bg-elevated);border-radius:var(--radius-md);border-left:3px solid var(--brand-400)">
-                <div class="text-xs text-tertiary" style="margin-bottom:4px">Kondisi Umum</div>
-                <div class="text-sm text-secondary">${escHtml(p.kondisi_umum)}</div>
+
+            <!-- Analisis Card -->
+            <div class="card-quartz clickable" onclick="window.navigate('analisis',{id:'${p.id}'})" style="padding: var(--space-6)">
+              <div class="flex-between" style="margin-bottom:20px">
+                <div style="width:48px; height:48px; border-radius:14px; background:hsla(45, 90%, 60%, 0.1); display:flex; align-items:center; justify-content:center; color:var(--gold-400)">
+                  <i class="fas fa-brain-circuit" style="font-size:1.4rem"></i>
+                </div>
+                <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--gold-400)">PHASE 03</div>
               </div>
-            ` : ''}
+              <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--text-primary); margin-bottom:4px">Risk Analysis AI</h3>
+              <p style="font-size:0.75rem; color:var(--text-tertiary); line-height:1.5">Automated technical scoring & mitigation recommendations based on audit data.</p>
+              <div style="margin-top:20px; display:flex; align-items:center; gap:8px">
+                <span class="badge" style="background:hsla(45, 90%, 60%, 0.1); color:var(--gold-400); border:1px solid hsla(45, 90%, 60%, 0.2); font-size:10px">NEURAL ENGINE ACTIVE</span>
+              </div>
+            </div>
+
+            <!-- Kondisi Fisik Card -->
+            <div class="card-quartz clickable" onclick="window.navigate('kondisi',{id:'${p.id}'})" style="padding: var(--space-6)">
+              <div class="flex-between" style="margin-bottom:20px">
+                <div style="width:48px; height:48px; border-radius:14px; background:hsla(0, 85%, 60%, 0.1); display:flex; align-items:center; justify-content:center; color:var(--danger-400)">
+                  <i class="fas fa-building-circle-exclamation" style="font-size:1.4rem"></i>
+                </div>
+                <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--danger-400)">PHASE 02.5</div>
+              </div>
+              <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--text-primary); margin-bottom:4px">Pemeriksaan Kondisi</h3>
+              <p style="font-size:0.75rem; color:var(--text-tertiary); line-height:1.5">Penilaian tingkat kerusakan bangunan sesuai standar Permen PU 16/2010.</p>
+              ${analisis ? `
+                <div style="margin-top:20px; display:flex; align-items:center; gap:8px">
+                  <span class="badge" style="background:${analisis.skor_total > 70 ? 'var(--success-500)1a' : 'var(--danger-500)1a'}; color:${analisis.skor_total > 70 ? 'var(--success-400)' : 'var(--danger-400)'}; border:1px solid ${analisis.skor_total > 70 ? 'var(--success-500)44' : 'var(--danger-500)44'}; font-size:10px; font-weight:800">
+                    SKOR: ${analisis.skor_total}%
+                  </span>
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Documents Card -->
+            <div class="card-quartz clickable" onclick="window.navigate('proyek-files',{id:'${p.id}'})" style="padding: var(--space-6)">
+              <div class="flex-between" style="margin-bottom:20px">
+                <div style="width:48px; height:48px; border-radius:14px; background:hsla(220, 20%, 100%, 0.05); display:flex; align-items:center; justify-content:center; color:var(--text-secondary)">
+                  <i class="fas fa-folder-tree" style="font-size:1.4rem"></i>
+                </div>
+                <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--text-tertiary)">PHASE 01</div>
+              </div>
+              <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--text-primary); margin-bottom:4px">Manajemen Berkas SIMBG</h3>
+              <p style="font-size:0.75rem; color:var(--text-tertiary); line-height:1.5">Synchronization with national SIMBG database for architectural & structural blueprints.</p>
+            </div>
+
+            <!-- Report Card -->
+            <div class="card-quartz clickable" onclick="window.navigate('laporan',{id:'${p.id}'})" style="padding: var(--space-6)">
+              <div class="flex-between" style="margin-bottom:20px">
+                <div style="width:48px; height:48px; border-radius:14px; background:hsla(158, 85%, 45%, 0.1); display:flex; align-items:center; justify-content:center; color:var(--success-400)">
+                  <i class="fas fa-file-invoice" style="font-size:1.4rem"></i>
+                </div>
+                <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--success-400)">PHASE 04</div>
+              </div>
+              <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--text-primary); margin-bottom:4px">Laporan Kajian SLF</h3>
+              <p style="font-size:0.75rem; color:var(--text-tertiary); line-height:1.5">Executive summary & full technical report generation with legally compliant format.</p>
+            </div>
           </div>
-        </div>
 
-        <!-- Right: Info Panel -->
-        <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+          <!-- Secondary Grid: Gallery, Surat, TODO -->
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-6)">
+             <div class="card-quartz clickable" onclick="window.navigate('galeri', {id:'${p.id}'})" style="text-align:center; padding:var(--space-5)">
+                <i class="fas fa-images" style="font-size:1.4rem; color:var(--brand-400); margin-bottom:12px"></i>
+                <div style="font-weight:700; font-size:0.85rem; color:white">Visual Gallery</div>
+             </div>
+             <div class="card-quartz clickable" onclick="window.navigate('surat-pernyataan', {id:'${p.id}'})" style="text-align:center; padding:var(--space-5)">
+                <i class="fas fa-file-contract" style="font-size:1.4rem; color:var(--gold-400); margin-bottom:12px"></i>
+                <div style="font-weight:700; font-size:0.85rem; color:white">Statements</div>
+             </div>
+             <div class="card-quartz clickable" onclick="window.navigate('todo', {proyekId:'${p.id}'})" style="text-align:center; padding:var(--space-5)">
+                <i class="fas fa-list-check" style="font-size:1.4rem; color:var(--success-400); margin-bottom:12px"></i>
+                <div style="font-weight:700; font-size:0.85rem; color:white">Remedial Tasks</div>
+             </div>
+          </div>
 
-          <!-- Pemilik -->
-          <div class="card">
-            <div class="card-title" style="margin-bottom:var(--space-4)">
-              <i class="fas fa-user" style="color:var(--brand-400);margin-right:8px"></i>Pemilik / Pemohon
+          <!-- Technical Specs -->
+          <div class="card-quartz" style="padding: var(--space-8)">
+            <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1rem; color:white; margin-bottom:24px; display:flex; align-items:center; gap:12px">
+              <i class="fas fa-microchip" style="color:var(--brand-400)"></i> SPESIFIKASI TEKNIS STRATEGIS
             </div>
-            <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px">
               ${[
-                ['fa-user-tie',    p.pemilik || '-'],
-                ['fa-id-card',     p.penanggung_jawab || '-'],
-                ['fa-phone',       p.telepon || '-'],
-                ['fa-envelope',    p.email_pemilik || '-'],
-              ].map(([ic, val]) => `
-                <div class="flex gap-3" style="align-items:center">
-                  <i class="fas ${ic}" style="color:var(--text-tertiary);width:16px;text-align:center"></i>
-                  <span class="text-sm text-secondary">${escHtml(val)}</span>
+                ['BAHAN_MODUL',     p.jenis_bangunan   || '-', 'fa-tag', 'KATEGORI ASSET'],
+                ['STAIRS_LEVEL',    p.jumlah_lantai ? `${p.jumlah_lantai} LANTAI` : '-', 'fa-stairs', 'VOLUME VERTIKAL'],
+                ['SURFACE_AREA',    p.luas_bangunan ? `${Number(p.luas_bangunan).toLocaleString('id-ID')} M²` : '-', 'fa-ruler-combined', 'TOTAL AREA'],
+                ['CHRONO_YEAR',     p.tahun_dibangun || '-', 'fa-calendar', 'TAHUN KONSTRUKSI'],
+                ['CORE_FUNCTION',   p.fungsi_bangunan || '-', 'fa-building-columns', 'FUNGSI UTAMA'],
+                ['GOV_REGISTRY',    p.nomor_pbg || '-', 'fa-file-certificate', 'NOMOR PBG/REG'],
+              ].map(([k, v, ic, lbl]) => `
+                <div style="background:hsla(220, 20%, 100%, 0.02); border:1px solid hsla(220, 20%, 100%, 0.05); border-radius:12px; padding:20px; text-align:center">
+                  <div style="font-family:var(--font-mono); font-size:8px; font-weight:800; color:var(--text-tertiary); letter-spacing:1px; margin-bottom:8px">${lbl}</div>
+                  <div style="font-size:1rem; font-weight:800; color:white">${escHtml(v)}</div>
                 </div>
               `).join('')}
             </div>
           </div>
+        </div>
 
-          <!-- Penanggung Jawab Tim (PIC) -->
-          <div class="card" style="border-left: 3px solid var(--brand-400)">
-            <div class="card-title" style="margin-bottom:var(--space-4)">
-              <i class="fas fa-user-gear" style="color:var(--brand-400);margin-right:8px"></i>Tim Pengkaji (PIC)
+        <!-- Right: Control Center & Intel -->
+        <div style="display:flex; flex-direction:column; gap:var(--space-8)">
+          
+          <!-- Operation Command (Radar) -->
+          <div class="card-quartz" style="padding: var(--space-6); background: var(--gradient-dark); border-color: hsla(220, 95%, 52%, 0.2); position:relative">
+            <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 0.9rem; color:white; margin-bottom: 24px; text-align:center; letter-spacing:1px">RISK PULSE INTERFACE</div>
+            <div style="height:280px; display:flex; align-items:center; justify-content:center">
+               <canvas id="project-radar-chart"></canvas>
             </div>
+            ${!analisis ? `<div style="position:absolute; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; text-align:center; padding:40px; font-size:0.75rem; color:var(--text-tertiary); font-weight:600">AUDIT DATA INSUFFICIENT<br>Complete field checklist to generate risk pulse.</div>` : ''}
+          </div>
+
+          <!-- PIC Card -->
+          <div class="card-quartz" style="padding: var(--space-6); border-left: 4px solid var(--brand-400)">
+            <div style="font-weight:800; font-size: 0.8rem; color:var(--brand-400); margin-bottom:16px; font-family:var(--font-mono); letter-spacing:1.5px">COMMANDING OFFICER</div>
             ${pic ? `
-              <div style="display:flex; align-items:center; gap:12px; padding:8px; background:var(--bg-elevated); border-radius:var(--radius-md)">
-                <div class="avatar-sm" style="flex-shrink:0; background:var(--brand-400); color:white">
+              <div style="display:flex; align-items:center; gap:16px">
+                <div style="width:56px; height:56px; border-radius:50%; background:var(--gradient-brand); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; border:2px solid hsla(220, 95%, 52%, 0.3)">
                    ${pic.avatar_url ? `<img src="${pic.avatar_url}" style="width:100%;height:100%;border-radius:50%">` : `<span>${pic.full_name?.charAt(0)}</span>`}
                 </div>
                 <div style="overflow:hidden">
-                  <div class="text-sm font-bold text-primary truncate">${pic.full_name}</div>
-                  <div class="text-xs text-tertiary truncate">${pic.role || 'Tenaga Ahli'}</div>
+                  <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1rem; color:white">${pic.full_name}</div>
+                  <div style="font-size:0.7rem; color:var(--brand-300); text-transform:uppercase; font-weight:700; letter-spacing:1px">${pic.role || 'Tenaga Ahli'}</div>
                 </div>
               </div>
             ` : `
-              <div class="text-center" style="padding:16px; background:var(--bg-elevated); border:1px dashed var(--border-subtle); border-radius:var(--radius-md)">
-                <p class="text-xs text-tertiary mb-3">Belum ada personil ditugaskan.</p>
-                <button class="btn btn-secondary btn-sm" onclick="window.navigate('proyek-edit', {id:'${p.id}'})">
-                  <i class="fas fa-user-plus"></i> Tugaskan
+              <div class="text-center" style="padding:24px; background:hsla(220, 20%, 100%, 0.02); border:1px dashed hsla(220, 20%, 100%, 0.1); border-radius:12px">
+                <p style="font-size:0.75rem; color:var(--text-tertiary); margin-bottom:16px">No commander assigned.</p>
+                <button class="btn btn-outline btn-xs" onclick="window.navigate('proyek-edit', {id:'${p.id}'})">
+                  <i class="fas fa-user-plus" style="margin-right:8px"></i> Assign PIC
                 </button>
               </div>
             `}
           </div>
 
-          <!-- Data Tanah (New SIMBG Details) -->
-          <div class="card">
-            <div class="card-title" style="margin-bottom:var(--space-4)">
-              <i class="fas fa-map-marked-alt" style="color:var(--brand-400);margin-right:8px"></i>Data Tanah (SIMBG)
-            </div>
-            <div style="display:grid;grid-template-columns:1fr;gap:var(--space-2)">
-              <div class="flex-between">
-                <span class="text-xs text-tertiary">Jenis / Hak</span>
-                <span class="text-xs font-semibold">${p.jenis_dokumen_tanah || 'Sertifikat'} / ${p.hak_kepemilikan || '-'}</span>
-              </div>
-              <div class="flex-between">
-                <span class="text-xs text-tertiary">No. Dokumen</span>
-                <span class="text-xs font-semibold">${p.no_dokumen_tanah || p.no_sertifikat || '-'}</span>
-              </div>
-              <div class="flex-between">
-                <span class="text-xs text-tertiary">Luas Tanah</span>
-                <span class="text-xs font-semibold">${p.luas_tanah ? `${Number(p.luas_tanah).toLocaleString('id-ID')} m²` : '-'}</span>
-              </div>
-              <div class="flex-between">
-                <span class="text-xs text-tertiary">Pemilik Tanah</span>
-                <span class="text-xs font-semibold text-right">${p.nama_pemilik_tanah || p.pemilik || '-'}</span>
-              </div>
-              ${!p.pemilik_tanah_sama ? `
-                <div style="margin-top:4px; padding:6px; background:var(--bg-elevated); border-radius:4px; border-left:2px solid var(--orange-400)">
-                  <div class="text-xs text-tertiary">Perjanjian Pemanfaatan</div>
-                  <div class="text-xs font-bold truncate">${p.no_surat_perjanjian || 'Ada'}</div>
-                </div>
-              ` : ''}
+          <!-- Ownership -->
+          <div class="card-quartz" style="padding: var(--space-6)">
+            <div style="font-weight:800; font-size: 0.8rem; color:var(--gold-400); margin-bottom:16px; font-family:var(--font-mono); letter-spacing:1.5px">ASSET PROPRIETARY</div>
+            <div style="display:flex; flex-direction:column; gap:12px">
+               <div style="display:flex; align-items:center; gap:12px">
+                  <i class="fas fa-building-user" style="color:var(--text-tertiary); width:16px"></i>
+                  <span style="font-size:0.85rem; font-weight:700; color:white">${escHtml(p.pemilik || '-')}</span>
+               </div>
+               <div style="display:flex; align-items:center; gap:12px">
+                  <i class="fas fa-phone-office" style="color:var(--text-tertiary); width:16px"></i>
+                  <span style="font-size:0.8rem; color:var(--text-secondary)">${escHtml(p.telepon || '-')}</span>
+               </div>
+               <div style="display:flex; align-items:center; gap:12px">
+                  <i class="fas fa-envelope" style="color:var(--text-tertiary); width:16px"></i>
+                  <span style="font-size:0.8rem; color:var(--text-secondary)">${escHtml(p.email_pemilik || '-')}</span>
+               </div>
             </div>
           </div>
 
-          <!-- SIMBG Integration -->
-          <div class="card" style="border-top: 4px solid #3b82f6;">
-            <div class="card-title" style="margin-bottom:var(--space-4); display:flex; justify-content:space-between; align-items:center;">
-              <div>
-                <i class="fas fa-link" style="color:#3b82f6;margin-right:8px"></i>Integrasi SIMBG
-              </div>
-              ${p.simbg_email ? '<span class="badge badge-laik" style="font-size:0.6rem">Tersambung</span>' : '<span class="badge badge-proses" style="font-size:0.6rem">Belum Ada Akun</span>'}
-            </div>
-            
-            <p class="text-xs text-secondary" style="margin-bottom:var(--space-4); line-height:1.4;">
-              ${p.simbg_email 
-                ? `Tersinkronisasi dengan akun <strong>${escHtml(p.simbg_email)}</strong>.` 
-                : 'Hubungkan akun SIMBG pemohon untuk menarik data teknis bangunan secara otomatis.'}
-            </p>
-            
-            <div class="flex flex-col gap-2">
-              <button class="btn btn-secondary btn-sm" style="width:100%; border-color:#3b82f6; color:#3b82f6" 
-                      id="btn-sync-simbg"
-                      ${!p.simbg_email ? 'disabled' : ''}>
-                <i class="fas fa-download"></i> Ambil Data (Pull)
-              </button>
+          <div class="card-quartz" style="padding: var(--space-6); background:hsla(220, 95%, 52%, 0.05); border-color:hsla(220, 95%, 52%, 0.1)">
+             <div class="flex-between" style="margin-bottom:20px">
+                <div style="display:flex; align-items:center; gap:12px">
+                   <i class="fas fa-cloud-arrow-down" style="color:var(--brand-400)"></i>
+                   <div style="font-weight:800; font-size:0.85rem; color:white">SIMBG INTERFACE</div>
+                </div>
+                ${p.updated_at ? `<div style="font-size:8px; font-family:var(--font-mono); color:var(--text-tertiary)">SYNC: ${new Date(p.updated_at).toLocaleDateString()}</div>` : ''}
+             </div>
+             
+             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px">
+                <button class="btn-presidential gold" style="width:100%; height:44px; border-radius:12px; font-size:10px" id="btn-sync-simbg" ${!p.simbg_email ? 'disabled' : ''}>
+                   <i class="fas fa-bolt" style="margin-right:8px"></i> PULL FROM
+                </button>
+                <button class="btn btn-outline" style="width:100%; height:44px; border-radius:12px; font-size:10px; border-color:hsla(220, 95%, 52%, 0.2); color:white" id="btn-push-simbg" ${!p.simbg_id ? 'disabled' : ''}>
+                   <i class="fas fa-cloud-arrow-up" style="margin-right:8px"></i> PUSH DATA
+                </button>
+             </div>
 
-              <button class="btn btn-primary btn-sm" style="width:100%; background:#3b82f6" 
-                      id="btn-push-simbg"
-                      ${!p.simbg_email || !p.simbg_id ? 'disabled' : ''}>
-                <i class="fas fa-upload"></i> Kirim ke SIMBG (Push)
-              </button>
-            </div>
-            
-            ${!p.simbg_email ? `
-              <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px;font-size:0.75rem" 
-                      onclick="window.navigate('proyek-edit', {id:'${p.id}'})">
-                <i class="fas fa-plus"></i> Tambah Akun SIMBG
-              </button>
-            ` : ''}
+             ${!p.simbg_email ? `<p style="font-size:9px; color:var(--text-tertiary); text-align:center; margin-top:12px"><i class="fas fa-shield-slash"></i> Credentials missing in manifest.</p>` : ''}
           </div>
 
-          <!-- Jadwal -->
-          <div class="card">
-            <div class="card-title" style="margin-bottom:var(--space-4)">
-              <i class="fas fa-calendar-days" style="color:var(--brand-400);margin-right:8px"></i>Jadwal Pengkajian
-            </div>
-            ${[
-              ['Mulai',   p.tanggal_mulai,   'fa-play'],
-              ['Target',  p.tanggal_target,  'fa-flag-checkered'],
-            ].map(([lbl, tgl, ic]) => `
-              <div class="flex-between" style="margin-bottom:10px">
-                <span class="text-sm text-secondary"><i class="fas ${ic}" style="margin-right:6px;opacity:0.7"></i>${lbl}</span>
-                <span class="text-sm font-semibold text-primary">${tgl ? formatTanggal(tgl) : '-'}</span>
-              </div>
-            `).join('')}
-            ${p.tanggal_mulai && p.tanggal_target ? (() => {
-              const start = new Date(p.tanggal_mulai);
-              const end   = new Date(p.tanggal_target);
-              const now   = new Date();
-              const total = end - start;
-              const elapsed = Math.max(0, now - start);
-              const daysLeft = Math.ceil((end - now) / 86400000);
-              const timePct = Math.min(100, Math.round((elapsed / total) * 100));
-              return `
-                <div style="margin-top:var(--space-3)">
-                  <div class="flex-between mb-1">
-                    <span class="text-xs text-tertiary">Waktu berjalan</span>
-                    <span class="text-xs ${daysLeft < 7 ? 'text-danger' : 'text-tertiary'}">${daysLeft > 0 ? `${daysLeft} hari tersisa` : 'Melewati target'}</span>
-                  </div>
-                  <div class="progress-wrap" style="height:5px">
-                    <div class="progress-fill ${daysLeft < 7 ? 'red' : 'blue'}" style="width:${timePct}%"></div>
-                  </div>
+          <!-- SIMBG PROGRESS OVERLAY -->
+          <div id="simbg-progress-overlay" style="display:none; position:fixed; inset:0; background:rgba(2,4,8,0.9); backdrop-filter:blur(10px); z-index:10000; align-items:center; justify-content:center; flex-direction:column; padding:40px">
+             <div style="width:400px; text-align:center">
+                <div class="card-quartz" style="padding:40px">
+                   <div style="width:80px; height:80px; border-radius:50%; background:var(--gradient-brand); margin:0 auto 32px; display:flex; align-items:center; justify-content:center; font-size:2rem; color:white; box-shadow:var(--shadow-sapphire)">
+                      <i class="fas fa-satellite-dish animate-pulse"></i>
+                   </div>
+                   <h3 style="font-family:'Outfit', sans-serif; font-weight:800; color:white; margin-bottom:8px">SIMBG SYNCHRONIZATION</h3>
+                   <p id="simbg-progress-msg" style="font-family:var(--font-mono); font-size:10px; color:var(--brand-300); letter-spacing:1px; margin-bottom:32px">INITIATING SECURE TUNNEL...</p>
+                   
+                   <div style="height:4px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px; overflow:hidden">
+                      <div id="simbg-progress-bar" style="width:0%; height:100%; background:var(--gradient-brand); transition:width 0.3s"></div>
+                   </div>
                 </div>
-              `;
-            })() : ''}
+             </div>
           </div>
 
-          <!-- AI Result -->
-          ${analisis ? `
-            <div class="ai-panel">
-              <div class="ai-panel-header">
-                <div class="ai-icon"><i class="fas fa-brain"></i></div>
-                <div>
-                  <div class="ai-panel-title">Hasil Analisis AI</div>
-                  <div class="ai-panel-subtitle">${formatTanggal(analisis.created_at)}</div>
-                </div>
-              </div>
-              <div class="ai-finding ${analisis.status_slf === 'LAIK_FUNGSI' ? 'success' : analisis.status_slf === 'LAIK_FUNGSI_BERSYARAT' ? 'warning' : 'critical'}">
-                <i class="fas ${analisis.status_slf === 'LAIK_FUNGSI' ? 'fa-circle-check' : analisis.status_slf === 'LAIK_FUNGSI_BERSYARAT' ? 'fa-triangle-exclamation' : 'fa-circle-xmark'}" style="margin-right:6px"></i>
-                ${analisis.status_slf === 'LAIK_FUNGSI' ? 'Bangunan Laik Fungsi' : analisis.status_slf === 'LAIK_FUNGSI_BERSYARAT' ? 'Laik Fungsi Bersyarat' : 'Tidak Laik Fungsi'}
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:var(--space-3)">
-                <div style="text-align:center;background:hsla(0,0%,0%,0.2);border-radius:var(--radius-md);padding:var(--space-3)">
-                  <div class="text-xs text-tertiary">Skor Total</div>
-                  <div style="font-size:1.6rem;font-weight:800;color:var(--brand-400)">${analisis.skor_total}</div>
-                </div>
-                <div style="text-align:center;background:hsla(0,0%,0%,0.2);border-radius:var(--radius-md);padding:var(--space-3)">
-                  <div class="text-xs text-tertiary">Level Risiko</div>
-                  <div style="font-size:1.1rem;font-weight:700;color:${riskColor(analisis.risk_level)};margin-top:4px">${riskLabel(analisis.risk_level)}</div>
-                </div>
-              </div>
-              <button class="btn btn-secondary btn-sm" style="width:100%;margin-top:var(--space-3)"
-                      onclick="window.navigate('analisis',{id:'${analisis.proyek_id}'})">
-                <i class="fas fa-eye"></i> Lihat Detail Analisis
-              </button>
-              <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px;border:1px solid var(--brand-400);color:var(--brand-400)"
-                      onclick="window.navigate('multi-agent',{proyekId:'${analisis.proyek_id}'})">
-                <i class="fas fa-comments"></i> Konsultasi Multi-Agent
-              </button>
+          <!-- Activity Audit -->
+          <div class="card-quartz" style="padding: var(--space-6)">
+            <div class="flex-between" style="margin-bottom:20px">
+               <div style="font-weight:800; font-size: 0.8rem; color:white; font-family:var(--font-mono); letter-spacing:1px">INTEL FEED</div>
+               <div class="flex gap-4">
+                  <button class="text-xs font-bold btn-tab active" id="tab-audit-act" onclick="window._switchAuditTab('act')" style="border:none; background:none; cursor:pointer; color:var(--brand-400); font-family:var(--font-mono)">LOGS</button>
+                  <button class="text-xs font-bold btn-tab" id="tab-audit-ver" onclick="window._switchAuditTab('ver')" style="border:none; background:none; cursor:pointer; color:var(--text-tertiary); font-family:var(--font-mono)">ARCHIVE</button>
+               </div>
             </div>
-          ` : `
-            <div class="ai-panel">
-              <div class="ai-panel-header">
-                <div class="ai-icon"><i class="fas fa-brain"></i></div>
-                <div>
-                  <div class="ai-panel-title">AI Engine</div>
-                  <div class="ai-panel-subtitle">Belum ada data analisis</div>
-                </div>
+            
+            <div id="audit-trail-container">
+              <div id="audit-trail-list" class="audit-tab-content" style="display:flex; flex-direction:column; gap:12px; max-height:400px; overflow-y:auto;">
+                <div class="skeleton" style="height:48px"></div>
               </div>
-              <div class="ai-finding">
-                <i class="fas fa-circle-info" style="margin-right:6px"></i>
-                Lengkapi checklist pemeriksaan terlebih dahulu untuk memulai analisis AI.
-              </div>
-              <button class="btn btn-primary btn-sm" style="width:100%;margin-top:var(--space-3)"
-                      onclick="window.navigate('checklist',{id:'${p.id}'})">
-                <i class="fas fa-clipboard-check"></i> Mulai Checklist
-              </button>
-            </div>
-          `}
-
-          <!-- Catatan -->
-          ${p.catatan ? `
-            <div class="card">
-              <div class="card-title" style="margin-bottom:var(--space-3)">
-                <i class="fas fa-note-sticky" style="color:var(--brand-400);margin-right:8px"></i>Catatan
-              </div>
-              <p class="text-sm text-secondary" style="line-height:1.6">${escHtml(p.catatan)}</p>
-            </div>
-          ` : ''}
-
-          <!-- Audit Trail (Hanya Administrator) -->
-          ${isAdmin() ? `
-            <div class="card" style="border-top:2px solid var(--brand-400)">
-              <div class="card-title" style="margin-bottom:var(--space-4); display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                  <i class="fas fa-history" style="color:var(--brand-400);margin-right:8px"></i>Audit Trail
-                </div>
-                <span class="badge badge-info" style="font-size:0.65rem">Admin Only</span>
-              </div>
-              <div id="audit-trail-list" style="display:flex; flex-direction:column; gap:8px; max-height:300px; overflow-y:auto; padding-right:4px;">
-                <div class="skeleton" style="height:40px; margin-bottom:8px"></div>
-                <div class="skeleton" style="height:40px"></div>
+              <div id="report-versions-list" class="audit-tab-content" style="display:none; flex-direction:column; gap:12px; max-height:400px; overflow-y:auto;">
+                <div class="skeleton" style="height:48px"></div>
               </div>
             </div>
-          ` : ''}
+          </div>
         </div>
       </div>
     </div>
   `;
 }
 
-// ── After Render ──────────────────────────────────────────────
-function initAfterRender(p) {
-  window._hapusProyek = async (id) => {
+// ── After Render Logic ──────────────────────────────────────────
+function initProyekDetailAfterRender(p, stats, analisis) {
+  // Initialize Radar Chart
+  initProjectRadar(analisis);
+
+  // Fetch Logs & Versions
+  renderAuditTrail(p.id);
+  renderReportVersions(p.id);
+
+  // Tab Switcher
+  window._switchAuditTab = (type) => {
+    document.querySelectorAll('.audit-tab-content').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.btn-tab').forEach(el => el.style.color = 'var(--text-tertiary)');
+    
+    if (type === 'act') {
+      document.getElementById('audit-trail-list').style.display = 'flex';
+      document.getElementById('tab-audit-act').style.color = 'var(--brand-400)';
+    } else {
+      document.getElementById('report-versions-list').style.display = 'flex';
+      document.getElementById('tab-audit-ver').style.color = 'var(--brand-400)';
+    }
+  };
+
+  // Actions
+  window._openSIMBGConfig = async (proyekId, idPermohonan, email, pass) => {
+  const { openModal, closeModal } = await import('../components/modal.js');
+  
+  openModal({
+    title: 'SIMBG ACCOUNT CONFIGURATION',
+    body: `
+      <div style="padding:10px 0">
+        <p style="font-size:0.8rem; color:var(--text-tertiary); margin-bottom:20px">Kredensial ini digunakan untuk sinkronisasi otomatis dengan portal simbg.pu.go.id khusus untuk proyek ini.</p>
+        <div class="form-group" style="margin-bottom:16px">
+          <label style="display:block; margin-bottom:8px; font-size:0.75rem; font-weight:800; color:var(--text-secondary)">ID PERMOHONAN (SIMBG ID)</label>
+          <input type="text" id="simbg-id-input" class="form-control" value="${idPermohonan}" placeholder="SIMBG-XXXXXXXXX" style="width:100%; padding:12px; border-radius:8px; background:hsla(220, 20%, 100%, 0.05); border:1px solid hsla(220, 20%, 100%, 0.1); color:white; font-family:var(--font-mono)">
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label style="display:block; margin-bottom:8px; font-size:0.75rem; font-weight:800; color:var(--text-secondary)">EMAIL AKUN SIMBG</label>
+          <input type="email" id="simbg-email-input" class="form-control" value="${email}" placeholder="example@outlook.co.id" style="width:100%; padding:12px; border-radius:8px; background:hsla(220, 20%, 100%, 0.05); border:1px solid hsla(220, 20%, 100%, 0.1); color:white">
+        </div>
+        <div class="form-group">
+          <label style="display:block; margin-bottom:8px; font-size:0.75rem; font-weight:800; color:var(--text-secondary)">KATA SANDI</label>
+          <input type="password" id="simbg-pass-input" class="form-control" value="${pass}" placeholder="••••••••" style="width:100%; padding:12px; border-radius:8px; background:hsla(220, 20%, 100%, 0.05); border:1px solid hsla(220, 20%, 100%, 0.1); color:white">
+        </div>
+      </div>
+    `,
+    footer: `
+      <button class="btn btn-ghost" id="simbg-cancel-btn">Batal</button>
+      <button class="btn btn-primary" id="simbg-save-btn">Simpan Perubahan</button>
+    `
+  });
+
+  document.getElementById('simbg-cancel-btn').onclick = () => closeModal();
+  document.getElementById('simbg-save-btn').onclick = async () => {
+    const newId    = document.getElementById('simbg-id-input').value;
+    const newEmail = document.getElementById('simbg-email-input').value;
+    const newPass  = document.getElementById('simbg-pass-input').value;
+
+    try {
+      showInfo('Sedang menyimpan kredensial...');
+      const { error } = await supabase
+        .from('proyek')
+        .update({ 
+          simbg_id: newId, 
+          simbg_email: newEmail, 
+          simbg_password: newPass 
+        })
+        .eq('id', proyekId);
+
+      if (error) throw error;
+      
+      showSuccess('Kredensial SIMBG berhasil disimpan.');
+      closeModal();
+      
+      // Hard refresh to ensure data consistency
+      setTimeout(() => { window.location.reload(); }, 1000);
+    } catch (err) {
+      showError('Gagal menyimpan: ' + err.message);
+    }
+  };
+};
+
+window._syncProjectWithSIMBG = async (proyekId) => {
+  try {
+    const btn = document.getElementById('simbg-sync-status');
+    if (btn) {
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SYNCING...';
+      btn.style.color = 'var(--gold-400)';
+    }
+
+    showSuccess('Menghubungkan ke Portal SIMBG...');
+    const result = await syncWithSIMBG(proyekId);
+    
+    showSuccess(`Sinkronisasi Berhasil: Data ${result.nomor_pbg} telah diperbarui.`);
+    
+    if (btn) {
+      btn.innerHTML = 'SUCCESS';
+      btn.style.color = 'var(--success-400)';
+    }
+
+    // Refresh page to show updated data
+    setTimeout(() => {
+      navigate('proyek-detail', { id: proyekId });
+    }, 1000);
+
+  } catch (err) {
+    showError('Gagal sinkronisasi SIMBG: ' + err.message);
+    const btn = document.getElementById('simbg-sync-status');
+    if (btn) {
+      btn.innerHTML = 'FAILED';
+      btn.style.color = 'var(--danger-400)';
+    }
+  }
+};
+
+window._hapusProyek = async (id) => {
     const ok = await confirm({
-      title: 'Hapus Proyek',
-      message: `Yakin ingin menghapus proyek "${p.nama_bangunan}"? Semua data terkait akan ikut terhapus.`,
-      confirmText: 'Hapus',
+      title: 'TERMINATE ASSET',
+      message: `Are you sure you want to permanently remove <strong>"${p.nama_bangunan}"</strong> from the presidential portfolio? This action is irreversible.`,
+      confirmText: 'CONFIRM TERMINATION',
       danger: true,
     });
     if (!ok) return;
     try {
       const { error } = await supabase.from('proyek').delete().eq('id', id);
       if (error) throw error;
-      showSuccess('Proyek berhasil dihapus.');
+      showSuccess('Asset successfully terminated.');
       navigate('proyek');
     } catch (e) {
-      showError('Gagal menghapus: ' + e.message);
+      showError('Audit failure: ' + e.message);
     }
   };
 
-  // SIMBG Sync
+  // SIMBG Pull
   const btnSync = document.getElementById('btn-sync-simbg');
   if (btnSync) {
     btnSync.onclick = async () => {
       const ok = await confirm({
-        title: 'Sinkronisasi SIMBG',
-        message: 'Aplikasi akan mensimulasikan login ke portal SIMBG dan menarik data teknis bangunan terbaru. Lanjutkan?',
-        confirmText: 'Mulai Sinkronisasi',
+        title: 'SIMBG SYNC INITIALIZATION',
+        message: 'System will access SIMBG portal to extract technical blueprints and regulatory data. Proceed?',
+        confirmText: 'INITIATE SYNC',
       });
       if (!ok) return;
 
       btnSync.disabled = true;
-      btnSync.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Mensinkronisasi...';
+      btnSync.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> INTERFACING...';
       
       try {
         const result = await syncWithSIMBG(p.id);
         if (result) {
-          showSuccess('Data teknis berhasil diperbarui dari SIMBG!');
-          // Reload to show new data
+          showSuccess('Tactical data successfully pulled from SIMBG.');
           setTimeout(() => location.reload(), 1000);
         }
       } catch (err) {
-        showError('Gagal Sinkronisasi: ' + err.message);
+        showError('Link failure: ' + err.message);
       } finally {
         btnSync.disabled = false;
-        btnSync.innerHTML = '<i class="fas fa-download"></i> Ambil Data (Pull)';
+        btnSync.innerHTML = '<i class="fas fa-bolt" style="margin-right:8px"></i> PULL FROM';
       }
     };
   }
 
-  // SIMBG Push Button
+  // SIMBG Push
   const btnPush = document.getElementById('btn-push-simbg');
   if (btnPush) {
     btnPush.onclick = async () => {
       const ok = await confirm({
-        title: 'Kirim Data ke SIMBG',
-        message: 'Aplikasi akan mengisi otomatis form permohonan di SIMBG dan memetakan dokumen teknis yang tersedia. Lanjutkan?',
-        confirmText: 'Kirim Sekarang',
+        title: 'REVERSE SYNC INITIALIZATION',
+        message: 'System will push project parameters and verified audits to SIMBG portal. This action is tracked in the ministry registry. Proceed?',
+        confirmText: 'INITIATE PUSH',
       });
       if (!ok) return;
 
-      btnPush.disabled = true;
-      btnPush.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Mengirim...';
+      const overlay = document.getElementById('simbg-progress-overlay');
+      const bar = document.getElementById('simbg-progress-bar');
+      const msg = document.getElementById('simbg-progress-msg');
       
-      // -- Buat UI Realtime Progress Overlay --
-      const overlay = document.createElement('div');
-      overlay.id = 'simbg-realtime-overlay';
-      overlay.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px);
-        z-index: 9999; display: flex; align-items: center; justify-content: center;
-        flex-direction: column; color: white; transition: all 0.3s ease;
-      `;
-      overlay.innerHTML = `
-        <div style="background:var(--bg-elevated); padding:32px; border-radius:24px; max-width:400px; width:90%; box-shadow:0 10px 40px rgba(0,0,0,0.3); border:1px solid #334155; text-align:center;">
-          <div style="width:64px; height:64px; border-radius:50%; background:rgba(249,115,22,0.1); color:#f97316; font-size:1.8rem; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
-            <i class="fas fa-cloud-arrow-up fa-bounce"></i>
-          </div>
-          <h3 style="font-size:1.2rem; font-weight:800; color:var(--text-primary); margin-bottom:8px;">Push Data SIMBG</h3>
-          <p id="simbg-realtime-msg" style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:24px; min-height:40px; display:flex; align-items:center; justify-content:center;">Inisialisasi koneksi...</p>
-          
-          <div style="width:100%; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
-            <div id="simbg-realtime-bar" style="width:0%; height:100%; background:var(--brand-500); transition:width 0.4s ease;"></div>
-          </div>
-          <div id="simbg-realtime-perc" style="font-size:0.75rem; font-weight:700; color:var(--brand-500); margin-top:8px; text-align:right;">0%</div>
-        </div>
-      `;
-      document.body.appendChild(overlay);
-
-      const updateProgress = (perc, msg) => {
-        const msgEl = document.getElementById('simbg-realtime-msg');
-        const barEl = document.getElementById('simbg-realtime-bar');
-        const percEl = document.getElementById('simbg-realtime-perc');
-        if(msgEl) msgEl.innerText = msg;
-        if(barEl) barEl.style.width = perc + '%';
-        if(percEl) percEl.innerText = perc + '%';
-      };
-
+      if (overlay) overlay.style.display = 'flex';
+      
       try {
-        await pushToSIMBG(p.id, updateProgress);
-        
-        // Selesai progress
-        updateProgress(100, 'Berhasil! Data terkirim ke portal SIMBG.');
-        await new Promise(r => setTimeout(r, 1000));
-        
-        showSuccess('Data & Berkas berhasil dikirim ke portal SIMBG!');
+        await pushToSIMBG(p.id, (perc, text) => {
+           if (bar) bar.style.width = perc + '%';
+           if (msg) msg.textContent = text.toUpperCase();
+        });
+        showSuccess('Audit data successfully pushed to SIMBG.');
+        setTimeout(() => location.reload(), 1500);
       } catch (err) {
-        showError('Gagal Mengirim: ' + err.message);
-      } finally {
-        if (document.getElementById('simbg-realtime-overlay')) {
-          document.body.removeChild(document.getElementById('simbg-realtime-overlay'));
-        }
-        if (btnPush) {
-          btnPush.disabled = false;
-          btnPush.innerHTML = '<i class="fas fa-upload"></i> Kirim ke SIMBG (Push)';
-        }
+        showError('Push failure: ' + err.message);
+        if (overlay) overlay.style.display = 'none';
       }
     };
   }
+}
 
-  // Load Audit Trail if Admin
-  if (isAdmin()) {
-    renderAuditTrail(p.id);
+function initProjectRadar(analisis) {
+  const canvas = document.getElementById('project-radar-chart');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  const labels = ['STRUKTUR', 'ARSITEKTUR', 'UTILITAS', 'KEBAKARAN', 'AKSES'];
+  let dataPoints = [0, 0, 0, 0, 0];
+
+  if (analisis && analisis.metadata?.scores) {
+    const s = analisis.metadata.scores;
+    dataPoints = [
+      s.struktur || 0,
+      s.arsitektur || 0,
+      s.mep || 0,
+      s.proteksi_kebakaran || 0,
+      s.aksesibilitas || 0
+    ];
   }
+
+  const sapphire = 'hsl(220, 95%, 52%)';
+  const gold = 'hsl(45, 90%, 60%)';
+
+  new Chart(canvas, {
+    type: 'radar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Asset Score',
+        data: dataPoints,
+        backgroundColor: 'rgba(220, 95, 52, 0.15)',
+        borderColor: sapphire,
+        pointBackgroundColor: gold,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        tension: 0.2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        r: {
+          min: 0,
+          max: 100,
+          ticks: { display: false },
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          angleLines: { color: 'rgba(255,255,255,0.05)' },
+          pointLabels: { 
+            color: 'rgba(255,255,255,0.5)', 
+            font: { family: 'var(--font-mono)', size: 8, weight: '800' } 
+          }
+        }
+      }
+    }
+  });
 }
 
 async function renderAuditTrail(proyekId) {
@@ -680,51 +649,61 @@ async function renderAuditTrail(proyekId) {
 
   try {
     const logs = await getAuditLogs(proyekId);
-    
-    // Handle table missing (404)
-    if (logs && logs.isMissing) {
-      container.innerHTML = `
-        <div style="text-align:center; padding:16px; background:rgba(249,115,22,0.05); border:1px dashed #f97316; border-radius:8px;">
-          <i class="fas fa-screwdriver-wrench" style="color:#f97316; margin-bottom:8px; font-size:1.2rem"></i>
-          <p class="text-xs font-bold" style="color:#c2410c">Audit Trail Belum Aktif</p>
-          <p class="text-xs text-tertiary" style="margin-top:4px">Administrator: Silakan hubungkan tabel <b>system_logs</b> di Supabase untuk mengaktifkan pelacakan UU ITE.</p>
-        </div>
-      `;
+    if (!logs || logs.length === 0) {
+      container.innerHTML = '<p style="font-size:0.7rem; color:var(--text-tertiary); text-align:center; padding:20px">NO ACTIVITY RECORDED</p>';
       return;
     }
 
-    if (!logs || logs.length === 0) {
-      container.innerHTML = '<p class="text-xs text-tertiary text-center py-4">Belum ada aktivitas tercatat.</p>';
-      return;
-    }
     container.innerHTML = logs.map(log => {
-      const date = new Date(log.created_at || log.metadata?.timestamp).toLocaleString('id-ID', { hour:'2-digit', minute:'2-digit', day:'numeric', month:'short' });
-      const actionIcons = {
-        'SIMPAN_CHECKLIST': 'fa-save',
-        'EXPORT_PDF': 'fa-file-pdf',
-        'EXPORT_WORD': 'fa-file-word',
-        'GENERATE_GDOC': 'fa-cloud-arrow-up',
-      };
-      const icon = actionIcons[log.action] || 'fa-fingerprint';
-      
+      const date = new Date(log.created_at).toLocaleString('id-ID', { hour:'2-digit', minute:'2-digit', day:'numeric', month:'short' });
       return `
-        <div style="background:var(--bg-elevated); padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-subtle); display:flex; align-items:start; gap:10px;">
-          <div style="width:24px; height:24px; border-radius:4px; background:rgba(59,130,246,0.1); color:var(--brand-400); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:0.75rem;">
-            <i class="fas ${icon}"></i>
+        <div style="background:hsla(220, 20%, 100%, 0.02); padding:12px; border-radius:10px; border:1px solid hsla(220, 20%, 100%, 0.05); display:flex; gap:12px;">
+          <div style="width:32px; height:32px; border-radius:8px; background:hsla(220, 95%, 52%, 0.1); color:var(--brand-400); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <i class="fas fa-fingerprint" style="font-size:0.8rem"></i>
           </div>
           <div style="overflow:hidden">
-            <div class="text-xs font-bold text-primary truncate" style="margin-bottom:2px">${log.action.replace(/_/g, ' ')}</div>
-            <div class="text-xs text-tertiary truncate" style="font-size:0.65rem">${log.user_email} &bullet; ${date}</div>
+            <div style="font-size:0.75rem; font-weight:800; color:white; text-transform:uppercase">${log.action.replace(/_/g, ' ')}</div>
+            <div style="font-size:0.65rem; color:var(--text-tertiary); opacity:0.6">${date}</div>
           </div>
         </div>
       `;
     }).join('');
   } catch (err) {
-    container.innerHTML = `<p class="text-xs text-danger text-center py-4">Gagal memuat log: ${err.message}</p>`;
+    container.innerHTML = `<p style="font-size:0.7rem; color:var(--danger-400)">Audit Trail unreachable.</p>`;
   }
 }
 
-// ── Data Fetchers ─────────────────────────────────────────────
+async function renderReportVersions(proyekId) {
+  const container = document.getElementById('report-versions-list');
+  if (!container) return;
+
+  try {
+    const versions = await getReportVersions(proyekId);
+    if (!versions || versions.length === 0) {
+      container.innerHTML = '<p style="font-size:0.7rem; color:var(--text-tertiary); text-align:center; padding:20px">NO ARCHIVE FOUND</p>';
+      return;
+    }
+
+    container.innerHTML = versions.map(v => {
+      const date = new Date(v.created_at).toLocaleString('id-ID', { day:'numeric', month:'short', year:'numeric' });
+      return `
+        <div style="background:hsla(220, 20%, 100%, 0.02); padding:12px; border-radius:10px; border:1px solid hsla(220, 20%, 100%, 0.05); display:flex; align-items:center; gap:12px;">
+          <div style="width:36px; height:36px; border-radius:8px; background:hsla(158, 85%, 45%, 0.1); color:var(--success-400); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <i class="fas fa-file-shield" style="font-size:1rem"></i>
+          </div>
+          <div style="flex:1; overflow:hidden">
+            <div style="font-size:0.75rem; font-weight:800; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${v.file_name}</div>
+            <div style="font-size:0.65rem; color:var(--text-tertiary)">VERIFIED ${date}</div>
+          </div>
+          <button class="btn btn-ghost btn-xs" onclick="window.open('${v.file_url}', '_blank')"><i class="fas fa-download"></i></button>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    container.innerHTML = `<p style="font-size:0.7rem; color:var(--danger-400)">Archive unreachable.</p>`;
+  }
+}
+
 async function fetchProyek(id) {
   try {
     const { data } = await supabase.from('proyek').select('*').eq('id', id).maybeSingle();
@@ -734,10 +713,7 @@ async function fetchProyek(id) {
 
 async function fetchChecklistStats(proyekId) {
   try {
-    const { data } = await supabase
-      .from('checklist_items')
-      .select('id, status')
-      .eq('proyek_id', proyekId);
+    const { data } = await supabase.from('checklist_items').select('id, status').eq('proyek_id', proyekId);
     const total = data?.length || 0;
     const done  = data?.filter(d => d.status && d.status !== 'belum').length || 0;
     return { total, done, pct: total > 0 ? Math.round((done / total) * 100) : 0 };
@@ -746,51 +722,26 @@ async function fetchChecklistStats(proyekId) {
 
 async function fetchLastAnalisis(proyekId) {
   try {
-    const { data } = await supabase
-      .from('hasil_analisis')
-      .select('*')
-      .eq('proyek_id', proyekId)
-      .order('created_at', { ascending: false })
-      .limit(1);
+    const { data } = await supabase.from('hasil_analisis').select('*').eq('proyek_id', proyekId).order('created_at', { ascending: false }).limit(1);
     return data && data.length > 0 ? data[0] : null;
   } catch { return null; }
 }
 
-// ── Skeleton ──────────────────────────────────────────────────
 function renderSkeleton() {
   return `
-    <div class="page-header">
-      <div class="skeleton" style="height:20px;width:160px;margin-bottom:8px"></div>
-      <div class="skeleton" style="height:36px;width:400px;margin-bottom:8px"></div>
-      <div class="skeleton" style="height:22px;width:300px"></div>
+    <div class="card-quartz" style="height:300px; margin-bottom:40px">
+      <div class="skeleton" style="height:48px; width:400px; margin-bottom:20px"></div>
+      <div class="skeleton" style="height:20px; width:200px"></div>
     </div>
-    <div class="skeleton" style="height:120px;border-radius:var(--radius-lg);margin-bottom:var(--space-5)"></div>
-    <div style="display:grid;grid-template-columns:1fr 340px;gap:var(--space-5)">
-      <div>
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-4);margin-bottom:var(--space-4)">
-          ${Array(4).fill(0).map(() => `<div class="skeleton" style="height:120px;border-radius:var(--radius-lg)"></div>`).join('')}
-        </div>
-        <div class="skeleton" style="height:280px;border-radius:var(--radius-lg)"></div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:var(--space-4)">
-        <div class="skeleton" style="height:160px;border-radius:var(--radius-lg)"></div>
-        <div class="skeleton" style="height:140px;border-radius:var(--radius-lg)"></div>
-        <div class="skeleton" style="height:160px;border-radius:var(--radius-lg)"></div>
-      </div>
+    <div style="display:grid; grid-template-columns:1fr 380px; gap:40px">
+       <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px">
+          ${Array(4).fill(0).map(() => `<div class="card-quartz" style="height:180px"></div>`).join('')}
+       </div>
+       <div class="card-quartz" style="height:500px"></div>
     </div>
   `;
 }
 
-// ── Helpers ───────────────────────────────────────────────────
 function escHtml(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-function formatTanggal(s) {
-  return new Date(s).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-function riskColor(r) {
-  return r === 'low' ? 'hsl(160,65%,46%)' : r === 'medium' ? 'hsl(40,80%,55%)' : r === 'high' ? 'hsl(0,70%,58%)' : 'hsl(330,70%,50%)';
-}
-function riskLabel(r) {
-  return { low: 'Rendah', medium: 'Sedang', high: 'Tinggi', critical: 'Kritis' }[r] || r;
 }

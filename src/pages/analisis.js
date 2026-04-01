@@ -329,3 +329,25 @@ window._showModularDetail = async (itemId, aspek) => {
     // Implement modular detail modal logic or move to separate file if too big
     showInfo("Fitur ini sedang dimigrasikan ke arsitektur baru.");
 };
+
+window._runNSPKBotForItem = async (itemId, itemName) => {
+    const { currentProyekId } = store.get();
+    
+    try {
+        showAIProgress('NSPK Intelligence', `Bot sedang mencari referensi hukum untuk ${itemName}...`);
+        
+        const result = await runNSPKBot(itemName, currentProyekId);
+        
+        hideAIProgress();
+        
+        if (result && result.status === 'success') {
+            showSuccess(`Berhasil memetakan referensi: ${result.name}`);
+            // Anda dapat menambahkan logika tambahan di sini untuk mengupdate UI jika perlu
+        } else if (result && result.status === 'not_found') {
+            showInfo(`Bot tidak menemukan dokumen spesifik untuk "${result.query}" di Drive global.`);
+        }
+    } catch (err) {
+        hideAIProgress();
+        showError('Kesalahan bot: ' + err.message);
+    }
+};

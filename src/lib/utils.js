@@ -63,3 +63,26 @@ export function debounce(fn, wait) {
 export function generateId(prefix = 'id') {
   return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
 }
+
+/**
+ * Extract a human-readable filename from a URL
+ */
+export function getFileNameFromUrl(url) {
+  if (!url) return 'Unknown File';
+  try {
+    const decoded = decodeURIComponent(url);
+    const parts = decoded.split('/');
+    let last = parts[parts.length - 1];
+    if (last.includes('?')) last = last.split('?')[0];
+    
+    // Clean up long numeric prefixes if they look like timestamps
+    if (last.includes('_')) {
+        const segments = last.split('_');
+        if (segments.length > 2) return segments.slice(0, -1).join('_');
+    }
+    
+    return last || 'Lampiran';
+  } catch {
+    return 'Berkas Lampiran';
+  }
+}

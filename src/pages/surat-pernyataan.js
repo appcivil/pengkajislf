@@ -3,6 +3,7 @@ import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { getSettings } from '../lib/settings.js';
 import { getNextSequence, formatDocumentNumber } from '../lib/numbering-service.js';
+import { logActivity } from '../lib/audit-service.js';
 
 /**
  * SURAT PERNYATAAN PAGE (ULTRA MODERN UI/UX)
@@ -63,6 +64,13 @@ export async function suratPernyataanPage(params = {}) {
       const preview = document.getElementById('legal-preview');
       if (preview) {
          preview.innerHTML = renderDocTemplate('konsultan', proyek, settings, findings);
+      }
+
+      // 5. Signature Modal Root
+      if (!document.getElementById('sig-modal-container')) {
+         const div = document.createElement('div');
+         div.id = 'sig-modal-container';
+         document.body.appendChild(div);
       }
     }
   } catch (err) {
@@ -136,6 +144,16 @@ function buildModernLayout(p, s) {
            <button class="btn-modern btn-primary btn-lg shadow-blue w-full" id="btn-export-word">
               <i class="fas fa-file-word"></i> Ekspor Ms. Word Resmi
            </button>
+
+           <div style="margin-top:20px; padding-top:15px; border-top:1px dashed rgba(0,0,0,0.1)">
+              <button class="btn-modern btn-lg w-full" id="btn-finalize-doc" 
+                      style="background:#0f172a; color:#fff; border:none">
+                 <i class="fas fa-stamp"></i> FINALISASI & SEGEL
+              </button>
+              <p style="font-size:9px; color:#64748b; text-align:center; margin-top:10px">
+                 <i class="fas fa-info-circle"></i> Setelah disegel, data teknis tidak dapat diubah lagi.
+              </p>
+           </div>
         </div>
       </aside>
 
@@ -292,6 +310,24 @@ function buildModernLayout(p, s) {
       .modern-table-temuan { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #000; margin-top: 15px; font-size: 10pt; }
       .modern-table-temuan th { background: #f8fafc; border: 1px solid #000; padding: 8px; text-align: left; font-weight: bold; }
       .modern-table-temuan td { border: 1px solid #000; padding: 8px; vertical-align: top; }
+
+      /* SIGNATURE PAD OVERLAY */
+      .sig-modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(10px); z-index:20000; display:flex; align-items:center; justify-content:center; }
+      .sig-modal-card { background:#fff; border-radius:24px; width:540px; padding:24px; box-shadow:0 30px 60px rgba(0,0,0,0.5); }
+      .sig-modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+      .sig-modal-header h3 { font-family:'Inter'; font-weight:800; font-size:1.1rem; margin:0; }
+      .btn-close-sig { background:none; border:none; font-size:1.5rem; cursor:pointer; }
+      .sig-canvas-wrap { border:2px dashed #cbd5e1; border-radius:12px; background:#f8fafc; cursor:crosshair; margin-bottom:20px; overflow:hidden; }
+      .sig-modal-footer { display:flex; justify-content:space-between; }
+      
+      /* SIGN BUTTON IN DOC */
+      .btn-sign-here { 
+        padding: 4px 12px; border-radius:6px; background:#eff6ff; color:#2563eb; 
+        border:1px dashed #2563eb; font-size:9px; font-weight:800; cursor:pointer; 
+        transition:all 0.2s; margin-top:8px;
+        display: inline-flex; align-items:center; gap:4px;
+      }
+      .btn-sign-here:hover { background:#2563eb; color:#fff; }
     </style>
   `;
 }
@@ -337,6 +373,141 @@ function initModernHandlers(p, s, findings) {
       }
     };
   }
+
+  // Signature Buttons Click Handlers (Delegated)
+  preview.onclick = (e) => {
+     const btn = e.target.closest('.btn-sign-here');
+     if (btn) {
+        const type = btn.dataset.type; // architecture, structure, mep, director
+        openSignaturePad(type, p, s, findings);
+     }
+  };
+
+  // Finalize Button
+  const btnFinalize = document.getElementById('btn-finalize-doc');
+  if (btnFinalize) {
+     if (p.metadata?.is_finalized) {
+        btnFinalize.disabled = true;
+        btnFinalize.innerHTML = '<i class="fas fa-lock"></i> TELAH DISEGEL';
+        btnFinalize.style.background = '#059669';
+     }
+
+     btnFinalize.onclick = async () => {
+        if (!confirm("Apakah Bapak yakin ingin memfinalisasi & menyegel dokumen ini? \n\nData SEGERA DIKUNCI dan sidik jari digital (Hash) akan dihasilkan untuk keperluan hukum.")) return;
+        
+        btnFinalize.disabled = true;
+        btnFinalize.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Menghitung Hash SHA-256...';
+        
+        try {
+           const { verifyDocumentIntegrity } = await import('../lib/tte-service.js');
+           const res = await verifyDocumentIntegrity(p);
+           
+           const metadata = { 
+              ...(p.metadata || {}), 
+              is_finalized: true, 
+              finalized_at: new Date().toISOString(),
+              document_hash: res.fingerprint 
+           };
+           
+           const { error } = await supabase.from('proyek').update({ metadata }).eq('id', p.id);
+           if (error) throw error;
+           
+           // Log Audit
+           await logActivity('FINALISASI_DOKUMEN', p.id, { hash: res.fingerprint });
+           
+           p.metadata = metadata;
+           showSuccess("Dokumen Berhasil Difinalisasi & Disegel secara Digital.");
+           window.location.reload(); // Refresh to lock everything
+        } catch (err) {
+           showError(err.message);
+           btnFinalize.disabled = false;
+           btnFinalize.innerHTML = '<i class="fas fa-stamp"></i> FINALISASI & SEGEL';
+        }
+     };
+  }
+}
+
+/**
+ * OPEN SIGNATURE PAD OVERLAY
+ */
+function openSignaturePad(type, p, s, findings) {
+  const container = document.getElementById('sig-modal-container');
+  const roleName = type === 'director' ? 'Direktur' : (`Ahli ${type.charAt(0).toUpperCase() + type.slice(1)}`);
+  
+  container.innerHTML = `
+    <div class="sig-modal-overlay show">
+      <div class="sig-modal-card">
+        <div class="sig-modal-header">
+           <h3>Tanda Tangan Digital: ${roleName}</h3>
+           <button class="btn-close-sig" onclick="this.closest('.sig-modal-overlay').remove()">&times;</button>
+        </div>
+        <div class="sig-canvas-wrap">
+           <canvas id="sig-canvas"></canvas>
+        </div>
+        <div class="sig-modal-footer">
+           <button class="btn btn-secondary" onclick="document.getElementById('sig-canvas').getContext('2d').clearRect(0,0,500,200)">
+              <i class="fas fa-eraser"></i> Bersihkan
+           </button>
+           <button id="btn-save-sig-actual" class="btn btn-primary">
+              <i class="fas fa-signature"></i> Simpan Tanda Tangan
+           </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const canvas = document.getElementById('sig-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 500;
+  canvas.height = 200;
+  
+  // Basic Canvas Draw Logic
+  let drawing = false;
+  const startDraw = (e) => { drawing = true; draw(e); };
+  const stopDraw = () => { drawing = false; ctx.beginPath(); };
+  const draw = (e) => {
+     if (!drawing) return;
+     const rect = canvas.getBoundingClientRect();
+     const x = (e.clientX || e.touches?.[0].clientX) - rect.left;
+     const y = (e.clientY || e.touches?.[0].clientY) - rect.top;
+     ctx.lineWidth = 2.5; 
+     ctx.lineCap = 'round';
+     ctx.strokeStyle = '#0f172a';
+     ctx.lineTo(x, y);
+     ctx.stroke();
+     ctx.beginPath();
+     ctx.moveTo(x, y);
+  };
+
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', stopDraw);
+  canvas.addEventListener('touchstart', startDraw);
+  canvas.addEventListener('touchmove', draw);
+  canvas.addEventListener('touchend', stopDraw);
+
+  document.getElementById('btn-save-sig-actual').onclick = async () => {
+     const dataUrl = canvas.toDataURL('image/png');
+     showInfo(`Menyimpan tanda tangan ${roleName}...`);
+     
+     try {
+        const metadata = { ...(p.metadata || {}), signatures: { ...(p.metadata?.signatures || {}), [type]: dataUrl } };
+        const { error } = await supabase.from('proyek').update({ metadata }).eq('id', p.id);
+        if (error) throw error;
+        
+        // Log Audit
+        await logActivity('TTE_SIGNATURE', p.id, { role: type });
+
+        p.metadata = metadata; // Update local state
+        showSuccess(`Tanda tangan ${roleName} berhasil disimpan.`);
+        container.innerHTML = '';
+        
+        // Refresh Preview
+        const activeCard = document.querySelector('.nav-card.active');
+        const docType = activeCard ? activeCard.getAttribute('data-type') : 'konsultan';
+        document.getElementById('legal-preview').innerHTML = renderDocTemplate(docType, p, s, findings);
+     } catch (err) { showError(err.message); }
+  };
 }
 
 /**
@@ -461,7 +632,9 @@ function renderConsultantTemplate(p, s, experts, dateStr) {
                    const vUrl = `${window.location.origin}${window.location.pathname}#/verify?id=${p.id}&role=director`;
                    return `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(vUrl)}" class="sig-qr-small shadow-sm">`;
                 })()}
-                ${s.consultant?.signature ? `<img src="${s.consultant.signature}" style="position:absolute; width:130px; opacity:0.8; transform:translateX(15px) translateY(10px)">` : ''}
+                ${p.metadata?.signatures?.director 
+                  ? `<img src="${p.metadata.signatures.director}" style="position:absolute; width:130px; opacity:0.8; transform:translateX(15px) translateY(10px)">` 
+                  : `<button class="btn-sign-here" data-type="director"><i class="fas fa-pen-nib"></i> Tanda Tangani</button>`}
              </div>
           </div>
           <div class="sig-name-underline">${escHtml(s.consultant?.director_name || 'NAMA DIREKTUR')}</div>
@@ -482,7 +655,9 @@ function renderConsultantTemplate(p, s, experts, dateStr) {
                  <div style="font-weight:bold; min-height:28px; line-height:1.2">${role}</div>
                  <div class="sig-box-tte">
                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(vUrl)}" class="sig-qr-small">
-                   ${ex.signature ? `<img src="${ex.signature}" style="position:absolute; width:75px; opacity:0.75; transform:translateX(10px) translateY(5px)">` : ''}
+                   ${p.metadata?.signatures?.[t] 
+                     ? `<img src="${p.metadata.signatures[t]}" style="position:absolute; width:75px; opacity:0.75; transform:translateX(10px) translateY(5px)">` 
+                     : `<button class="btn-sign-here" data-type="${t}"><i class="fas fa-pen-nib"></i> Sign</button>`}
                  </div>
                  <div class="sig-name-underline" style="font-size:9pt">${escHtml(ex.name || 'NAME')}</div>
                  <div style="font-size:8pt; margin-top:2px">Tenaga Ahli Tetap</div>

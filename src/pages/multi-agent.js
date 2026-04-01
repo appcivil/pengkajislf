@@ -2,13 +2,13 @@ import { generateSLFReport } from '../lib/report-service.js';
 import { supabase } from '../lib/supabase.js';
 import { AGENT_CONFIG } from '../lib/multi-agent-service.js';
 import { showError, showSuccess } from '../components/toast.js';
+import { initializeProjectFolder, uploadToGoogleDrive } from '../lib/drive.js';
 
 let _sessionResults = {};
 let _selectedProyekId = null;
 let _editingAgentId = null;
 let _cachedProyekList = [];
-let _cachedAllPrompts = [];
-let _cachedDefaultPrinciples = {};
+let _isRunningAll = false;
 
 /**
  * PAGE ENTRY POINT
@@ -18,12 +18,9 @@ export async function multiAgentPage(params = {}) {
   
   if (_cachedProyekList.length === 0 || params.refresh) {
     try {
-      const { fetchAllAgentPrompts, DEFAULT_PRINCIPLES } = await import('../lib/prompt-config-service.js');
-      _cachedDefaultPrinciples = DEFAULT_PRINCIPLES;
       _cachedProyekList = await fetchProyekList();
-      _cachedAllPrompts = await fetchAllAgentPrompts();
     } catch (err) {
-      console.error("Fetch data failed:", err);
+      console.error("Fetch projects failed:", err);
     }
   }
 
@@ -31,143 +28,116 @@ export async function multiAgentPage(params = {}) {
 }
 
 async function fetchProyekList() {
-  try {
-    const { data } = await supabase.from('proyek').select('id, nama_bangunan').order('created_at', { ascending: false });
-    return data || [];
-  } catch (e) { return []; }
+  const { data } = await supabase.from('proyek').select('id, nama_bangunan').order('created_at', { ascending: false });
+  return data || [];
 }
 
 function buildHtml() {
-  if (_editingAgentId) {
-    return renderEditor();
-  }
-  return renderGrid();
+  if (_editingAgentId) return renderEditor();
+  return renderCommandBridge();
 }
 
 /**
- * RENDER GRID VIEW (Daftar 15 Agen & Download Laporan)
+ * RENDER COMMAND BRIDGE VIEW
  */
-function renderGrid() {
+function renderCommandBridge() {
+  const proyek = _cachedProyekList.find(p => p.id === _selectedProyekId);
+  
   return `
-    <div id="multiagent-page" class="fade-in" style="padding-bottom:100px">
-      <!-- Header Section -->
-      <div class="page-header" style="text-align:center;margin-bottom:var(--space-6)">
-        <div style="width:72px;height:72px;border-radius:var(--radius-xl);background:var(--gradient-brand);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-4);font-size:2rem;color:white;box-shadow:0 10px 25px hsla(258,80%,56%,0.4)">
-          <i class="fas fa-microchip"></i>
+    <div id="multiagent-bridge" class="fade-in">
+      
+      <!-- Bridge Header -->
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:var(--space-6); padding:0 var(--space-4)">
+        <div>
+          <h1 style="font-size:2.2rem; font-weight:900; color:#0f172a; margin:0">Deep Reasoning Center</h1>
+          <p style="color:#64748b; margin-top:4px">Orkestrasi 15 Ahli AI untuk Analisis Bangunan Teknis</p>
         </div>
-        <h1 class="page-title" style="font-size:2.2rem;margin-bottom:8px">Deep Reasoning Center</h1>
-        <p class="page-subtitle" style="max-width:800px;margin:0 auto;margin-bottom:24px">
-          Pusat kendali 15 AI Ahli. Konfigurasikan instruksi ahli atau luncurkan laporan teknis otomatis.
-        </p>
-
-        <!-- Project & Report Controls -->
-        <div class="card-glass" style="max-width:700px; margin:0 auto; padding:16px; display:flex; gap:12px; align-items:center; justify-content:center; border-radius:16px">
-          <div style="flex:1; text-align:left">
-            <label class="text-xs font-bold mb-1 block" style="color:var(--text-tertiary)">PILIH PROYEK UNTUK LAPORAN:</label>
-            <select id="select-proyek-report" class="form-input" style="width:100%">
-              <option value="">-- Pilih Proyek --</option>
-              ${_cachedProyekList.map(p => `
-                <option value="${p.id}" ${p.id === _selectedProyekId ? 'selected' : ''}>${p.nama_bangunan}</option>
-              `).join('')}
-            </select>
-          </div>
-          <button id="btn-download-report" class="btn btn-primary" style="height:42px; margin-top:18px" ${_selectedProyekId ? '' : 'disabled'}>
-            <i class="fas fa-file-word"></i> Luncurkan Laporan (.docx)
+        <div style="display:flex; gap:12px">
+          <select id="select-proyek-bridge" class="form-input" style="width:280px; border-radius:14px; background:white">
+            <option value="">-- Pilih Proyek --</option>
+            ${_cachedProyekList.map(p => `<option value="${p.id}" ${p.id === _selectedProyekId ? 'selected' : ''}>${p.nama_bangunan}</option>`).join('')}
+          </select>
+          <button id="btn-run-all" class="btn btn-primary" style="border-radius:14px; padding:0 24px" ${_selectedProyekId ? '' : 'disabled'}>
+            <i class="fas fa-microchip"></i> Jalankan Semua Ahli
           </button>
         </div>
       </div>
 
-      <div class="agent-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
-        ${AGENT_CONFIG.map((a, idx) => {
-          const pData = _cachedAllPrompts.find(p => p.agent_id === a.id);
-          const mission = pData?.mission || _cachedDefaultPrinciples.mission || 'Belum diatur';
+      <div class="quartz-bridge-container">
+        
+        <!-- Left: The Hub (SVG/Node Network) -->
+        <div class="bridge-core">
+          <div class="center-cluster">
+            <div style="width:100px; height:100px; background:var(--gradient-brand); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:2.5rem; box-shadow:0 10px 30px rgba(99,102,241,0.5)">
+              <i class="fas fa-brain"></i>
+            </div>
+          </div>
           
-          return `
-            <div class="agent-card card-glass" id="card-${a.id}" style="display:flex; flex-direction:column; min-height:220px; transition:all 0.3s ease; position:relative; overflow:hidden">
-              <div class="ac-header" style="background:rgba(255,255,255,0.03); padding:16px; border-bottom:1px solid var(--border-subtle); display:flex; align-items:center; gap:12px">
-                <div class="ac-avatar" style="background:${a.color}; width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:white"><i class="fas ${a.icon}"></i></div>
-                <div class="ac-info">
-                  <div class="ac-name" style="font-size:0.9rem; font-weight:800">${a.name}</div>
-                  <div class="ac-role" style="font-size:0.65rem; color:var(--text-tertiary)">${a.id.toUpperCase()}</div>
+          <div class="core-orbit" id="nodes-container">
+            ${AGENT_CONFIG.map((a, i) => {
+              const angle = (i / AGENT_CONFIG.length) * (2 * Math.PI);
+              const x = 225 + 225 * Math.cos(angle) - 26; // Center 225, radius 225, node width 52
+              const y = 225 + 225 * Math.sin(angle) - 26;
+              return `
+                <div class="agent-node" id="node-${a.id}" data-id="${a.id}" 
+                     style="left:${x}px; top:${y}px; color:${a.color}; border-color:${a.color}40"
+                     title="${a.name}">
+                  <i class="fas ${a.icon}"></i>
                 </div>
-                <div style="margin-left:auto; display:flex; gap:8px">
-                  <button class="btn-run-agent" data-id="${a.id}" title="Jalankan Analisis" style="background:var(--bg-elevated); border:1px solid var(--border-subtle); color:var(--success-400); width:32px; height:32px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center">
-                    <i class="fas fa-play"></i>
-                  </button>
-                  <button class="btn-edit-agent" data-id="${a.id}" title="Atur Prompt" style="background:var(--brand-500); border:none; color:white; width:32px; height:32px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center">
-                    <i class="fas fa-cog"></i>
-                  </button>
-                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <!-- Synthesis Info -->
+          <div class="synthesis-card">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              <div>
+                <div style="font-size:0.7rem; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:1px">Konsensus Keandalan</div>
+                <div class="pulse-score-display" id="global-score">--</div>
               </div>
-              <div class="ac-body" style="padding:16px; flex:1">
-                <div id="status-${a.id}" style="color:var(--text-tertiary); font-size:0.65rem; margin-bottom:8px">Status: Menunggu...</div>
-                <div style="color:var(--brand-400); font-weight:bold; font-size:0.65rem; margin-bottom:4px; text-transform:uppercase">Misi Utama:</div>
-                <div style="font-size:0.75rem; color:var(--text-secondary); line-height:1.4">
-                  ${mission.length > 100 ? mission.substring(0, 100) + '...' : mission}
-                </div>
+              <div style="text-align:right">
+                <div id="global-status" style="font-size:0.9rem; font-weight:800; color:#0f172a">Idle...</div>
+                <div style="font-size:0.7rem; color:#64748b">Menunggu Input Analisis</div>
               </div>
             </div>
-          `;
-        }).join('')}
-      </div>
-    </div>
-  `;
-}
-
-/**
- * RENDER EDITOR VIEW (In-Page Editing)
- */
-function renderEditor() {
-  const agent = AGENT_CONFIG.find(a => a.id === _editingAgentId);
-  const pData = _cachedAllPrompts.find(p => p.agent_id === _editingAgentId);
-  const dp = _cachedDefaultPrinciples;
-  
-  return `
-    <div id="agent-editor" class="fade-in" style="max-width:1000px; margin:0 auto; padding-bottom:100px">
-      <button id="btn-back-to-grid" class="btn btn-ghost" style="margin-bottom:20px; color:var(--brand-400)">
-        <i class="fas fa-arrow-left"></i> Kembali ke Daftar Ahli
-      </button>
-
-      <div class="card card-glass" style="padding:0; overflow:hidden">
-        <div class="card-header" style="background:var(--bg-elevated); padding:24px; border-bottom:1px solid var(--border-subtle); display:flex; align-items:center; gap:20px">
-          <div style="background:${agent.color}; width:60px; height:60px; border-radius:14px; display:flex; align-items:center; justify-content:center; color:white; font-size:1.5rem; box-shadow:0 8px 20px -4px ${agent.color}80">
-            <i class="fas ${agent.icon}"></i>
-          </div>
-          <div>
-            <h1 style="font-size:1.6rem; font-weight:800; margin:0">Konfigurasi: ${agent.name}</h1>
-            <p class="font-mono text-xs" style="color:var(--text-tertiary); margin-top:4px">AGENT_ID: ${_editingAgentId}</p>
-          </div>
-          <div style="margin-left:auto; display:flex; gap:12px">
-            <button id="btn-save-config" class="btn btn-primary" style="padding:10px 24px"><i class="fas fa-save"></i> Simpan Perubahan</button>
+            <div style="margin-top:20px; display:flex; gap:8px" id="synthesis-badges">
+              <!-- Result badges go here -->
+            </div>
           </div>
         </div>
 
-        <div class="card-body" style="padding:30px; display:grid; grid-template-columns: 1fr 1fr; gap:30px">
-          <div style="display:flex; flex-direction:column; gap:24px">
-            <div class="form-group">
-                <label class="text-xs font-bold mb-2 block" style="color:var(--brand-400)">ROLE (PERSONA AI)</label>
-                <input type="text" id="config-persona" class="form-input" style="width:100%" value="${pData?.persona || agent.persona || ''}">
+        <!-- Right: Reasoning Terminal -->
+        <div class="bridge-terminal">
+          <div class="terminal-header">
+            <div style="display:flex; align-items:center; gap:10px">
+              <div class="terminal-dot" style="background:#ef4444"></div>
+              <div class="terminal-dot" style="background:#f59e0b"></div>
+              <div class="terminal-dot" style="background:#10b981"></div>
+              <span style="font-size:0.7rem; font-weight:800; color:rgba(255,255,255,0.4); margin-left:10px">REASONING_STREAM_V2.0</span>
             </div>
-            <div class="form-group">
-                <label class="text-xs font-bold mb-2 block" style="color:var(--brand-400)">MISSION (TUGAS UTAMA)</label>
-                <textarea id="config-mission" class="form-input" style="height:100px; width:100%">${pData?.mission || dp.mission}</textarea>
-            </div>
-            <div class="grid" style="grid-template-columns: 1fr 1fr; gap:16px">
-              <div class="form-group"><label class="text-xs font-bold">1. GOAL</label><textarea id="config-goal" class="form-input">${pData?.principles?.goal || dp.goal}</textarea></div>
-              <div class="form-group"><label class="text-xs font-bold">2. DONE CRITERIA</label><textarea id="config-done" class="form-input">${pData?.principles?.done_criteria || dp.done_criteria}</textarea></div>
+            <div class="terminal-actions">
+              <button class="btn btn-ghost btn-sm" id="btn-clear-terminal" style="color:rgba(255,255,255,0.3); font-size:0.6rem"><i class="fas fa-trash-can"></i> CLEAR</button>
             </div>
           </div>
-          <div style="display:flex; flex-direction:column; gap:24px">
-            <div class="form-group">
-                <label class="text-xs font-bold mb-2 block">OUTPUT FORMAT</label>
-                <textarea id="config-format" class="form-input" style="height:120px; font-family:monospace; width:100%">${pData?.principles?.output_format || dp.output_format}</textarea>
-            </div>
-            <div style="background:rgba(0,0,0,0.4); border:1px solid var(--border-subtle); border-radius:12px; padding:20px">
-               <h4 class="text-xs font-bold mb-3" style="color:var(--brand-400)"><i class="fas fa-eye"></i> PROMPT PREVIEW:</h4>
-               <pre id="prompt-preview" style="font-size:0.65rem; color:var(--text-tertiary); white-space:pre-wrap; max-height:200px; overflow-y:auto; font-family:var(--font-mono)"></pre>
-            </div>
+          
+          <div class="terminal-feed" id="terminal-feed">
+             <div class="feed-line system">
+               <span class="feed-timestamp">${new Date().toLocaleTimeString()}</span>
+               <span class="feed-tag" style="background:#6366f1">CORE</span> System initialized. Awaiting orchestrator command.
+             </div>
+          </div>
+
+          <!-- Bottom Footer -->
+          <div style="margin-top:20px; padding-top:15px; border-top:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between">
+             <button id="btn-download-report-bridge" class="btn btn-primary btn-sm" style="background:#10b981; border:none; border-radius:10px" ${_selectedProyekId ? '' : 'disabled'}>
+               <i class="fas fa-file-word"></i> Build Report
+             </button>
+             <button id="btn-sync-drive-bridge" class="btn btn-ghost btn-sm" style="color:#38bdf8" ${_selectedProyekId ? '' : 'disabled'}>
+               <i class="fab fa-google-drive"></i> Sync to Drive
+             </button>
           </div>
         </div>
+
       </div>
     </div>
   `;
@@ -179,88 +149,180 @@ function renderEditor() {
 export function afterMultiAgentRender() {
   const pageRoot = document.getElementById('page-root');
   
-  const refreshUI = () => {
-    const html = buildHtml();
-    if (pageRoot) pageRoot.innerHTML = html;
-    afterMultiAgentRender();
-  };
-
-  // --- DOWNLOAD REPORT HANDLER ---
-  const btnReport = document.getElementById('btn-download-report');
-  const selProyek = document.getElementById('select-proyek-report');
-  
+  // Selection
+  const selProyek = document.getElementById('select-proyek-bridge');
   if (selProyek) {
     selProyek.onchange = (e) => {
       _selectedProyekId = e.target.value;
-      if (btnReport) btnReport.disabled = !_selectedProyekId;
+      window.navigate('multi-agent', { proyekId: _selectedProyekId });
     };
   }
 
-  if (btnReport) {
-    btnReport.onclick = async () => {
-      if (!_selectedProyekId) return showError("Pilih proyek terlebih dahulu!");
-      btnReport.disabled = true;
-      btnReport.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Menyusun...';
-      try {
-        await generateSLFReport(_selectedProyekId, Object.values(_sessionResults));
-        showSuccess("Laporan Konsep berhasil diunduh.");
-      } catch (err) { showError("Gagal: " + err.message); }
-      finally {
-        btnReport.disabled = false;
-        btnReport.innerHTML = '<i class="fas fa-file-word"></i> Luncurkan Laporan (.docx)';
-      }
-    };
+  // Run Specific Agent via Node Click
+  document.querySelectorAll('.agent-node').forEach(node => {
+    node.onclick = () => runSingleAgent(node.dataset.id);
+  });
+
+  // Run All
+  const btnRunAll = document.getElementById('btn-run-all');
+  if (btnRunAll) {
+    btnRunAll.onclick = () => runAllAgentsOrchestrated();
   }
 
-  // --- GRID HANDLERS ---
-  document.querySelectorAll('.btn-edit-agent').forEach(btn => {
-    btn.onclick = () => { _editingAgentId = btn.dataset.id; refreshUI(); };
-  });
+  // Clear Terminal
+  const btnClear = document.getElementById('btn-clear-terminal');
+  if (btnClear) {
+    btnClear.onclick = () => { document.getElementById('terminal-feed').innerHTML = ''; };
+  }
 
-  document.querySelectorAll('.btn-run-agent').forEach(btn => {
-    btn.onclick = async () => {
-      if (!_selectedProyekId) return showError("Pilih proyek terlebih dahulu!");
-      const agentId = btn.dataset.id;
-      const statusEl = document.getElementById(`status-${agentId}`);
-      btn.disabled = true;
-      if (statusEl) statusEl.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Menganalisis...';
+  // Sync to Drive
+  const btnSyncDrive = document.getElementById('btn-sync-drive-bridge');
+  if (btnSyncDrive) {
+    btnSyncDrive.onclick = async () => {
+      if (Object.keys(_sessionResults).length === 0) return showError("Jalankan analisis terlebih dahulu.");
+      btnSyncDrive.disabled = true;
+      addTerminalLine('DRIVE', 'Initializing Google Drive project sync...', 'SYSTEM', '#38bdf8');
+      
       try {
-        const { runSpecificAgentAnalysis } = await import('../lib/multi-agent-service.js');
-        const result = await runSpecificAgentAnalysis(_selectedProyekId, agentId, _sessionResults);
-        _sessionResults[agentId] = result;
-        if (statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle" style="color:var(--success-400)"></i> Selesai';
-        showSuccess(`Analisis ${result.name} selesai.`);
-      } catch (err) {
-        if (statusEl) statusEl.innerHTML = '<i class="fas fa-times" style="color:var(--danger-400)"></i> Gagal';
-        showError(err.message);
-      } finally { btn.disabled = false; }
-    };
-  });
+        const findings = Object.values(_sessionResults).map(r => 
+          `### ${r.name} (Skor: ${r.skor})\n\n${r.analisis}\n\n**Rekomendasi:**\n${r.rekomendasi}`
+        ).join('\n\n---\n\n');
 
-  // --- EDITOR HANDLERS ---
-  const btnBack = document.getElementById('btn-back-to-grid');
-  if (btnBack) btnBack.onclick = () => { _editingAgentId = null; refreshUI(); };
+        const fileData = [{
+          name: `Konsolidasi_Ahli_${new Date().getTime()}.md`,
+          base64: btoa(findings),
+          mimeType: 'text/markdown'
+        }];
 
-  const btnSave = document.getElementById('btn-save-config');
-  if (btnSave) {
-    btnSave.onclick = async () => {
-      btnSave.disabled = true;
-      try {
-        const { saveAgentPrompt } = await import('../lib/prompt-config-service.js');
-        const config = {
-          persona: document.getElementById('config-persona').value,
-          mission: document.getElementById('config-mission').value,
-          principles: {
-            goal: document.getElementById('config-goal').value,
-            done_criteria: document.getElementById('config-done').value,
-            output_format: document.getElementById('config-format').value
-          }
-        };
-        await saveAgentPrompt(_editingAgentId, config);
-        showSuccess('Tersimpan.');
-        _editingAgentId = null;
-        refreshUI();
-      } catch (err) { showError(err.message); btnSave.disabled = false; }
+        await uploadToGoogleDrive(fileData, _selectedProyekId, 'Analisis AI', 'REASONING_HUB');
+        addTerminalLine('DRIVE', 'Successfully synced consolidated findings to Drive.', 'SYSTEM', '#10b981');
+        showSuccess("Data berhasil disinkronkan ke Google Drive.");
+      } catch (e) {
+        addTerminalLine('DRIVE', `Sync Failed: ${e.message}`, 'SYSTEM', '#ef4444');
+        showError(e.message);
+      } finally { btnSyncDrive.disabled = false; }
     };
   }
 }
+
+/**
+ * LOGIC: TERMINAL STREAMING
+ */
+function addTerminalLine(tag, message, category = 'SYSTEM', color = '#6366f1') {
+  const grid = document.getElementById('terminal-feed');
+  if (!grid) return;
+
+  const line = document.createElement('div');
+  line.className = `feed-line ${category.toLowerCase()}`;
+  if (color) line.style.setProperty('--agent-color', color);
+  
+  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  line.innerHTML = `
+    <span class="feed-timestamp">${time}</span>
+    <span class="feed-tag" style="background:${color}">${tag}</span>
+    <span class="feed-content">${message}</span>
+  `;
+  grid.appendChild(line);
+  grid.scrollTop = grid.scrollHeight;
+}
+
+/**
+ * LOGIC: ORCHESTRATION
+ */
+async function runSingleAgent(agentId) {
+  if (!_selectedProyekId) return showError("Pilih proyek terlebih dahulu.");
+  
+  const node = document.getElementById(`node-${agentId}`);
+  const agent = AGENT_CONFIG.find(a => a.id === agentId);
+  if (!node) return;
+
+  node.classList.add('active');
+  addTerminalLine(agent.id.toUpperCase(), `Deep reasoning session engaged...`, 'AGENT', agent.color);
+  
+  try {
+    const { runSpecificAgentAnalysis } = await import('../lib/multi-agent-service.js');
+    
+    // Simulate initial steps for UX
+    setTimeout(() => addTerminalLine(agent.id.toUpperCase(), "Parsing building geometry & technical parameters...", 'AGENT', agent.color), 500);
+
+    const result = await runSpecificAgentAnalysis(_selectedProyekId, agentId, _sessionResults);
+    _sessionResults[agentId] = result;
+    
+    // Stream real reasoning steps if available
+    if (result.reasoning && Array.isArray(result.reasoning)) {
+      result.reasoning.forEach((step, idx) => {
+        setTimeout(() => {
+          addTerminalLine(agent.id.toUpperCase(), `[Reasoning] ${step}`, 'AGENT', agent.color);
+        }, 1000 + (idx * 400));
+      });
+    }
+
+    setTimeout(() => {
+      node.classList.remove('active');
+      node.classList.add('done');
+      addTerminalLine(agent.id.toUpperCase(), `SOLVED: ${result.status_label} (Score: ${result.skor}%)`, 'AGENT', agent.color);
+      updateGlobalScore();
+    }, 1000 + ((result.reasoning?.length || 0) * 400));
+
+    return result;
+  } catch (err) {
+    node.classList.remove('active');
+    addTerminalLine(agent.id.toUpperCase(), `ERROR: ${err.message}`, 'AGENT', '#ef4444');
+    showError(err.message);
+  }
+}
+
+async function runAllAgentsOrchestrated() {
+  if (_isRunningAll) return;
+  _isRunningAll = true;
+  _sessionResults = {};
+  
+  const btn = document.getElementById('btn-run-all');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Orkestrasi Berjalan...';
+  
+  addTerminalLine('CORE', 'Starting Full Consortium Session (15 Agents)...', 'SYSTEM', '#6366f1');
+
+  // Run in batches of 3 to balance speed vs quota
+  const batches = [
+    ['struktur', 'geoteknik', 'sd_air'],
+    ['ruang_dalam', 'ruang_luar', 'pencahayaan'],
+    ['elektrikal', 'plumbing', 'mekanikal'],
+    ['keselamatan', 'mkkg', 'akustik'],
+    ['kesehatan', 'legal', 'laporan']
+  ];
+
+  for (const batch of batches) {
+    addTerminalLine('CORE', `Activating Batch: ${batch.join(', ')}`, 'SYSTEM', '#818cf8');
+    await Promise.all(batch.map(id => runSingleAgent(id)));
+  }
+
+  addTerminalLine('CORE', 'Full Consortium session completed. Synthesizing final fatwa...', 'SYSTEM', '#10b981');
+  const { runCoordinatorSynthesis } = await import('../lib/multi-agent-service.js');
+  const final = await runCoordinatorSynthesis(Object.values(_sessionResults));
+  
+  document.getElementById('global-status').innerText = final.status;
+  document.getElementById('global-status').style.color = final.color;
+  
+  showSuccess("Orkestrasi seluruh agen selesai!");
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-check-double"></i> Analisis Selesai';
+  _isRunningAll = false;
+}
+
+function updateGlobalScore() {
+  const vals = Object.values(_sessionResults);
+  if (vals.length === 0) return;
+  const avg = Math.round(vals.reduce((s, r) => s + (r.skor || 0), 0) / vals.length);
+  const scoreEl = document.getElementById('global-score');
+  if (scoreEl) {
+    scoreEl.innerText = `${avg}%`;
+    scoreEl.style.animation = 'none';
+    setTimeout(() => scoreEl.style.animation = 'pulse-score 0.5s ease', 10);
+  }
+}
+
+/**
+ * EDITOR & OTHERS (Simplified for this version)
+ */
+function renderEditor() { return `<div>Editor placeholder</div>`; }

@@ -28,6 +28,8 @@ const PROJECT_NAV = [
   { path: 'proyek-detail', label: 'Ringkasan Gedung',  icon: 'fa-circle-info' },
   { path: 'files',         label: 'Dokumen SIMBG',      icon: 'fa-folder-open' },
   { path: 'checklist',     label: 'Checklist Teknis',  icon: 'fa-clipboard-check' },
+  { path: 'kondisi',       label: 'Pemeriksaan Kondisi', icon: 'fa-building-circle-exclamation' },
+  { path: 'galeri',        label: 'Galeri Visual',     icon: 'fa-images' },
   { path: 'analisis',      label: 'Analisis Smart AI', icon: 'fa-brain', badge: 'Active' },
   { path: 'laporan',       label: 'Laporan Final SLF', icon: 'fa-file-contract' },
 ];
@@ -83,34 +85,34 @@ export function renderSidebar() {
         <div class="sidebar-logo">
           <img src="/logo-app.png" alt="Logo" style="width:100%; height:100%; object-fit:contain; border-radius:var(--radius-md);">
         </div>
-        <div>
-          <div class="sidebar-title">${APP_CONFIG.name.split(' ').slice(0,3).join(' ')}</div>
-          <div class="sidebar-subtitle">v${APP_CONFIG.version}</div>
+        <div style="overflow:hidden">
+          <div class="sidebar-title" style="letter-spacing:0.05em; font-family:'Outfit', sans-serif; font-weight:800; background:linear-gradient(135deg, #fff 0%, var(--gold-400) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${APP_CONFIG.name.split(' ').slice(0,3).join(' ')}</div>
+          <div class="sidebar-subtitle" style="font-family:var(--font-mono); opacity:0.5; font-size:10px; letter-spacing:1px">OPERATIONAL v${APP_CONFIG.version}</div>
         </div>
       </div>
 
-      <nav class="sidebar-nav" id="sidebar-nav">
+      <nav class="sidebar-nav" id="sidebar-nav" style="padding-top: var(--space-6)">
         ${navHtml}
       </nav>
 
       <div class="sidebar-footer">
-        <div class="verified-badge">
-          <div class="badge-icon">
-            <i class="fas fa-shield"></i>
+        <div class="verified-badge" style="background: hsla(45, 90%, 60%, 0.05); border: 1px solid hsla(45, 90%, 60%, 0.15); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 20px;">
+          <div class="badge-icon" style="background: var(--gradient-gold); box-shadow: 0 0 15px hsla(45, 90%, 60%, 0.3);">
+            <i class="fas fa-shield-check"></i>
           </div>
-          <div class="badge-text">
-            PENGKAJI TERVERIFIKASI<br>
-            <span class="badge-sub">ITE COMPLIANT v2.0</span>
+          <div class="badge-text" style="font-family:'Outfit', sans-serif">
+            <span style="color: var(--gold-400); font-weight: 800; letter-spacing: 0.05em; font-size: 10px;">PENGKAJI TERVERIFIKASI</span><br>
+            <span class="badge-sub" style="color: var(--text-tertiary); font-weight: 400; font-size: 9px; opacity: 0.8">ITE COMPLIANT v2.0</span>
           </div>
         </div>
 
-        <div class="user-card" id="user-card-btn" title="Klik untuk logout">
+        <div class="user-card" id="user-card-btn" title="Klik untuk logout" style="background: hsla(220, 20%, 50%, 0.05); border: 1px solid var(--border-subtle)">
           ${avatarHtml}
           <div class="user-info-wrap">
-            <div class="user-name truncate">${user?.name || 'User'}</div>
-            <div class="user-role truncate">${user?.email || ''}</div>
+            <div class="user-name truncate" style="font-weight: 700; color: var(--text-primary)">${user?.name || 'User'}</div>
+            <div class="user-role truncate" style="font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono)">${user?.email || ''}</div>
           </div>
-          <i class="fas fa-right-from-bracket logout-icon"></i>
+          <i class="fas fa-right-from-bracket logout-icon" style="font-size: 12px; opacity: 0.5"></i>
         </div>
       </div>
     </aside>

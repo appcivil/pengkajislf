@@ -5,6 +5,7 @@
 import { supabase } from '../lib/supabase.js';
 import { store, updateFiles, updateWorkspace } from '../lib/store.js';
 import { analyzeDocumentIntelligence } from './ai-workspace-service.js';
+import { deleteFromGoogleDrive } from '../lib/drive.js';
 
 export async function loadWorkspaceData(proyekId = null) {
   console.log(`[WorkspaceService] Memuat data workspace untuk: ${proyekId || 'Global'}`);
@@ -91,14 +92,65 @@ export function initWorkspaceHotkeys() {
 }
 
 export async function deleteWorkspaceFile(fileId) {
-    if (!confirm("Hapus file dari workspace? Tindakan ini permanen.")) return false;
+    if (!confirm("Hapus file dari workspace? Berkas akan dipindahkan ke Kotak Sampah Google Drive (otomatis terhapus permanen dalam 30 hari).")) return false;
     
-    const { error } = await supabase.from('proyek_files').delete().eq('id', fileId);
-    if (!error) {
-        const { selectedProjectId } = store.get().workspace;
-        await loadWorkspaceData(selectedProjectId);
-        updateWorkspace({ selectedFileId: null });
-        return true;
+    try {
+        // 1. Get file details for cleanup
+        const { data: file } = await supabase.from('proyek_files')
+            .select('id, file_url, drive_id, proyek_id')
+            .eq('id', fileId)
+            .maybeSingle();
+
+        if (!file) return false;
+
+        // 2. Sync with Google Drive (Trash)
+        if (file.drive_id) {
+            console.log(`[WorkspaceService] Moving Drive File to Trash: ${file.drive_id}`);
+            const { currentProyek } = store.get();
+            await deleteFromGoogleDrive(file.drive_id, currentProyek?.drive_proxy_url);
+        }
+
+        // 3. Cleanup Rujukan in Checklist Items (Daftar Simak)
+        const { data: linkedItems } = await supabase.from('checklist_items')
+            .select('id, foto_urls, evidence_links')
+            .eq('proyek_id', file.proyek_id);
+
+        if (linkedItems && linkedItems.length > 0) {
+            for (const item of linkedItems) {
+                let isModified = false;
+                let nextUrls = item.foto_urls || [];
+                let nextEvidence = item.evidence_links || [];
+
+                // Filter out URL
+                if (nextUrls.includes(file.file_url)) {
+                    nextUrls = nextUrls.filter(u => u !== file.file_url);
+                    isModified = true;
+                }
+
+                // Filter out Evidence Mapping
+                const prevLen = nextEvidence.length;
+                nextEvidence = nextEvidence.filter(ev => ev.file_id !== fileId);
+                if (nextEvidence.length !== prevLen) isModified = true;
+
+                if (isModified) {
+                    await supabase.from('checklist_items').update({
+                        foto_urls: nextUrls,
+                        evidence_links: nextEvidence
+                    }).eq('id', item.id);
+                }
+            }
+        }
+
+        // 4. Delete DB record
+        const { error } = await supabase.from('proyek_files').delete().eq('id', fileId);
+        if (!error) {
+            const { selectedProjectId } = store.get().workspace;
+            await loadWorkspaceData(selectedProjectId);
+            updateWorkspace({ selectedFileId: null });
+            return true;
+        }
+    } catch (err) {
+        console.error("[WorkspaceService] Cleanup & Delete failed:", err);
     }
     return false;
 }

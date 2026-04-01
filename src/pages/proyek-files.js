@@ -180,12 +180,59 @@ window._openUploadModal = () => {
   };
 };
 
-window._deletePageFile = async (fid) => {
-    if (!confirm('Hapus rujukan berkas?')) return;
+window._deletePageFile = async (fileId) => {
+    if (!confirm('Hapus rujukan berkas? Tindakan ini permanen dan akan menghapus rujukan di seluruh hasil pemeriksaan.')) return;
+    
     const { currentProyekId } = store.get();
-    await supabase.from('proyek_files').delete().eq('id', fid);
-    showSuccess("Berkas terhapus.");
-    loadFilesData(currentProyekId);
+    try {
+        // 1. Get file details for cleanup
+        const { data: file } = await supabase.from('proyek_files')
+            .select('id, file_url')
+            .eq('id', fileId)
+            .maybeSingle();
+
+        if (file) {
+            // 2. Cleanup Rujukan in Checklist Items (Daftar Simak)
+            const { data: linkedItems } = await supabase.from('checklist_items')
+                .select('id, foto_urls, evidence_links')
+                .eq('proyek_id', currentProyekId);
+
+            if (linkedItems && linkedItems.length > 0) {
+                for (const item of linkedItems) {
+                    let isModified = false;
+                    let nextUrls = item.foto_urls || [];
+                    let nextEvidence = item.evidence_links || [];
+
+                    // Filter out URL
+                    if (nextUrls.includes(file.file_url)) {
+                        nextUrls = nextUrls.filter(u => u !== file.file_url);
+                        isModified = true;
+                    }
+
+                    // Filter out Evidence Mapping
+                    const prevLen = nextEvidence.length;
+                    nextEvidence = nextEvidence.filter(ev => ev.file_id !== fileId);
+                    if (nextEvidence.length !== prevLen) isModified = true;
+
+                    if (isModified) {
+                        await supabase.from('checklist_items').update({
+                            foto_urls: nextUrls,
+                            evidence_links: nextEvidence
+                        }).eq('id', item.id);
+                    }
+                }
+            }
+        }
+
+        // 3. Delete DB record
+        await supabase.from('proyek_files').delete().eq('id', fileId);
+        
+        showSuccess("Berkas terhapus.");
+        loadFilesData(currentProyekId);
+    } catch (err) {
+        console.error("Delete cleanup failed:", err);
+        showError("Gagal menghapus berkas sepenuhnya.");
+    }
 };
 
 window._saveIntegrationSettings = async () => {
@@ -244,3 +291,167 @@ function renderWizardUI(p) {
      </div>
    `;
 }
+
+// ── Quick Look & Annotation Engine ───────────────────────────
+
+window._quickLookFile = async (fileId) => {
+  const { files } = store.get();
+  const file = files.documents.find(f => f.id === fileId);
+  if (!file) return showError("File tidak ditemukan.");
+
+  const isImage = file.name?.match(/\.(jpg|jpeg|png|webp)$/i);
+  const isPdf = file.name?.toLowerCase().endsWith('.pdf');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'ql-overlay';
+  overlay.id = 'ql-overlay';
+  
+  overlay.innerHTML = `
+    <div class="ql-header">
+       <div class="flex items-center gap-3">
+          <i class="fas ${isImage ? 'fa-image' : 'fa-file-pdf'}" style="color:var(--brand-400)"></i>
+          <span style="font-weight:700">${escHtml(file.subcategory)}</span>
+          <span style="opacity:0.6; font-size:0.8rem">/ ${escHtml(file.name)}</span>
+       </div>
+       <div class="flex gap-3">
+          <button class="btn btn-ghost btn-sm" onclick="window.open('${file.file_url}', '_blank')"><i class="fas fa-external-link-alt"></i></button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ql-overlay').remove()" style="color:white; font-size:1.2rem">&times;</button>
+       </div>
+    </div>
+    <div class="ql-body">
+       <div class="ql-viewport" id="ql-viewport">
+          ${isImage ? `<img src="${file.file_url}" id="ql-img" style="max-width:100%; max-height:80vh; display:block;">` : ''}
+          ${isPdf ? `<iframe src="https://docs.google.com/viewer?url=${encodeURIComponent(file.file_url)}&embedded=true" class="ql-iframe"></iframe>` : ''}
+          ${!isImage && !isPdf ? `<div style="color:white">Preview tidak tersedia untuk format ini. <a href="${file.file_url}" target="_blank" style="color:var(--brand-400)">Download berkas</a></div>` : ''}
+          <canvas id="ql-canvas" class="ql-canvas" style="display:none"></canvas>
+       </div>
+
+       ${isImage ? `
+         <div class="ql-toolbar" id="ql-toolbar">
+            <button class="ql-tool-btn active" id="tool-pan" title="Geser"><i class="fas fa-mouse-pointer"></i></button>
+            <button class="ql-tool-btn" id="tool-draw" title="Tandai Temuan (Draw)"><i class="fas fa-highlighter"></i></button>
+            <div style="width:1px; height:24px; background:rgba(255,255,255,0.2); margin:0 4px"></div>
+            <button class="ql-tool-btn" onclick="window._resetAnnotation()" title="Hapus Semua"><i class="fas fa-trash-can"></i></button>
+            <button class="btn btn-primary btn-sm" style="border-radius:20px; padding:0 20px" onclick="window._saveQuickEvidence('${file.id}')">
+               <i class="fas fa-save"></i> Simpan Temuan
+            </button>
+         </div>
+       ` : ''}
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  if (isImage) {
+    setTimeout(() => initAnnotationEngine(), 100);
+  }
+};
+
+let ctx, painting = false, canvas, img;
+
+function initAnnotationEngine() {
+    canvas = document.getElementById('ql-canvas');
+    img = document.getElementById('ql-img');
+    if (!canvas || !img) return;
+
+    // Wait for image load to get dimensions
+    if (!img.complete) {
+        img.onload = () => initAnnotationEngine();
+        return;
+    }
+
+    canvas.width = img.clientWidth;
+    canvas.height = img.clientHeight;
+    canvas.style.width = img.clientWidth + 'px';
+    canvas.style.height = img.clientHeight + 'px';
+    canvas.style.display = 'block';
+    
+    ctx = canvas.getContext('2d');
+    ctx.strokeStyle = '#ef4444'; // Red for audit findings
+    ctx.lineWidth = 4;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+
+    const btnPan = document.getElementById('tool-pan');
+    const btnDraw = document.getElementById('tool-draw');
+
+    let mode = 'pan'; // pan vs draw
+
+    btnPan.onclick = () => { mode = 'pan'; btnPan.classList.add('active'); btnDraw.classList.remove('active'); canvas.style.pointerEvents = 'none'; };
+    btnDraw.onclick = () => { mode = 'draw'; btnDraw.classList.add('active'); btnPan.classList.remove('active'); canvas.style.pointerEvents = 'auto'; };
+
+    // Initially pan mode
+    canvas.style.pointerEvents = 'none';
+
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mouseup', finishedPosition);
+    canvas.addEventListener('mousemove', draw);
+    
+    // Touch support
+    canvas.addEventListener('touchstart', (e) => startPosition(e.touches[0]));
+    canvas.addEventListener('touchend', finishedPosition);
+    canvas.addEventListener('touchmove', (e) => draw(e.touches[0]));
+}
+
+function startPosition(e) {
+    painting = true;
+    draw(e);
+}
+
+function finishedPosition() {
+    painting = false;
+    ctx.beginPath();
+}
+
+function draw(e) {
+    if (!painting) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+}
+
+window._resetAnnotation = () => {
+    if (ctx && canvas) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+};
+
+window._saveQuickEvidence = async (fileId) => {
+    const { currentProyekId, currentProyek } = store.get();
+    
+    // Create combined image
+    const finalCanvas = document.createElement('canvas');
+    finalCanvas.width = img.naturalWidth;
+    finalCanvas.height = img.naturalHeight;
+    const fctx = finalCanvas.getContext('2d');
+    
+    // Draw original image (full res)
+    fctx.drawImage(img, 0, 0);
+    
+    // Draw annotations (scaled)
+    fctx.drawImage(canvas, 0, 0, img.clientWidth, img.clientHeight, 0, 0, img.naturalWidth, img.naturalHeight);
+    
+    const dataUrl = finalCanvas.toDataURL('image/jpeg', 0.8);
+    
+    showInfo("Menyimpan bukti temuan...");
+
+    try {
+        // Upload finding image as "Evidence"
+        const fileName = `EVIDENCE_${new Date().getTime()}.jpg`;
+        const blob = await (await fetch(dataUrl)).blob();
+        const fileObj = new File([blob], fileName, { type: 'image/jpeg' });
+        
+        await uploadSingleFile(fileObj, currentProyekId, 'lapangan', 'Bukti Temuan Terpilih', currentProyek.drive_proxy_url);
+        
+        showSuccess("Anotasi disimpan sebagai bukti lapangan.");
+        document.getElementById('ql-overlay').remove();
+        loadFilesData(currentProyekId);
+    } catch (err) {
+        showError("Gagal simpan: " + err.message);
+    }
+};
