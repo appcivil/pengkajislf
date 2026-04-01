@@ -2,17 +2,23 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="manifest" href="manifest.json" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta name="theme-color" content="#0a0f1d" />
     <meta name="app-version" content="2.0.0-forensic" />
-    <meta name="description" content="Smart AI Konsultan Pengkaji SLF - Sistem berbasis AI untuk pengkajian teknis bangunan gedung dengan standar NSPK, SNI 9273:2025, dan ASCE 41-17" />
-    <meta name="keywords" content="SLF, Sertifikat Laik Fungsi, pengkaji bangunan, AI konsultan, SNI 9273" />
+    
+    <!-- Professional SEO -->
+    <title>Smart AI Pengkaji SLF | Executive Building Audit System</title>
+    <meta name="description" content="Sistem cerdas berbasis AI untuk pengkajian teknis gedung (SLF). Mendukung standar NSPK, SNI 9273:2025, dan ASCE 41-11 untuk bangunan gedung yang andal dan aman." />
+    <meta name="keywords" content="SLF, Sertifikat Laik Fungsi, Pengkaji Teknis, Audit Bangunan, AI Civil Engineering, SIMBG cloud" />
     <meta name="author" content="Smart AI Pengkaji" />
-    <meta property="og:title" content="Smart AI Konsultan Pengkaji SLF" />
-    <meta property="og:description" content="Sistem AI untuk pengkajian teknis bangunan gedung" />
+
+    <meta property="og:site_name" content="Smart AI Pengkaji" />
+    <meta property="og:title" content="Smart AI Pengkaji SLF - Konsultan AI Terpercaya" />
+    <meta property="og:description" content="Pusat kendali audit kelaikan fungsi bangunan berbasis AI Multi-Moda." />
     <meta property="og:type" content="website" />
-    <title>Smart AI Konsultan Pengkaji SLF</title>
+    <meta property="og:url" content="./" />
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -22,6 +28,8 @@
     <!-- Leaflet Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   </head>
   <body>
     <div id="loading-screen" class="loading-screen">
@@ -44,6 +52,7 @@
     </div>
 
     <div id="app"></div>
+    <div id="sync-indicator-root"></div>
     <script type="module" src="src/main.js"></script>
   </body>
 </html>
