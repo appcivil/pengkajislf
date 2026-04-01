@@ -1,54 +1,27 @@
-<!doctype html>
-<html lang="id">
+<!DOCTYPE html>
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="manifest" href="manifest.json" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="app-version" content="2.0.0-forensic" />
-    <meta name="description" content="Smart AI Konsultan Pengkaji SLF - Sistem berbasis AI untuk pengkajian teknis bangunan gedung dengan standar NSPK, SNI 9273:2025, dan ASCE 41-17" />
-    <title>Smart AI Konsultan Pengkaji SLF</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <meta charset="utf-8">
+    <title>Smart AI Pengkaji SLF - Redirecting...</title>
     <script type="text/javascript">
-      // GitHub Pages SPA Hero
-      // Redirection logic if somehow reached without hash
-      (function(l) {
-        if (l.search[1] === '/' ) {
-          var decoded = l.search.slice(1).split('&').map(function(s) { 
-            return s.replace(/~and~/g, '&')
-          }).join('?');
-          window.history.replaceState(null, null,
-              l.pathname.slice(0, -1) + decoded + l.hash
-          );
-        }
-      }(window.location))
+      // Presidential SPA Redirector for GitHub Pages
+      // Logic: If we hit a 404, redirect back to the index with the path as a hash
+      var pathSegmentsToKeep = 1;
+
+      var l = window.location;
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+      );
     </script>
   </head>
   <body>
-    <div id="loading-screen" class="loading-screen">
-      <div class="loading-card">
-        <div class="loading-logo-area">
-          <div class="logo-ring"></div>
-          <img src="logo-app.png" alt="Logo" class="main-loader-logo">
-        </div>
-        <div class="loading-text-area">
-          <h2 class="loading-title">Smart AI Pengkaji SLF</h2>
-          <div class="loading-status-container">
-            <span id="loading-status">Mengalihkan Rute...</span>
-          </div>
-          <div class="loading-bar-wrapper">
-            <div class="loading-bar-glow" style="width: 100%"></div>
-          </div>
-        </div>
-      </div>
+    <div style="font-family: 'Inter', sans-serif; height: 100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#0a0f1d; color:white;">
+      <h2 style="font-weight: 800; letter-spacing: -0.02em;">Authenticating System Path...</h2>
+      <p style="opacity:0.6; font-size:0.9rem;">Please wait while Smart AI recalibrates your session.</p>
     </div>
-    <div id="app"></div>
-    <!-- Point to the same entry as index.html -->
-    <script type="module" src="src/main.js"></script>
   </body>
 </html>
