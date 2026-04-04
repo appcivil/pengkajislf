@@ -1,6 +1,10 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
+  define: {
+    global: 'window',
+  },
   base: './',
   build: {
     outDir: 'dist',
