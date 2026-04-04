@@ -22,14 +22,14 @@ const USE_PROXY = env.PROD && !!AI_PROXY_URL;
 
 // ── Legacy direct mode (untuk dev atau jika belum ada proxy) ──
 const DIRECT_ENDPOINTS = {
-  gemini:      (model) => env.PROD
+  gemini: (model) => env.PROD
     ? `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.VITE_GEMINI_API_KEY}`
     : `/api/gemini/v1beta/models/${model}:generateContent?key=${env.VITE_GEMINI_API_KEY}`,
-  openai:      env.PROD ? 'https://api.openai.com/v1/chat/completions'          : '/api/openai/v1/chat/completions',
-  groq:        env.PROD ? 'https://api.groq.com/openai/v1/chat/completions'     : '/api/groq/v1/chat/completions',
-  claude:      env.PROD ? 'https://api.anthropic.com/v1/messages'               : '/api/claude/v1/messages',
-  openrouter:  env.PROD ? 'https://openrouter.ai/api/v1/chat/completions'       : '/api/openrouter/v1/chat/completions',
-  mistral:     env.PROD ? 'https://api.mistral.ai/v1/chat/completions'          : '/api/mistral/v1/chat/completions',
+  openai: env.PROD ? 'https://api.openai.com/v1/chat/completions' : '/api/openai/v1/chat/completions',
+  groq: env.PROD ? 'https://api.groq.com/openai/v1/chat/completions' : '/api/groq/v1/chat/completions',
+  claude: env.PROD ? 'https://api.anthropic.com/v1/messages' : '/api/claude/v1/messages',
+  openrouter: env.PROD ? 'https://openrouter.ai/api/v1/chat/completions' : '/api/openrouter/v1/chat/completions',
+  mistral: env.PROD ? 'https://api.mistral.ai/v1/chat/completions' : '/api/mistral/v1/chat/completions',
   huggingface: env.VITE_HF_SLF_OPUS_URL || 'https://api-inference.huggingface.co/models/adminskpslf/SLF_OPUS',
 };
 
@@ -137,13 +137,13 @@ export const EXPERT_PERSONAS = {
 // Log status (hanya keberadaan key, bukan nilai)
 if (env.DEV) {
   console.log('[AI Engine] Status Kunci API (DEV):', {
-    Gemini:      !!env.VITE_GEMINI_API_KEY,
-    OpenAI:      !!env.VITE_OPENAI_API_KEY,
-    Claude:      !!env.VITE_CLAUDE_API_KEY,
-    Groq:        !!env.VITE_GROQ_API_KEY,
-    OpenRouter:  !!env.VITE_OPENROUTER_API_KEY,
-    Mistral:     !!env.VITE_MISTRAL_API_KEY,
-    'AI Proxy':  USE_PROXY ? AI_PROXY_URL : 'Tidak aktif (gunakan direct)',
+    Gemini: !!env.VITE_GEMINI_API_KEY,
+    OpenAI: !!env.VITE_OPENAI_API_KEY,
+    Claude: !!env.VITE_CLAUDE_API_KEY,
+    Groq: !!env.VITE_GROQ_API_KEY,
+    OpenRouter: !!env.VITE_OPENROUTER_API_KEY,
+    Mistral: !!env.VITE_MISTRAL_API_KEY,
+    'AI Proxy': USE_PROXY ? AI_PROXY_URL : 'Tidak aktif (gunakan direct)',
   });
 }
 
@@ -185,11 +185,11 @@ async function callAI(model, prompt, options = {}) {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
-        'apikey': env.VITE_SUPABASE_ANON_KEY,
+        'apikey': env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || env.VITE_SUPABASE_ANON_KEY,
       },
       body: JSON.stringify({
         provider: model.proxyProvider || model.vendor,
-        model:    model.id,
+        model: model.id,
         prompt,
         ...options,
       }),
@@ -206,13 +206,13 @@ async function callAI(model, prompt, options = {}) {
 
   // Mode 2: Direct API call (development / fallback jika proxy belum di-deploy)
   switch (model.vendor) {
-    case 'google':    return await fetchGemini(model, prompt, options);
-    case 'openai':    return await fetchOpenAI(model, prompt);
+    case 'google': return await fetchGemini(model, prompt, options);
+    case 'openai': return await fetchOpenAI(model, prompt);
     case 'anthropic': return await fetchClaude(model, prompt);
-    case 'openrouter':return await fetchOpenRouter(model, prompt);
-    case 'huggingface':return await fetchSLFOpus(model, prompt);
-    case 'mistral':   return await fetchMistral(model, prompt);
-    case 'ollama':    return await fetchOllama(model, prompt);
+    case 'openrouter': return await fetchOpenRouter(model, prompt);
+    case 'huggingface': return await fetchSLFOpus(model, prompt);
+    case 'mistral': return await fetchMistral(model, prompt);
+    case 'ollama': return await fetchOllama(model, prompt);
     default: throw new Error(`Vendor '${model.vendor}' tidak dikenal`);
   }
 }
@@ -237,12 +237,12 @@ function extractJSON(text) {
 // ── Prompt Builders ──────────────────────────────────────────
 function getPromptForItem(item, aspek, roleTitle, standard) {
   const statusLabel = {
-    'ada_sesuai':     'Ada & Sesuai Standar',
+    'ada_sesuai': 'Ada & Sesuai Standar',
     'ada_tidak_sesuai': 'Penyimpangan Dokumen/Kondisi',
-    'tidak_ada':      'Ketidakadaan (Missing Data/Component)',
-    'buruk':          'Degradasi Berat',
-    'kritis':         'Kegagalan Teknis Kritis',
-    'tidak_wajib':    'Pengecualian (N/A)',
+    'tidak_ada': 'Ketidakadaan (Missing Data/Component)',
+    'buruk': 'Degradasi Berat',
+    'kritis': 'Kegagalan Teknis Kritis',
+    'tidak_wajib': 'Pengecualian (N/A)',
   }[item.status] || item.status;
 
   const cfg = getItemConfig(item.kode) || {};
@@ -309,25 +309,25 @@ export async function runAspectAnalysis(aspek, items, onProgress, options = {}) 
   const experts = settings.experts || {};
 
   let roleTitle = 'Digital Technical Consultant SLF';
-  let standard  = 'NSPK & PP No. 16 Tahun 2021';
+  let standard = 'NSPK & PP No. 16 Tahun 2021';
   let targetModel = MODELS.GEMINI;
 
   if (a.includes('struktur')) {
     const name = experts.structure?.name ? `(${experts.structure.name})` : '';
     roleTitle = `Chief Structural Engineer & Seismis Expert ${name}`;
-    standard  = 'SNI 9273:2025 (Existing Buildings Evaluation)';
+    standard = 'SNI 9273:2025 (Existing Buildings Evaluation)';
     if (MODELS.CLAUDE.key || USE_PROXY) targetModel = MODELS.CLAUDE;
   } else if (a.includes('administrasi')) {
     roleTitle = 'Principal Engineering Auditor';
-    standard  = 'PP No. 16 Tahun 2021 & Perundangan Bangunan';
+    standard = 'PP No. 16 Tahun 2021 & Perundangan Bangunan';
   } else if (a.includes('arsitektur')) {
     const name = experts.architecture?.name ? `(${experts.architecture.name})` : '';
     roleTitle = `Principal Architect (Building Performance) ${name}`;
-    standard  = 'NSPK Arsitektur & Estetika';
+    standard = 'NSPK Arsitektur & Estetika';
   } else if (a.includes('mep') || a.includes('mekanikal') || a.includes('kebakaran')) {
     const name = experts.mep?.name ? `(${experts.mep.name})` : '';
     roleTitle = `Senior MEP & Fire Safety Engineer ${name}`;
-    standard  = 'NSPK Utilitas & MEP';
+    standard = 'NSPK Utilitas & MEP';
   }
 
   const results = [];
@@ -363,7 +363,7 @@ export async function runAspectAnalysis(aspek, items, onProgress, options = {}) 
   if (onProgress) onProgress(items.length, items.length, 'Lead Engineer sedang merakit Laporan Teknis...');
 
   const babIvNarasi = generateBabAnalisis({ items: results, aspek });
-  const finalScore  = calcScore(results);
+  const finalScore = calcScore(results);
 
   return {
     skor_aspek: Math.round(finalScore),
@@ -382,9 +382,9 @@ export async function runAspectAnalysis(aspek, items, onProgress, options = {}) 
 function calcScore(items) {
   return items.length > 0
     ? (items.filter(i => {
-        const s = (i.status || '').toLowerCase();
-        return (s.includes('sesuai') && !s.includes('tidak')) || s.includes('baik') || s.includes('aman') || s.includes('memadai');
-      }).length / items.length) * 100
+      const s = (i.status || '').toLowerCase();
+      return (s.includes('sesuai') && !s.includes('tidak')) || s.includes('baik') || s.includes('aman') || s.includes('memadai');
+    }).length / items.length) * 100
     : 0;
 }
 
@@ -476,9 +476,9 @@ export async function runSingleItemAnalysis(item, aspek, options = {}) {
 export function parseAIJson(text) {
   try {
     const start = text.indexOf('{');
-    const end   = text.lastIndexOf('}') + 1;
+    const end = text.lastIndexOf('}') + 1;
     if (start === -1 || end === 0) throw new Error('Format JSON tidak ditemukan');
-    const raw   = text.substring(start, end);
+    const raw = text.substring(start, end);
     const clean = raw.replace(/[\x00-\x1F\x7F-\x9F]/g, (m) => (m === '\n' || m === '\r' || m === '\t' ? m : ' '));
     return JSON.parse(clean);
   } catch (e) {
@@ -631,15 +631,15 @@ Output WAJIB JSON:
  * Multi-Agent Consensus
  */
 export async function getMultiAgentConsensus(checklist, proyek, analisisSummary) {
-  const anomalies   = checklist.filter(i => i.status !== 'baik' && i.status !== 'ada_sesuai' && i.status !== 'tidak_wajib');
-  const totalCount  = checklist.length;
-  const goodCount   = totalCount - anomalies.length;
+  const anomalies = checklist.filter(i => i.status !== 'baik' && i.status !== 'ada_sesuai' && i.status !== 'tidak_wajib');
+  const totalCount = checklist.length;
+  const goodCount = totalCount - anomalies.length;
 
   const dataBrief = `
     DATA PROYEK: ${proyek.nama_bangunan} (${proyek.fungsi_bangunan})
     RINGKASAN STATISTIK:
     - Total Parameter: ${totalCount}
-    - Kondisi Baik/Sesuai: ${goodCount} (${Math.round(goodCount/totalCount*100)}%)
+    - Kondisi Baik/Sesuai: ${goodCount} (${Math.round(goodCount / totalCount * 100)}%)
     - Anomali/Temuan Kritis: ${anomalies.length}
     
     DETAIL TEMUAN ANOMALI:
@@ -713,13 +713,13 @@ Status Saat Ini: **${item.status}**.
 }
 
 function generateVisual(items, aspek) {
-  const masalah     = items.filter(i => i.status !== 'Sesuai').map(i => i.nama).slice(0, 2).join(' and ');
-  const baseStyle   = 'engineering blueprint style, vector graphic, technical diagram, high quality, CAD style, no text';
+  const masalah = items.filter(i => i.status !== 'Sesuai').map(i => i.nama).slice(0, 2).join(' and ');
+  const baseStyle = 'engineering blueprint style, vector graphic, technical diagram, high quality, CAD style, no text';
   const contentFocus = masalah.length > 0
     ? `technical drawing of ${masalah} in ${aspek} aspect`
     : `technical drawing of ${aspek} aspect of a professional building`;
-  const sanitized  = contentFocus.replace(/[^a-zA-Z0-9\s]/g, ' ');
-  const imageUrl   = `https://image.pollinations.ai/prompt/${encodeURIComponent(`${sanitized}, ${baseStyle}`)}?width=800&height=400&nologo=true`;
+  const sanitized = contentFocus.replace(/[^a-zA-Z0-9\s]/g, ' ');
+  const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(`${sanitized}, ${baseStyle}`)}?width=800&height=400&nologo=true`;
 
   return `![Visualisasi Teknis Poin C](${imageUrl})\n\n*Gambar: Diagram teknis kondisi eksisting pada aspek ${aspek} (AI Generated).*\n\n` +
     items.map((item, i) => `\n**${i + 1}. ${item.nama}**\nCatatan: ${item.visual}.`).join('\n');
@@ -738,9 +738,9 @@ function generateRisiko(items) {
 }
 
 function generateEvaluasi(items) {
-  const total       = items.length;
+  const total = items.length;
   const tidakSesuai = items.filter(i => i.status !== 'Sesuai').length;
-  const score       = total > 0 ? (items.filter(i => i.status === 'Sesuai').length / total) * 100 : 0;
+  const score = total > 0 ? (items.filter(i => i.status === 'Sesuai').length / total) * 100 : 0;
 
   return `
 - **Konvergensi Data**: ${total - tidakSesuai} item compliant dari total ${total} item.
@@ -758,8 +758,8 @@ function generateKesimpulan(items) {
   return `
 **Log Intervensi Rekomendasi (Prioritas):**
 ${critical.length > 0
-    ? critical.map((c, i) => `\n**${i + 1}. Tindakan Korektif: ${c.nama} [P1]**\n- Risiko: **${c.risiko}**\n- Rekomendasi: ${c.rekomendasi}`).join('\n')
-    : '- Tidak terdapat rekomendasi P1 (Tinggi/Kritis) pada aspek ini.'}
+      ? critical.map((c, i) => `\n**${i + 1}. Tindakan Korektif: ${c.nama} [P1]**\n- Risiko: **${c.risiko}**\n- Rekomendasi: ${c.rekomendasi}`).join('\n')
+      : '- Tidak terdapat rekomendasi P1 (Tinggi/Kritis) pada aspek ini.'}
 
 **Matriks Temuan Umum:**
 ${items.filter(i => i.risiko !== 'Kritis' && i.risiko !== 'Tinggi').map(i => `- ${i.nama}: ${i.rekomendasi} (Prioritas: ${i.risiko})`).join('\n')}
