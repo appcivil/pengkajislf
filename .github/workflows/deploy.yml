@@ -40,28 +40,30 @@ jobs:
 
       - name: Deploy Supabase Edge Function (AI Proxy) 🚀
         run: |
-          # 1. Mendeteksi Project ID (Gunakan Secret jika ada, jika tidak, gunakan ID dari .env)
+          # 1. Mendeteksi Project ID
           PROJECT_ID="${{ secrets.SUPABASE_PROJECT_ID }}"
           if [ -z "$PROJECT_ID" ]; then
             PROJECT_ID="hrzplcqeadhvbrfhlfuh"
             echo "⚠️ SUPABASE_PROJECT_ID secret not found. Falling back to ID from .env: $PROJECT_ID"
           fi
 
-          # 2. Membuat file .env sementara untuk pengiriman rahasia massal
-          cat <<EOF > .temp.env
-          GEMINI_API_KEY="${{ secrets.VITE_GEMINI_API_KEY || secrets.GEMINI_API_KEY }}"
-          OPENAI_API_KEY="${{ secrets.VITE_OPENAI_API_KEY || secrets.OPENAI_API_KEY }}"
-          CLAUDE_API_KEY="${{ secrets.VITE_CLAUDE_API_KEY || secrets.CLAUDE_API_KEY }}"
-          GROQ_API_KEY="${{ secrets.VITE_GROQ_API_KEY || secrets.GROQ_API_KEY }}"
-          OPENROUTER_API_KEY="${{ secrets.VITE_OPENROUTER_API_KEY || secrets.OPENROUTER_API_KEY }}"
-          MISTRAL_API_KEY="${{ secrets.VITE_MISTRAL_API_KEY || secrets.MISTRAL_API_KEY }}"
-          HF_API_TOKEN="${{ secrets.VITE_HF_API_TOKEN || secrets.HF_API_TOKEN }}"
-          EOF
+          # 2. Membuat file .env menggunakan echo untuk keamanan indentasi YAML
+          echo "GEMINI_API_KEY=\"${{ secrets.VITE_GEMINI_API_KEY || secrets.GEMINI_API_KEY }}\"" > .temp.env
+          echo "OPENAI_API_KEY=\"${{ secrets.VITE_OPENAI_API_KEY || secrets.OPENAI_API_KEY }}\"" >> .temp.env
+          echo "CLAUDE_API_KEY=\"${{ secrets.VITE_CLAUDE_API_KEY || secrets.CLAUDE_API_KEY }}\"" >> .temp.env
+          echo "GROQ_API_KEY=\"${{ secrets.VITE_GROQ_API_KEY || secrets.GROQ_API_KEY }}\"" >> .temp.env
+          echo "OPENROUTER_API_KEY=\"${{ secrets.VITE_OPENROUTER_API_KEY || secrets.OPENROUTER_API_KEY }}\"" >> .temp.env
+          echo "MISTRAL_API_KEY=\"${{ secrets.VITE_MISTRAL_API_KEY || secrets.MISTRAL_API_KEY }}\"" >> .temp.env
+          echo "HF_API_TOKEN=\"${{ secrets.VITE_HF_API_TOKEN || secrets.HF_API_TOKEN }}\"" >> .temp.env
 
-          # 3. Set secrets menggunakan file tersebut
-          supabase secrets set --env-file .temp.env --project-ref "$PROJECT_ID"
+          # 3. Membersihkan baris kosong (jika ada secret yang tidak diisi di GitHub)
+          sed -i '/=""/d' .temp.env
+
+          # 4. Set secrets & deploy
+          if [ -s .temp.env ]; then
+            supabase secrets set --env-file .temp.env --project-ref "$PROJECT_ID"
+          fi
           
-          # 4. Deploy Function
           supabase functions deploy ai-proxy --project-ref "$PROJECT_ID"
           
           # 5. Cleanup
