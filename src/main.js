@@ -1,10 +1,12 @@
 // ============================================================
 //  MAIN APPLICATION ENTRY POINT (Composition Root)
-//  Orchestrates: auth, layout, router, pages, sync
-//
-//  PERFORMANCE FIX: Lazy loading untuk semua halaman
-//  BOOTSTRAP FIX: Guard pengamanan jika Supabase tidak dikonfigurasi
 // ============================================================
+
+// [GLOBAL SHIMS] Mencegah error 'exports is not defined' pada GitHub Pages / Production
+if (typeof global === 'undefined') { window.global = window; }
+if (typeof exports === 'undefined') { window.exports = {}; }
+if (typeof module === 'undefined') { window.module = { exports: window.exports }; }
+
 import './styles/main.css';
 import { initAuth, onAuthChange, isAuthenticated, getUserInfo } from './lib/auth.js';
 import { route, startRouter, navigate } from './lib/router.js';
