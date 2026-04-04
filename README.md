@@ -14,13 +14,16 @@
 
 ---
 
-## 📖 Deskripsi Proyek
+## 📖 Deskripsi# Smart AI Pengkaji SLF (v3.0 Professional)
 
-**Smart AI Pengkaji SLF** adalah platform *Enterprise-Grade* berbasis *Progressive Web App* (PWA) yang dirancang khusus untuk memodernisasi cara Insinyur dan Konsultan Pengkaji Teknis melakukan audit bangunan. Menggunakan teknologi **Hybrid AI**, sistem ini mampu mentransformasi data mentah hasil inspeksi menjadi narasi evaluasi teknis yang koheren, mendalam, dan patuh terhadap regulasi nasional.
+**Smart AI Pengkaji SLF** adalah platform *forensic engineering* berbasis AI yang dirancang untuk mengotomatisasi proses pengkajian teknis Bangunan Gedung (SLF) di Indonesia. Sistem ini menggabungkan kecerdasan buatan multi-agent dengan standar regulasi **PP No. 16 Tahun 2021 (NSPK PUPR)** untuk menghasilkan laporan kajian yang audit-ready, komprehensif, dan profesional.
 
-### ⚖️ Kepatuhan Standar & Regulasi
-Aplikasi ini di-tuning secara khusus untuk selaras dengan:
-*   **PP No. 16 Tahun 2021**: Peraturan Pelaksanaan UU Bangunan Gedung.
+## Fitur Utama v3.0 Professional
+- 🧠 **Forensic AI Engine**: Analisis 6-langkah (Identifikasi s/d Rekomendasi).
+- 🏗️ **Multi-Disciplinary Experts**: Konsorsium AI Arsitektur, Struktur, dan MEP.
+- 📄 **Executive Report Synthesis**: Laporan 6-bab dengan desain cover premium.
+- 🛡️ **Security Hardened (Supabase v15.0)**: RLS ketat dan audit trail.
+- ☁️ **Cloud Sync Integration**: Sinkronisasi otomatis dengan Google Docs & Drive.
 *   **SNI 9273:2025**: Standar nasional terbaru untuk Evaluasi Bangunan Gedung Eksisting.
 *   **Standar PUPR**: Format Daftar Simak Forensik 1:1 dan logika skoring kerusakan I - V.
 
@@ -35,7 +38,9 @@ Sistem cerdas `ai-router.js` kini mendukung **Mistral AI** (Mistral Large & Pixt
 *   **Vision**: Pixtral 12B & Gemini Vision untuk deteksi kerusakan visual.
 
 ### 2. 🗂️ Multi-Sample Point Inspection
-Mendukung inspeksi banyak titik dalam satu parameter pemeriksaan (misal: Ruang Kelas 1, 2, 3...). Fitur **Add Row Dinamis** memungkinkan auditor menambahkan baris sampel tanpa batas dengan struktur data yang tetap terorganisir.
+Mendukung inspeksi banyak titik dalam satu parameter pemeriksaan (misal: Ruang Kelas 1, 2, 3...). Fitur5.  **Audit Laporan**: Sistem akan menyintesis Bab IV menggunakan 6-Step Forensic Logic.
+6.  **Finalisasi**: Tanda tangani secara digital dan simpan versi PDF/Word.
+tetap terorganisir.
 
 ### 3. 🎨 Yellow Block Forensic UI (Standard PUPR 1:1)
 Antarmuka pada tab "Daftar Simak" didesain identik dengan formulir fisik audit forensik PUPR. Menggunakan sistem blok kontras tinggi (Yellow Block) untuk meminimalkan kesalahan input dan memudahkan verifikasi visual.

@@ -1,6 +1,6 @@
 {
   "name": "smartaipengkaji",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "type": "module",
   "description": "Smart AI Konsultan Pengkaji Sertifikat Laik Fungsi (SLF) - Sistem berbasis AI untuk pengkajian teknis bangunan gedung",
@@ -12,13 +12,19 @@
     "deploy-all": "npm run build && npm run deploy-gas"
   },
   "devDependencies": {
+    "drizzle-kit": "^0.31.10",
     "terser": "^5.46.1",
     "vite": "^6.0.0"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.0",
+    "@supabase/supabase-js": "^2.101.1",
     "docx": "^9.6.1",
+    "docx-preview": "^0.3.7",
+    "docxtemplater": "^3.55.1",
+    "dompurify": "^3.3.3",
+    "drizzle-orm": "^0.45.2",
     "file-saver": "^2.0.5",
-    "marked": "^17.0.5"
+    "marked": "^17.0.5",
+    "pizzip": "^3.1.7"
   }
 }
