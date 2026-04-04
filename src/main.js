@@ -299,7 +299,7 @@ async function bootstrap() {
           <div>
             <div style="font-size:3rem;margin-bottom:1rem">⚙️</div>
             <h2 style="color:#f1f5f9;margin-bottom:0.5rem">Konfigurasi Diperlukan</h2>
-            <p style="color:#94a3b8;margin-bottom:1.5rem">File <code>.env</code> tidak ditemukan atau tidak lengkap.<br>Isi <code>VITE_SUPABASE_URL</code> dan <code>VITE_SUPABASE_ANON_KEY</code> lalu restart server.</p>
+            <p style="color:#94a3b8;margin-bottom:1.5rem">File <code>.env</code> tidak ditemukan atau tidak lengkap.<br>Isi <code>VITE_SUPABASE_URL</code> dan <code>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY</code> lalu restart server.</p>
             <a href="PANDUAN_LENGKAP.md" style="color:#60a5fa">Lihat Panduan Lengkap →</a>
           </div>
         </div>`;
