@@ -40,6 +40,13 @@ jobs:
 
       - name: Deploy Supabase Edge Function (AI Proxy) 🚀
         run: |
+          # 0. Verifikasi Access Token
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
+            echo "❌ ERROR: SUPABASE_ACCESS_TOKEN tidak ditemukan di GitHub Secrets!"
+            echo "Silakan tambahkan di: Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+
           # 1. Mendeteksi Project ID
           PROJECT_ID="${{ secrets.SUPABASE_PROJECT_ID }}"
           if [ -z "$PROJECT_ID" ]; then
