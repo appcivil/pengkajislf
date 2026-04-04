@@ -26,13 +26,13 @@ export function renderHeader(route = 'dashboard') {
   const isOnline = navigator.onLine;
 
   return `
-    <header class="app-header" id="app-header" style="backdrop-filter: blur(var(--glass-blur)); background: hsla(224, 25%, 4%, 0.85); border-bottom: 1px solid var(--glass-border);">
-      <div class="header-left">
+    <header class="app-header" id="app-header" style="backdrop-filter: blur(var(--glass-blur)); background: hsla(224, 25%, 4%, 0.85); border-bottom: 1px solid var(--glass-border); z-index: 100;">
+      <div class="header-left" style="display: flex; align-items: center; gap: var(--space-2); flex: 1; min-width: 0;">
         <!-- Sidebar toggle (Mobile & Desktop) -->
-        <button class="btn-icon" id="sidebar-toggle" aria-label="Toggle mobile sidebar">
+        <button class="btn-icon hide-desktop" id="sidebar-toggle" aria-label="Toggle mobile sidebar">
           <i class="fas fa-bars"></i>
         </button>
-        <button class="btn-icon" id="sidebar-toggle-desktop" aria-label="Toggle desktop sidebar" style="color: var(--gold-400)">
+        <button class="btn-icon hide-mobile" id="sidebar-toggle-desktop" aria-label="Toggle desktop sidebar" style="color: var(--gold-400)">
           <i class="fas fa-indent"></i>
         </button>
 
@@ -120,13 +120,14 @@ export function bindHeaderEvents() {
   // Mobile sidebar toggle
   const toggleBtn = document.getElementById('sidebar-toggle');
   if (toggleBtn) {
-    toggleBtn.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
-    toggleBtn.addEventListener('click', toggleMobileSidebar);
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleMobileSidebar();
+    });
   }
 
   const desktopToggle = document.getElementById('sidebar-toggle-desktop');
   if (desktopToggle) {
-    desktopToggle.style.display = window.innerWidth > 768 ? 'flex' : 'none';
     desktopToggle.addEventListener('click', () => {
       document.getElementById('app-layout')?.classList.toggle('sidebar-collapsed');
       const icon = desktopToggle.querySelector('i');

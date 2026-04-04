@@ -38,11 +38,14 @@ export class SupabaseChecklistRepository extends IChecklistRepository {
     return await clearLocalDrafts(ids);
   }
 
-  async upsertMany(items) {
-    const { error } = await supabase
-      .from('checklist_items')
-      .upsert(items, { onConflict: 'proyek_id, kode' });
+  async getById(id) {
+    const { data, error } = await supabase.from('checklist_items').select('*').eq('id', id).single();
+    if (error) throw error;
+    return data;
+  }
 
+  async update(id, data) {
+    const { error } = await supabase.from('checklist_items').update(data).eq('id', id);
     if (error) throw error;
   }
 }

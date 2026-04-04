@@ -37,16 +37,15 @@ export function renderAppShell(appEl, isPublic = false) {
       
       ${renderHeader('dashboard')}
       
-      <div id="sync-banner-container"></div>
-      
       <main class="main-content" id="main-content">
+        <div id="sync-banner-container"></div>
         <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
         
         <div class="page-container" id="page-root">
           <!-- Page content rendered here by router -->
         </div>
         
-        ${renderBottomNav()}
+        ${isPublic ? '' : renderBottomNav()}
       </main>
     </div>
   `;
@@ -85,7 +84,7 @@ export function getPageRoot() {
 export function onRouteChange(path) {
   updateActiveNav(path);
   updateHeaderTitle(path);
-  
+
   // Public Portal Mode (Hide Sidebar/Header)
   const appLayout = document.getElementById('app-layout');
   if (path === 'verify') {
@@ -93,9 +92,9 @@ export function onRouteChange(path) {
   } else {
     appLayout?.classList.remove('public-portal');
   }
-  
+
   // Close sidebar on mobile after navigation
-  document.getElementById('app-sidebar')?.classList.remove('open');
+  document.getElementById('app-sidebar')?.classList.remove('show');
   document.getElementById('sidebar-backdrop')?.classList.remove('show');
 
   // Update active state in bottom nav

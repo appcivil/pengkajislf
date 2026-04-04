@@ -100,9 +100,8 @@ export function renderSidebar() {
           <div class="badge-icon" style="background: var(--gradient-gold); box-shadow: 0 0 15px hsla(45, 90%, 60%, 0.3);">
             <i class="fas fa-shield-check"></i>
           </div>
-          <div class="badge-text" style="font-family:'Outfit', sans-serif">
-            <span style="color: var(--gold-400); font-weight: 800; letter-spacing: 0.05em; font-size: 10px;">PENGKAJI TERVERIFIKASI</span><br>
-            <span class="badge-sub" style="color: var(--text-tertiary); font-weight: 400; font-size: 9px; opacity: 0.8">ITE COMPLIANT v2.0</span>
+          <div class="badge-text" style="font-family:'Outfit', sans-serif; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-certificate" style="color: var(--gold-500); font-size: 10px; opacity: 0.8" title="ITE Compliant v2.0"></i>
           </div>
         </div>
 
@@ -205,14 +204,14 @@ export function updateActiveNav(path) {
 export function toggleMobileSidebar() {
   const sidebar = document.getElementById('app-sidebar');
   const backdrop = document.getElementById('sidebar-backdrop');
-  if (sidebar) sidebar.classList.toggle('open');
+  if (sidebar) sidebar.classList.toggle('show');
   if (backdrop) backdrop.classList.toggle('show');
 }
 
 export function closeMobileSidebar() {
-  if (window.innerWidth > 768) return; // Only close on mobile
+  if (window.innerWidth > 768) return; 
   const sidebar = document.getElementById('app-sidebar');
   const backdrop = document.getElementById('sidebar-backdrop');
-  if (sidebar) sidebar.classList.remove('open');
+  if (sidebar) sidebar.classList.remove('show');
   if (backdrop) backdrop.classList.remove('show');
 }

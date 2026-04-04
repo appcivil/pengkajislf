@@ -6,6 +6,8 @@ export class IChecklistRepository {
   async getPendingDrafts() { throw new Error('Not implemented'); }
   async clearSyncedDrafts(ids) { throw new Error('Not implemented'); }
   async upsertMany(items) { throw new Error('Not implemented'); }
+  async getById(id) { throw new Error('Not implemented'); }
+  async update(id, data) { throw new Error('Not implemented'); }
 }
 
 /**

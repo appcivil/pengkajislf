@@ -10,7 +10,7 @@ import { escHtml } from '../lib/utils.js';
  */
 export function renderFileSidebar(categories, activeCat) {
   return `
-    <aside class="fm-sidebar" style="width:260px; background:hsla(220, 20%, 100%, 0.02); padding:var(--space-6); display:flex; flex-direction:column; gap:var(--space-2); border-right:1px solid hsla(220, 20%, 100%, 0.05)">
+    <aside class="fm-sidebar" style="background:hsla(220, 20%, 100%, 0.02); padding:var(--space-6); display:flex; flex-direction:column; gap:var(--space-2); border-right:1px solid hsla(220, 20%, 100%, 0.05)">
       <div style="font-family:var(--font-mono); font-size:0.75rem; font-weight:800; color:var(--text-tertiary); text-transform:uppercase; margin-bottom:var(--space-6); padding:0 var(--space-2); letter-spacing:1.5px">
         <i class="fas fa-layer-group" style="margin-right:8px; color:var(--brand-400)"></i> Data Repository
       </div>
@@ -44,21 +44,23 @@ export function renderFileMain(proyek, activeCatLabel, searchQuery, isSyncing, s
         </div>
       ` : ''}
 
-      <header class="fm-toolbar" style="padding:var(--space-4) var(--space-8); border-bottom:1px solid hsla(220, 20%, 100%, 0.05); display:flex; justify-content:space-between; align-items:center; backdrop-filter:blur(10px); background:hsla(220, 20%, 5%, 0.4)">
-        <div class="fm-breadcrumb" style="font-family:'Outfit', sans-serif; font-size:1rem; font-weight:800; color:white">
-           <span style="color:var(--text-tertiary); font-weight:400">Library /</span> ${activeCatLabel}
-        </div>
-        
-        <div style="display:flex; gap:16px; align-items:center">
-           <div style="position:relative">
-              <i class="fas fa-search" style="position:absolute; left:16px; top:50%; transform:translateY(-50%); color:var(--text-tertiary); font-size:0.8rem"></i>
-              <input type="text" id="fm-search" placeholder="Cari rujukan..." 
-                     oninput="window._handleSearch(this.value)" value="${searchQuery || ''}"
-                     style="padding: 12px 16px 12px 42px; border-radius: 12px; border: 1px solid hsla(220, 20%, 100%, 0.1); font-size: 0.85rem; width:280px; background:hsla(220, 20%, 100%, 0.05); color:white; outline:none; transition:border-color 0.3s">
-           </div>
-           <button class="btn btn-primary" onclick="window._openUploadModal()" id="btn-universal-upload" style="border-radius:12px; height:44px; padding:0 20px; font-weight:700">
-              <i class="fas fa-paperclip" style="margin-right:8px"></i> Lampirkan
-           </button>
+      <header class="fm-toolbar" style="padding:var(--space-4) var(--space-8); border-bottom:1px solid hsla(220, 20%, 100%, 0.05); backdrop-filter:blur(10px); background:hsla(220, 20%, 5%, 0.4)">
+        <div class="flex-between flex-stack" style="gap: 16px; align-items: center">
+          <div class="fm-breadcrumb" style="font-family:'Outfit', sans-serif; font-size:1rem; font-weight:800; color:white; text-align: left">
+            <span style="color:var(--text-tertiary); font-weight:400">Library /</span> ${activeCatLabel}
+          </div>
+          
+          <div class="flex-stack" style="display:flex; gap:16px; align-items:center; width: auto">
+            <div style="position:relative; flex: 1">
+                <i class="fas fa-search" style="position:absolute; left:16px; top:50%; transform:translateY(-50%); color:var(--text-tertiary); font-size:0.8rem"></i>
+                <input type="text" id="fm-search" placeholder="Cari rujukan..." 
+                      oninput="window._handleSearch(this.value)" value="${searchQuery || ''}"
+                      style="padding: 12px 16px 12px 42px; border-radius: 12px; border: 1px solid hsla(220, 20%, 100%, 0.1); font-size: 0.85rem; width:100%; min-width:200px; background:hsla(220, 20%, 100%, 0.05); color:white; outline:none; transition:border-color 0.3s">
+            </div>
+            <button class="btn btn-primary" onclick="window._openUploadModal()" id="btn-universal-upload" style="border-radius:12px; height:44px; padding:0 20px; font-weight:700; width: fit-content">
+                <i class="fas fa-paperclip" style="margin-right:8px"></i> Lampirkan
+            </button>
+          </div>
         </div>
       </header>
 
