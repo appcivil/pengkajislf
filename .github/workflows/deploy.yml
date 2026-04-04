@@ -78,7 +78,7 @@ jobs:
           # 5. Cleanup
           rm .temp.env
         env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Build 🏗️
         run: npm run build
