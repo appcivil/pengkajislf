@@ -5,7 +5,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL  || '';
-const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const SUPABASE_ANON = import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 // Guard: tampilkan peringatan jelas jika konfigurasi belum diisi
 if (!SUPABASE_URL || !SUPABASE_ANON) {
