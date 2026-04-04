@@ -83,7 +83,7 @@ export function renderSidebar() {
     <aside class="sidebar" id="app-sidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo">
-          <img src="/logo-app.png" alt="Logo" style="width:100%; height:100%; object-fit:contain; border-radius:var(--radius-md);">
+          <img src="logo-app.png" alt="Logo" style="width:100%; height:100%; object-fit:contain; border-radius:var(--radius-md);">
         </div>
         <div style="overflow:hidden">
           <div class="sidebar-title" style="letter-spacing:0.05em; font-family:'Outfit', sans-serif; font-weight:800; background:linear-gradient(135deg, #fff 0%, var(--gold-400) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${APP_CONFIG.name.split(' ').slice(0,3).join(' ')}</div>
