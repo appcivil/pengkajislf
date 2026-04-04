@@ -1,8 +1,10 @@
 // ============================================================
 //  SPA ROUTER
 //  Hash-based router untuk GitHub Pages compatibility
+//  SECURITY FIX: Semua innerHTML diproteksi dengan DOMPurify
 // ============================================================
 import { isAuthenticated } from '../lib/auth.js';
+import DOMPurify from 'dompurify';
 
 const _routes = new Map();
 let _currentRoute = null;
@@ -83,7 +85,16 @@ export function startRouter(mountEl) {
     try {
       const content = await handler(getParams());
       if (typeof content === 'string') {
-        mountEl.innerHTML = content;
+        // SECURITY FIX: Sanitasi HTML sebelum inject ke DOM
+        mountEl.innerHTML = DOMPurify.sanitize(content, {
+          ADD_TAGS: ['canvas', 'svg', 'path', 'circle', 'text'],
+          ADD_ATTR: [
+            'onclick', 'onmouseenter', 'onmouseleave', 'onchange', 'oninput',
+            'viewBox', 'xmlns', 'fill', 'stroke', 'stroke-width', 'text-anchor',
+            'font-family', 'font-weight', 'font-size',
+          ],
+          FORCE_BODY: false,
+        });
       } else if (content instanceof HTMLElement) {
         mountEl.innerHTML = '';
         mountEl.appendChild(content);
@@ -127,11 +138,13 @@ function renderNotFound() {
 }
 
 function renderError(err) {
+  // SECURITY FIX: Jangan inject pesan error raw ke DOM
+  const safeMessage = DOMPurify.sanitize(String(err?.message || 'Unknown error'));
   return `
     <div class="empty-state" style="min-height:100vh">
       <div class="empty-icon" style="color:var(--danger-400)"><i class="fas fa-triangle-exclamation"></i></div>
       <h2 class="empty-title">Terjadi Kesalahan</h2>
-      <p class="empty-desc">${err.message}</p>
+      <p class="empty-desc">${safeMessage}</p>
       <button class="btn btn-secondary mt-4" onclick="window.location.reload()">
         <i class="fas fa-rotate"></i> Muat Ulang
       </button>

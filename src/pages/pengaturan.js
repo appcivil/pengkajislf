@@ -4,9 +4,11 @@
  * Executive Control Center for System Configuration
  */
 import { getSettings, saveSettings } from '../lib/settings.js';
+import { updateProfile } from '../lib/team-service.js';
 import { getUserInfo } from '../lib/auth.js';
-import { showSuccess, showError } from '../components/toast.js';
+import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { MODELS as AI_MODELS } from '../lib/ai-router.js';
+import { fetchLocalModels } from '../lib/ollama-service.js';
 
 export async function pengaturanPage() {
   const settings = await getSettings();
@@ -17,7 +19,7 @@ export async function pengaturanPage() {
       
       <!-- Presidential Header -->
       <div class="page-header" style="margin-bottom:var(--space-8)">
-        <div class="flex-between">
+        <div class="flex-between flex-stack" style="gap:var(--space-4)">
           <div>
             <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.2rem; letter-spacing:-0.02em; margin-bottom:4px">
               System <span class="text-gradient-gold">Infrastructure</span>
@@ -26,39 +28,44 @@ export async function pengaturanPage() {
               EXECUTIVE COMMAND & REGISTRY CONTROL
             </p>
           </div>
-          <div style="background:hsla(220, 20%, 100%, 0.03); padding:10px 20px; border-radius:12px; border:1px solid hsla(220, 20%, 100%, 0.05); display:flex; align-items:center; gap:12px">
+          <div style="background:hsla(220, 20%, 100%, 0.03); padding:10px 20px; border-radius:12px; border:1px solid hsla(220, 20%, 100%, 0.05); display:flex; align-items:center; gap:12px; height:fit-content">
              <div class="animate-pulse" style="width:8px; height:8px; border-radius:50%; background:var(--success-500)"></div>
              <div style="font-family:var(--font-mono); font-size:10px; font-weight:800; color:var(--text-tertiary); letter-spacing:1px">CORE NODE: ONLINE</div>
           </div>
         </div>
 
         <!-- Presidential Tab Navigation -->
-        <div class="card-quartz" style="padding: 6px; margin-top: 32px; display: flex; gap: 8px; background: hsla(224, 25%, 4%, 0.6)">
+        <div class="card-quartz" style="padding: 6px; margin-top: 32px; display: flex; gap: 8px; background: hsla(224, 25%, 4%, 0.6); flex-wrap: wrap">
           <button onclick="window.switchTab('tab-akun', this)" 
                   class="tab-item active"
-                  style="flex:1; height:44px; border:none; border-radius:10px; cursor:pointer; font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:1px; display:flex; align-items:center; justify-content:center; gap:12px; transition:all 0.3s; background:var(--gradient-brand); color:white; box-shadow:var(--shadow-sapphire)">
+                  style="flex:1; min-width:160px; height:44px; border:none; border-radius:10px; cursor:pointer; font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:1px; display:flex; align-items:center; justify-content:center; gap:12px; transition:all 0.3s; background:var(--gradient-brand); color:white; box-shadow:var(--shadow-sapphire)">
             <i class="fas fa-user-shield"></i> IDENTITY & ACCESS
           </button>
           <button onclick="window.switchTab('tab-aplikasi', this)" 
                   class="tab-item"
-                  style="flex:1; height:44px; border:none; border-radius:10px; cursor:pointer; font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:1px; display:flex; align-items:center; justify-content:center; gap:12px; transition:all 0.3s; color:var(--text-tertiary)">
+                  style="flex:1; min-width:160px; height:44px; border:none; border-radius:10px; cursor:pointer; font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:1px; display:flex; align-items:center; justify-content:center; gap:12px; transition:all 0.3s; color:var(--text-tertiary)">
             <i class="fas fa-microchip"></i> ENGINE & INTEGRATION
           </button>
           <button onclick="window.switchTab('tab-watermark', this)" 
                   class="tab-item"
-                  style="flex:1; height:44px; border:none; border-radius:10px; cursor:pointer; font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:1px; display:flex; align-items:center; justify-content:center; gap:12px; transition:all 0.3s; color:var(--text-tertiary)">
+                  style="flex:1; min-width:140px; height:44px; border:none; border-radius:10px; cursor:pointer; font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:1px; display:flex; align-items:center; justify-content:center; gap:12px; transition:all 0.3s; color:var(--text-tertiary)">
             <i class="fas fa-camera-retro"></i> FIELD CALIBRATION
+          </button>
+          <button onclick="window.switchTab('tab-template', this)" 
+                  class="tab-item"
+                  style="flex:1; min-width:140px; height:44px; border:none; border-radius:10px; cursor:pointer; font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:1px; display:flex; align-items:center; justify-content:center; gap:12px; transition:all 0.3s; color:var(--text-tertiary)">
+            <i class="fas fa-file-word"></i> REPORT FORMAT
           </button>
         </div>
       </div>
 
       <!-- TAB CONTENT: AKUN -->
       <div id="tab-akun" class="tab-content active route-fade">
-        <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap: 32px">
+        <div class="grid-main-side">
           
           <div class="card-quartz" style="padding:40px">
-            <div style="display:flex; align-items:flex-start; gap:32px; margin-bottom:48px">
-              <div style="position:relative">
+            <div class="flex-between flex-stack" style="align-items:flex-start; gap:32px; margin-bottom:48px">
+              <div style="position:relative; flex-shrink:0">
                 <div style="width:120px; height:120px; border-radius:24px; background:var(--gradient-brand); border:2px solid hsla(220, 95%, 52%, 0.3); display:flex; align-items:center; justify-content:center; font-family:'Outfit', sans-serif; font-weight:800; font-size:3rem; color:white; box-shadow:var(--shadow-sapphire)">
                   ${user?.initials || 'U'}
                 </div>
@@ -79,7 +86,12 @@ export async function pengaturanPage() {
             <div style="display:grid; grid-template-columns: 1fr; gap:24px">
                <div class="form-group">
                  <label style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:2px; display:block; margin-bottom:12px">FULL DISCLOSURE NAME</label>
-                 <input type="text" class="form-input" value="${user?.name || ''}" readonly style="background:hsla(220, 20%, 100%, 0.02); border-color:hsla(220, 20%, 100%, 0.05); color:hsla(220, 20%, 100%, 0.4); font-weight:700">
+                 <div style="display:flex; gap:12px">
+                   <input type="text" id="my-profile-name" class="form-input" value="${user?.name || ''}" style="background:hsla(220, 20%, 100%, 0.02); border-color:hsla(220, 20%, 100%, 0.1); color:white; font-weight:700; flex:1">
+                   <button type="button" onclick="window.handleUpdateMyProfile(this)" class="btn btn-primary" style="height:48px; border-radius:12px; padding:0 24px; font-size:0.7rem; font-weight:800; background:var(--gradient-brand); border:none">
+                     <i class="fas fa-id-card-clip" style="margin-right:10px"></i> UPDATE IDENTITY
+                   </button>
+                 </div>
                </div>
                <div class="form-group">
                  <label style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:2px; display:block; margin-bottom:12px">ENCRYPTED EMAIL ALIAS</label>
@@ -120,7 +132,7 @@ export async function pengaturanPage() {
       <!-- TAB CONTENT: APLIKASI -->
       <div id="tab-aplikasi" class="tab-content route-fade" style="display:none">
         <form id="settings-form" onsubmit="handleSaveSettings(event)">
-          <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap: 32px">
+          <div class="grid-main-side">
             
             <div style="display:flex; flex-direction:column; gap: 32px">
               <!-- Consultant Identity Card -->
@@ -141,7 +153,7 @@ export async function pengaturanPage() {
                   <textarea class="form-input font-mono text-xs" name="consultant_kop_text" rows="3" placeholder="Contoh: DINAS PEKERJAAN UMUM DAN PENATAAN RUANG...">${settings.consultant?.kop_text || ''}</textarea>
                 </div>
                 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px">
+                <div class="grid-2-col">
                   <div class="form-group">
                     <label class="form-label">DIRECTOR IN CHARGE</label>
                     <input type="text" class="form-input" name="director_name" value="${settings.consultant?.director_name || ''}" placeholder="Full Name & Title">
@@ -174,7 +186,7 @@ export async function pengaturanPage() {
                   <input type="hidden" name="consultant_kop_image" id="consultant-kop-val" value="${settings.consultant?.kop_image || ''}">
                 </div>
 
-                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px">
+                <div class="grid-3-col">
                   <div class="form-group">
                     <label class="form-label">OFFICIAL LOGO</label>
                     <div id="logo-preview-container" class="card-quartz" style="height:100px; display:flex; align-items:center; justify-content:center; background:hsla(220, 20%, 100%, 0.02); padding:10px">
@@ -205,11 +217,47 @@ export async function pengaturanPage() {
 
             <div style="display:flex; flex-direction:column; gap: 32px">
               <!-- Engine Connectivity -->
-                <div class="form-group">
-                  <label class="form-label">QUANTUM REASONING MODEL</label>
+                <div class="form-group mb-10">
+                  <label class="form-label">QUANTUM REASONING MODEL (CLOUD)</label>
                   <select class="form-select" name="default_model" style="height:48px; border-radius:12px">
                     ${Object.values(AI_MODELS).map(m => `<option value="${m.id}" ${settings.ai?.defaultModel === m.id ? 'selected' : ''}>${m.name.toUpperCase()}</option>`).join('')}
                   </select>
+                </div>
+
+                <!-- NEW: LOCAL NEURAL NODE (OLLAMA) -->
+                <div class="card-quartz" style="padding:24px; background:hsla(160, 100%, 50%, 0.02); border-color:hsla(160, 100%, 50%, 0.1); margin-top:24px">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+                    <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1rem; color:white; display:flex; align-items:center; gap:10px">
+                       <i class="fas fa-microchip" style="color:var(--success-400)"></i> LOCAL NEURAL NODE (OLLAMA)
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px">
+                      <span style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--text-tertiary)">ENABLED</span>
+                      <input type="checkbox" name="ollama_enabled" ${settings.ai?.ollamaEnabled ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--success-500)">
+                    </div>
+                  </div>
+
+                  <div class="form-group mb-6">
+                    <label class="form-label">ENDPOINT URL</label>
+                    <div style="display:flex; gap:12px">
+                      <input type="text" class="form-input font-mono text-xs" name="ollama_endpoint" value="${settings.ai?.ollamaEndpoint || 'http://localhost:11434'}" placeholder="e.g. http://localhost:11434" style="flex:1">
+                      <button type="button" onclick="window.syncOllamaModels(this)" class="btn btn-ghost" style="height:40px; border-radius:10px; border:1px solid hsla(220, 20%, 100%, 0.1); padding:0 16px; font-size:0.7rem; font-weight:800">
+                        <i class="fas fa-sync-alt" style="margin-right:8px"></i> SCAN MODELS
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">LOCAL MODEL PRIORITY</label>
+                    <select class="form-select" name="ollama_model" id="ollama-model-select" style="height:48px; border-radius:12px">
+                      <option value="">-- PILIH MODEL (KLIK SCAN) --</option>
+                      ${(settings.ai?.availableLocalModels || []).map(m => `
+                        <option value="${m}" ${settings.ai?.ollamaModel === m ? 'selected' : ''}>${m.toUpperCase()}</option>
+                      `).join('')}
+                    </select>
+                    <p style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); margin-top:12px; line-height:1.4">
+                      PRO-TIP: ATUR <code style="color:var(--brand-400)">OLLAMA_ORIGINS="*"</code> PADA SERVER OLLAMA UNTUK MENGIZINKAN AKSES BROWSER. DEFAULT: <span style="color:var(--success-400)">GEMMA3:27B</span>
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -244,11 +292,11 @@ export async function pengaturanPage() {
                 ].map(p => `
                   <div style="margin-bottom:24px; padding:20px; background:hsla(220, 20%, 100%, 0.02); border:1px solid hsla(220, 20%, 100%, 0.05); border-radius:16px">
                     <div style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:${p.color}; letter-spacing:1.5px; margin-bottom:16px">${p.label}</div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:16px">
+                    <div class="grid-2-col" style="margin-bottom:16px">
                       <input type="text" class="form-input text-xs" name="exp_${p.id}_name" value="${p.expert?.name || ''}" placeholder="Name & Legal Title" style="background:transparent">
                       <input type="text" class="form-input text-xs" name="exp_${p.id}_skk" value="${p.expert?.skk || ''}" placeholder="Certificate No. (SKK)" style="background:transparent">
                     </div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px">
+                    <div class="grid-2-col">
                       <div>
                         <label style="font-size:0.65rem; color:var(--text-tertiary); text-transform:uppercase; font-weight:700">Digital ID (Signature)</label>
                         <input type="file" onchange="window.handleExpertSigUpload(this, '${p.id}')" class="text-xs mt-2" style="width:100%; color:var(--text-tertiary)">
@@ -277,7 +325,7 @@ export async function pengaturanPage() {
       <!-- TAB CONTENT: WATERMARK -->
       <div id="tab-watermark" class="tab-content route-fade" style="display:none">
         <form id="watermark-form" onsubmit="handleSaveWatermark(event)">
-          <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap: 40px">
+          <div class="grid-main-side" style="gap: 40px">
             <div class="card-quartz" style="padding:40px">
               <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.4rem; color:white; margin-bottom:32px; display:flex; align-items:center; gap:16px">
                  <i class="fas fa-print" style="color:var(--brand-400)"></i> Field Authentication Watermark
@@ -353,6 +401,76 @@ export async function pengaturanPage() {
         </form>
       </div>
 
+      <!-- TAB CONTENT: TEMPLATE DOCX -->
+      <div id="tab-template" class="tab-content route-fade" style="display:none">
+        <div class="grid-main-side">
+          <div class="card-quartz" style="padding:40px">
+            <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.4rem; color:white; margin-bottom:32px; display:flex; align-items:center; gap:16px">
+               <i class="fas fa-file-word" style="color:var(--brand-400)"></i> Global Report Formatting (.docx)
+            </div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:32px">
+               <!-- Download Reference -->
+               <div class="card-quartz" style="padding:32px; background:hsla(220, 20%, 100%, 0.02)">
+                  <h4 style="color:white; font-size:1rem; margin-bottom:12px; font-weight:800">1. Reference Template</h4>
+                  <p style="font-size:0.8rem; color:var(--text-tertiary); margin-bottom:24px; line-height:1.6">Download a template containing all available placeholders (Tags) that can be used in your document.</p>
+                  <button type="button" onclick="window.downloadDocxReference()" class="btn btn-outline" style="width:100%; height:48px; border-radius:12px; font-weight:700; color:white; border-color:var(--brand-400)">
+                    <i class="fas fa-download" style="margin-right:10px"></i> DOWNLOAD REFERENCE TAGS
+                  </button>
+               </div>
+
+               <!-- Upload Custom -->
+               <div class="card-quartz" style="padding:32px; background:hsla(220, 20%, 100%, 0.02)">
+                  <h4 style="color:white; font-size:1rem; margin-bottom:12px; font-weight:800">2. Custom Template</h4>
+                  <p style="font-size:0.8rem; color:var(--text-tertiary); margin-bottom:24px; line-height:1.6">Upload your corporate-branded .docx file. The system will auto-fill the tags upon exporting reports.</p>
+                  
+                  <div id="template-status" style="margin-bottom:16px">
+                     <div class="badge" style="background:var(--text-tertiary); color:white; padding:8px 16px; border-radius:8px; font-size:10px">
+                        <i class="fas fa-info-circle" style="margin-right:8px"></i> STANDAR SISTEM AKTIF
+                     </div>
+                  </div>
+
+                  <div style="display:flex; flex-direction:column; gap:12px">
+                    <input type="file" id="template-uploader" accept=".docx" onchange="window.handleTemplateUpload(this)" hidden>
+                    <button type="button" onclick="document.getElementById('template-uploader').click()" class="btn-presidential gold" style="width:100%; height:48px; border-radius:12px; font-size:0.85rem">
+                      <i class="fas fa-upload" style="margin-right:10px"></i> UPLOAD .DOCX TEMPLATE
+                    </button>
+                    <p style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); text-align:center">MAX SIZE: 20MB &bull; MUST BE VALID OPENXML DOCX</p>
+                  </div>
+               </div>
+            </div>
+
+            <div class="card-quartz" style="margin-top:40px; background:hsla(45, 90%, 60%, 0.03); border-color:hsla(45, 90%, 60%, 0.1)">
+               <h4 style="color:var(--gold-400); font-size:0.9rem; font-weight:800; margin-bottom:16px"><i class="fas fa-triangle-exclamation"></i> Templating Rules</h4>
+               <ul style="font-size:0.8rem; color:var(--text-tertiary); padding-left:20px; line-height:1.8">
+                  <li>Use double curly braces for tags: <code style="color:var(--brand-400)">{{NAMA_BANGUNAN}}</code>, <code style="color:var(--brand-400)">{{ALAMAT}}</code>, etc.</li>
+                  <li>For tables, use the looping syntax: <code style="color:var(--gold-400)">{#_checklistTeknis}</code> ... <code style="color:var(--gold-400)">{/_checklistTeknis}</code>.</li>
+                  <li>Recommended fonts: Calibri or Arial for cross-platform compatibility.</li>
+                  <li>Ensure your file is a pure <code style="color:white">.docx</code> (not .doc or .rtf).</li>
+               </ul>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:32px">
+             <div class="card-quartz" style="padding:32px; background:var(--gradient-dark)">
+                <h4 style="color:white; font-size:1rem; margin-bottom:16px">Cloud Sync Status</h4>
+                <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px">
+                   <div style="width:48px; height:48px; border-radius:12px; background:hsla(220, 95%, 52%, 0.1); display:flex; align-items:center; justify-content:center; color:var(--brand-400)">
+                      <i class="fas fa-cloud-arrow-up" style="font-size:1.4rem"></i>
+                   </div>
+                   <div>
+                      <div style="font-size:0.85rem; color:white; font-weight:700">Storage Synchronization</div>
+                      <div style="font-size:0.7rem; color:var(--text-tertiary)">Templates are stored in Supabase Cluster.</div>
+                   </div>
+                </div>
+                <button class="btn btn-ghost" style="width:100%; border:1px solid hsla(220, 20%, 100%, 0.1); border-radius:12px; color:white; font-size:0.75rem">
+                   <i class="fas fa-trash-can" style="margin-right:10px"></i> RESET TO SYSTEM DEFAULT
+                </button>
+             </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   `;
 }
@@ -401,6 +519,60 @@ window.handleExpertQrUpload = (input, type) => handleFileToHidden(input, null, `
 window.handleWmLogoUpload = (input) => handleFileToHidden(input, 'wm-logo-preview-container', 'wm-company-logo-val');
 
 /**
+ * Handle Template Upload
+ */
+window.handleTemplateUpload = async function(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  
+  if (!file.name.endsWith('.docx')) {
+    showError('Hanya file .docx yang diizinkan sebagai template.');
+    return;
+  }
+
+  showInfo('Uploading Template to Cloud...');
+  
+  try {
+    // 1. Convert to base64 for now (Storage is better, but this is immediate)
+    // In a production app, we would use supabase.storage.from('system-assets').upload()
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const base64 = e.target.result;
+        const settings = await getSettings();
+        if (!settings.report) settings.report = {};
+        settings.report.customTemplateBase64 = base64;
+        settings.report.customTemplateName = file.name;
+        settings.report.customTemplateUrl = 'active'; // Flag
+        
+        await saveSettings(settings);
+        showSuccess('Template berhasil diperbarui.');
+        document.getElementById('template-status').innerHTML = `
+          <div class="badge" style="background:var(--success-500); color:white; padding:8px 16px; border-radius:8px; font-size:10px">
+            <i class="fas fa-check-circle" style="margin-right:8px"></i> SUCCESS: ${file.name.toUpperCase()}
+          </div>
+        `;
+    };
+    reader.readAsDataURL(file);
+  } catch (err) {
+    showError('Gagal mengunggah template: ' + err.message);
+  }
+};
+
+/**
+ * Handle Reference Download
+ */
+window.downloadDocxReference = async function() {
+    showInfo('Generating Reference Tags...');
+    try {
+        const { generateReferenceTemplate } = await import('../lib/docx-service.js');
+        await generateReferenceTemplate();
+        showSuccess('Dokumen referensi berhasil diunduh.');
+    } catch (err) {
+        showError('Gagal membuat referensi: ' + err.message);
+    }
+};
+
+/**
  * Handle Save Global Settings
  */
 window.handleSaveSettings = async function(e) {
@@ -425,7 +597,13 @@ window.handleSaveSettings = async function(e) {
         director_job: fd.get('director_job'),
         nomor_surat_format: fd.get('nomor_surat_format'),
       },
-      ai: { defaultModel: fd.get('default_model') },
+      ai: { 
+        defaultModel: fd.get('default_model'),
+        ollamaEnabled: fd.get('ollama_enabled') === 'on',
+        ollamaEndpoint: fd.get('ollama_endpoint'),
+        ollamaModel: fd.get('ollama_model'),
+        availableLocalModels: settings.ai?.availableLocalModels || []
+      },
       experts: {
         architecture: { name: fd.get('exp_arch_name'), skk: fd.get('exp_arch_skk'), signature: fd.get('exp_arch_sig'), qr_code: fd.get('exp_arch_qr') },
         structure: { name: fd.get('exp_struct_name'), skk: fd.get('exp_struct_skk'), signature: fd.get('exp_struct_sig'), qr_code: fd.get('exp_struct_qr') },
@@ -478,6 +656,69 @@ window.handleSaveWatermark = async function(e) {
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-check-double" style="margin-right:12px"></i> UPDATE CALIBRATION LOG';
+  }
+};
+
+/**
+ * Handle Update User's own Profile Name
+ */
+window.handleUpdateMyProfile = async function(btn) {
+  const nameInput = document.getElementById('my-profile-name');
+  const newName = nameInput.value.trim();
+  const user = getUserInfo();
+  
+  if (!user || !user.id) return;
+  if (!newName) {
+    showError('Name cannot be empty.');
+    return;
+  }
+
+  const originalHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> SEALING...';
+
+  try {
+    await updateProfile(user.id, { full_name: newName });
+    showSuccess('Identity Profile Updated.');
+    
+    // Refresh to update UI globally (header, sidebar, etc)
+    setTimeout(() => window.location.reload(), 1000);
+  } catch (err) {
+    showError('Update Failed: ' + err.message);
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
+  }
+};
+
+/**
+ * Sync Ollama Models dynamically
+ */
+window.syncOllamaModels = async function(btn) {
+  const originalHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> SCANNING...';
+  
+  try {
+    const models = await fetchLocalModels();
+    const select = document.getElementById('ollama-model-select');
+    
+    if (select) {
+      select.innerHTML = models.map(m => `
+        <option value="${m.name}">${m.name.toUpperCase()}</option>
+      `).join('');
+      
+      // Auto-select gemma3:27b if it exists
+      if (models.some(m => m.name === 'gemma3:27b')) {
+        select.value = 'gemma3:27b';
+      }
+    }
+    
+    showSuccess(`Berhasil menarik ${models.length} model dari Ollama.`);
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
   }
 };
 

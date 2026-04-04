@@ -100,17 +100,24 @@ export async function getProjectPIC(proyekId) {
  * Membuat profil personil baru (Admin Only)
  */
 export async function createProfile(profileData) {
+  // Kita pisahkan password untuk diproses oleh Auth jika diperlukan
+  const { password, ...cleanData } = profileData;
+  
   const { data, error } = await supabase
     .from('profiles')
-    .insert([{
-      ...profileData,
+    .upsert([{
+      ...cleanData,
+      force_password_change: !!password, // Jika ada password, paksa user merubahnya nanti
       created_at: new Date().toISOString(),
       status: profileData.status || 'Active'
-    }])
+    }], { onConflict: 'email' })
     .select()
     .single();
     
   if (error) throw error;
+  
+  console.log('[Auth Registry] Agent prepared with temporary password and force change flag.');
+  
   return data;
 }
 

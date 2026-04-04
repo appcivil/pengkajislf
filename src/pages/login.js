@@ -19,7 +19,7 @@ export async function loginPage() {
   const year = new Date().getFullYear();
 
   const html = `
-    <div id="login-portal" style="min-height:100vh; background:#020408; position:relative; overflow:hidden; font-family:'Inter', sans-serif">
+    <div id="login-portal" style="min-height:100vh; background:#020408; position:relative; overflow:hidden; font-family:var(--font-sans)">
       
       <!-- Immersive Architectural Backsplash -->
       <div style="position:fixed; inset:0; z-index:0; overflow:hidden">
@@ -28,12 +28,12 @@ export async function loginPage() {
       </div>
 
       <!-- Floating Quartz Panel -->
-      <div style="position:relative; z-index:1; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px">
+      <div style="position:relative; z-index:1; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px">
         
-        <div class="card-quartz" style="width:100%; max-width:960px; min-height:640px; display:grid; grid-template-columns: 1.2fr 1fr; overflow:hidden; padding:0; border-color:hsla(220, 20%, 100%, 0.1); animation: modal-up 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)">
+        <div class="login-card-quartz">
            
-           <!-- Narrative Side -->
-           <div style="padding:60px; background:hsla(224, 25%, 4%, 0.6); display:flex; flex-direction:column; border-right:1px solid hsla(220, 20%, 100%, 0.05)">
+           <!-- Narrative Side (Desktop Only) -->
+           <div class="login-narrative">
               <div style="width:64px; height:64px; background:var(--gradient-brand); border-radius:16px; display:flex; align-items:center; justify-content:center; color:white; font-size:2rem; margin-bottom:40px; box-shadow:var(--shadow-sapphire); border:1px solid hsla(220, 95%, 52%, 0.3)">
                  <i class="fas fa-building"></i>
               </div>
@@ -65,7 +65,7 @@ export async function loginPage() {
            </div>
 
            <!-- Interaction Side -->
-           <div style="padding:60px; background:transparent; display:flex; flex-direction:column; justify-content:center">
+           <div class="login-interaction">
               <div id="login-view" class="route-fade">
                  <h2 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.8rem; color:white; margin-bottom:12px">Consortium Entry</h2>
                  <p style="color:var(--text-tertiary); font-size:0.85rem; margin-bottom:40px">Verify your identity to access the strategic registry.</p>
@@ -85,20 +85,22 @@ export async function loginPage() {
                     <span style="position:relative; background:#0D1117; padding:0 16px; font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:2px; font-weight:800">OR DIRECT ALIAS</span>
                  </div>
 
-                 <form id="email-login-form" style="display:flex; flex-direction:column; gap:20px">
-                    <div class="form-group">
-                       <label class="form-label" style="font-size:10px; letter-spacing:1.5px">IDENTITY ALIAS (EMAIL)</label>
+                 <form id="email-login-form" style="display:flex; flex-direction:column; gap:24px" novalidate>
+                    <div class="form-group" style="margin:0">
+                       <label class="form-label" style="font-size:10px; letter-spacing:1.5px; opacity:0.8">IDENTITY ALIAS (EMAIL)</label>
                        <input type="email" id="login-email" class="form-input" placeholder="authorized.personnel@registry.gov" required>
+                       <div id="email-error" class="field-error" style="display:none"></div>
                     </div>
-                    <div class="form-group">
-                       <label class="form-label" style="font-size:10px; letter-spacing:1.5px">SECURITY KEYCASE (PASSWORD)</label>
+                    <div class="form-group" style="margin:0">
+                       <label class="form-label" style="font-size:10px; letter-spacing:1.5px; opacity:0.8">SECURITY KEYCASE (PASSWORD)</label>
                        <input type="password" id="login-pass" class="form-input" placeholder="••••••••" required>
+                       <div id="pass-error" class="field-error" style="display:none"></div>
                     </div>
-                    <button type="submit" class="btn-presidential gold" id="btn-email-signin" style="height:52px; border-radius:12px; font-weight:800; font-size:0.9rem">
+                    <button type="submit" class="btn-presidential gold" id="btn-email-signin" style="height:56px; border-radius:14px; font-weight:800; font-size:1rem; margin-top:8px">
                        <i class="fas fa-shield-keyhole" style="margin-right:12px"></i> AUTHORIZE DIRECT
                     </button>
                     ${!APP_CONFIG.features.isPublished ? `
-                      <button type="button" class="btn btn-ghost" id="btn-dev-bypass" style="color:var(--brand-300); font-family:var(--font-mono); font-size:9px; font-weight:800; letter-spacing:2px">
+                      <button type="button" class="btn btn-ghost" id="btn-dev-bypass" style="color:var(--brand-300); font-family:var(--font-mono); font-size:9px; font-weight:800; letter-spacing:2px; margin-top:-8px">
                         <i class="fas fa-terminal" style="margin-right:10px"></i> OVERRIDE PROTOCOL (BYPASS)
                       </button>
                     ` : ''}
@@ -124,7 +126,7 @@ export async function loginPage() {
   
   // Event listeners
   document.getElementById('btn-google-signin')?.addEventListener('click', handleGoogleSignIn);
-  document.getElementById('email-login-form')?.addEventListener('submit', handleEmailSignIn);
+  document.getElementById('email-login-form')?.addEventListener('submit', handleFormSubmit);
   
   document.getElementById('btn-dev-bypass')?.addEventListener('click', async (e) => {
     e.preventDefault();
@@ -139,6 +141,16 @@ export async function loginPage() {
       btn.disabled = false;
       btn.innerHTML = `<i class="fas fa-terminal"></i> OVERRIDE PROTOCOL (BYPASS)`;
     }
+  });
+
+  // Real-time clear error
+  ['login-email', 'login-pass'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', () => {
+      const field = document.getElementById(id);
+      const errorDiv = document.getElementById(id.replace('login-', '') + '-error');
+      field.classList.remove('error');
+      if (errorDiv) errorDiv.style.display = 'none';
+    });
   });
 }
 
@@ -158,18 +170,45 @@ async function handleGoogleSignIn() {
   }
 }
 
-async function handleEmailSignIn(e) {
+async function handleFormSubmit(e) {
   e.preventDefault();
+  const emailField = document.getElementById('login-email');
+  const passField = document.getElementById('login-pass');
+  const emailError = document.getElementById('email-error');
+  const passError = document.getElementById('pass-error');
+  
+  let hasError = false;
+
+  // Visual Validation
+  if (!emailField.value || !emailField.validity.valid) {
+    emailField.classList.add('error');
+    emailError.innerHTML = `<i class="fas fa-circle-exclamation"></i> Identity alias is invalid or missing.`;
+    emailError.style.display = 'flex';
+    hasError = true;
+  }
+
+  if (!passField.value || passField.value.length < 6) {
+    passField.classList.add('error');
+    passError.innerHTML = `<i class="fas fa-shield-slash"></i> Security key is too short or missing.`;
+    passError.style.display = 'flex';
+    hasError = true;
+  }
+
+  if (hasError) return;
+
   const btn = document.getElementById('btn-email-signin');
-  const email = document.getElementById('login-email').value;
-  const pass = document.getElementById('login-pass').value;
   btn.disabled = true;
   btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> VERIFYING...`;
+  
   try {
-    await signInWithEmail(email, pass);
+    await signInWithEmail(emailField.value, passField.value);
   } catch (err) {
     showError('Identity Verification Rejected.');
     btn.disabled = false;
     btn.innerHTML = `<i class="fas fa-shield-keyhole"></i> AUTHORIZE DIRECT`;
+    
+    // Highlight both fields as potential cause
+    emailField.classList.add('error');
+    passField.classList.add('error');
   }
 }

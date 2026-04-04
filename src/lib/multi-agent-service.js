@@ -100,13 +100,14 @@ export async function runSpecificAgentAnalysis(proyekId, agentId, allResults = {
   const { fetchAgentPrompt, injectPromptConfig, SYSTEM_INSTRUCTIONS_TEMPLATE, DEFAULT_PRINCIPLES } = await import('./prompt-config-service.js');
   const { fetchDriveFiles, fetchFileOCR } = await import('./drive.js');
   
-  // 1. Ambil Data Dasar secara Parallel
+  // 1. Ambil Data Dasar secara Sequential (Fix TDZ)
   const settings = await getSettings();
   const experts = settings.experts || {};
   
-  const [dbPrompt, { data: proyek }, { data: items }, driveFiles] = await Promise.all([
+  const { data: proyek } = await supabase.from('proyek').select('*').eq('id', proyekId).single();
+  
+  const [dbPrompt, { data: items }, driveFiles] = await Promise.all([
     fetchAgentPrompt(agentId),
-    supabase.from('proyek').select('*').eq('id', proyekId).single(),
     supabase.from('checklist_items').select('*').eq('proyek_id', proyekId),
     fetchDriveFiles(proyekId, proyek?.drive_proxy_url)
   ]);

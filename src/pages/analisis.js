@@ -32,18 +32,49 @@ import {
   getMultiAgentConsensus 
 } from '../lib/ai-router.js';
 import { runNSPKBot } from '../lib/nspk-bot.js';
+import { SmartAIIntegration } from '../infrastructure/ai/deep-reasoning-integration.js';
 
 // ── Page Entry ────────────────────────────────────────────────
 export async function analisisPage(params = {}) {
   const proyekId = params.id;
   if (!proyekId) { navigate('proyek'); return ''; }
 
-  // Update Store
   store.set({ currentProyekId: proyekId });
 
-  const root = document.getElementById('page-root');
-  if (root) root.innerHTML = renderSkeleton();
+  // Return the base shell with Modal Container
+  return `
+    <div id="analisis-shell" class="route-fade">
+      ${renderSkeleton()}
+    </div>
+    
+    <!-- Intelligent Discovery Modal -->
+    <div id="modular-modal-overlay" class="modal-backdrop" style="display:none">
+       <div class="modal-content card-quartz" style="width:700px; max-width:95vw; padding:0; border-radius:16px; overflow:hidden">
+          <div class="modal-header flex-between" style="padding:20px 24px; border-bottom:1px solid hsla(220, 20%, 100%, 0.05); background:hsla(224, 25%, 4%, 0.4)">
+             <div id="modal-title-area">
+                <h3 id="modal-item-name" style="font-family:'Outfit',sans-serif; margin:0">Detail Temuan</h3>
+                <p id="modal-item-aspek" style="font-size:10px; color:var(--brand-300); margin:0; text-transform:uppercase; letter-spacing:1px"></p>
+             </div>
+             <button class="btn btn-ghost btn-sm" onclick="window._closeModularModal()">
+                <i class="fas fa-times"></i>
+             </button>
+          </div>
+          <div id="modal-body-area" style="padding:24px; max-height:70vh; overflow-y:auto">
+             <!-- Dynamic Content -->
+          </div>
+          <div id="modal-footer-area" style="padding:16px 24px; border-top:1px solid hsla(220, 20%, 100%, 0.05); text-align:right">
+             <button class="btn btn-secondary btn-sm" onclick="window._closeModularModal()">Tutup</button>
+          </div>
+       </div>
+    </div>
+  `;
+}
 
+/**
+ * Lifecycle Hook: Memuat data dan merender konten analisis
+ */
+export async function afterAnalisisRender(params) {
+  const proyekId = params.id;
   await loadData(proyekId);
 }
 
@@ -51,7 +82,8 @@ export async function analisisPage(params = {}) {
  * Main Data Fetching & Sync
  */
 async function loadData(proyekId) {
-  const root = document.getElementById('page-root');
+  const shell = document.getElementById('analisis-shell');
+  if (!shell) return;
   
   try {
     const [proyek, checklistData, lastAnalisis, proyekFiles] = await Promise.all([
@@ -75,7 +107,7 @@ async function loadData(proyekId) {
       proyekFiles
     });
 
-    render(root);
+    render(shell);
   } catch (err) {
     console.error('[Analisis] Load Failed:', err);
     showError('Gagal memuat data analisis: ' + err.message);
@@ -92,15 +124,18 @@ function render(root) {
   // Header UI
   const headerHtml = `
     <div class="page-header">
-      <div class="flex-between">
-        <div>
+      <div class="flex-between flex-stack" style="gap: var(--space-4)">
+        <div style="text-align: left">
           <button class="btn btn-ghost btn-sm" onclick="window.navigate('proyek-detail',{id:'${currentProyek.id}'})" style="margin-bottom:8px">
             <i class="fas fa-arrow-left"></i> ${escHtml(currentProyek.nama_bangunan)}
           </button>
           <h1 class="page-title">Analisis AI — Kelaikan Fungsi</h1>
-          <p class="page-subtitle">Engine modular berbasis SNI 9273:2025 — Status: ${hasChecklist ? `${checklistData.length} item checklist` : 'Belum diisi'}</p>
+          <p class="page-subtitle">
+            <span class="badge badge-success" style="font-size:10px; margin-right:8px; vertical-align:middle"><i class="fas fa-brain"></i> DEEP REASONING ACTIVE</span>
+            Engine modular berbasis SNI 9273:2025 — Status: ${hasChecklist ? `${checklistData.length} item checklist` : 'Belum diisi'}
+          </p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex gap-3" style="width: fit-content">
           ${hasChecklist ? `
             <button class="btn btn-secondary" onclick="window.navigate('checklist',{id:'${currentProyek.id}'})">
               <i class="fas fa-clipboard-check"></i> Edit Checklist
@@ -116,12 +151,16 @@ function render(root) {
   `;
 
   let contentHtml = '';
-  if (!hasChecklist) {
-    contentHtml = renderNoDataPanel(currentProyek.id);
-  } else if (!currentAnalisis) {
+  if (currentAnalisis) {
+    // If we have calculation results, show them even if checklist items aren't loaded 
+    // (could happen due to partial sync or legacy data)
+    contentHtml = renderResultPanel(currentAnalisis, currentProyek, checklistData || []);
+  } else if (hasChecklist) {
+    // We have checklist items but no AI analysis yet
     contentHtml = renderReadyPanel(currentProyek.id);
   } else {
-    contentHtml = renderResultPanel(currentAnalisis, currentProyek, checklistData);
+    // Nothing in DB at all
+    contentHtml = renderNoDataPanel(currentProyek.id);
   }
 
   root.innerHTML = `<div id="analisis-page">${headerHtml}${contentHtml}</div>`;
@@ -161,8 +200,9 @@ window._runAspect = async (aspekTarget) => {
       return;
     }
 
-    // Call AI Router
-    const result = await runAspectAnalysis(aspekTarget, targetItems);
+    // Call Smart AI Integration with Deep Reasoning logic
+    const integration = SmartAIIntegration.getInstance();
+    const result = await integration.runAspectAnalysisWithDeepReasoning(aspekTarget, targetItems);
     
     // Update DB & Local Store
     const colMap = {
@@ -319,15 +359,103 @@ async function fetchLastAnalisis(proyekId) {
   const { data } = await supabase.from('hasil_analisis').select('*').eq('proyek_id', proyekId).maybeSingle();
   return data;
 }
-
 async function fetchProyekFiles(proyekId) {
   const { data } = await supabase.from('proyek_files').select('*').eq('proyek_id', proyekId);
   return data || [];
 }
 
+window._runSingleItemAnalysis = async (itemId, aspek) => {
+    const { checklistData, currentProyekId, proyekFiles } = store.get();
+    const item = checklistData.find(it => it.id === itemId);
+    if (!item) return;
+
+    try {
+        showAIProgress('Deep Reasoning', `Menganalisis: ${item.nama}...`);
+        
+        // Find relevant files for this item (Self-Correction: Using Auto-Link Logic)
+        const relevantEvidence = (proyekFiles || []).filter(f => 
+            f.category === 'nspk' || 
+            f.category === 'lapangan' || 
+            f.category === item.kategori
+        ).map(f => ({
+            id: f.id,
+            name: f.name,
+            category: f.category,
+            url: f.file_url,
+            abstract: f.ai_analysis || '-'
+        }));
+
+        const integration = SmartAIIntegration.getInstance();
+        const result = await integration.analyzeWithDeepReasoning(item, aspek, { 
+            evidence: relevantEvidence 
+        });
+        
+        // Simpan ke catatan item di DB
+        const { error } = await supabase
+            .from('checklist_items')
+            .update({ 
+                catatan: result.analysis, // Hasil naratif
+                status: result.status,
+                metadata: {
+                    deep_reasoning: {
+                        steps: result.reasoning_steps,
+                        confidence: result.confidence_score,
+                        rules: result.rules_matched
+                    }
+                }
+            })
+            .eq('id', itemId);
+
+        if (error) throw error;
+
+        // Refresh Local State
+        const updatedData = checklistData.map(it => it.id === itemId ? { 
+            ...it, 
+            catatan: result.analysis, 
+            status: result.status,
+            metadata: { ...it.metadata, deep_reasoning: result }
+        } : it);
+        
+        store.set({ checklistData: updatedData });
+        
+        hideAIProgress();
+        showSuccess(`Analisis selesai untuk ${item.nama}`);
+        render(document.getElementById('page-root'));
+
+    } catch (err) {
+        hideAIProgress();
+        showError('Gagal Analisis Item: ' + err.message);
+    }
+};
+
 window._showModularDetail = async (itemId, aspek) => {
-    // Implement modular detail modal logic or move to separate file if too big
-    showInfo("Fitur ini sedang dimigrasikan ke arsitektur baru.");
+    const { checklistData } = store.get();
+    const item = checklistData.find(i => i.id === itemId);
+    if (!item) return;
+
+    const overlay = document.getElementById('modular-modal-overlay');
+    const title = document.getElementById('modal-item-name');
+    const aspekSub = document.getElementById('modal-item-aspek');
+    const body = document.getElementById('modal-body-area');
+
+    if (!overlay || !body) return;
+
+    title.textContent = item.nama || 'Detail Item';
+    aspekSub.textContent = aspek || item.kategori || 'Audit Teknis';
+    
+    // Build Modal Body
+    body.innerHTML = renderDetailedModularAudit(item);
+
+    overlay.style.display = 'flex';
+    requestAnimationFrame(() => overlay.classList.add('active'));
+};
+
+window._closeModularModal = () => {
+    const overlay = document.getElementById('modular-modal-overlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(() => { overlay.style.display = 'none'; }, 300);
+    }
 };
 
 window._runNSPKBotForItem = async (itemId, itemName) => {

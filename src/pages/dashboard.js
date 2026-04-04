@@ -1,7 +1,6 @@
 // ============================================================
 //  DASHBOARD PAGE
 //  KPI overview, charts, AI insight, todo monitoring
-//  PRESIDENTIAL CLASS (QUARTZ PREMIUM)
 // ============================================================
 import { supabase } from '../lib/supabase.js';
 import { getUserInfo } from '../lib/auth.js';
@@ -10,6 +9,8 @@ import { APP_CONFIG } from '../lib/config.js';
 import { showError } from '../components/toast.js';
 import { fetchTeamMembers, fetchTeamWorkload } from '../lib/team-service.js';
 import { getGlobalAuditLogs } from '../lib/audit-service.js';
+import { esc, escTrunc, escDate } from '../lib/html-utils.js';  // SECURITY: escape user data
+
 
 export async function dashboardPage() {
   // Render skeleton immediately
@@ -26,42 +27,51 @@ export async function dashboardPage() {
   ]);
 
   const user = getUserInfo();
+  const userName = user?.name || (APP_CONFIG.features.isPublished ? 'User' : 'Guest Commander');
   const now  = new Date();
   const greeting = getGreeting(now.getHours());
 
-  triggerDashboardMount(projects, kpi);
+  _cachedProjects = projects;
+  _cachedKpi      = kpi;
 
   return `
     <div id="dashboard-page" style="animation: page-fade-in 0.8s ease-out">
       <!-- Page Header -->
       <div class="page-header" style="margin-bottom: var(--space-8)">
-        <div class="flex-between">
+        <div class="flex-between" style="align-items: flex-end">
           <div>
-            <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.2rem; letter-spacing:-0.02em; margin-bottom:4px">
-              ${greeting}, <span class="text-gradient-gold">${user?.name?.split(' ')[0] || 'User'}</span>!
+            <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.5rem; letter-spacing:-0.03em; margin-bottom:8px">
+              ${greeting}, <span class="text-gradient-gold">${userName.split(' ')[0]}</span>!
             </h1>
-            <p class="page-subtitle" style="font-family:var(--font-mono); font-size: 0.75rem; letter-spacing:1px; opacity:0.6; text-transform:uppercase">
-              PRESIDENTIAL COMMAND CENTER &bull; <i class="fas fa-calendar-day" style="color:var(--brand-400); margin-right:4px"></i> ${formatDate(now)}
-            </p>
+            <div style="display:flex; align-items:center; gap:12px">
+               <p class="page-subtitle" style="font-family:var(--font-mono); font-size: 0.7rem; letter-spacing:1.5px; opacity:0.6; text-transform:uppercase; display:flex; align-items:center; gap:6px">
+                 <span style="width:6px; height:6px; border-radius:50%; background:var(--success-400); box-shadow:0 0 8px var(--success-400)"></span>
+                 PRESIDENTIAL COMMAND CENTER
+               </p>
+               <span style="width:1px; height:12px; background:var(--border-subtle)"></span>
+               <p style="font-family:var(--font-mono); font-size: 0.7rem; letter-spacing:1px; opacity:0.6; text-transform:uppercase">
+                 <i class="fas fa-calendar-day" style="color:var(--brand-400); margin-right:4px"></i> ${formatDate(now)}
+               </p>
+            </div>
           </div>
-          <div class="flex gap-4">
-            <button class="btn btn-outline" onclick="window.navigate('laporan')" style="height:44px; padding:0 24px; border-radius:12px; font-weight:700">
-              <i class="fas fa-file-export" style="margin-right:8px"></i> Export Analytics
+          <div class="flex gap-3 page-actions-mobile">
+            <button class="btn btn-secondary" onclick="window.navigate('laporan')" style="height:48px; padding:0 20px; border-radius:14px; font-weight:700">
+              <i class="fas fa-file-export"></i> <span class="hide-mobile">Analytics</span>
             </button>
-            <button class="btn-presidential gold" onclick="window.navigate('proyek-baru')" style="height:44px; padding:0 24px; border-radius:12px">
-              <i class="fas fa-plus" style="margin-right:8px"></i> Proyek Baru
+            <button class="btn-presidential gold" onclick="window.navigate('proyek-baru')" style="height:48px; padding:0 24px; border-radius:14px">
+              <i class="fas fa-plus"></i> <span class="hide-mobile">Proyek Baru</span>
             </button>
           </div>
         </div>
       </div>
 
       <!-- KPI Grid -->
-      <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); gap: var(--space-6)">
+      <div class="kpi-grid">
         ${renderKPICards(kpi)}
       </div>
 
       <!-- Main Layout Grid -->
-      <div class="grid-main-responsive" style="margin-top:var(--space-8); display:grid; grid-template-columns: 1fr 380px; gap: var(--space-8)">
+      <div class="grid-dashboard-main" style="margin-top:var(--space-8)">
         
         <!-- Left Column: Operations Map -->
         <div class="card-quartz" style="padding:0; display:flex; flex-direction:column; min-height:600px; border: 1px solid var(--border-strong);">
@@ -119,7 +129,7 @@ export async function dashboardPage() {
       </div>
 
       <!-- Secondary Metrics Grid -->
-      <div class="grid-3-1" style="margin-top:var(--space-8); display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap: var(--space-6)">
+      <div class="grid-3-col" style="margin-top:var(--space-8)">
          <!-- Findings Distribution -->
          <div class="card-quartz">
             <div class="flex-between" style="margin-bottom: 20px">
@@ -182,7 +192,7 @@ function renderKPICards(kpi) {
   ];
 
   return cards.map(c => `
-    <div class="card-quartz" style="display:flex; flex-direction:column; gap:16px; min-width:200px; cursor:pointer;" onclick="window.navigate('proyek')">
+    <div class="card-quartz" style="display:flex; flex-direction:column; gap:16px; cursor:pointer;" onclick="window.navigate('proyek')">
       <div class="flex-between">
         <div style="width:40px; height:40px; border-radius:10px; background:${c.bg}; display:flex; align-items:center; justify-content:center; border:1px solid ${c.color}33">
           <i class="fas ${c.icon}" style="color:${c.color}; font-size:1.1rem"></i>
@@ -274,11 +284,7 @@ function renderProjectTable(projects) {
       <table>
         <thead>
           <tr>
-            <th>Nama Bangunan</th>
-            <th>Pemilik</th>
-            <th>Progress</th>
-            <th>Status SLF</th>
-            <th></th>
+            <th>Nama Bangunan</th><th>Pemilik</th><th>Progress</th><th>Status SLF</th><th></th>
           </tr>
         </thead>
         <tbody>
@@ -286,23 +292,21 @@ function renderProjectTable(projects) {
             const s = statusMap[p.status_slf] || { label: p.status_slf, cls: 'badge-proses' };
             const prog = p.progress || 0;
             return `
-              <tr style="cursor:pointer" onclick="window.navigate('proyek-detail', { id: '${p.id}' })">
+              <tr style="cursor:pointer" onclick="window.navigate('proyek-detail', { id: '${escAttr(p.id)}' })">
                 <td>
-                  <div class="font-semibold text-primary truncate" style="max-width:180px">${p.nama_bangunan || '-'}</div>
-                  <div class="text-xs text-tertiary truncate" style="max-width:180px">${p.alamat || ''}</div>
+                  <div class="font-semibold text-primary truncate" style="max-width:180px">${escTrunc(p.nama_bangunan, 40) || '-'}</div>
+                  <div class="text-xs text-tertiary truncate" style="max-width:180px">${esc(p.alamat)}</div>
                 </td>
-                <td class="text-secondary truncate" style="max-width:120px">${p.pemilik || '-'}</td>
+                <td class="text-secondary truncate" style="max-width:120px">${esc(p.pemilik) || '-'}</td>
                 <td style="min-width:100px">
-                  <div class="flex-between mb-1">
-                    <span class="text-xs text-tertiary">${prog}%</span>
-                  </div>
+                  <div class="flex-between mb-1"><span class="text-xs text-tertiary">${prog}%</span></div>
                   <div class="progress-wrap">
                     <div class="progress-fill ${prog >= 80 ? 'green' : prog >= 40 ? 'blue' : 'yellow'}" style="width:${prog}%"></div>
                   </div>
                 </td>
-                <td><span class="badge ${s.cls}">${s.label}</span></td>
+                <td><span class="badge ${esc(s.cls)}">${esc(s.label)}</span></td>
                 <td>
-                  <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.navigate('proyek-detail', {id:'${p.id}'})">
+                  <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.navigate('proyek-detail', {id:'${escAttr(p.id)}'})">
                     <i class="fas fa-arrow-right"></i>
                   </button>
                 </td>
@@ -328,13 +332,13 @@ function renderTodoList(todos) {
       <div style="background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all var(--transition-fast)"
            onmouseenter="this.style.borderColor='var(--border-default)'"
            onmouseleave="this.style.borderColor='var(--border-subtle)'"
-           onclick="window.navigate('todo-detail', {id:'${t.id}'})">
+           onclick="window.navigate('todo-detail', {id:'${escAttr(t.id)}'})">
         <div style="width:3px;height:36px;border-radius:2px;background:${t.priority === 'critical' ? 'var(--danger-400)' : t.priority === 'high' ? 'var(--warning-400)' : 'var(--brand-400)'};flex-shrink:0"></div>
         <div style="flex:1;overflow:hidden">
-          <div class="text-sm font-semibold text-primary truncate">${t.judul || t.title || '-'}</div>
-          <div class="text-xs text-tertiary truncate">${t.proyek_nama || 'Umum'}</div>
+          <div class="text-sm font-semibold text-primary truncate">${escTrunc(t.judul || t.title, 60) || '-'}</div>
+          <div class="text-xs text-tertiary truncate">${esc(t.proyek_nama) || 'Umum'}</div>
         </div>
-        <span class="badge ${priorityClass[t.priority] || 'badge-medium'}" style="font-size:0.65rem">${t.priority || 'medium'}</span>
+        <span class="badge ${priorityClass[t.priority] || 'badge-medium'}" style="font-size:0.65rem">${esc(t.priority) || 'medium'}</span>
       </div>
     `).join('')}
   </div>`;
@@ -359,64 +363,54 @@ function renderSkeleton() {
   `;
 }
 
-// ── Data Fetchers ────────────────────────────────────────────
+// ── Data Fetchers (Optimized for speed) ────────────────────────
 async function fetchKPI() {
-  const getCount = async (table, filterFn = null) => {
-    try {
-      let query = supabase.from(table).select('*', { count: 'exact', head: true });
-      if (filterFn) query = filterFn(query);
-      const { count, error } = await query;
-      if (error) throw error;
-      return count || 0;
-    } catch (e) {
-      console.warn(`[Dashboard] Skip ${table}:`, e.message);
-      return 0;
-    }
-  };
+  try {
+    // 1. Ambil data proyek secara kolektif untuk dihitung lokal (mengurangi 5 request jadi 1)
+    const { data: pData } = await supabase.from('proyek').select('status_slf');
+    const p = pData || [];
+    
+    // 2. Ambil data tasks (mengurangi 2 request jadi 1)
+    const { data: tData } = await supabase.from('todo_tasks').select('status, due_date');
+    const t = tData || [];
+    const nowIso = new Date().toISOString();
 
-  const results = await Promise.all([
-    getCount('proyek'),
-    getCount('proyek', q => q.eq('status_slf', 'DALAM_PENGKAJIAN')),
-    getCount('proyek', q => q.eq('status_slf', 'LAIK_FUNGSI')),
-    getCount('proyek', q => q.eq('status_slf', 'LAIK_FUNGSI_BERSYARAT')),
-    getCount('proyek', q => q.eq('status_slf', 'TIDAK_LAIK_FUNGSI')),
-    getCount('todo_tasks', q => q.eq('status', 'Done')),
-    getCount('todo_tasks', q => q.lt('due_date', new Date().toISOString()).neq('status', 'Done')),
-    getCount('hasil_analisis'),
-    getCount('profiles')
-  ]);
+    const [hRes, logs, profilesCnt] = await Promise.all([
+      supabase.from('hasil_analisis').select('skor_administrasi, skor_struktur, skor_arsitektur, skor_mep, skor_kebakaran, skor_kesehatan, skor_kenyamanan, skor_kemudahan'),
+      getGlobalAuditLogs(),
+      supabase.from('profiles').select('*', { count: 'exact', head: true })
+    ]);
 
-  const [hRes, logs] = await Promise.all([
-    supabase.from('hasil_analisis').select('skor_administrasi, skor_struktur, skor_arsitektur, skor_mep, skor_kebakaran, skor_kesehatan, skor_kenyamanan, skor_kemudahan, risk_level'),
-    getGlobalAuditLogs()
-  ]);
+    const hData = hRes.data || [];
+    
+    const distribusi = {
+      administrasi: hData.filter(d => d.skor_administrasi < 65 && d.skor_administrasi > 0).length,
+      struktur: hData.filter(d => d.skor_struktur < 65 && d.skor_struktur > 0).length,
+      arsitektur: hData.filter(d => d.skor_arsitektur < 65 && d.skor_arsitektur > 0).length,
+      mep: hData.filter(d => (d.skor_mep || d.skor_kebakaran) < 65 && (d.skor_mep || d.skor_kebakaran) > 0).length,
+      kebakaran: hData.filter(d => d.skor_kebakaran < 65 && d.skor_kebakaran > 0).length,
+      kesehatan: hData.filter(d => d.skor_kesehatan < 65 && d.skor_kesehatan > 0).length,
+      kenyamanan: hData.filter(d => d.skor_kenyamanan < 65 && d.skor_kenyamanan > 0).length,
+      kemudahan: hData.filter(d => d.skor_kemudahan < 65 && d.skor_kemudahan > 0).length,
+    };
 
-  const hData = hRes.data || [];
-  
-  const distribusi = {
-    administrasi: hData.filter(d => d.skor_administrasi < 65 && d.skor_administrasi > 0).length,
-    struktur: hData.filter(d => d.skor_struktur < 65 && d.skor_struktur > 0).length,
-    arsitektur: hData.filter(d => d.skor_arsitektur < 65 && d.skor_arsitektur > 0).length,
-    mep: hData.filter(d => (d.skor_mep || d.skor_kebakaran) < 65 && (d.skor_mep || d.skor_kebakaran) > 0).length,
-    kebakaran: hData.filter(d => d.skor_kebakaran < 65 && d.skor_kebakaran > 0).length,
-    kesehatan: hData.filter(d => d.skor_kesehatan < 65 && d.skor_kesehatan > 0).length,
-    kenyamanan: hData.filter(d => d.skor_kenyamanan < 65 && d.skor_kenyamanan > 0).length,
-    kemudahan: hData.filter(d => d.skor_kemudahan < 65 && d.skor_kemudahan > 0).length,
-  };
-
-  return {
-    totalProyek:   results[0],
-    proyekAktif:   results[1],
-    laikFungsi:    results[2],
-    laikBersyarat: results[3],
-    tidakLaik:      results[4],
-    taskSelesai:   results[5],
-    taskTerlambat: results[6],
-    totalAnalisis: results[7],
-    memberCount:   results[8] || 4,
-    chartData: { distribusi },
-    logs: logs
-  };
+    return {
+      totalProyek:   p.length,
+      proyekAktif:   p.filter(x => x.status_slf === 'DALAM_PENGKAJIAN').length,
+      laikFungsi:    p.filter(x => x.status_slf === 'LAIK_FUNGSI').length,
+      laikBersyarat: p.filter(x => x.status_slf === 'LAIK_FUNGSI_BERSYARAT').length,
+      tidakLaik:     p.filter(x => x.status_slf === 'TIDAK_LAIK_FUNGSI').length,
+      taskSelesai:   t.filter(x => x.status === 'Done').length,
+      taskTerlambat: t.filter(x => x.due_date && x.due_date < nowIso && x.status !== 'Done').length,
+      totalAnalisis: hData.length,
+      memberCount:   profilesCnt.count || 4,
+      chartData: { distribusi },
+      logs: logs
+    };
+  } catch (err) {
+    console.error("[Dashboard] Optimisasi Fetch Gagal:", err);
+    return { totalProyek: 0, chartData: { distribusi: {} }, logs: [] };
+  }
 }
 
 async function fetchRecentProjects() {
@@ -443,27 +437,35 @@ async function fetchRecentTodos() {
   } catch { return []; }
 }
 
-export function triggerDashboardMount(projects, kpi) {
+let _cachedProjects = [];
+let _cachedKpi      = {};
+
+export async function afterDashboardRender() {
+  // We use a small timeout to ensure the DOM is ready in all browsers
   setTimeout(async () => {
-    initCharts(kpi);
-    await initMap(projects);
-  }, 100);
+    initCharts(_cachedKpi);
+    await initMap(_cachedProjects);
+  }, 50);
 }
 
+const _geoCache = new Map();
+
 async function geocodeAddress(address) {
-  if (!address) return null;
+  if (!address || address.length < 5) return null;
+  if (_geoCache.has(address)) return _geoCache.get(address);
+
   try {
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
-    const res = await fetch(url, { headers: { 'Accept-Language': 'id' } });
+    const res = await fetch(url, { headers: { 'Accept-Language': 'id', 'User-Agent': 'SmartAIPengkaji/2.0' } });
+    if (!res.ok) return null;
     const data = await res.json();
     if (data && data.length > 0) {
-      return {
-        lat: parseFloat(data[0].lat),
-        lng: parseFloat(data[0].lon)
-      };
+      const result = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      _geoCache.set(address, result);
+      return result;
     }
   } catch (err) {
-    console.warn("[Geocode] Failed for:", address, err.message);
+    console.warn("[Geocode] Skip logic for:", address);
   }
   return null;
 }
@@ -555,15 +557,23 @@ async function initMap(projects) {
   const resolvedCoords = await Promise.all(markerPromises);
 
   if (projects.length > 0) {
-    const latestCoord = resolvedCoords[0];
     setTimeout(() => { 
       try {
         if (!window._dashMap || !document.getElementById('dashboard-map')) return;
-        if (latestCoord && latestCoord.lat) {
-          window._dashMap.flyTo([latestCoord.lat, latestCoord.lng], 18, { animate: true, duration: 2.5 });
+        // Fokus otomatis ke seluruh marker agar semua proyek terlihat
+        const bounds = markers.getBounds();
+        if (bounds.isValid()) {
+           window._dashMap.fitBounds(bounds, { 
+             padding: [50, 50], 
+             maxZoom: 15,
+             animate: true,
+             duration: 1.5 
+           });
         }
-      } catch (err) {}
-    }, 1000);
+      } catch (err) {
+         console.warn("[Map] FitBounds failed:", err);
+      }
+    }, 800);
   }
 }
 
@@ -669,22 +679,23 @@ function renderFieldFeed(logs) {
      ${logs.map(log => {
         const actionMap = {
            'FINALISASI_DOKUMEN': { icon: 'fa-shield-halved', label: 'Penyegelan Dokumen', color: 'var(--success-400)' },
-           'TTE_SIGNATURE':       { icon: 'fa-pen-nib',       label: 'Tanda Tangan TTE', color: 'var(--brand-400)' },
-           'VERSI_LAPORAN_BARU': { icon: 'fa-file-pdf',      label: 'Generasi Laporan', color: 'var(--danger-400)' },
-           'LOGIN':               { icon: 'fa-user-clock',    label: 'Akses Sistem',     color: 'var(--text-tertiary)' }
+           'TTE_SIGNATURE':       { icon: 'fa-pen-nib',       label: 'Tanda Tangan TTE',  color: 'var(--brand-400)' },
+           'VERSI_LAPORAN_BARU': { icon: 'fa-file-pdf',      label: 'Generasi Laporan',  color: 'var(--danger-400)' },
+           'LOGIN':               { icon: 'fa-user-clock',    label: 'Akses Sistem',      color: 'var(--text-tertiary)' }
         };
-        const cfg = actionMap[log.action] || { icon: 'fa-clock', label: log.action, color: 'var(--text-tertiary)' };
-        
-        const diff = new Date() - new Date(log.created_at);
-        const mins = Math.floor(diff / 60000);
+        const cfg     = actionMap[log.action] || { icon: 'fa-clock', label: esc(log.action), color: 'var(--text-tertiary)' };
+        const diff    = new Date() - new Date(log.created_at);
+        const mins    = Math.floor(diff / 60000);
         const timeStr = mins < 1 ? 'Just now' : mins < 60 ? `${mins}m ago` : `${Math.floor(mins/60)}h ago`;
+        // SECURITY: escaping nama_bangunan dari database
+        const proyekNama = esc(log.proyek?.nama_bangunan) || 'Ops System';
 
         return `
           <div class="feed-item" style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
              <div class="feed-item-icon" style="width:32px; height:32px; border-radius:8px; background:hsla(220, 20%, 100%, 0.03); display:flex; align-items:center; justify-content:center; color:${cfg.color}; border:1px solid hsla(220, 20%, 100%, 0.05)"><i class="fas ${cfg.icon}" style="font-size:0.8rem"></i></div>
              <div style="flex:1; overflow:hidden">
                 <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-primary)">${cfg.label}</div>
-                <div style="font-size: 0.65rem; color: var(--text-tertiary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${log.proyek?.nama_bangunan || 'Ops System'}</div>
+                <div style="font-size: 0.65rem; color: var(--text-tertiary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${proyekNama}</div>
              </div>
              <div style="font-size: 9px; color: var(--text-tertiary); opacity:0.5; font-family:var(--font-mono)">${timeStr}</div>
           </div>

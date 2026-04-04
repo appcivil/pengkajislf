@@ -10,6 +10,7 @@ import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { fetchTeamMembers } from '../lib/team-service.js';
 import { runOCRAnalysis } from '../lib/ai-router.js';
 import { initializeProjectFolder } from '../lib/drive.js';
+import { APP_CONFIG } from '../lib/config.js';
 
 export async function proyekFormPage(params = {}) {
   const isEdit = !!params.id;
@@ -33,7 +34,7 @@ export async function proyekFormPage(params = {}) {
       
       <!-- Executive Header -->
       <div class="page-header" style="margin-bottom: 40px">
-        <div class="flex-between">
+        <div class="flex-between flex-stack">
           <div>
             <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek')" style="margin-bottom:12px; padding:0; color:var(--brand-300); font-weight:700; letter-spacing:1px">
               <i class="fas fa-arrow-left" style="margin-right:8px"></i> BACK TO REGISTRY
@@ -47,14 +48,14 @@ export async function proyekFormPage(params = {}) {
           </div>
           
           ${!isEdit ? `
-            <button class="btn-presidential gold" onclick="window._triggerOCRScan()" style="height:48px; padding:0 24px; border-radius:14px">
+            <button class="btn-presidential gold" onclick="window._triggerOCRScan()" style="height:48px; padding:0 24px; border-radius:14px; width:auto">
               <i class="fas fa-expand-arrows-alt" style="margin-right:12px"></i> AI OCR SCANNER
             </button>
           ` : ''}
         </div>
 
         <!-- Presidential Stepper -->
-        <div class="card-quartz" style="padding: 12px; margin-top: 32px; display: flex; align-items: center; background: hsla(224, 25%, 4%, 0.6); position:relative">
+        <div class="card-quartz hide-mobile" style="padding: 12px; margin-top: 32px; display: flex; align-items: center; background: hsla(224, 25%, 4%, 0.6); position:relative; overflow:hidden">
            <div style="position:absolute; height:2px; background:hsla(220, 20%, 100%, 0.05); left:15%; right:15%; top:50%; transform:translateY(-50%); z-index:0"></div>
            <div id="stepper-fill" style="position:absolute; height:2px; background:var(--gradient-brand); left:15%; width:0%; top:50%; transform:translateY(-50%); z-index:1; transition:width 0.4s ease"></div>
            
@@ -94,10 +95,10 @@ export async function proyekFormPage(params = {}) {
         
         <!-- STEP 1: IDENTITY & GEOSPATIAL -->
         <div class="form-step-section active" id="step-1" style="display:block">
-           <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap: 32px">
+           <div class="grid-main-side">
               
-              <div class="card-quartz" style="padding:40px">
-                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.25rem; color:white; margin-bottom:32px; display:flex; align-items:center; gap:16px">
+              <div class="card-quartz" style="padding:var(--space-6) var(--space-8)">
+                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.25rem; color:white; margin-bottom:32px; display:flex; align-items:center; gap:16px; text-align: left">
                     <i class="fas fa-landmark" style="color:var(--brand-400)"></i> I. Physical Identity
                  </div>
                  
@@ -128,12 +129,12 @@ export async function proyekFormPage(params = {}) {
                  </div>
               </div>
 
-              <div class="card-quartz" style="padding:32px; border-color: hsla(220, 95%, 52%, 0.1)">
-                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:white; margin-bottom:24px; display:flex; align-items:center; gap:12px">
+              <div class="card-quartz" style="padding:var(--space-6); border-color: hsla(220, 95%, 52%, 0.1)">
+                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:white; margin-bottom:24px; display:flex; align-items:center; gap:12px; text-align: left">
                     <i class="fas fa-crosshairs" style="color:var(--brand-400)"></i> Geospatial Lock
                  </div>
                  <div id="proyek-map" style="width:100%; height:320px; border-radius:16px; background:hsla(224, 25%, 4%, 0.8); border:1px solid hsla(220, 20%, 100%, 0.05)"></div>
-                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:24px">
+                 <div class="grid-2-col" style="margin-top:24px">
                     <div class="form-group">
                        <label class="form-label-xs">LATITUDE</label>
                        <input type="text" id="input-lat" name="latitude" value="${data.latitude || ''}" class="form-input-compact" readonly>
@@ -151,10 +152,10 @@ export async function proyekFormPage(params = {}) {
 
         <!-- STEP 2: TECHNICAL & LAND DATA -->
         <div class="form-step-section" id="step-2" style="display:none">
-           <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap: 32px">
+           <div class="grid-main-side">
               
-              <div class="card-quartz" style="padding:40px">
-                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.25rem; color:white; margin-bottom:32px; display:flex; align-items:center; gap:16px">
+              <div class="card-quartz" style="padding:var(--space-6) var(--space-8)">
+                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.25rem; color:white; margin-bottom:32px; display:flex; align-items:center; gap:16px; text-align: left">
                     <i class="fas fa-ruler-combined" style="color:var(--brand-400)"></i> II. Technical Parameters
                  </div>
                  
@@ -176,7 +177,7 @@ export async function proyekFormPage(params = {}) {
 
                  <div class="card-quartz" style="background:hsla(220, 95%, 52%, 0.03); border-color: hsla(220, 95%, 52%, 0.1); padding:24px; margin-top:24px">
                     <label class="form-label" style="color:var(--brand-400); margin-bottom:16px"><i class="fas fa-chart-line"></i> BUILDING INTENSITY LIMITS (GSB/KDB)</label>
-                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px">
+                    <div class="grid-4-col" style="gap:12px">
                        <div class="form-group"><label class="form-label-xs">GSB</label><input type="number" step="0.1" class="form-input-compact" name="gsb" value="${data.gsb || ''}"></div>
                        <div class="form-group"><label class="form-label-xs">KDB</label><input type="number" step="0.1" class="form-input-compact" name="kdb" value="${data.kdb || ''}"></div>
                        <div class="form-group"><label class="form-label-xs">KLB</label><input type="number" step="0.1" class="form-input-compact" name="klb" value="${data.klb || ''}"></div>
@@ -212,7 +213,11 @@ export async function proyekFormPage(params = {}) {
                         <label class="form-label">SIMBG APPLICATION ID (ID PERMOHONAN)</label>
                         <input type="text" class="form-input font-mono" name="simbg_id" value="${data.simbg_id || ''}" placeholder="SIMBG-XXXXXXXXX">
                      </div>
-                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px">
+                     <div class="form-group mb-6">
+                        <label class="form-label">GOOGLE DRIVE PROXY URL</label>
+                        <input type="text" class="form-input text-xs font-mono" name="drive_proxy_url" value="${data.drive_proxy_url || (!isEdit ? APP_CONFIG.gasApiUrl : '')}" placeholder="https://script.google.com/macros/s/...">
+                     </div>
+                     <div class="grid-2-col">
                         <div class="form-group">
                            <label class="form-label">PORTAL EMAIL</label>
                            <input type="email" class="form-input text-xs" name="simbg_email" value="${data.simbg_email || ''}" placeholder="email@pendaftar.go.id">
@@ -222,7 +227,7 @@ export async function proyekFormPage(params = {}) {
                            <input type="password" class="form-input text-xs" name="simbg_password" value="${data.simbg_password || ''}" placeholder="••••••••">
                         </div>
                      </div>
-                     <p style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); margin-top:16px; line-height:1.5"><i class="fas fa-shield-alt"></i> Credentials are used strictly for automated synchronization with the national SIMBG database.</p>
+                     <p style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); margin-top:16px; line-height:1.5"><i class="fas fa-shield-alt"></i> Credentials are used for automated synchronization with the national SIMBG database. Proxy URL is auto-filled from global app config.</p>
                   </div>
               </div>
 
@@ -231,7 +236,7 @@ export async function proyekFormPage(params = {}) {
 
         <!-- STEP 3: BENEFICIARY & CONSENSUS -->
         <div class="form-step-section" id="step-3" style="display:none">
-           <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap: 32px">
+           <div class="grid-main-side">
               
               <div class="card-quartz" style="padding:40px">
                  <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.25rem; color:white; margin-bottom:32px; display:flex; align-items:center; gap:16px">
@@ -268,7 +273,7 @@ export async function proyekFormPage(params = {}) {
                        ${teamMembers.map(m => `<option value="${m.id}" ${data.assigned_to === m.id ? 'selected' : ''}>${m.full_name.toUpperCase()}</option>`).join('')}
                     </select>
                  </div>
-                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px">
+                 <div class="grid-2-col">
                     <div class="form-group">
                        <label class="form-label">COMMENCEMENT DATE</label>
                        <input type="date" class="form-input" name="tanggal_mulai" value="${data.tanggal_mulai || ''}">
@@ -523,6 +528,7 @@ window.submitProyek = async function(event) {
       simbg_id:            data.simbg_id || null,
       simbg_email:         data.simbg_email || null,
       simbg_password:      data.simbg_password || null,
+      drive_proxy_url:     data.drive_proxy_url || null,
       updated_at:       new Date().toISOString()
     };
     

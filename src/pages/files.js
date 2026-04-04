@@ -17,7 +17,8 @@ export async function filesPage() {
     { id: 'arsitektur', label: 'Teknis Arsitektur', icon: 'fa-drafting-compass' },
     { id: 'struktur', label: 'Teknis Struktur', icon: 'fa-cubes' },
     { id: 'mep', label: 'Teknis MEP', icon: 'fa-bolt' },
-    { id: 'lapangan', label: 'Data Pengujian & Lapangan', icon: 'fa-clipboard-check' }
+    { id: 'lapangan', label: 'Data Pengujian & Lapangan', icon: 'fa-clipboard-check' },
+    { id: 'nspk', label: 'Referensi NSPK & RGA', icon: 'fa-book-atlas' }
   ];
 
   // 1. Load Data
@@ -36,8 +37,17 @@ export async function filesPage() {
     <style>
       .drive-layout { display: flex; height: calc(100vh - 180px); background: #fff; border: 1px solid var(--border-subtle); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-sm); }
       .drive-sidebar { width: 250px; background: #f8fafc; border-right: 1px solid var(--border-subtle); padding: 20px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
-      .drive-main { flex: 1; display: flex; flex-direction: column; background: #fff; position: relative; }
+      .drive-main { flex: 1; display: flex; flex-direction: column; background: #fff; position: relative; overflow: hidden; }
       
+      @media (max-width: 1024px) {
+        .drive-layout { flex-direction: column; height: auto; min-height: calc(100vh - 180px); }
+        .drive-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border-subtle); height: auto; max-height: 300px; }
+        .drive-main { height: auto; }
+        .drive-toolbar { flex-direction: column; align-items: flex-start; }
+        .drive-search { max-width: 100%; width: 100%; }
+        .drive-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); padding: 15px; }
+      }
+
       .drive-nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; color: #64748b; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: 0.2s; border: none; background: transparent; width: 100%; text-align: left; }
       .drive-nav-item:hover { background: #f1f5f9; color: #1e293b; }
       .drive-nav-item.active { background: #e0f2fe; color: #0284c7; }
@@ -45,7 +55,7 @@ export async function filesPage() {
       .sidebar-label { font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; padding: 0 14px 8px; }
       
       .drive-toolbar { padding: 16px 24px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; gap: 20px; }
-      .drive-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: #64748b; }
+      .drive-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: #64748b; flex-wrap: wrap; }
       .drive-breadcrumb .crumb { cursor: pointer; transition: 0.2s; }
       .drive-breadcrumb .crumb:hover { color: var(--brand-500); }
       .drive-breadcrumb .active { color: #1e293b; font-weight: 700; }
@@ -124,15 +134,15 @@ function initDriveLogic() {
     if (view === 'projects') {
        crumbs.innerHTML = '<span class="crumb active">Unit Komputer</span>';
     } else if (view === 'inner') {
-       const p = window._allProjects.find(i => i.id === window._selectedProject);
-       const c = window._simbgCategories.find(i => i.id === window._selectedCategory);
-       crumbs.innerHTML = `
-          <span class="crumb" onclick="window._changeDriveView('projects')">Unit Komputer</span>
-          <i class="fas fa-chevron-right text-xs text-tertiary"></i>
-          <span class="crumb" onclick="window._changeDriveView('inner', '${p?.id}')">${esc(p?.nama_bangunan || 'Folder')}</span>
-          <i class="fas fa-chevron-right text-xs text-tertiary"></i>
-          <span class="active">${esc(c?.label || 'Umum')}</span>
-       `;
+        const p = window._allProjects.find(i => i.id === window._selectedProject);
+        const c = window._simbgCategories.find(i => i.id === window._selectedCategory);
+        crumbs.innerHTML = `
+           <span class="crumb" onclick="window._changeDriveView('projects')">Unit Komputer</span>
+           <i class="fas fa-chevron-right text-xs text-tertiary"></i>
+           <span class="crumb" onclick="window._changeDriveView('inner', '${p?.id || 'GLOBAL_REF'}')">${esc(p?.nama_bangunan || 'Global Reference')}</span>
+           <i class="fas fa-chevron-right text-xs text-tertiary"></i>
+           <span class="active">${esc(c?.label || 'NSPK')}</span>
+        `;
     } else {
        crumbs.innerHTML = `<span class="crumb active">${view === 'trash' ? 'Tempat Sampah' : 'Terbaru'}</span>`;
     }
@@ -155,6 +165,11 @@ function initDriveLogic() {
         </button>
         <button class="drive-nav-item ${window._currentView === 'trash' ? 'active' : ''}" onclick="window._changeDriveView('trash')">
            <i class="fas fa-trash-alt"></i> <span>Tempat Sampah</span>
+        </button>
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-label">Pustaka Digital</div>
+        <button class="drive-nav-item" onclick="window._changeDriveView('inner', 'GLOBAL_REF', 'nspk')" style="color:var(--brand-500); font-weight:700">
+           <i class="fas fa-book-atlas"></i> <span>Referensi NSPK & RGA</span>
         </button>
         <div class="sidebar-divider"></div>
         <div class="sidebar-label">Penyimpanan Terpusat</div>
@@ -196,9 +211,13 @@ function initDriveLogic() {
        `).join('') : '<div class="fm-empty-state"><i class="fas fa-folder-open"></i><p>Tidak ada proyek</p></div>';
     } 
     else if (window._currentView === 'inner') {
-       const files = window._allGlobalFiles.filter(f => f.proyek_id === window._selectedProject && f.category === window._selectedCategory);
+       const isGlobal = window._selectedProject === 'GLOBAL_REF';
+       const files = window._allGlobalFiles.filter(f => {
+          if (isGlobal) return f.category === 'nspk';
+          return f.proyek_id === window._selectedProject && f.category === window._selectedCategory;
+       });
        const filtered = files.filter(f => f.name.toLowerCase().includes(search));
-       grid.innerHTML = filtered.length ? filtered.map(f => renderFileCard(f)).join('') : '<div class="fm-empty-state"><i class="fas fa-folder-open"></i><p>Belum ada berkas di kategori ini</p></div>';
+       grid.innerHTML = filtered.length ? filtered.map(f => renderFileCard(f, isGlobal)).join('') : '<div class="fm-empty-state"><i class="fas fa-folder-open"></i><p>Belum ada berkas di kategori ini</p></div>';
     }
     else {
        grid.innerHTML = '<div class="fm-empty-state"><i class="fas fa-database"></i><p>Data tidak tersedia</p></div>';

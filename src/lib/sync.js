@@ -131,17 +131,37 @@ export async function startBackgroundSync(supabase, uploadToDrive) {
     try {
       const { id, ...data } = draft;
       
-      // Data Integrity Fallback for legacy drafts missing 'nama' or other fields
-      const syncData = {
-        ...data,
-        nama: data.nama || 'Item Pemeriksaan',
-        foto_urls: data.foto_urls || [],
-        metadata: data.metadata || {}
+      // Strict Data Sanitization for Supabase (v1.0 Compliance)
+      // Only send fields that exist in the physical schema to avoid 400 Bad Request
+      const cleanData = {
+        proyek_id:      data.proyek_id,
+        kode:           data.kode,
+        nama:           data.nama || 'Item Pemeriksaan',
+        status:         data.status || 'belum_diperiksa',
+        hasil:          data.keterangan || data.hasil || null,
+        kategori:       data.kategori || 'teknis',
+        foto_urls:      Array.isArray(data.foto_urls) ? data.foto_urls : [],
+        evidence_links: Array.isArray(data.evidence_links) ? data.evidence_links : [],
+        metadata:       (data.metadata && typeof data.metadata === 'object') ? data.metadata : {}
       };
 
-      const { error } = await supabase.from('checklist_items').upsert(syncData, { onConflict: 'proyek_id,kode' });
-      if (!error) await clearSyncedDrafts([id]);
-    } catch (e) { console.error("Sync failed for item:", draft.kode, e); }
+      if (!cleanData.proyek_id || !cleanData.kode) {
+        console.warn("[Sync] Skipping invalid draft: missing proyek_id or kode", draft);
+        await clearSyncedDrafts([id]);
+        continue;
+      }
+
+      const { error } = await supabase.from('checklist_items').upsert(cleanData, { onConflict: 'proyek_id,kode' });
+      if (error) {
+        console.error("[Sync] Supabase push failed:", error.message, error.details);
+        // If it's a constraint error or bad request, we might want to clear it to avoid loop
+        if (error.code === '23505' || error.code === 'PGRST102') await clearSyncedDrafts([id]); 
+      } else {
+        await clearSyncedDrafts([id]);
+      }
+    } catch (e) { 
+      console.error("Sync technical failure:", e); 
+    }
   }
 
   // 2. Sync Image Queue

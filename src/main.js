@@ -1,128 +1,100 @@
 // ============================================================
 //  MAIN APPLICATION ENTRY POINT (Composition Root)
 //  Orchestrates: auth, layout, router, pages, sync
+//
+//  PERFORMANCE FIX: Lazy loading untuk semua halaman
+//  BOOTSTRAP FIX: Guard pengamanan jika Supabase tidak dikonfigurasi
 // ============================================================
 import './styles/main.css';
-import { initAuth, onAuthChange, isAuthenticated } from './lib/auth.js';
+import { initAuth, onAuthChange, isAuthenticated, getUserInfo } from './lib/auth.js';
 import { route, startRouter, navigate } from './lib/router.js';
 import { renderAppShell, getPageRoot, onRouteChange, destroyAppShell } from './components/layout.js';
 import { initNotifications, destroyNotifications } from './components/notification.js';
 
-// Infrastructure & Use Cases
+// Infrastructure & Use Cases (dipertahankan tidak lazy — critical path)
 import { SupabaseChecklistRepository, SupabaseFileRepository, BrowserNotificationService } from './infrastructure/persistence/Implementations.js';
 import { DatabaseAuditLogger } from './infrastructure/security/AuditLogger.js';
 import { OpenRouterAIService } from './infrastructure/ai/OpenRouterService.js';
 import { SyncData } from './application/use-cases/SyncData.js';
 import { AnalisisDokumenAI } from './application/use-cases/AnalisisDokumenAI.js';
+import { ForensicAnalysis } from './application/use-cases/ForensicAnalysis.js';
 import { getCurrentRoute } from './lib/router.js';
-
-// Pages
-import { loginPage } from './pages/login.js';
-import { dashboardPage } from './pages/dashboard.js';
-import { proyekListPage, afterProyekListRender } from './pages/proyek-list.js';
-import { proyekDetailPage } from './pages/proyek-detail.js';
-import { proyekFormPage } from './pages/proyek-form.js';
-import { proyekFilesPage } from './pages/proyek-files.js';
-import { checklistPage } from './pages/checklist.js';
-import { kondisiPage } from './pages/kondisi.js';
-import { analisisPage } from './pages/analisis.js';
-import { multiAgentPage, afterMultiAgentRender } from './pages/multi-agent.js';
-import { laporanPage } from './pages/laporan.js';
-import { suratPernyataanPage } from './pages/surat-pernyataan.js';
-import { suratPernyataanListPage } from './pages/surat-pernyataan-list.js';
-import { verifyPage } from './pages/verify.js';
-import { legalPage } from './pages/legal.js';
-import { filesPage } from './pages/files.js';
-import { todoPage } from './pages/todo.js';
-import { todoDetailPage } from './pages/todo-detail.js';
-import { timKerjaPage } from './pages/tim-kerja.js';
-import { executivePage } from './pages/executive.js';
-import { pengaturanPage } from './pages/pengaturan.js';
-import { placeholderPage } from './pages/placeholder.js';
-import { galeriPage } from './pages/proyek-galeri.js';
-
 import { APP_CONFIG } from './lib/config.js';
 import { startBackgroundSync } from './lib/sync.js';
-import { supabase } from './lib/supabase.js';
+import { supabase, isSupabaseConfigured } from './lib/supabase.js';
 import { uploadToGoogleDrive } from './lib/drive.js';
 import { initSyncIndicator } from './components/sync-ui.js';
 
 // Dependency Injection Setup
-const checklistRepo = new SupabaseChecklistRepository();
-const fileRepo = new SupabaseFileRepository();
-const auditLogger = new DatabaseAuditLogger();
-const aiService = new OpenRouterAIService();
+const checklistRepo       = new SupabaseChecklistRepository();
+const fileRepo            = new SupabaseFileRepository();
+const auditLogger         = new DatabaseAuditLogger();
+const aiService           = new OpenRouterAIService();
 const notificationService = new BrowserNotificationService();
 
 const syncDataUseCase = new SyncData(checklistRepo, notificationService);
-const analyseUseCase = new AnalisisDokumenAI(fileRepo, aiService, notificationService, auditLogger);
+const analyseUseCase  = new AnalisisDokumenAI(fileRepo, aiService, notificationService, auditLogger);
+const forensicUseCase = new ForensicAnalysis(checklistRepo, fileRepo, notificationService, auditLogger);
 
 // Global Navigation
 window.navigate = (path, params = {}) => navigate(path, params);
+window.forensicUseCase = forensicUseCase; // Expose for UI pages
 
 // AI Processing UI Controls
 window.showAIOverlay = (title = 'AI Analisis Sedang Berjalan') => {
-    let overlay = document.getElementById('ai-overlay');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'ai-overlay';
-        overlay.className = 'ai-processing-overlay';
-        overlay.innerHTML = `
-            <div class="ai-processing-card">
-                <div class="ai-spinner-wrap">
-                    <i class="fas fa-brain ai-spinner-icon"></i>
-                </div>
-                <div class="ai-status-title">${title}</div>
-                <div class="ai-status-text" id="ai-status-text">Menghubungkan ke Neural Engine...</div>
-            </div>
-        `;
-        document.body.appendChild(overlay);
-    } else {
-        overlay.querySelector('.ai-status-title').innerText = title;
-    }
-    setTimeout(() => overlay.classList.add('show'), 10);
+  let overlay = document.getElementById('ai-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'ai-overlay';
+    overlay.className = 'ai-processing-overlay';
+    overlay.innerHTML = `
+      <div class="ai-processing-card">
+        <div class="ai-spinner-wrap"><i class="fas fa-brain ai-spinner-icon"></i></div>
+        <div class="ai-status-title">${title}</div>
+        <div class="ai-status-text" id="ai-status-text">Menghubungkan ke Neural Engine...</div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  } else {
+    overlay.querySelector('.ai-status-title').innerText = title;
+  }
+  setTimeout(() => overlay.classList.add('show'), 10);
 };
 
 window.hideAIOverlay = () => {
-    const overlay = document.getElementById('ai-overlay');
-    if (overlay) {
-        overlay.classList.remove('show');
-        setTimeout(() => overlay.remove(), 400);
-    }
+  const overlay = document.getElementById('ai-overlay');
+  if (overlay) {
+    overlay.classList.remove('show');
+    setTimeout(() => overlay.remove(), 400);
+  }
 };
 
 window.updateAIStatus = (text) => {
-    const el = document.getElementById('ai-status-text');
-    if (el) el.innerText = text;
+  const el = document.getElementById('ai-status-text');
+  if (el) el.innerText = text;
 };
 
 window.analyseFile = async (id) => {
-    window.showAIOverlay();
-    try {
-        window.updateAIStatus('Membaca konteks berkas...');
-        const result = await analyseUseCase.execute(id);
-        window.updateAIStatus('Berhasil menganalisis.');
-        return result;
-    } finally {
-        setTimeout(window.hideAIOverlay, 1500);
-    }
+  window.showAIOverlay();
+  try {
+    window.updateAIStatus('Membaca konteks berkas...');
+    const result = await analyseUseCase.execute(id);
+    window.updateAIStatus('Berhasil menganalisis.');
+    return result;
+  } finally {
+    setTimeout(window.hideAIOverlay, 1500);
+  }
 };
 
 window.doGlobalSync = async () => {
-    const btn = document.getElementById('btn-global-sync');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Mensinkronisasi...';
-    }
-    try {
-        await syncDataUseCase.execute();
-        updateSyncUI();
-    } catch {
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = 'Coba Lagi';
-        }
-    }
+  const btn = document.getElementById('btn-global-sync');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Mensinkronisasi...'; }
+  try {
+    await syncDataUseCase.execute();
+    updateSyncUI();
+  } catch {
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Coba Lagi'; }
+  }
 };
 
 // ── App Lifecycle ─────────────────────────────────────────────
@@ -132,143 +104,324 @@ const statusEl   = document.getElementById('loading-status');
 let _initialized = false;
 
 function updateProgress(pct, statusText) {
-    if (progressEl) progressEl.style.width = `${pct}%`;
-    if (statusText && statusEl) {
-        statusEl.innerText = statusText;
-    }
+  if (progressEl) progressEl.style.width = `${pct}%`;
+  if (statusText && statusEl) statusEl.innerText = statusText;
 }
 
 function hideLoading() {
-    if (loadingEl) {
-        loadingEl.style.opacity = '0';
-        setTimeout(() => { loadingEl.style.display = 'none'; }, 800);
-    }
+  if (loadingEl) {
+    loadingEl.style.opacity = '0';
+    setTimeout(() => { loadingEl.style.display = 'none'; }, 800);
+  }
+}
+
+// ── Lazy Page Loaders ─────────────────────────────────────────
+// PERFORMANCE FIX: Semua halaman diload secara lazy (on-demand)
+// Ini mengurangi bundle awal secara signifikan.
+
+const pages = {
+  login:             () => import('./pages/login.js'),
+  dashboard:         () => import('./pages/dashboard.js'),
+  proyekList:        () => import('./pages/proyek-list.js'),
+  proyekForm:        () => import('./pages/proyek-form.js'),
+  proyekDetail:      () => import('./pages/proyek-detail.js'),
+  proyekFiles:       () => import('./pages/proyek-files.js'),
+  checklist:         () => import('./pages/checklist.js'),
+  kondisi:           () => import('./pages/kondisi.js'),
+  analisis:          () => import('./pages/analisis.js'),
+  multiAgent:        () => import('./pages/multi-agent.js'),
+  laporan:           () => import('./pages/laporan.js'),
+  suratPernyataan:   () => import('./pages/surat-pernyataan.js'),
+  suratPernyataanList:() => import('./pages/surat-pernyataan-list.js'),
+  verify:            () => import('./pages/verify.js'),
+  files:             () => import('./pages/files.js'),
+  todo:              () => import('./pages/todo.js'),
+  timKerja:          () => import('./pages/tim-kerja.js'),
+  pengaturan:        () => import('./pages/pengaturan.js'),
+  placeholder:       () => import('./pages/placeholder.js'),
+  galeri:            () => import('./pages/proyek-galeri.js'),
+  taskDetail:        () => import('./pages/task-detail.js'),
+  passwordModal:     () => import('./components/password-modal.js'),
+};
+
+// Pre-fetch halaman yang paling sering diakses setelah login
+function prefetchCriticalPages() {
+  setTimeout(() => {
+    pages.dashboard();
+    pages.proyekList();
+  }, 3000);
 }
 
 // ── Routing ───────────────────────────────────────────────────
 function registerRoutes() {
-    route('login', async () => {
-        if (isAuthenticated()) { navigate('dashboard'); return ''; }
-        await loginPage(); return '';
-    });
-    route('dashboard', async () => await dashboardPage());
-    route('proyek', async () => {
-        const h = await proyekListPage();
-        setTimeout(afterProyekListRender, 50);
-        return h;
-    });
-    route('proyek-baru', async () => await proyekFormPage());
-    route('proyek-detail', async (p) => await proyekDetailPage(p));
-    route('checklist', async (p) => await checklistPage(p));
-    route('multi-agent', async (p) => {
-        const h = await multiAgentPage(p);
-        setTimeout(afterMultiAgentRender, 50);
-        return h;
-    });
-    route('analisis', async (p) => await analisisPage(p));
-    route('files', async () => await filesPage());
-    route('tim-kerja', async () => await timKerjaPage());
-    route('settings', async () => await pengaturanPage());
-    route('surat-pernyataan-list', async () => await suratPernyataanListPage());
-    route('surat-pernyataan', async (p) => await suratPernyataanPage(p));
-    route('laporan', async (p) => await laporanPage(p));
-    route('verify', async (p) => await verifyPage(p));
-    route('kondisi', async (p) => await kondisiPage(p));
-    route('galeri', async (p) => await galeriPage(p));
-    route('proyek-files', async (p) => await proyekFilesPage(p));
-    route('todo', async (p) => await todoPage(p));
-    
-    // Fallback for other routes (Simplified for brevity in refactor)
-    route('404', async () => placeholderPage({ title: '404', icon: 'fa-map-signs' }));
+  route('login', async () => {
+    if (isAuthenticated()) { navigate('dashboard'); return ''; }
+    const { loginPage } = await pages.login();
+    return await loginPage();
+  });
+
+  route('dashboard', async () => {
+    const { dashboardPage, afterDashboardRender } = await pages.dashboard();
+    const h = await dashboardPage();
+    setTimeout(afterDashboardRender, 50);
+    return h;
+  });
+
+  route('proyek', async () => {
+    const { proyekListPage, afterProyekListRender } = await pages.proyekList();
+    const h = await proyekListPage();
+    setTimeout(afterProyekListRender, 50);
+    return h;
+  });
+
+  route('proyek-baru', async () => {
+    const { proyekFormPage } = await pages.proyekForm();
+    return await proyekFormPage();
+  });
+
+  route('proyek-detail', async (p) => {
+    const { proyekDetailPage } = await pages.proyekDetail();
+    return await proyekDetailPage(p);
+  });
+
+  route('checklist', async (p) => {
+    const { checklistPage, afterChecklistRender } = await pages.checklist();
+    const h = await checklistPage(p);
+    setTimeout(() => afterChecklistRender(p), 50);
+    return h;
+  });
+
+  route('multi-agent', async (p) => {
+    const { multiAgentPage, afterMultiAgentRender } = await pages.multiAgent();
+    const h = await multiAgentPage(p);
+    setTimeout(afterMultiAgentRender, 50);
+    return h;
+  });
+
+  route('analisis', async (p) => {
+    const { analisisPage, afterAnalisisRender } = await pages.analisis();
+    const h = await analisisPage(p);
+    setTimeout(() => afterAnalisisRender(p), 50);
+    return h;
+  });
+
+  route('files', async () => {
+    const { filesPage } = await pages.files();
+    return await filesPage();
+  });
+
+  route('tim-kerja', async () => {
+    const { timKerjaPage, afterTimKerjaRender } = await pages.timKerja();
+    const h = await timKerjaPage();
+    setTimeout(afterTimKerjaRender, 50);
+    return h;
+  });
+
+  route('todo', async (p) => {
+    const { todoPage, afterTodoRender } = await pages.todo();
+    const h = await todoPage(p);
+    setTimeout(() => afterTodoRender(p), 50);
+    return h;
+  });
+
+  route('settings', async () => {
+    const { pengaturanPage } = await pages.pengaturan();
+    return await pengaturanPage();
+  });
+
+  route('surat-pernyataan-list', async () => {
+    const { suratPernyataanListPage } = await pages.suratPernyataanList();
+    return await suratPernyataanListPage();
+  });
+
+  route('surat-pernyataan', async (p) => {
+    const { suratPernyataanPage } = await pages.suratPernyataan();
+    return await suratPernyataanPage(p);
+  });
+
+  route('laporan', async (p) => {
+    const { laporanPage } = await pages.laporan();
+    return await laporanPage(p);
+  });
+
+  route('verify', async (p) => {
+    const { verifyPage } = await pages.verify();
+    return await verifyPage(p);
+  });
+
+  route('kondisi', async (p) => {
+    const { kondisiPage } = await pages.kondisi();
+    return await kondisiPage(p);
+  });
+
+  route('galeri', async (p) => {
+    const { galeriPage } = await pages.galeri();
+    return await galeriPage(p);
+  });
+
+  route('proyek-files', async (p) => {
+    const { proyekFilesPage } = await pages.proyekFiles();
+    return await proyekFilesPage(p);
+  });
+
+  const taskRoute = async (p) => {
+    const { taskDetailPage, afterTaskDetailRender } = await pages.taskDetail();
+    const h = await taskDetailPage(p);
+    setTimeout(() => afterTaskDetailRender(p), 50);
+    return h;
+  };
+  route('task', taskRoute);
+  route('todo-detail', taskRoute);
+  route('404', async () => {
+    const { placeholderPage } = await pages.placeholder();
+    return placeholderPage({ title: '404', icon: 'fa-map-signs' });
+  });
 }
 
 // ── Initialization ─────────────────────────────────────────────
 async function bootstrap() {
-    updateProgress(10, 'Inisialisasi Sistem...');
-    registerRoutes();
-    
-    const user = await initAuth();
-    updateProgress(60, 'Autentikasi...');
-
-    const appEl = document.getElementById('app');
-    const isPublicRoute = (path) => ['login', 'verify'].includes(path);
-    const initialRoute = window.location.hash.slice(2).split('?')[0] || 'dashboard';
-
-    onAuthChange((user) => {
-        if (user && !_initialized) {
-            _initialized = true;
-            renderAppShell(appEl);
-            initNotifications();
-            const root = getPageRoot();
-            if (root) startRouter(root);
-        } else if (!user) {
-            _initialized = false;
-            const current = getCurrentRoute() || initialRoute;
-            if (!isPublicRoute(current)) {
-                destroyAppShell(appEl);
-                loginPage();
-            } else if (current === 'verify') {
-                renderAppShell(appEl, true); // Public shell
-                const root = getPageRoot();
-                if (root) startRouter(root);
-            }
-        }
-    });
-
-    if (user) {
-        renderAppShell(appEl);
-    } else {
-        if (initialRoute === 'verify') {
-            renderAppShell(appEl, true);
-        } else {
-            await loginPage();
-        }
+  // BOOTSTRAP FIX: Cek konfigurasi Supabase sebelum melanjutkan
+  if (!isSupabaseConfigured()) {
+    updateProgress(10, 'Konfigurasi server tidak lengkap...');
+    // Tampilkan error yang informatif di loading screen
+    if (statusEl) {
+      statusEl.innerHTML = `
+        <span style="color:#f87171">⚠ Konfigurasi .env tidak lengkap</span><br>
+        <small style="opacity:0.7;font-size:11px">Pastikan VITE_SUPABASE_URL & VITE_SUPABASE_ANON_KEY ada di file .env</small>
+      `;
     }
+    // Jangan stuck — tetap hide loading setelah 3 detik, tampilkan login page
+    setTimeout(() => {
+      hideLoading();
+      const appEl = document.getElementById('app');
+      if (appEl) appEl.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem;text-align:center;font-family:Inter,sans-serif">
+          <div>
+            <div style="font-size:3rem;margin-bottom:1rem">⚙️</div>
+            <h2 style="color:#f1f5f9;margin-bottom:0.5rem">Konfigurasi Diperlukan</h2>
+            <p style="color:#94a3b8;margin-bottom:1.5rem">File <code>.env</code> tidak ditemukan atau tidak lengkap.<br>Isi <code>VITE_SUPABASE_URL</code> dan <code>VITE_SUPABASE_ANON_KEY</code> lalu restart server.</p>
+            <a href="PANDUAN_LENGKAP.md" style="color:#60a5fa">Lihat Panduan Lengkap →</a>
+          </div>
+        </div>`;
+    }, 3000);
+    return; // Hentikan bootstrap — jangan panggil Supabase dengan config kosong
+  }
 
-    initNotifications();
-    const root = getPageRoot();
-    if (root) startRouter(root);
+  // AI engine diinisialisasi di background — jangan block UI
+  import('./infrastructure/ai/deep-reasoning-integration.js')
+    .then(({ initializeSmartAIIntegration }) => initializeSmartAIIntegration())
+    .catch(e => console.error('[App] Background AI initialization failed:', e));
 
-    updateProgress(100, 'Sistem Siap.');
-    hideLoading();
+  registerRoutes();
 
-    window.addEventListener('online',  updateSyncUI);
-    window.addEventListener('offline', updateSyncUI);
-    window.addEventListener('route-changed', (e) => {
-        updateSyncUI();
-        onRouteChange(e.detail.path);
-    });
-    
-    // Initial call for current hash
-    const initialPath = window.location.hash.slice(2).split('?')[0] || 'dashboard';
-    onRouteChange(initialPath);
-    
+  updateProgress(20, 'Menghubungkan ke server...');
+
+  // Safety net: jika koneksi sangat lambat, perbarui status setiap 2 detik
+  let retryCount = 0;
+  const statusMessages = [
+    'Menghubungkan ke server...',
+    'Masih menghubungkan... (koneksi lambat)',
+    'Hampir selesai...',
+  ];
+  const statusInterval = setInterval(() => {
+    retryCount++;
+    const msg = statusMessages[retryCount] || 'Menghubungkan ke server...';
+    if (retryCount < statusMessages.length) updateProgress(20 + retryCount * 5, msg);
+  }, 2000);
+
+  const user = await initAuth();
+  clearInterval(statusInterval);
+  updateProgress(60, 'Autentikasi...');
+
+  const appEl = document.getElementById('app');
+  const isPublicRoute = (path) => ['login', 'verify'].includes(path);
+  const initialRoute  = window.location.hash.slice(2).split('?')[0] || 'dashboard';
+
+  onAuthChange(async (user) => {
+    if (user && !_initialized) {
+      _initialized = true;
+      const routeNow = getCurrentRoute() || initialRoute;
+      renderAppShell(appEl, routeNow === 'verify');
+      initNotifications();
+      const root = getPageRoot();
+      if (root) startRouter(root);
+
+      // Cek force password change
+      const userInfo = getUserInfo();
+      if (userInfo?.force_password_change) {
+        const { renderPasswordChangeModal } = await pages.passwordModal();
+        setTimeout(() => renderPasswordChangeModal(userInfo), 1000);
+      }
+
+      // Pre-fetch halaman populer di background
+      prefetchCriticalPages();
+
+    } else if (!user && _initialized) {
+      _initialized = false;
+      if (!isPublicRoute(getCurrentRoute() || initialRoute)) {
+        destroyAppShell(appEl);
+        const { loginPage } = await pages.login();
+        loginPage();
+      } else if ((getCurrentRoute() || initialRoute) === 'verify') {
+        renderAppShell(appEl, true);
+        const root = getPageRoot();
+        if (root) startRouter(root);
+      }
+    } else if (!user && !_initialized) {
+      if (initialRoute === 'verify') {
+        renderAppShell(appEl, true);
+        const root = getPageRoot();
+        if (root) startRouter(root);
+      } else {
+        const { loginPage } = await pages.login();
+        loginPage();
+      }
+    }
+  });
+
+  updateProgress(100, 'Sistem Siap.');
+  setTimeout(hideLoading, 400);
+
+  // Sync hanya setelah UI stabil
+  setTimeout(() => {
+    if (isAuthenticated()) startBackgroundSync(supabase, uploadToGoogleDrive);
+  }, 2000);
+
+  window.addEventListener('online', updateSyncUI);
+  window.addEventListener('offline', updateSyncUI);
+  window.addEventListener('route-changed', (e) => {
     updateSyncUI();
-    initSyncIndicator();
+    onRouteChange(e.detail.path);
+  });
 
-    // PWA & Background Sync
-    if (navigator.onLine) startBackgroundSync(supabase, uploadToGoogleDrive);
+  const initialPath = window.location.hash.slice(2).split('?')[0] || 'dashboard';
+  onRouteChange(initialPath);
+
+  updateSyncUI();
+  initSyncIndicator();
+
+  if (navigator.onLine) startBackgroundSync(supabase, uploadToGoogleDrive);
 }
 
 async function updateSyncUI() {
-    const bannerContainer = document.getElementById('sync-banner-container');
-    if (!bannerContainer) return;
+  const bannerContainer = document.getElementById('sync-banner-container');
+  if (!bannerContainer) return;
 
-    const isOnline = navigator.onLine;
-    const pending = await checklistRepo.getPendingDrafts();
-    const pendingCount = pending.length;
+  const isOnline    = navigator.onLine;
+  const pending     = await checklistRepo.getPendingDrafts();
+  const pendingCount = pending.length;
 
-    if (!isOnline) {
-        bannerContainer.innerHTML = `<div class="sync-banner offline">Mode Offline: Data disimpan di perangkat.</div>`;
-    } else if (pendingCount > 0) {
-        bannerContainer.innerHTML = `
-            <div class="sync-banner pending">
-                <span>Ada <b>${pendingCount}</b> data belum tersinkronisasi.</span>
-                <button class="btn btn-sm" onclick="window.doGlobalSync()" id="btn-global-sync">Sinkronkan</button>
-            </div>`;
-    } else {
-        bannerContainer.innerHTML = '';
-    }
+  if (!isOnline) {
+    bannerContainer.innerHTML = `<div class="sync-banner offline">Mode Offline: Data disimpan di perangkat.</div>`;
+  } else if (pendingCount > 0) {
+    bannerContainer.innerHTML = `
+      <div class="sync-banner pending">
+        <span>Ada <b>${pendingCount}</b> data belum tersinkronisasi.</span>
+        <button class="btn btn-sm" onclick="window.doGlobalSync()" id="btn-global-sync">Sinkronkan</button>
+      </div>`;
+  } else {
+    bannerContainer.innerHTML = '';
+  }
 }
 
 bootstrap().catch(console.error);

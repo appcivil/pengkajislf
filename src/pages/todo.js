@@ -8,20 +8,21 @@ import { showSuccess, showError } from '../components/toast.js';
 
 export async function todoPage(params = {}) {
   const proyekId = params.proyekId;
-  const root = document.getElementById('page-root');
-  if (root) root.innerHTML = renderSkeleton();
-
+  
   const [tasks, proyek] = await Promise.all([
     fetchTasks(proyekId),
     proyekId ? fetchProyek(proyekId) : Promise.resolve(null)
   ]);
   
-  const html = buildHtml(tasks, proyek);
-  if (root) {
-    root.innerHTML = html;
-    initKanban(proyekId);
-  }
-  return html;
+  return buildHtml(tasks, proyek);
+}
+
+/**
+ * Lifecycle Hook: Inisialisasi Kanban setelah render DOM selesai
+ */
+export function afterTodoRender(params = {}) {
+  const proyekId = params.proyekId;
+  initKanban(proyekId);
 }
 
 function buildHtml(tasks, proyek) {

@@ -142,18 +142,18 @@ function buildHtml(proyek) {
   return `
     <div id="kondisi-page">
       <div class="page-header">
-        <div class="flex-between">
+        <div class="flex-between flex-stack" style="gap:var(--space-4)">
           <div>
             <button class="btn btn-ghost btn-sm" onclick="window.navigate('proyek-detail',{id:'${proyek.id}'})" style="margin-bottom:8px">
               <i class="fas fa-arrow-left"></i> Kembali ke Proyek
             </button>
             <h1 class="page-title">Pemeriksaan Kondisi Bangunan</h1>
-            <div style="display:flex; align-items:center; gap:12px; margin-top:4px">
+            <div style="display:flex; align-items:center; gap:12px; margin-top:4px; flex-wrap:wrap">
                <p class="page-subtitle">Penilaian Tingkat Kerusakan Sesuai Permen PU No. 16/PRT/M/2010</p>
                <span class="badge ${badgeLantai}" style="font-size:0.7rem">Jumlah Lantai: ${fl}</span>
             </div>
           </div>
-          <div class="flex gap-3">
+          <div class="flex gap-3 flex-stack">
              <button class="btn btn-secondary" onclick="window._pullAIData()">
                <i class="fas fa-robot"></i> Ambil Data AI
              </button>
@@ -164,7 +164,7 @@ function buildHtml(proyek) {
         </div>
       </div>
 
-      <div class="grid-main-responsive" style="display:grid; grid-template-columns: 1fr 340px; gap:var(--space-6)">
+      <div class="grid-side-layout">
         
         <!-- Left: Scoring Form -->
         <div style="display:flex; flex-direction:column; gap:var(--space-5)">
@@ -177,7 +177,7 @@ function buildHtml(proyek) {
                 </div>
                 <div class="text-xs font-bold text-tertiary" id="subtotal-${group.id}">Subtotal: 0.00%</div>
               </div>
-              <div style="padding:var(--space-4) var(--space-5)">
+              <div class="table-responsive">
                 <table style="width:100%; border-collapse:collapse">
                   <thead>
                     <tr style="text-align:left; font-size:0.75rem; color:var(--text-tertiary); text-transform:uppercase">
@@ -520,7 +520,7 @@ function renderSkeleton() {
       <div class="skeleton" style="height:20px;width:160px;margin-bottom:8px"></div>
       <div class="skeleton" style="height:36px;width:400px;margin-bottom:8px"></div>
     </div>
-    <div style="display:grid; grid-template-columns: 1fr 340px; gap:var(--space-6)">
+    <div class="grid-side-layout">
       <div style="display:flex; flex-direction:column; gap:20px">
         <div class="skeleton" style="height:300px; border-radius:12px"></div>
         <div class="skeleton" style="height:300px; border-radius:12px"></div>

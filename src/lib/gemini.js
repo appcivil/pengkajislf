@@ -1,9 +1,11 @@
 // ============================================================
 //  MULTI-MODAL AI VISION & DOCUMENT ROUTER
 //  Menggantikan fungsi asli gemini tunggal menjadi multi-AI
+//  Enhanced dengan Deep Reasoning Engineering
 // ============================================================
 
 const env = import.meta.env;
+import { getSmartAIIntegration } from '../infrastructure/ai/deep-reasoning-integration.js';
 
 const MODELS = {
   GEMINI: {
@@ -29,6 +31,7 @@ const MODELS = {
 
 /**
  * Menganalisis gambar/dokumen (multi-file) berbasis komponen menggunakan AI terpilih (dengan Failover cerdas).
+ * Enhanced dengan Deep Reasoning Engineering untuk analisis yang lebih mendalam.
  * @param {Array<{base64: string, mimeType: string}>} filesData
  * @param {string} componentName
  * @param {string} kategori
@@ -40,14 +43,25 @@ export async function analyzeChecklistImage(filesData, componentName, kategori =
     throw new Error('Tidak ada file untuk dianalisis.');
   }
 
+  // Cek apakah Deep Reasoning Integration tersedia
+  let useDeepReasoning = false;
+  try {
+    const integration = getSmartAIIntegration();
+    if (integration && integration.isInitialized) {
+      useDeepReasoning = true;
+    }
+  } catch (e) {
+    // Fallback ke sistem lama jika integration belum tersedia
+  }
+
   // 1. Tentukan Urutan Provider (Chain of Responsibility)
   // Default: Gemini (Paling murah/gratis) -> OpenAI -> Claude
   let providerChain = ['gemini', 'openai', 'claude'];
-  
+
   // Custom priority based on complexity
   const a = aspek.toLowerCase();
   if (a.includes('struktur') || a.includes('kebakaran')) {
-    providerChain = ['slf_opus', 'claude', 'openai', 'gemini']; 
+    providerChain = ['slf_opus', 'claude', 'openai', 'gemini'];
   } else if (kategori === 'administrasi') {
     providerChain = ['gemini', 'slf_opus', 'openai'];
   } else {
@@ -85,7 +99,7 @@ PENTING: Isi 'catatan' dengan deskripsi kondisi fisik yang terlihat meskipun sta
     try {
       console.log(`[Vision AI] Mencoba provider: ${provider.toUpperCase()} untuk ${componentName}`);
       let aiResultText = "";
-      
+
       if (provider === 'gemini') {
         aiResultText = await callGeminiVision(filesData, systemPrompt);
       } else if (provider === 'openai') {
@@ -101,7 +115,33 @@ PENTING: Isi 'catatan' dengan deskripsi kondisi fisik yang terlihat meskipun sta
 
       // 4. Parsing Output JSON
       const raw = aiResultText.replace(/```json/gi, '').replace(/```/g, '').trim();
-      return JSON.parse(raw);
+      let parsedResult = JSON.parse(raw);
+
+      // 5. Enhanced dengan Deep Reasoning jika tersedia
+      if (useDeepReasoning) {
+        try {
+          const integration = getSmartAIIntegration();
+          const enhancedResult = await integration.analyzeWithDeepReasoning(
+            filesData,
+            componentName,
+            kategori,
+            aspek
+          );
+
+          // Merge hasil dengan hasil asli
+          parsedResult = {
+            ...parsedResult,
+            ...enhancedResult,
+            reasoning_steps: enhancedResult.reasoning_steps || [],
+            legal_references: enhancedResult.legal_references || [],
+            deep_reasoning_enabled: true
+          };
+        } catch (e) {
+          console.warn('[Vision AI] Deep Reasoning gagal, menggunakan hasil standar:', e.message);
+        }
+      }
+
+      return parsedResult;
 
     } catch (error) {
       lastError = error;
@@ -115,10 +155,20 @@ PENTING: Isi 'catatan' dengan deskripsi kondisi fisik yang terlihat meskipun sta
 
 /**
  * AI Document Processor - Khusus untuk klasifikasi & OCR dokumen SLF
+ * Enhanced dengan Deep Reasoning untuk validasi regulasi
  * @param {Object} fileData {base64, mimeType}
  * @returns {Promise<{category: string, subcategory: string, extracted_text: string, metadata: Object}>}
  */
 export async function analyzeDocument(fileData) {
+  let useDeepReasoning = false;
+  try {
+    const integration = getSmartAIIntegration();
+    if (integration && integration.isInitialized) {
+      useDeepReasoning = true;
+    }
+  } catch (e) {
+    // Fallback ke sistem lama
+  }
   const prompt = `Anda adalah AI Dokumentasi Bangunan Gedung (Auditor Teknis).
 Analisis gambar/dokumen ini dan tentukan:
 1. Kategori (Hanya pilih: "tanah" atau "umum")
@@ -141,7 +191,26 @@ Output WAJIB JSON murni:
   try {
     const rawResult = await callGeminiVision([fileData], prompt);
     const cleanJson = rawResult.replace(/```json/gi, '').replace(/```/g, '').trim();
-    return JSON.parse(cleanJson);
+    let parsedResult = JSON.parse(cleanJson);
+
+    // Enhanced dengan Deep Reasoning jika tersedia
+    if (useDeepReasoning) {
+      try {
+        const integration = getSmartAIIntegration();
+        const enhancedResult = await integration.analyzeDocumentWithDeepReasoning(fileData);
+
+        parsedResult = {
+          ...parsedResult,
+          ...enhancedResult,
+          regulation_validated: true,
+          deep_reasoning_enabled: true
+        };
+      } catch (e) {
+        console.warn('[Document AI] Deep Reasoning gagal, menggunakan hasil standar:', e.message);
+      }
+    }
+
+    return parsedResult;
   } catch (e) {
     console.error("[Document AI] Gagal:", e);
     throw e;
@@ -150,8 +219,18 @@ Output WAJIB JSON murni:
 
 /**
  * Menganalisis perbandingan antara beberapa dokumen (misal KRK vs Siteplan)
+ * Enhanced dengan Deep Reasoning untuk analisis komparatif yang lebih mendalam
  */
 export async function analyzeComparativeAudit(filesData, itemName, itemKode, context = '') {
+  let useDeepReasoning = false;
+  try {
+    const integration = getSmartAIIntegration();
+    if (integration && integration.isInitialized) {
+      useDeepReasoning = true;
+    }
+  } catch (e) {
+    // Fallback ke sistem lama
+  }
   const prompt = `Anda adalah Senior Engineering Auditor untuk Sertifikat Laik Fungsi (SLF).
 Tugas: Melakukan VALIDASI KOMPARATIF antara dokumen-dokumen rujukan yang dilampirkan untuk item: "${itemName}" (Kode: ${itemKode}).
 
@@ -178,9 +257,33 @@ Output WAJIB JSON murni:
       else if (provider === 'openai' && MODELS.OPENAI.key) aiResultText = await callOpenAIVision(filesData, prompt);
       else if (provider === 'claude' && MODELS.CLAUDE.key) aiResultText = await callClaudeVision(filesData, prompt);
       else if (provider === 'slf_opus' && MODELS.SLF_OPUS.key) aiResultText = await callSLFOpusVision(filesData, systemPrompt);
-      
+
       const raw = aiResultText.replace(/```json/gi, '').replace(/```/g, '').trim();
-      return JSON.parse(raw);
+      let parsedResult = JSON.parse(raw);
+
+      // Enhanced dengan Deep Reasoning jika tersedia
+      if (useDeepReasoning) {
+        try {
+          const integration = getSmartAIIntegration();
+          const enhancedResult = await integration.analyzeComparativeWithDeepReasoning(
+            filesData,
+            itemName,
+            itemKode,
+            context
+          );
+
+          parsedResult = {
+            ...parsedResult,
+            ...enhancedResult,
+            comparative_analysis: enhancedResult.comparative_analysis || {},
+            deep_reasoning_enabled: true
+          };
+        } catch (e) {
+          console.warn('[Comparative AI] Deep Reasoning gagal, menggunakan hasil standar:', e.message);
+        }
+      }
+
+      return parsedResult;
     } catch (error) {
       lastError = error;
     }
@@ -201,7 +304,7 @@ async function callGeminiVision(filesData, prompt) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }, ...imageParts] }],
-      generationConfig: { 
+      generationConfig: {
         temperature: 0.2
       }
     })
@@ -213,7 +316,7 @@ async function callGeminiVision(filesData, prompt) {
 
 async function callOpenAIVision(filesData, prompt) {
   if (!MODELS.OPENAI.key) throw new Error("API Key OpenAI hilang");
-  
+
   const contentArray = [{ type: "text", text: prompt }];
   filesData.forEach(file => {
     contentArray.push({
@@ -242,7 +345,7 @@ async function callOpenAIVision(filesData, prompt) {
 
 async function callClaudeVision(filesData, prompt) {
   if (!MODELS.CLAUDE.key) throw new Error("API Key Claude hilang");
-  
+
   const contentArray = [];
   filesData.forEach(file => {
     // Anthropic mengharapkan mimetype tanpa parameter ekstra
@@ -280,7 +383,7 @@ async function callClaudeVision(filesData, prompt) {
 
 async function callSLFOpusVision(filesData, systemPrompt) {
   const content = [{ type: "text", text: systemPrompt }];
-  
+
   filesData.forEach(file => {
     content.push({
       type: "image_url",
@@ -309,7 +412,7 @@ async function callSLFOpusVision(filesData, systemPrompt) {
 
   const data = await res.json();
   const text = Array.isArray(data) ? data[0].generated_text : (data.generated_text || "");
-  
+
   // Bersihkan tag thought jika ada agar JSON parsing aman
   return text.replace(/<thought>[\s\S]*?<\/thought>/g, "").trim();
 }

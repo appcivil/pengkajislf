@@ -10,7 +10,7 @@ import { showSuccess, showError } from '../components/toast.js';
 export async function proyekListPage() {
   return `
     <div id="proyek-list-page" style="animation: page-fade-in 0.6s ease-out">
-      <div class="page-header flex-between" style="margin-bottom: var(--space-8)">
+      <div class="page-header flex-between flex-stack" style="margin-bottom: var(--space-8)">
         <div>
           <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.2rem; letter-spacing:-0.02em; margin-bottom:4px">
             Daftar <span class="text-gradient-gold">Proyek SLF</span>
@@ -19,7 +19,7 @@ export async function proyekListPage() {
             Portfolio Management &bull; Strategic Assets
           </p>
         </div>
-        <div class="flex gap-4">
+        <div class="flex gap-4 flex-stack">
           <button class="btn btn-outline" onclick="exportProyek()" style="height:44px; padding:0 24px; border-radius:12px; font-weight:700">
             <i class="fas fa-file-export" style="margin-right:8px"></i> Export CSV
           </button>
@@ -31,26 +31,26 @@ export async function proyekListPage() {
 
       <!-- Filters (Quartz Bar) -->
       <div class="card-quartz" style="padding:var(--space-5); margin-bottom:var(--space-8); border: 1px solid var(--border-strong);">
-        <div class="flex-between" style="gap:24px; flex-wrap:wrap">
-          <div style="position:relative; flex:1; min-width:300px">
+        <div class="flex-between flex-stack" style="gap:24px;">
+          <div style="position:relative; flex:1; width:100%">
             <i class="fas fa-magnifying-glass" style="position:absolute; left:16px; top:50%; transform:translateY(-50%); color:var(--brand-400); font-size:0.9rem"></i>
             <input type="text" id="search-proyek" class="form-input" placeholder="Cari gedung, pemilik, atau lokasi..."
-                   style="padding-left:48px; background:hsla(220, 20%, 100%, 0.03); border:1px solid hsla(220, 20%, 100%, 0.05); height:48px; border-radius:12px" 
+                   style="padding-left:48px; background:hsla(220, 20%, 100%, 0.03); border:1px solid hsla(220, 20%, 100%, 0.05); height:48px; border-radius:12px; width:100%" 
                    oninput="filterProyek(this.value)" />
           </div>
-          <div class="flex gap-4" style="flex-wrap:wrap">
-            <select class="form-select" id="filter-status" onchange="filterProyek()" style="min-width:160px; height:48px; background:hsla(220, 20%, 100%, 0.03); border-radius:12px">
+          <div class="flex gap-4 flex-stack" style="width:100%">
+            <select class="form-select" id="filter-status" onchange="filterProyek()" style="flex:1; min-width:140px; height:48px; background:hsla(220, 20%, 100%, 0.03); border-radius:12px">
               <option value="">Semua Status</option>
               <option value="DALAM_PENGKAJIAN">Dalam Proses</option>
               <option value="LAIK_FUNGSI">Laik Fungsi</option>
               <option value="LAIK_FUNGSI_BERSYARAT">Laik Bersyarat</option>
               <option value="TIDAK_LAIK_FUNGSI">Tidak Laik</option>
             </select>
-            <select class="form-select" id="filter-sort" onchange="sortProyek(this.value)" style="min-width:140px; height:48px; background:hsla(220, 20%, 100%, 0.03); border-radius:12px">
+            <select class="form-select" id="filter-sort" onchange="sortProyek(this.value)" style="flex:1; min-width:120px; height:48px; background:hsla(220, 20%, 100%, 0.03); border-radius:12px">
               <option value="updated_at">Terbaru</option>
               <option value="nama_bangunan">Nama A-Z</option>
             </select>
-            <div id="proyek-count" style="display:flex; align-items:center; background:hsla(158, 85%, 45%, 0.1); color:var(--success-400); padding:0 16px; border-radius:12px; font-weight:800; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:1px; border:1px solid hsla(158, 85%, 45%, 0.2)">
+            <div id="proyek-count" style="display:flex; align-items:center; background:hsla(158, 85%, 45%, 0.1); color:var(--success-400); padding:0 16px; border-radius:12px; font-weight:800; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:1px; border:1px solid hsla(158, 85%, 45%, 0.2); height:48px; justify-content:center">
               0 ASSETS
             </div>
           </div>
@@ -144,7 +144,7 @@ function renderProyekCards(proyek) {
     const date = p.updated_at ? new Date(p.updated_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
 
     return `
-      <div class="card-quartz" style="padding: var(--space-6); display:flex; gap:24px; align-items:center; cursor:pointer; position:relative; overflow:hidden"
+      <div class="card-quartz" style="padding: var(--space-6); display:flex; gap:24px; align-items:center; cursor:pointer; position:relative; overflow:hidden; flex-wrap:wrap"
            onclick="window.navigate('proyek-detail', {id:'${p.id}'})">
         
         <!-- Status Indicator line -->
@@ -156,7 +156,7 @@ function renderProyekCards(proyek) {
         </div>
 
         <!-- Info Section -->
-        <div style="flex:1; overflow:hidden">
+        <div style="flex:1; min-width:200px; overflow:hidden">
           <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px; flex-wrap:wrap">
             <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.15rem; color:var(--text-primary); margin:0">${p.nama_bangunan || 'UNTITLED ASSET'}</h3>
             <span class="badge ${s.cls}" style="font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:1px; border:1px solid ${s.color}66; background:${s.color}1a; color:${s.color}">
@@ -173,30 +173,29 @@ function renderProyekCards(proyek) {
             </div>
           </div>
 
-          <div style="display:flex; align-items:center; gap:16px">
-            <div class="progress-wrap" style="flex:1; max-width:240px; height:6px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px">
+          <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap">
+            <div class="progress-wrap" style="flex:1; min-width:140px; max-width:240px; height:6px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px">
               <div class="progress-fill" style="width:${prog}%; height:100%; border-radius:10px; background:${prog >= 80 ? 'var(--gradient-brand)' : prog >= 40 ? 'var(--gradient-gold)' : 'var(--gradient-danger)'}; box-shadow: 0 0 10px ${prog >= 80 ? 'var(--brand-500)66' : 'var(--gold-500)66'}"></div>
             </div>
-            <span style="font-family:var(--font-mono); font-weight:800; font-size:11px; color:var(--brand-400)">${prog}% DATA INTEGRITY</span>
+            <span style="font-family:var(--font-mono); font-weight:800; font-size:11px; color:var(--brand-400)">${prog}% INTEGRITY</span>
           </div>
         </div>
 
-        <!-- Meta Section -->
-        <div style="text-align:right; flex-shrink:0" class="hide-mobile">
+        <!-- Meta Section (Visible on some tablets, hidden on tiny mobile) -->
+        <div style="text-align:right; flex-shrink:0; min-width:100px" class="hide-mobile">
           <div style="font-family:var(--font-mono); font-size:10px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px">Last Synced</div>
           <div style="font-weight:700; color:var(--text-primary); font-size:0.85rem">${date}</div>
-          <div class="text-gradient-gold" style="font-size:0.65rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-top:8px">${p.jenis_bangunan || 'Building Class A'}</div>
         </div>
 
         <!-- Action Pills -->
-        <div class="flex gap-2" style="margin-left: 20px" onclick="event.stopPropagation()">
-          <button class="btn btn-ghost" title="Operational Checklist" onclick="event.stopPropagation();window.navigate('checklist',{id:'${p.id}'})" style="width:38px; height:38px; padding:0; border-radius:10px; border:1px solid hsla(220, 20%, 100%, 0.05)">
+        <div class="flex gap-2" style="margin-left: auto" onclick="event.stopPropagation()">
+          <button class="btn btn-ghost" title="Checklist" onclick="event.stopPropagation();window.navigate('checklist',{id:'${p.id}'})" style="width:38px; height:38px; padding:0; border-radius:10px; border:1px solid hsla(220, 20%, 100%, 0.05)">
             <i class="fas fa-clipboard-list" style="color:var(--brand-400)"></i>
           </button>
-          <button class="btn btn-ghost" title="Risk Analytics" onclick="event.stopPropagation();window.navigate('analisis',{id:'${p.id}'})" style="width:38px; height:38px; padding:0; border-radius:10px; border:1px solid hsla(220, 20%, 100%, 0.05)">
+          <button class="btn btn-ghost" title="Analytics" onclick="event.stopPropagation();window.navigate('analisis',{id:'${p.id}'})" style="width:38px; height:38px; padding:0; border-radius:10px; border:1px solid hsla(220, 20%, 100%, 0.05)">
             <i class="fas fa-chart-network" style="color:var(--gold-400)"></i>
           </button>
-          <button class="btn btn-ghost" title="Termination" onclick="event.stopPropagation();deleteProyek('${p.id}','${p.nama_bangunan}')" style="width:38px; height:38px; padding:0; border-radius:10px; border:1px solid hsla(0, 85%, 60%, 0.1)">
+          <button class="btn btn-ghost" title="Archive" onclick="event.stopPropagation();deleteProyek('${p.id}','${p.nama_bangunan}')" style="width:38px; height:38px; padding:0; border-radius:10px; border:1px solid hsla(0, 85%, 60%, 0.1)">
             <i class="fas fa-trash-can" style="color:var(--danger-400)"></i>
           </button>
         </div>

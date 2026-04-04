@@ -12,18 +12,17 @@ import { confirm } from '../components/modal.js';
 import { APP_CONFIG } from '../lib/config.js';
 
 export async function timKerjaPage() {
-  const root = document.getElementById('page-root');
-  if (root) root.innerHTML = renderSkeleton();
-
   const workload = await fetchTeamWorkload();
   const members  = await fetchTeamMembers();
   
-  const html = buildHtml(workload, members);
-  if (root) {
-    root.innerHTML = html;
-    initEvents();
-  }
-  return html;
+  return buildHtml(workload, members);
+}
+
+/**
+ * Lifecycle Hook: Inisialisasi setelah render DOM selesai
+ */
+export function afterTimKerjaRender() {
+  initEvents();
 }
 
 function buildHtml(workload, members) {
@@ -51,7 +50,7 @@ function buildHtml(workload, members) {
                 <i class="fas fa-rotate"></i>
              </button>
              ${isAdmin() ? `
-               <button class="btn-presidential gold" style="height:44px; padding:0 24px; border-radius:12px" onclick="window._showAddMemberModal()">
+               <button class="btn-presidential gold" style="height:44px; padding:0 24px; border-radius:12px" onclick="window.open('https://supabase.com/dashboard/project/hrzplcqeadhvbrfhlfuh/auth/users', '_blank')">
                  <i class="fas fa-user-plus" style="margin-right:12px"></i> ADD AGENT
                </button>
              ` : ''}
@@ -254,7 +253,15 @@ function renderMemberModal(member = null) {
           
           <div class="form-group">
             <label class="form-label">OFFICIAL ENCRYPTED EMAIL</label>
-            <input type="email" name="email" class="form-input" placeholder="agent@consortium.com" required value="${member?.email || ''}" ${isEdit ? 'readonly' : ''}>
+            <input type="email" name="email" class="form-input" placeholder="Masukkan email resmi agent..." required value="${member?.email || ''}" ${isEdit ? 'readonly' : ''}>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">TEMPORARY ACCESS PASSWORD</label>
+            <input type="password" name="password" class="form-input" placeholder="••••••••" value="${isEdit ? '' : '@skpslf123'}" ${isEdit ? 'disabled placeholder="Stored in Auth Module"' : 'required'}>
+            <p style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); margin-top:8px">
+              <i class="fas fa-info-circle"></i> NOTE: This password is used for the Auth account setup.
+            </p>
           </div>
 
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
@@ -302,7 +309,10 @@ function renderMemberModal(member = null) {
         showSuccess('Registry updated.');
       } else {
         await createProfile(data);
-        showSuccess('New agent inducted into consortium.');
+        showSuccess('New agent inducted. Opening Supabase Auth setup...');
+        
+        // Buka dashboard Supabase SEGERA di tab baru
+        window.open('https://supabase.com/dashboard/project/hrzplcqeadhvbrfhlfuh/auth/users', '_blank');
       }
       document.getElementById('member-modal-overlay').remove();
       timKerjaPage();

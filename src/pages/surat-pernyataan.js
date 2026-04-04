@@ -167,9 +167,14 @@ function buildModernLayout(p, s) {
       </main>
     </div>
 
-    <style>
-      .modern-app-layout { display: flex; height: calc(100vh - 64px); background: #f0f2f5; overflow: hidden; font-family: 'Inter', sans-serif; }
+    <style>      .modern-app-layout { display: grid; grid-template-columns: 320px 1fr; height: calc(100vh - 64px); background: #f0f2f5; overflow: hidden; font-family: 'Inter', sans-serif; }
       
+      @media (max-width: 1024px) {
+        .modern-app-layout { grid-template-columns: 1fr; height: auto; overflow-y: auto; }
+        .sp-sidebar-glass { width: 100% !important; border-right: none; border-bottom: 1px solid rgba(0,0,0,0.05); height: auto; position: relative !important; }
+        .sp-canvas-technical { height: calc(100vh - 100px); overflow-x: auto; }
+      }
+
       /* Sidebar Modern Glass */
       .sp-sidebar-glass { 
         width: 320px; 
@@ -179,6 +184,7 @@ function buildModernLayout(p, s) {
         border-right: 1px solid rgba(0,0,0,0.05);
         display: flex; flex-direction: column; padding: 24px;
         box-shadow: 10px 0 40px rgba(0,0,0,0.03); 
+        overflow-y: auto;
       }
       .btn-back-modern { 
         background: none; border: none; font-size: 13px; font-weight: 600; color: #1e40af; 
@@ -253,6 +259,21 @@ function buildModernLayout(p, s) {
         animation: paperFadeIn 0.5s ease-out;
       }
 
+      @media (max-width: 210mm) {
+        .paper-a4-modern { 
+           transform: scale(0.9);
+           transform-origin: top center;
+           margin-bottom: -100px;
+        }
+      }
+      @media (max-width: 600px) {
+        .paper-a4-modern { 
+           transform: scale(0.6);
+           transform-origin: top center;
+           margin-bottom: -400px;
+        }
+      }
+
       .paper-page-content {
         padding: 30mm 20mm;
         min-height: 297mm;
@@ -263,6 +284,7 @@ function buildModernLayout(p, s) {
       }
 
       @keyframes paperFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
 
       /* Formal Document Styling Internal (PP 16/2021) */
       .hf-doc-header { border-bottom: 4px double #000; padding-bottom: 20px; margin-bottom: 25px; text-align: center; }

@@ -24,6 +24,10 @@ const DEFAULT_SETTINGS = {
   },
   ai: {
     defaultModel: 'gemini-3.1-flash-lite-preview',
+    ollamaEnabled: false,
+    ollamaEndpoint: 'http://localhost:11434',
+    ollamaModel: 'gemma3:27b',
+    availableLocalModels: []
   },
   experts: {
     architecture: { name: '', skk: '', signature: null, qr_code: null },

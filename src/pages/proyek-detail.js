@@ -70,30 +70,30 @@ function buildHtml(p, stats, analisis, pic) {
          <!-- Abstract Background Effect -->
          <div style="position:absolute; right:-100px; top:-100px; width:400px; height:400px; border-radius:50%; background:radial-gradient(circle, hsla(220, 95%, 52%, 0.1) 0%, transparent 70%); pointer-events:none"></div>
 
-         <div class="flex-between" style="align-items:flex-start; position:relative; z-index:2">
-            <div>
+         <div class="flex-between flex-stack" style="align-items:flex-start; position:relative; z-index:2; gap:var(--space-6)">
+            <div style="flex:1">
                <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek')" style="margin-bottom:20px; color:var(--brand-300); padding:0; font-weight:700; letter-spacing:1px">
                  <i class="fas fa-arrow-left" style="margin-right:8px"></i> SEMUA ASSET STRATEGIS
                </button>
-               <h1 style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.4rem; color:white; letter-spacing:-0.03em; margin:0; line-height:1.1">
+               <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; color:white; letter-spacing:-0.03em; margin:0; line-height:1.1">
                  ${escHtml(p.nama_bangunan)}
                </h1>
-               <div style="display:flex; gap:16px; margin-top:20px; align-items:center">
+               <div style="display:flex; gap:16px; margin-top:20px; align-items:center; flex-wrap:wrap">
                   <span class="badge" style="background:${st.color}1a; border:1px solid ${st.color}44; color:${st.color}; font-weight:800; font-family:var(--font-mono); font-size:11px; padding:6px 12px">
                     <i class="fas ${st.icon}" style="margin-right:6px"></i> ${st.label}
                   </span>
                   <span class="badge" style="background:hsla(220, 20%, 100%, 0.05); border:1px solid hsla(220, 20%, 100%, 0.1); color:var(--text-secondary); font-weight:700; font-size:11px; padding:6px 12px">
                     <i class="fas fa-location-dot" style="margin-right:6px; color:var(--brand-400)"></i> ${escHtml(p.kota || 'INDONESIA')}
                   </span>
-                  <div style="width:1px; height:20px; background:hsla(220, 20%, 100%, 0.1)"></div>
+                  <div class="hide-mobile" style="width:1px; height:20px; background:hsla(220, 20%, 100%, 0.1)"></div>
                   <span style="font-family:var(--font-mono); font-size:11px; font-weight:800; color:var(--gold-400); letter-spacing:1px">
                     ${p.nomor_pbg || 'NO REGISTRATION'}
                   </span>
                </div>
             </div>
             
-            <div class="flex gap-3">
-               <button class="btn btn-outline" style="height:48px; border-radius:14px; border-color:hsla(220, 20%, 100%, 0.1); color:white" onclick="window.navigate('proyek-edit', {id:'${p.id}'})">
+            <div class="flex gap-3 flex-stack" style="width:auto">
+               <button class="btn btn-outline" style="height:48px; border-radius:14px; border-color:hsla(220, 20%, 100%, 0.1); color:white; padding: 0 20px" onclick="window.navigate('proyek-edit', {id:'${p.id}'})">
                  <i class="fas fa-pen-nib" style="margin-right:8px"></i> Edit Manifest
                </button>
                <button class="btn btn-ghost" style="height:48px; width:48px; padding:0; border-radius:14px; background:hsla(0, 85%, 60%, 0.1); color:var(--danger-400)" onclick="window._hapusProyek('${p.id}')">
@@ -103,8 +103,8 @@ function buildHtml(p, stats, analisis, pic) {
          </div>
 
          <!-- Immersive Workflow Bar -->
-         <div style="margin-top: 40px; padding-top: 40px; border-top: 1px solid hsla(220, 20%, 100%, 0.05)">
-            <div class="workflow-timeline" style="margin-bottom:12px">
+         <div style="margin-top: 40px; padding-top: 40px; border-top: 1px solid hsla(220, 20%, 100%, 0.05); overflow-x: auto; padding-bottom: 10px;">
+            <div class="workflow-timeline" style="margin-bottom:12px; min-width: 600px">
               ${workflowSteps.map((s, i) => `
                 <div class="workflow-step ${i < currentStep ? 'done' : i === currentStep ? 'active' : ''}" style="flex:1; position:relative; text-align:center">
                   <div style="width:36px; height:36px; border-radius:50%; background:${i <= currentStep ? 'var(--brand-500)' : 'hsla(220, 20%, 100%, 0.05)'}; margin:0 auto; display:flex; align-items:center; justify-content:center; color:white; border:4px solid ${i <= currentStep ? 'hsla(220, 95%, 52%, 0.2)' : 'transparent'}; z-index:2; position:relative; box-shadow: ${i === currentStep ? '0 0 20px var(--brand-500)' : 'none'}">
@@ -119,13 +119,13 @@ function buildHtml(p, stats, analisis, pic) {
       </div>
 
       <!-- Main Workspace Grid -->
-      <div class="grid-main-responsive" style="display:grid; grid-template-columns: 1fr 380px; gap: var(--space-8)">
+      <div class="grid-dashboard-main">
         
         <!-- Left: Operations & Data -->
         <div style="display:flex; flex-direction:column; gap:var(--space-8)">
           
           <!-- Functional Modules Grid -->
-          <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-6)">
+          <div class="grid-2-col">
             
             <!-- Remedial Tasks -->
             <div class="card-quartz clickable" onclick="window.navigate('task',{id:'${p.id}'})" style="padding: var(--space-6)">
@@ -237,7 +237,7 @@ function buildHtml(p, stats, analisis, pic) {
           </div>
 
           <!-- Secondary Grid: Gallery, Surat, TODO -->
-          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-6)">
+          <div class="grid-3-col">
              <div class="card-quartz clickable" onclick="window.navigate('galeri', {id:'${p.id}'})" style="text-align:center; padding:var(--space-5)">
                 <i class="fas fa-images" style="font-size:1.4rem; color:var(--brand-400); margin-bottom:12px"></i>
                 <div style="font-weight:700; font-size:0.85rem; color:white">Visual Gallery</div>
@@ -257,7 +257,7 @@ function buildHtml(p, stats, analisis, pic) {
             <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1rem; color:white; margin-bottom:24px; display:flex; align-items:center; gap:12px">
               <i class="fas fa-microchip" style="color:var(--brand-400)"></i> SPESIFIKASI TEKNIS STRATEGIS
             </div>
-            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px">
+            <div class="grid-3-col">
               ${[
                 ['BAHAN_MODUL',     p.jenis_bangunan   || '-', 'fa-tag', 'KATEGORI ASSET'],
                 ['STAIRS_LEVEL',    p.jumlah_lantai ? `${p.jumlah_lantai} LANTAI` : '-', 'fa-stairs', 'VOLUME VERTIKAL'],
@@ -352,13 +352,6 @@ function buildHtml(p, stats, analisis, pic) {
 
           <!-- SIMBG PROGRESS OVERLAY -->
           <div id="simbg-progress-overlay" style="display:none; position:fixed; inset:0; background:rgba(2,4,8,0.9); backdrop-filter:blur(10px); z-index:10000; align-items:center; justify-content:center; flex-direction:column; padding:40px">
-             <div style="width:400px; text-align:center">
-                <div class="card-quartz" style="padding:40px">
-                   <div style="width:80px; height:80px; border-radius:50%; background:var(--gradient-brand); margin:0 auto 32px; display:flex; align-items:center; justify-content:center; font-size:2rem; color:white; box-shadow:var(--shadow-sapphire)">
-                      <i class="fas fa-satellite-dish animate-pulse"></i>
-                   </div>
-                   <h3 style="font-family:'Outfit', sans-serif; font-weight:800; color:white; margin-bottom:8px">SIMBG SYNCHRONIZATION</h3>
-                   <p id="simbg-progress-msg" style="font-family:var(--font-mono); font-size:10px; color:var(--brand-300); letter-spacing:1px; margin-bottom:32px">INITIATING SECURE TUNNEL...</p>
                    
                    <div style="height:4px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px; overflow:hidden">
                       <div id="simbg-progress-bar" style="width:0%; height:100%; background:var(--gradient-brand); transition:width 0.3s"></div>
@@ -733,8 +726,8 @@ function renderSkeleton() {
       <div class="skeleton" style="height:48px; width:400px; margin-bottom:20px"></div>
       <div class="skeleton" style="height:20px; width:200px"></div>
     </div>
-    <div style="display:grid; grid-template-columns:1fr 380px; gap:40px">
-       <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px">
+    <div class="grid-dashboard-main">
+       <div class="grid-2-col">
           ${Array(4).fill(0).map(() => `<div class="card-quartz" style="height:180px"></div>`).join('')}
        </div>
        <div class="card-quartz" style="height:500px"></div>

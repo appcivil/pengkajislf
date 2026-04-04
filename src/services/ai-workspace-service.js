@@ -3,8 +3,8 @@
  * Mocked intelligence layer for the Engineering Workspace.
  * Integrated with the document metadata.
  */
-import { supabase } from '../lib/supabase.js';
 import { MODELS, fetchOpenRouter, parseAIJson } from '../lib/ai-router.js';
+import { PROYEK_AI_TEMPLATES } from '../application/ai-templates/ProyekAI.js';
 
 const OPENROUTER_MODEL = MODELS.OPENROUTER;
 
@@ -16,28 +16,8 @@ export async function analyzeDocumentIntelligence(fileId) {
     console.log(`[AI] Analyzing file with OpenRouter: ${file.name}`);
 
     // 2. AI Prompt for Classification & Summarization
-    const prompt = `
-      Anda adalah AI Engineering Assistant untuk pengkajian SLF (Sertifikat Laik Fungsi).
-      Analisis file berikut:
-      Nama File: ${file.name}
-      Kategori Awal: ${file.category || 'Belum dikategorikan'}
-      
-      Tugas:
-      1. Klasifikasikan file ke salah satu kategori SIMBG: [umum, tanah, arsitektur, struktur, mep, lapangan].
-      2. Tentukan subkategori yang tepat (misal: IMB, Gambar Denah, Perhitungan Struktur, dsb).
-      3. Berikan ringkasan teknis isi dokumen (maks 3-5 kalimat).
-      4. Berikan skor kelengkapan (0-100).
-      5. Tentukan status teknis: [Final, In Review, Needs Revision].
-
-      Kembalikan HANYA JSON:
-      {
-        "category": "...",
-        "subcategory": "...",
-        "ai_summary": "...",
-        "completeness": 0,
-        "status": "..."
-      }
-    `;
+    // 2. AI Prompt for Classification & Summarization (Centralized Template)
+    const prompt = PROYEK_AI_TEMPLATES.DOCUMENT_ANALYSIS(file.name, file.category);
 
     let aiResult;
     try {

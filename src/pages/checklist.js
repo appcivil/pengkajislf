@@ -1,6 +1,7 @@
 /**
- * CHECKLIST PAGE (MODULAR)
+ * CHECKLIST PAGE (MODULAR - SIDEBAR EDITION)
  * Main Orchestrator for Building Inspection Checklists.
+ * Presidential Standard v2.0
  */
 import { supabase } from '../lib/supabase.js';
 import { navigate } from '../lib/router.js';
@@ -25,93 +26,135 @@ import {
 } from '../lib/checklist-ai-service.js';
 import { 
   renderChecklistShell, 
-  renderChecklistTable, 
-  renderKajianBlocks 
+  renderChecklistSection
 } from '../components/checklist-components.js';
 import { 
-  ADMIN_ITEMS, 
-  TEKNIS_ITEMS, 
-  KAJIAN_GROUPS, 
-  ADMIN_OPTIONS, 
-  CONDITION_OPTIONS 
-} from '../lib/checklist-data.js';
+  FULL_CHECKLIST_SCHEMA, 
+  CHECKLIST_SECTIONS 
+} from '../lib/checklist-full-schema.js';
 
 export async function checklistPage(params) {
   const proyekId = params.id;
   if (!proyekId || proyekId === 'undefined') { 
-    console.warn("[Checklist] Invalid Proyek ID provided");
     navigate('proyek'); 
     return ''; 
   }
 
-  const root = document.getElementById('page-root');
-  if (root) root.innerHTML = `
-    <div class="page-container route-fade">
-        <div class="skeleton" style="height:100px; margin-bottom:20px"></div>
-        <div class="skeleton" style="height:400px"></div>
-    </div>`;
+  // 1. Fetch Project Basics (Sync for shell)
+  const { data: proyek } = await supabase.from('proyek').select('*').eq('id', proyekId).maybeSingle();
+  
+  if (!proyek) { 
+      navigate('proyek'); 
+      return ''; 
+  }
 
-  try {
-    // 1. Fetch Project Basics
-    const { data: proyek, error } = await supabase.from('proyek').select('*').eq('id', proyekId).maybeSingle();
-    
-    if (error || !proyek) { 
-        console.error("[Checklist] Project not found:", error);
-        navigate('proyek'); 
-        return; 
+  // 2. Fetch Latest Analysis (For Damage Category Auto-Fill)
+  const { data: analisis } = await supabase.from('hasil_analisis')
+    .select('*')
+    .eq('proyek_id', proyekId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  // Set initial store
+  store.set({ 
+    currentProyek: proyek, 
+    currentProyekId: proyekId,
+    currentAnalisis: analisis 
+  });
+
+  // Ensure checklist state is initialized for new schema
+  const { checklist } = store.get();
+  updateChecklist({ 
+    activeTab: checklist.activeTab || 'identitas',
+    fullSchema: FULL_CHECKLIST_SCHEMA 
+  });
+
+  return renderChecklistShell(proyek, store.get().checklist);
+}
+
+/**
+ * Lifecycle Hook: Memuat data dan merender konten tab awal
+ */
+export async function afterChecklistRender(params) {
+  const proyekId = params.id;
+  await loadChecklistData(proyekId);
+  
+  // Perform Auto-Fill for Identity & Damage
+  await performAutoFill();
+  
+  renderTabContent();
+}
+
+/**
+ * Logic to Auto-Fill Identity and Damage from Project/Analysis table
+ */
+async function performAutoFill() {
+  const { currentProyek, currentAnalisis, checklist } = store.get();
+  if (!currentProyek) return;
+
+  const dataMap = { ...checklist.dataMap };
+  let isModified = false;
+
+  // 1. Fill Identity (if empty)
+  if (!dataMap['ID-01']?.status) { dataMap['ID-01'] = { ...dataMap['ID-01'], status: currentProyek.pemilik || '' }; isModified = true; }
+  if (!dataMap['ID-02']?.status) { dataMap['ID-02'] = { ...dataMap['ID-02'], status: currentProyek.alamat || '' }; isModified = true; }
+  
+  // 2. Fill Damage Category (From Kondisi/Analisis)
+  if (!dataMap['ID-03']?.status && currentAnalisis) {
+    let cat = 'Tanpa Kerusakan';
+    const status = currentAnalisis.status_slf;
+    if (status === 'LAIK_FUNGSI_BERSYARAT') cat = 'Rusak Sedang';
+    if (status === 'TIDAK_LAIK_FUNGSI') cat = 'Rusak Berat';
+    // Logic specific to Damage percentage if available in metadata
+    const damagePct = currentAnalisis.metadata?.grandTotalDamage || 0;
+    if (damagePct > 0) {
+        if (damagePct <= 30) cat = 'Rusak Ringan';
+        else if (damagePct <= 45) cat = 'Rusak Sedang';
+        else cat = 'Rusak Berat';
     }
+    dataMap['ID-03'] = { ...dataMap['ID-03'], status: cat };
+    isModified = true;
+  }
 
-    // 2. Load Checklist Data & Sync Store
-    store.set({ currentProyek: proyek, currentProyekId: proyekId });
-    await loadChecklistData(proyekId);
+  // 3. Fill Specific Technical Intensities
+  if (!dataMap['TB-04']?.nilai) { dataMap['TB-04'] = { ...dataMap['TB-04'], nilai: currentProyek.kdb || 0 }; isModified = true; }
+  if (!dataMap['TB-06']?.nilai) { dataMap['TB-06'] = { ...dataMap['TB-06'], nilai: currentProyek.jumlah_lantai || 1 }; isModified = true; }
+  if (!dataMap['TB-08']?.nilai) { dataMap['TB-08'] = { ...dataMap['TB-08'], nilai: currentProyek.gsb || 0 }; isModified = true; }
 
-    render();
-  } catch (err) {
-    console.error("[Checklist] Initialization error:", err);
-    navigate('proyek');
+  if (isModified) {
+    updateChecklist({ dataMap });
+    // Mark these as dirty so they save to database
+    ['ID-01', 'ID-02', 'ID-03', 'TB-04', 'TB-06', 'TB-08'].forEach(k => markDirty(k));
   }
 }
 
-function render() {
-  const root = document.getElementById('page-root');
-  const { currentProyek, checklist } = store.get();
-  
-  // Render Shell
-  root.innerHTML = renderChecklistShell(currentProyek, checklist);
-  
-  // Render Active Tab Content
+function renderTabContent() {
+  const { checklist } = store.get();
   const content = document.getElementById('checklist-content');
-  if (content) {
-    if (checklist.activeTab === 'admin') {
-      content.innerHTML = renderChecklistTable(
-        'Dokumen Administrasi', 
-        'Verifikasi kelengkapan berkas legal (IMB/PBG, Sertifikat, As-Built).',
-        ADMIN_ITEMS, checklist.dataMap, ADMIN_OPTIONS, 'administrasi'
-      );
-    } else if (checklist.activeTab === 'teknis') {
-      content.innerHTML = renderChecklistTable(
-        'Evaluasi Teknis PUPR', 
-        'Pemeriksaan kondisi eksisting arsitektur, struktur, dan MEP.',
-        TEKNIS_ITEMS, checklist.dataMap, CONDITION_OPTIONS, 'teknis'
-      );
-    } else if (checklist.activeTab === 'kajian') {
-      content.innerHTML = renderKajianBlocks(KAJIAN_GROUPS, checklist.dataMap);
-    } else if (checklist.activeTab === 'files') {
-      content.innerHTML = `<div class="card" style="padding:40px; text-align:center">
-         <i class="fas fa-folder-tree" style="font-size:3rem; color:var(--brand-400); margin-bottom:20px"></i>
-         <h3>Manajemen Berkas SIMBG</h3>
-         <p>Silakan gunakan tombol sinkronisasi berkas untuk memetakan dokumen ke Daftar Simak.</p>
-         <button class="btn btn-secondary mt-3" onclick="window.navigate('proyek-files', {id:'${currentProyek.id}'})">Buka Drive Proyek</button>
-      </div>`;
-    }
-  }
+  if (!content) return;
+
+  const sectionId = checklist.activeTab || 'identitas';
+  const sectionItems = FULL_CHECKLIST_SCHEMA.filter(i => i.category === sectionId);
+  
+  content.innerHTML = renderChecklistSection(sectionId, sectionItems, checklist.dataMap);
+  
+  // Sync Sidebar Active State
+  document.querySelectorAll('.nav-item-quartz').forEach(btn => {
+     const isActive = btn.getAttribute('onclick').includes(`'${sectionId}'`);
+     btn.classList.toggle('active', isActive);
+  });
 }
 
 // ── Shared UI Handlers ────────────────────────────────────────
 
 window._switchTab = (tab) => {
   updateChecklist({ activeTab: tab });
-  render();
+  renderTabContent();
+  
+  // Scroll to top of content
+  const wrap = document.getElementById('checklist-content-wrap');
+  if (wrap) wrap.scrollTop = 0;
 };
 
 window._onFieldChange = (kode, field, value) => {
@@ -126,28 +169,17 @@ window._onFieldChange = (kode, field, value) => {
   markDirty(kode);
 };
 
-window._onMetadataChange = (kode, metaField, value) => {
-  const { checklist } = store.get();
-  const item = checklist.dataMap[kode] || { kode };
+window._saveDraft = async () => {
+  const btn = document.querySelector('.btn-secondary');
+  if (btn) btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> SAVING...';
   
-  const updatedItem = { 
-     ...item, 
-     metadata: { ...(item.metadata || {}), [metaField]: value } 
-  };
-  
-  updateChecklist({ 
-     dataMap: { ...checklist.dataMap, [kode]: updatedItem } 
-  });
-  
-  markDirty(kode);
-};
-
-window._saveChecklist = async () => {
   await doSave(true);
+  
+  if (btn) btn.innerHTML = '<i class="fas fa-save" style="margin-right:8px"></i> SIMPAN DRAFT';
 };
 
 window._toggleVoiceNote = (kode) => {
-  toggleVoiceAudit(kode).then(() => render());
+  toggleVoiceAudit(kode).then(() => renderTabContent());
 };
 
 window._openLiveCamera = (kode, nama, kategori) => {
@@ -159,7 +191,7 @@ window._closeCamera = () => {
 };
 
 window._takePhoto = () => {
-  takePhoto().then(() => render());
+  takePhoto().then(() => renderTabContent());
 };
 
 window._flipCamera = () => {
@@ -171,28 +203,15 @@ window._showLightbox = (url) => {
 };
 
 window._handleImageSelect = (e, kode, nama, kategori) => {
-  runVisionAnalysis(e.target.files, kode, nama, kategori, 'Teknis').then(() => render());
-};
-
-window._handleImageDrop = (e, kode, nama, kategori) => {
-  e.preventDefault();
-  runVisionAnalysis(e.dataTransfer.files, kode, nama, kategori, 'Teknis').then(() => render());
+  runVisionAnalysis(e.target.files, kode, nama, kategori, 'Teknis').then(() => renderTabContent());
 };
 
 window._autoFillFromAgents = () => {
-    autoFillFromAgents().then(() => render());
-};
-
-window._runBatchSmartEngine = (kategori) => {
-    runBatchSmartEngine(kategori).then(() => render());
-};
-
-window._triggerGlobalAiSync = () => {
-    autoSyncProjectData().then(() => render());
+    autoFillFromAgents().then(() => renderTabContent());
 };
 
 window._fetchItemData = (kode, nama) => {
-    fetchItemData(kode, nama).then(() => render());
+    fetchItemData(kode, nama).then(() => renderTabContent());
 };
 
 window._removeFile = (kode, url) => {
@@ -216,5 +235,6 @@ window._removeFile = (kode, url) => {
     });
     
     markDirty(kode);
-    render();
+    renderTabContent();
 };
+

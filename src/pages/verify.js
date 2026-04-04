@@ -29,18 +29,20 @@ export async function verifyPage(params = {}) {
          throw new Error("ID Dokumen tidak valid atau tidak terdaftar di basis data pusat.");
       }
 
-      const [analisisRes, settings] = await Promise.all([
+      const [analisisRes, checklistRes, settings] = await Promise.all([
          supabase.from('hasil_analisis').select('*').eq('proyek_id', id).maybeSingle(),
+         supabase.from('checklist_items').select('*').eq('proyek_id', id),
          getSettings()
       ]);
 
       const p = proyek;
       const a = analisisRes?.data || null;
+      const c = checklistRes?.data || [];
       const expert = expertType === 'director'
          ? { name: settings.consultant?.director_name || 'DIREKTUR UTAMA', job: settings.consultant?.director_job || 'Direktur', skk: null }
          : settings.experts?.[expertType] || {};
 
-      const integrity = await verifyDocumentIntegrity(p);
+      const integrity = await verifyDocumentIntegrity(p, a, c);
       const cert = await validateSignerCertificate(expert);
 
       root.innerHTML = buildVerifyHtml(p, a, settings, expertType, expert, integrity, cert);
@@ -96,16 +98,16 @@ function buildVerifyHtml(p, a, s, expertType, expert, integrity, cert) {
       </div>
 
       <!-- Public Navigation (Light Quartz) -->
-      <nav style="background:rgba(255,255,255,0.8); backdrop-filter:blur(20px); border-bottom:1px solid rgba(0,0,0,0.05); padding:16px 40px; position:sticky; top:0; z-index:100">
-         <div style="display:flex; justify-content:space-between; align-items:center; max-width:1200px; margin:0 auto">
-            <div style="display:flex; align-items:center; gap:20px">
+      <nav style="background:rgba(255,255,255,0.8); backdrop-filter:blur(20px); border-bottom:1px solid rgba(0,0,0,0.05); padding:16px 20px; position:sticky; top:0; z-index:100; width:100%">
+         <div class="flex-between flex-stack" style="width:100%; margin:0 auto; gap:var(--space-4)">
+            <div style="display:flex; align-items:center; gap:20px; text-align:left">
                ${consultant.logo ? `<img src="${consultant.logo}" style="height:44px; object-fit:contain">` : `<div style="width:44px; height:44px; background:var(--gradient-brand); border-radius:10px; display:flex; align-items:center; justify-content:center; color:white; font-size:1.4rem"><i class="fas fa-microchip"></i></div>`}
                <div>
                   <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; letter-spacing:0.5px; color:hsl(224, 30%, 12%)">${escHtml(consultant.name || 'SMART AI PENGKAJI')}</div>
                   <div style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); letter-spacing:1px; text-transform:uppercase">Official Digital Integrity Verification Gateway</div>
                </div>
             </div>
-            <div style="background:hsla(158, 85%, 45%, 0.05); border:1px solid hsla(158, 85%, 45%, 0.1); padding:8px 20px; border-radius:100px; font-family:var(--font-mono); font-size:10px; font-weight:800; color:var(--success-500); display:flex; align-items:center; gap:10px">
+            <div style="background:hsla(158, 85%, 45%, 0.05); border:1px solid hsla(158, 85%, 45%, 0.1); padding:8px 20px; border-radius:100px; font-family:var(--font-mono); font-size:10px; font-weight:800; color:var(--success-500); display:flex; align-items:center; gap:10px; width:fit-content">
                <div style="width:10px; height:10px; border-radius:50%; background:var(--success-500); box-shadow:0 0 10px var(--success-500)"></div>
                OFFICIAL COMPLIANCE HUB
             </div>
@@ -113,29 +115,29 @@ function buildVerifyHtml(p, a, s, expertType, expert, integrity, cert) {
       </nav>
 
       <!-- Light Hero Section -->
-      <div style="background:linear-gradient(180deg, #fff 0%, hsl(220, 30%, 95%) 100%); padding:80px 0; border-bottom:1px solid rgba(0,0,0,0.05)">
-         <div style="max-width:1200px; margin:0 auto; padding:0 40px">
-            <div style="display:flex; justify-content:space-between; align-items:center">
-               <div>
+      <div style="background:linear-gradient(180deg, #fff 0%, hsl(220, 30%, 95%) 100%); padding:60px 0; border-bottom:1px solid rgba(0,0,0,0.05)">
+         <div style="width:100%; margin:0 auto; padding:0 40px">
+            <div class="flex-between flex-stack" style="align-items:center; gap:32px">
+               <div style="text-align:left">
                   <div style="font-family:var(--font-mono); font-size:10px; font-weight:800; color:var(--brand-500); letter-spacing:2px; margin-bottom:16px; text-transform:uppercase">Kesimpulan Hasil Verifikasi Teknks</div>
-                  <h1 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:4rem; line-height:1; letter-spacing:-0.04em; margin-bottom:20px; color:hsl(224, 30%, 12%)">
+                  <h1 class="responsive-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size:clamp(2rem, 8vw, 4rem); line-height:1; letter-spacing:-0.04em; margin-bottom:20px; color:hsl(224, 30%, 12%)">
                      ${statusLabel.toUpperCase()}
                   </h1>
-                  <div style="display:flex; align-items:center; gap:20px">
+                  <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap">
                      <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-tertiary); letter-spacing:1px">DOKUMEN REF: <span style="color:var(--brand-500); font-weight:700">${escHtml(p.metadata?.nomor_surat || p.id.toUpperCase())}</span></span>
                      <span class="badge" style="background:white; color:var(--brand-500); border:1px solid hsla(220, 95%, 52%, 0.1); font-size:9px; font-weight:800; box-shadow:0 4px 12px rgba(0,0,0,0.03)">ENCRYPTED AUDIT v7</span>
                   </div>
                </div>
-               <div style="text-align:right">
+               <div style="text-align:right; width:fit-content">
                   <div style="font-family:var(--font-mono); font-size:10px; color:var(--text-tertiary); letter-spacing:1px; margin-bottom:12px">INTEGRITY INDEX</div>
-                  <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:4rem; color:var(--brand-500); line-height:1">${a?.skor_total || '--'}<span style="font-size:1.5rem; opacity:0.3; margin-left:4px">%</span></div>
+                  <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:clamp(2.5rem, 10vw, 4rem); color:var(--brand-500); line-height:1">${a?.skor_total || '--'}<span style="font-size:1.5rem; opacity:0.3; margin-left:4px">%</span></div>
                </div>
             </div>
          </div>
       </div>
 
-      <main style="max-width:1200px; margin:-40px auto 100px; padding:0 40px">
-         <div style="display:grid; grid-template-columns: 1.8fr 1fr; gap: 40px">
+      <main style="width:100%; margin:-40px auto 100px; padding:0 40px">
+         <div class="grid-main-side" style="gap: 40px">
             
             <div style="display:flex; flex-direction:column; gap:32px">
                <!-- Building Visual & Core Data (Light Quartz) -->
@@ -149,7 +151,7 @@ function buildVerifyHtml(p, a, s, expertType, expert, integrity, cert) {
                         </div>
                      </div>
                   </div>
-                  <div style="padding:32px; display:grid; grid-template-columns: repeat(4, 1fr); gap:32px; background:hsl(220, 30%, 99%)">
+                  <div class="grid-4-col" style="padding:32px; gap:32px; background:hsl(220, 30%, 99%)">
                      <div>
                         <div style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px">Usage/Function</div>
                         <div style="font-weight:800; color:hsl(224, 30%, 15%); font-size:0.9rem">${escHtml(p.fungsi_bangunan || '-')}</div>
@@ -251,8 +253,8 @@ function buildVerifyHtml(p, a, s, expertType, expert, integrity, cert) {
       </main>
 
       <footer style="background:white; padding:80px 0; border-top:1px solid rgba(0,0,0,0.05)">
-         <div style="max-width:1200px; margin:0 auto; padding:0 40px; display:flex; justify-content:space-between; align-items:flex-start">
-            <div>
+         <div class="flex-between flex-stack" style="width:100%; margin:0 auto; padding:0 40px; gap:32px; align-items:flex-start">
+            <div style="text-align:left">
                <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:hsl(224, 30%, 12%); margin-bottom:12px">OFFICIAL INSPECTION HUB</div>
                <p style="font-size:0.85rem; color:var(--text-tertiary); max-width:400px; line-height:1.6">${escHtml(consultant.name)} &bull; ${escHtml(consultant.address)}</p>
             </div>
@@ -261,7 +263,7 @@ function buildVerifyHtml(p, a, s, expertType, expert, integrity, cert) {
                <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.4rem; color:hsl(224, 30%, 12%)">Smart AI <span style="background:var(--gradient-brand); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">ENGINE v7</span></div>
             </div>
          </div>
-         <div style="max-width:1200px; margin:40px auto 0; padding:40px 40px 0; border-top:1px solid rgba(0,0,0,0.05); text-align:center; font-family:var(--font-mono); font-size:10px; color:var(--text-tertiary); letter-spacing:1px">
+         <div style="width:100%; margin:40px auto 0; padding:40px 20px 0; border-top:1px solid rgba(0,0,0,0.05); text-align:center; font-family:var(--font-mono); font-size:10px; color:var(--text-tertiary); letter-spacing:1px">
             © ${new Date().getFullYear()} OFFICIAL SLF VERIFICATION SYSTEM. DATA ACCESS PROTECTED.
          </div>
       </footer>

@@ -5,6 +5,114 @@
 // ============================================================
 
 /**
+ * 6-STEP ANALYTICAL ENGINE (The "Expert Brain")
+ * Menghasilkan narasi teknis mendalam untuk setiap item pemeriksaan.
+ */
+export function analyzeChecklistItem(item, proyek) {
+  const { kategori, sub_kategori, item_pemeriksaan, hasil, status, keterangan } = item;
+  
+  // STEP 1: IDENTIFIKASI
+  const identifikasi = `Pemeriksaan dilakukan pada aspek ${kategori} khususnya bagian ${sub_kategori} terkait ${item_pemeriksaan}.`;
+
+  // STEP 2: INTERPRETASI HASIL
+  let interpretasi = "";
+  const isOk = ['ada_sesuai', 'baik', 'sesuai'].includes(status?.toLowerCase());
+  if (isOk) {
+    interpretasi = `Berdasarkan pengamatan visual dan verifikasi lapangan, kondisi dinyatakan MEMENUHI standar teknis kelaikan fungsi.`;
+  } else {
+    interpretasi = `Hasil pemeriksaan menunjukkan adanya KETIDAKSESUAIAN (Deficiency) terhadap standar teknis yang berlaku. Kondisi tercatat: ${hasil || keterangan || 'Tidak memadai'}.`;
+  }
+
+  // STEP 3: ANALISIS TEKNIS
+  let analisis = "";
+  if (kategori?.toLowerCase() === 'struktur') {
+    analisis = isOk 
+      ? `Komponen struktural menunjukkan integritas yang baik dalam memikul beban desain, sehingga stabilitas bangunan tetap terjaga.`
+      : `Kerusakan atau ketidaksesuaian pada komponen struktur ini dapat mereduksi kapasitas dukung beban bangunan dan berpotensi memicu kegagalan parsial jika tidak segera ditangani.`;
+  } else if (kategori?.toLowerCase() === 'kebakaran') {
+    analisis = isOk
+      ? `Sistem proteksi kebakaran aktif/pasif dalam kondisi siaga, meminimalisir risiko penyebaran api dan menjamin keamanan jalur evakuasi.`
+      : `Gangguan pada sistem ini secara langsung menurunkan tingkat keselamatan jiwa (Life Safety) penghuni dalam skenario darurat kebakaran.`;
+  } else {
+    analisis = isOk
+      ? `Fungsi komponen ${kategori} berjalan optimal sesuai peruntukannya, mendukung operasional bangunan secara efisien.`
+      : `Kondisi ini mengganggu keandalan operasional bangunan dan dapat menyebabkan penurunan kualitas layanan (Serviceability) secara keseluruhan.`;
+  }
+
+  // STEP 4: PENILAIAN RISIKO
+  let risiko = "Rendah";
+  if (!isOk) {
+    if (kategori?.toLowerCase() === 'struktur' || kategori?.toLowerCase() === 'kebakaran') risiko = "Tinggi";
+    else if (status?.toLowerCase() === 'kritis' || status?.toLowerCase() === 'buruk') risiko = "Tinggi";
+    else risiko = "Sedang";
+  }
+
+  // STEP 5: KESIMPULAN ITEM
+  const kesimpulan = isOk ? "LAYAK / MEMENUHI" : (risiko === "Tinggi" ? "TIDAK LAYAK / HARUS DIPERBAIKI SEGERA" : "PERLU PERBAIKAN MINOR");
+
+  // STEP 6: REKOMENDASI SPESIFIK
+  let rekomendasi = isOk ? "Lakukan pemeliharaan rutin sesuai SOP bangunan." : "";
+  if (!isOk) {
+    if (kategori?.toLowerCase() === 'struktur') rekomendasi = `Lakukan audit struktur mendalam (NDT/DT) dan perkuatan (Retrofitting) pada area terdampak sesuai rekomendasi tenaga ahli struktur Terlisensi.`;
+    else if (kategori?.toLowerCase() === 'mep' || kategori?.toLowerCase() === 'utilitas') rekomendasi = `Lakukan penggantian atau perbaikan komponen pada sistem utilitas dan pastikan pengujian fungsi ulang sebelum dioperasikan kembali.`;
+    else rekomendasi = `Lakukan perbaikan teknis pada komponen ${item_pemeriksaan} agar kembali sesuai dengan standar teknis Peraturan Menteri PUPR yang berlaku.`;
+  }
+
+  return {
+    identifikasi,
+    interpretasi,
+    analisis,
+    risiko,
+    kesimpulan,
+    rekomendasi
+  };
+}
+
+/**
+ * MENGHASILKAN NARASI BAB IV SECARA DINAMIS
+ */
+export function generateBab4Narrative(checklist, proyek) {
+  if (!checklist || checklist.length === 0) return "Tidak ada data pemeriksaan untuk dianalisis.";
+
+  const categories = [...new Set(checklist.map(c => c.kategori))];
+  let narrative = "";
+
+  categories.forEach(cat => {
+    narrative += `\n### ANALISIS ASPEK ${cat.toUpperCase()}\n\n`;
+    const items = checklist.filter(c => c.kategori === cat);
+    
+    items.forEach(item => {
+      const a = analyzeChecklistItem(item, proyek);
+      narrative += `#### ${item.item_pemeriksaan}\n`;
+      narrative += `- **Kondisi Eksisting:** ${item.hasil || item.status || '-'}\n`;
+      narrative += `- **Evaluasi Teknis:** ${a.interpretasi} ${a.analisis}\n`;
+      narrative += `- **Risiko:** ${a.risiko}\n`;
+      narrative += `- **Kesimpulan:** ${a.kesimpulan}\n\n`;
+    });
+  });
+
+  return narrative;
+}
+
+/**
+ * MENGHASILKAN TABEL REKOMENDASI BAB VI
+ */
+export function generateRecommendationData(checklist, proyek) {
+  return checklist
+    .filter(i => !['ada_sesuai', 'baik', 'sesuai'].includes(i.status?.toLowerCase()))
+    .map(i => {
+      const a = analyzeChecklistItem(i, proyek);
+      return {
+        item: i.item_pemeriksaan,
+        masalah: i.hasil || i.keterangan || i.status,
+        rekomendasi: a.rekomendasi,
+        prioritas: a.risiko === 'Tinggi' ? 'Tinggi' : a.risiko === 'Sedang' ? 'Sedang' : 'Rendah',
+        waktu: a.risiko === 'Tinggi' ? 'Segera' : '3-6 Bulan'
+      };
+    });
+}
+
+/**
  * Parse narasi AI mentah dan ubah menjadi format terstruktur profesional
  * @param {string} rawMarkdown - Output AI mentah (markdown)
  * @returns {Object} Structured report data
