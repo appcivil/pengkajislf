@@ -33,19 +33,48 @@ jobs:
       - name: Install dependencies 📦
         run: npm install
 
+      - name: Setup Supabase CLI 🛠️
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy Supabase Edge Function (AI Proxy) 🚀
+        run: |
+          supabase secrets set GEMINI_API_KEY="${{ secrets.VITE_GEMINI_API_KEY }}" --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+          supabase secrets set OPENAI_API_KEY="${{ secrets.VITE_OPENAI_API_KEY }}" --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+          supabase secrets set CLAUDE_API_KEY="${{ secrets.VITE_CLAUDE_API_KEY }}" --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+          supabase secrets set GROQ_API_KEY="${{ secrets.VITE_GROQ_API_KEY }}" --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+          supabase secrets set OPENROUTER_API_KEY="${{ secrets.VITE_OPENROUTER_API_KEY }}" --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+          supabase secrets set MISTRAL_API_KEY="${{ secrets.VITE_MISTRAL_API_KEY }}" --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+          supabase secrets set HF_API_TOKEN="${{ secrets.VITE_HF_API_TOKEN }}" --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+          supabase functions deploy ai-proxy --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
       - name: Build 🏗️
         run: npm run build
         env:
           # Database
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          # AI Engine Keys
+          # App Config
+          VITE_APP_NAME: ${{ secrets.VITE_APP_NAME || 'Smart AI Pengkaji SLF' }}
+          VITE_APP_VERSION: ${{ secrets.VITE_APP_VERSION || '2.1.0' }}
+          # AI Proxy URL
+          VITE_AI_PROXY_URL: ${{ secrets.VITE_AI_PROXY_URL }}
+          # Google Integration (GAS Proxy)
+          VITE_GOOGLE_APPS_SCRIPT_URL: ${{ secrets.VITE_GOOGLE_APPS_SCRIPT_URL }}
+          VITE_GOOGLE_DOC_TEMPLATE_ID: ${{ secrets.VITE_GOOGLE_DOC_TEMPLATE_ID }}
+          VITE_GCP_API_KEY: ${{ secrets.VITE_GCP_API_KEY }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+          # Direct AI Access (Optional if using Proxy)
           VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
           VITE_OPENAI_API_KEY: ${{ secrets.VITE_OPENAI_API_KEY }}
           VITE_CLAUDE_API_KEY: ${{ secrets.VITE_CLAUDE_API_KEY }}
-          VITE_GROQ_API_KEY: ${{ secrets.VITE_GROQ_API_KEY }}
           VITE_OPENROUTER_API_KEY: ${{ secrets.VITE_OPENROUTER_API_KEY }}
+          VITE_GROQ_API_KEY: ${{ secrets.VITE_GROQ_API_KEY }}
           VITE_MISTRAL_API_KEY: ${{ secrets.VITE_MISTRAL_API_KEY }}
+          VITE_HF_SLF_OPUS_URL: ${{ secrets.VITE_HF_SLF_OPUS_URL }}
           VITE_HF_API_TOKEN: ${{ secrets.VITE_HF_API_TOKEN }}
 
       - name: Setup Pages ⚙️
