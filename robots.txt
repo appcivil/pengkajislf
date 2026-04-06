@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Sitemap jika sudah di-generate
+# Sitemap: https://username.github.io/smartaipengkaji/sitemap.xml
