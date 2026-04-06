@@ -21,17 +21,17 @@
 const CONFIG = {
   // ID folder root di Google Drive untuk menyimpan hasil laporan
   // Buat folder dulu di Drive, klik kanan → Share → copy ID dari URL
-  ROOT_FOLDER_ID: 'ISI_DENGAN_ID_FOLDER_ROOT_DRIVE_ANDA',
+  ROOT_FOLDER_ID: '19RLtLY1CMdRd92PjygN681VI_LsJuRzM',
   
   // ID template Google Docs master
   // Bisa di-override per request dari aplikasi
-  DEFAULT_TEMPLATE_ID: 'ISI_DENGAN_ID_TEMPLATE_GOOGLE_DOCS_ANDA',
+  DEFAULT_TEMPLATE_ID: '1o7wGODOTtybJz-OrO63OmTNGQyPz-opvqNzopbfayrw',
   
   // Nama folder output (akan dibuat di bawah ROOT_FOLDER_ID)
   OUTPUT_FOLDER_NAME: 'Laporan SLF Generated',
   
   // CORS — domain yang diizinkan (kosongkan untuk izinkan semua)
-  ALLOWED_ORIGINS: [], // contoh: ['https://yourdomain.github.io']
+  ALLOWED_ORIGINS: [], // contoh: ['https://appcivil.github.io']
 };
 
 // ── ENTRY POINT ───────────────────────────────────────────────
@@ -70,6 +70,14 @@ function doGet(e) {
  */
 function doPost(e) {
   try {
+    // Check if e and e.postData exist (handle direct script execution)
+    if (!e || !e.postData || !e.postData.contents) {
+      Logger.log('doPost called without proper POST data');
+      return buildJsonResponse({ 
+        error: 'Invalid request: POST data required. This endpoint must be called via HTTP POST with JSON body.' 
+      }, 400);
+    }
+    
     // Parse JSON body
     const body = JSON.parse(e.postData.contents || '{}');
     const action = body.action || 'uploadFile'; // backward-compat: default upload
