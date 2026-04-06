@@ -129,8 +129,11 @@ const pages = {
   proyekDetail:      () => import('./pages/proyek-detail.js'),
   proyekFiles:       () => import('./pages/proyek-files.js'),
   checklist:         () => import('./pages/checklist.js'),
+  tierChecklist:     () => import('./pages/tier-checklist.js'),
   kondisi:           () => import('./pages/kondisi.js'),
   analisis:          () => import('./pages/analisis.js'),
+  ndtCalculator:     () => import('./pages/ndt-calculator.js'),
+  seismicCalculator: () => import('./pages/seismic-calculator.js'),
   multiAgent:        () => import('./pages/multi-agent.js'),
   laporan:           () => import('./pages/laporan.js'),
   suratPernyataan:   () => import('./pages/surat-pernyataan.js'),
@@ -144,6 +147,8 @@ const pages = {
   galeri:            () => import('./pages/proyek-galeri.js'),
   taskDetail:        () => import('./pages/task-detail.js'),
   passwordModal:     () => import('./components/password-modal.js'),
+  simulation:        () => import('./pages/simulation.js'),
+  electricalInspection: () => import('./pages/electrical-inspection.js'),
 };
 
 // Pre-fetch halaman yang paling sering diakses setelah login
@@ -193,6 +198,13 @@ function registerRoutes() {
     return h;
   });
 
+  route('tier-checklist', async (p) => {
+    const { tierChecklistPage, afterTierChecklistRender } = await pages.tierChecklist();
+    const h = await tierChecklistPage(p);
+    setTimeout(() => afterTierChecklistRender(p), 50);
+    return h;
+  });
+
   route('multi-agent', async (p) => {
     const { multiAgentPage, afterMultiAgentRender } = await pages.multiAgent();
     const h = await multiAgentPage(p);
@@ -205,6 +217,16 @@ function registerRoutes() {
     const h = await analisisPage(p);
     setTimeout(() => afterAnalisisRender(p), 50);
     return h;
+  });
+
+  route('ndt-calculator', async (p) => {
+    const { ndtCalculatorPage } = await pages.ndtCalculator();
+    return await ndtCalculatorPage(p);
+  });
+
+  route('seismic-calculator', async (p) => {
+    const { seismicCalculatorPage } = await pages.seismicCalculator();
+    return await seismicCalculatorPage(p);
   });
 
   route('files', async () => {
@@ -261,9 +283,23 @@ function registerRoutes() {
     return await galeriPage(p);
   });
 
+  route('simulation', async () => {
+    const { simulationPage, afterSimulationRender } = await pages.simulation();
+    const h = await simulationPage();
+    setTimeout(afterSimulationRender, 50);
+    return h;
+  });
+
   route('proyek-files', async (p) => {
     const { proyekFilesPage } = await pages.proyekFiles();
     return await proyekFilesPage(p);
+  });
+
+  route('electrical-inspection', async (p) => {
+    const { electricalInspectionPage, afterElectricalInspectionRender } = await pages.electricalInspection();
+    const h = await electricalInspectionPage(p);
+    setTimeout(() => afterElectricalInspectionRender(p), 50);
+    return h;
   });
 
   const taskRoute = async (p) => {
@@ -383,6 +419,13 @@ async function bootstrap() {
 
   updateProgress(100, 'Sistem Siap.');
   setTimeout(hideLoading, 400);
+
+  // Register Service Worker for PWA
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then((reg) => console.log('[SW] Registered:', reg))
+      .catch((err) => console.log('[SW] Registration failed:', err));
+  }
 
   // Sync hanya setelah UI stabil
   setTimeout(() => {
