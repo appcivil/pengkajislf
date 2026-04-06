@@ -99,17 +99,17 @@ export async function proyekFormPage(params = {}) {
               
               <div class="card-quartz" style="padding:var(--space-6) var(--space-8)">
                  <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.25rem; color:white; margin-bottom:32px; display:flex; align-items:center; gap:16px; text-align: left">
-                    <i class="fas fa-landmark" style="color:var(--brand-400)"></i> I. Physical Identity
+                    <i class="fas fa-landmark" style="color:var(--brand-400)"></i> I. DATA BANGUNAN
                  </div>
                  
                  <div class="form-group mb-8">
-                    <label class="form-label" style="letter-spacing:1.5px">ASSET OFFICIAL NAME <span style="color:var(--danger-400)">*</span></label>
+                    <label class="form-label" style="letter-spacing:1.5px">NAMA BANGUNAN <span style="color:var(--danger-400)">*</span></label>
                     <input type="text" class="form-input" name="nama_bangunan" value="${data.nama_bangunan || ''}" placeholder="e.g. Quartz Executive Tower" required>
                  </div>
                  
                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px">
                     <div class="form-group mb-8">
-                       <label class="form-label" style="letter-spacing:1.5px">FUNCTIONAL CLASS <span style="color:var(--danger-400)">*</span></label>
+                       <label class="form-label" style="letter-spacing:1.5px">FUNGSI BANGUNAN <span style="color:var(--danger-400)">*</span></label>
                        <select class="form-select" name="jenis_bangunan" required>
                           <option value="">-- SELECT CLASSIFICATION --</option>
                           ${jenis.map(j => `<option value="${j}" ${data.jenis_bangunan === j ? 'selected' : ''}>${j.toUpperCase()}</option>`).join('')}
@@ -124,14 +124,14 @@ export async function proyekFormPage(params = {}) {
                  </div>
 
                  <div class="form-group">
-                    <label class="form-label" style="letter-spacing:1.5px">GEOSPATIAL ADDRESS <span style="color:var(--danger-400)">*</span></label>
+                    <label class="form-label" style="letter-spacing:1.5px">ALAMAT BANGUNAN <span style="color:var(--danger-400)">*</span></label>
                     <textarea class="form-input" name="alamat" rows="3" placeholder="Full street address, district, and province..." required>${data.alamat || ''}</textarea>
                  </div>
               </div>
 
               <div class="card-quartz" style="padding:var(--space-6); border-color: hsla(220, 95%, 52%, 0.1)">
                  <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:white; margin-bottom:24px; display:flex; align-items:center; gap:12px; text-align: left">
-                    <i class="fas fa-crosshairs" style="color:var(--brand-400)"></i> Geospatial Lock
+                    <i class="fas fa-crosshairs" style="color:var(--brand-400)"></i> TITIK KOORDINAT BG
                  </div>
                  <div id="proyek-map" style="width:100%; height:320px; border-radius:16px; background:hsla(224, 25%, 4%, 0.8); border:1px solid hsla(220, 20%, 100%, 0.05)"></div>
                  <div class="grid-2-col" style="margin-top:24px">
@@ -547,4 +547,99 @@ window.submitProyek = async function(event) {
     btn.disabled = false;
     btn.innerHTML = `<i class="fas fa-check-double"></i> SEAL CHANGES`;
   }
+};
+
+// ============================================================
+//  OCR INTEGRATION - Fitur #7: OCR Teks & Tabel
+//  Auto-fill form dari dokumen IMB/PBG
+// ============================================================
+
+window._triggerOCRScan = () => {
+  document.getElementById('ocr-file-input').click();
+};
+
+window._handleOCRFile = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const overlay = document.getElementById('ai-loading-overlay');
+  const statusMsg = document.getElementById('ai-status-msg');
+  const progressFill = document.getElementById('ai-progress-fill');
+  
+  overlay.style.display = 'flex';
+  statusMsg.textContent = 'MEMBACA DOKUMEN...';
+  progressFill.style.width = '20%';
+
+  try {
+    // Import OCR service
+    const { extractTextFromPDF, extractTextFromImage, parseIMBDocument } = await import('../lib/ocr-service.js');
+    
+    let ocrResult;
+    
+    if (file.type === 'application/pdf') {
+      statusMsg.textContent = 'MENGEKSTRAK TEKS DARI PDF...';
+      progressFill.style.width = '40%';
+      ocrResult = await extractTextFromPDF(file);
+    } else if (file.type.startsWith('image/')) {
+      statusMsg.textContent = 'MENJALANKAN OCR PADA GAMBAR...';
+      progressFill.style.width = '40%';
+      ocrResult = await extractTextFromImage(file);
+    } else {
+      throw new Error('Format file tidak didukung. Gunakan PDF atau gambar.');
+    }
+
+    if (!ocrResult.success) {
+      throw new Error(ocrResult.error || 'Gagal membaca dokumen');
+    }
+
+    statusMsg.textContent = 'MEMPARSING DATA PERIZINAN...';
+    progressFill.style.width = '70%';
+    
+    const parsed = await parseIMBDocument(ocrResult.fullText || ocrResult.text);
+    
+    statusMsg.textContent = 'MENGISI FORM...';
+    progressFill.style.width = '90%';
+    
+    // Fill form fields
+    const fields = {
+      'nama_bangunan': parsed.raw.nama_pemilik || '',
+      'nomor_pbg': parsed.raw.nomor_pbg || parsed.raw.nomor_imb || '',
+      'alamat': parsed.raw.alamat || '',
+      'luas_bangunan': parsed.raw.luas_bangunan || '',
+      'luas_lahan': parsed.raw.luas_tanah || '',
+      'jumlah_lantai': parsed.raw.jumlah_lantai || '',
+      'fungsi_bangunan': parsed.raw.fungsi_bangunan || '',
+      'gsb': parsed.raw.gsb || '',
+      'kdb': parsed.raw.kdb || '',
+      'klb': parsed.raw.klb || '',
+      'kdh': parsed.raw.kdh || '',
+    };
+    
+    let filledCount = 0;
+    for (const [fieldId, value] of Object.entries(fields)) {
+      const input = document.querySelector(`[name="${fieldId}"]`);
+      if (input && value) {
+        input.value = value;
+        filledCount++;
+        // Trigger change event
+        input.dispatchEvent(new Event('change'));
+      }
+    }
+    
+    progressFill.style.width = '100%';
+    statusMsg.textContent = `BERHASIL - ${filledCount} FIELD DIISI`;
+    
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      showSuccess(`OCR Berhasil: ${filledCount} field terisi otomatis`);
+    }, 1000);
+    
+  } catch (err) {
+    overlay.style.display = 'none';
+    showError('OCR Error: ' + err.message);
+    console.error('[OCR] Error:', err);
+  }
+  
+  // Reset file input
+  event.target.value = '';
 };

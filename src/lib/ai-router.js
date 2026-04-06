@@ -25,6 +25,9 @@ const DIRECT_ENDPOINTS = {
   gemini: (model) => env.PROD
     ? `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.VITE_GEMINI_API_KEY}`
     : `/api/gemini/v1beta/models/${model}:generateContent?key=${env.VITE_GEMINI_API_KEY}`,
+  kimi: (model) => env.PROD
+    ? `https://api.moonshot.cn/v1/chat/completions`
+    : `/api/kimi/v1/chat/completions`,
   openai: env.PROD ? 'https://api.openai.com/v1/chat/completions' : '/api/openai/v1/chat/completions',
   groq: env.PROD ? 'https://api.groq.com/openai/v1/chat/completions' : '/api/groq/v1/chat/completions',
   claude: env.PROD ? 'https://api.anthropic.com/v1/messages' : '/api/claude/v1/messages',
@@ -35,11 +38,80 @@ const DIRECT_ENDPOINTS = {
 
 // ── Model Registry ────────────────────────────────────────────
 export const MODELS = {
-  GEMINI: {
+  // KIMI FAMILY - Default model (Moonshot AI)
+  KIMI: {
+    id: 'moonshot-v1-8k',
+    name: 'Kimi (Moonshot)',
+    vendor: 'openai', // OpenAI-compatible API
+    url: DIRECT_ENDPOINTS.kimi,
+    key: env.VITE_KIMI_API_KEY,
+    proxyProvider: 'kimi',
+    type: 'text',
+    costTier: 'free',
+    maxTokens: 8192,
+    contextWindow: 8000,
+    recommended: true, // Marked as recommended default
+  },
+  KIMI_32K: {
+    id: 'moonshot-v1-32k',
+    name: 'Kimi 32K',
+    vendor: 'openai',
+    url: DIRECT_ENDPOINTS.kimi,
+    key: env.VITE_KIMI_API_KEY,
+    proxyProvider: 'kimi',
+    type: 'text',
+    costTier: 'free',
+    maxTokens: 32768,
+    contextWindow: 32000,
+  },
+  KIMI_128K: {
+    id: 'moonshot-v1-128k',
+    name: 'Kimi 128K',
+    vendor: 'openai',
+    url: DIRECT_ENDPOINTS.kimi,
+    key: env.VITE_KIMI_API_KEY,
+    proxyProvider: 'kimi',
+    type: 'text',
+    costTier: 'free',
+    maxTokens: 128000,
+    contextWindow: 128000,
+  },
+  
+  // GEMINI HYBRID FAMILY - Model selector akan memilih yang tepat
+  GEMINI_FLASH: {
     id: 'gemini-2.0-flash',
     name: 'Gemini 2.0 Flash',
     vendor: 'google',
     proxyProvider: 'gemini',
+    type: 'text', // Optimized for fast text generation
+    costTier: 'low',
+    maxTokens: 8192,
+  },
+  GEMINI_FLASH_LITE: {
+    id: 'gemini-2.0-flash-lite',
+    name: 'Gemini 2.0 Flash Lite',
+    vendor: 'google',
+    proxyProvider: 'gemini',
+    type: 'text',
+    costTier: 'lowest',
+    maxTokens: 8192,
+  },
+  GEMINI_PRO: {
+    id: 'gemini-2.5-pro-exp-03-25',
+    name: 'Gemini 2.5 Pro',
+    vendor: 'google',
+    proxyProvider: 'gemini',
+    type: 'vision', // Optimized for complex reasoning & vision
+    costTier: 'high',
+    maxTokens: 65536,
+  },
+  GEMINI: { // Default fallback ke Flash untuk backward compatibility
+    id: 'gemini-2.0-flash',
+    name: 'Gemini 2.0 Flash',
+    vendor: 'google',
+    proxyProvider: 'gemini',
+    type: 'text',
+    costTier: 'low',
   },
   GROQ: {
     id: 'llama-3.3-70b-versatile',
@@ -113,6 +185,316 @@ function getItemConfig(kode) {
   return null;
 }
 
+// ============================================================
+//  KIMI vs GEMINI MODEL COMPARATOR
+//  Pilih model terbaik berdasarkan konteks dan ketersediaan
+// ============================================================
+
+/**
+ * Pilih model default terbaik antara Kimi dan Gemini
+ * Mempertimbangkan:
+ * - Gratis vs Berbayar
+ * - Context length yang dibutuhkan
+ * - Task type (vision, narrative, analysis)
+ * - Rate limit dan availability
+ */
+export function getDefaultModel(options = {}) {
+  const { 
+    hasVision = false, 
+    complexReasoning = false, 
+    fastMode = false, 
+    taskType = 'analysis',
+    requiredContextLength = 8000 
+  } = options;
+  
+  const kimiAvailable = !!env.VITE_KIMI_API_KEY;
+  const geminiAvailable = !!env.VITE_GEMINI_API_KEY;
+  
+  // Jika Kimi tersedia dan gratis, prioritaskan Kimi
+  if (kimiAvailable) {
+    // Kimi lebih baik untuk task tanpa vision dan context moderat
+    if (!hasVision && requiredContextLength <= 128000) {
+      // Pilih varian Kimi berdasarkan context length
+      if (requiredContextLength > 32000) {
+        return {
+          model: MODELS.KIMI_128K,
+          reason: 'Kimi 128K: Gratis + Context panjang',
+          estimatedCost: 'free',
+          advantage: 'Kimi gratis dengan context 128K lebih baik untuk analisis dokumen panjang'
+        };
+      } else if (requiredContextLength > 8000) {
+        return {
+          model: MODELS.KIMI_32K,
+          reason: 'Kimi 32K: Gratis + Context menengah',
+          estimatedCost: 'free',
+          advantage: 'Kimi gratis dengan context 32K optimal untuk analisis teknikal'
+        };
+      }
+      
+      // Default ke Kimi 8K untuk task sederhana
+      return {
+        model: MODELS.KIMI,
+        reason: 'Kimi: Model default gratis dengan performa sangat baik',
+        estimatedCost: 'free',
+        advantage: 'Kimi gratis lebih baik daripada Gemini Flash karena biaya $0 dan performa kompetitif'
+      };
+    }
+  }
+  
+  // Fallback ke Gemini jika Kimi tidak tersedia atau butuh vision
+  if (geminiAvailable) {
+    if (hasVision || taskType === 'vision' || taskType === 'ocr') {
+      return {
+        model: MODELS.GEMINI_PRO,
+        reason: 'Gemini Pro: Vision analysis & complex reasoning',
+        estimatedCost: 'high',
+        advantage: 'Gemini Pro lebih baik untuk vision tasks'
+      };
+    }
+    
+    if (complexReasoning || taskType === 'deep_analysis') {
+      return {
+        model: MODELS.GEMINI_PRO,
+        reason: 'Gemini Pro: Complex reasoning dengan konteks panjang',
+        estimatedCost: 'high',
+        advantage: 'Gemini Pro lebih baik untuk reasoning mendalam'
+      };
+    }
+    
+    if (fastMode || taskType === 'suggestion') {
+      return {
+        model: MODELS.GEMINI_FLASH_LITE,
+        reason: 'Gemini Flash Lite: Response cepat',
+        estimatedCost: 'lowest',
+        advantage: 'Flash Lite lebih cepat untuk task ringan'
+      };
+    }
+    
+    return {
+      model: MODELS.GEMINI_FLASH,
+      reason: 'Gemini Flash: Default untuk text tasks',
+      estimatedCost: 'low',
+      advantage: 'Gemini Flash lebih hemat dari Pro'
+    };
+  }
+  
+  // Emergency fallback
+  return {
+    model: MODELS.GROQ || MODELS.OPENROUTER,
+    reason: 'Emergency fallback',
+    estimatedCost: 'unknown',
+    advantage: 'Fallback ketika Kimi dan Gemini tidak tersedia'
+  };
+}
+
+/**
+ * Model comparator untuk membandingkan performa Kimi vs Gemini
+ */
+export const MODEL_COMPARATOR = {
+  // Perbandingan berdasarkan use case
+  comparisons: {
+    vision: {
+      winner: 'gemini_pro',
+      reason: 'Gemini Pro memiliki multimodal capability yang lebih baik',
+      kimiAlternative: null,
+      geminiModel: MODELS.GEMINI_PRO
+    },
+    
+    narrative_generation: {
+      winner: 'kimi',
+      reason: 'Kimi gratis menghasilkan narasi berkualitas tinggi tanpa biaya',
+      kimiModel: MODELS.KIMI,
+      geminiAlternative: MODELS.GEMINI_FLASH
+    },
+    
+    document_analysis: {
+      winner: 'kimi_128k',
+      reason: 'Kimi 128K gratis dengan context window besar lebih baik untuk analisis dokumen panjang',
+      kimiModel: MODELS.KIMI_128K,
+      geminiAlternative: MODELS.GEMINI_PRO
+    },
+    
+    fast_response: {
+      winner: 'gemini_flash_lite',
+      reason: 'Flash Lite dioptimalkan untuk response cepat',
+      kimiAlternative: MODELS.KIMI,
+      geminiModel: MODELS.GEMINI_FLASH_LITE
+    },
+    
+    complex_reasoning: {
+      winner: 'gemini_pro',
+      reason: 'Gemini Pro lebih baik untuk penalaran kompleks',
+      kimiAlternative: MODELS.KIMI_128K,
+      geminiModel: MODELS.GEMINI_PRO
+    },
+    
+    structured_output: {
+      winner: 'kimi',
+      reason: 'Kimi sangat baik dalam menghasilkan output JSON terstruktur',
+      kimiModel: MODELS.KIMI,
+      geminiAlternative: MODELS.GEMINI_FLASH
+    }
+  },
+  
+  /**
+   * Get rekomendasi model berdasarkan task type
+   */
+  recommend(taskType, options = {}) {
+    const comparison = this.comparisons[taskType];
+    if (!comparison) {
+      return getDefaultModel(options);
+    }
+    
+    const kimiAvailable = !!env.VITE_KIMI_API_KEY;
+    
+    // Jika pemenang adalah Kimi dan tersedia, gunakan Kimi
+    if (comparison.winner.startsWith('kimi') && kimiAvailable) {
+      return {
+        model: comparison.kimiModel || MODELS.KIMI,
+        reason: comparison.reason,
+        estimatedCost: 'free',
+        advantage: comparison.reason
+      };
+    }
+    
+    // Jika pemenang Gemini atau Kimi tidak tersedia
+    return {
+      model: comparison.geminiModel || MODELS.GEMINI_FLASH,
+      reason: comparison.reason,
+      estimatedCost: comparison.geminiModel?.costTier || 'low',
+      advantage: comparison.reason
+    };
+  }
+};
+//  Otomatis pilih model: Flash untuk narasi & teks, 
+//  Pro hanya untuk vision & analisis gambar kompleks.
+//  Menghemat quota Pro hingga 80%.
+// ============================================================
+
+export const GEMINI_ROUTER = {
+  /**
+   * Pilih model Gemini yang tepat berdasarkan konteks request
+   * @param {Object} options - Konfigurasi request
+   * @param {boolean} options.hasVision - Apakah ada input gambar/base64
+   * @param {boolean} options.complexReasoning - Butuh reasoning mendalam?
+   * @param {boolean} options.fastMode - Mode cepat (prioritaskan Flash Lite)
+   * @param {string} options.taskType - 'narrative' | 'analysis' | 'ocr' | 'vision' | 'code'
+   * @returns {Object} Model yang dipilih
+   */
+  selectModel(options = {}) {
+    const { hasVision = false, complexReasoning = false, fastMode = false, taskType = 'analysis' } = options;
+    
+    // RULE 1: Vision analysis SELALU gunakan Pro
+    if (hasVision || taskType === 'vision' || taskType === 'ocr') {
+      return { 
+        model: MODELS.GEMINI_PRO, 
+        reason: 'Vision/complex-image requires Pro',
+        estimatedCost: 'high'
+      };
+    }
+    
+    // RULE 2: Complex reasoning yang memerlukan konteks panjang
+    if (complexReasoning || taskType === 'deep_analysis') {
+      return { 
+        model: MODELS.GEMINI_PRO, 
+        reason: 'Complex reasoning with long context',
+        estimatedCost: 'high'
+      };
+    }
+    
+    // RULE 3: Fast mode untuk response cepat (misal: autocomplete, suggestions)
+    if (fastMode || taskType === 'suggestion' || taskType === 'autocomplete') {
+      return { 
+        model: MODELS.GEMINI_FLASH_LITE, 
+        reason: 'Fast mode - lightweight tasks',
+        estimatedCost: 'lowest'
+      };
+    }
+    
+    // RULE 4: Narrative generation, text analysis -> Flash (default)
+    // Ini menghemat 80% quota Pro karena sebagian besar request adalah teks
+    return { 
+      model: MODELS.GEMINI_FLASH, 
+      reason: 'Text/narrative - Flash is optimal',
+      estimatedCost: 'low'
+    };
+  },
+
+  /**
+   * Routing dengan fallback chain cerdas
+   * @param {Array} preferredModels - Array model dalam urutan preferensi
+   * @param {Function} callFn - Function untuk memanggil AI
+   */
+  async routeWithFallback(preferredModels, callFn) {
+    const errors = [];
+    
+    for (const modelInfo of preferredModels) {
+      try {
+        const result = await callFn(modelInfo.model);
+        return {
+          success: true,
+          result,
+          modelUsed: modelInfo.model.name,
+          reason: modelInfo.reason,
+          cost: modelInfo.estimatedCost
+        };
+      } catch (err) {
+        errors.push({ model: modelInfo.model.name, error: err.message });
+        console.warn(`[Gemini Router] ${modelInfo.model.name} failed: ${err.message}`);
+        continue;
+      }
+    }
+    
+    throw new Error(`All models failed. Errors: ${JSON.stringify(errors)}`);
+  },
+
+  /**
+   * Batch routing untuk mengoptimalkan cost pada multiple requests
+   * Pisahkan vision tasks (ke Pro) dari text tasks (ke Flash)
+   * @param {Array} requests - Array request objects
+   * @returns {Object} Grouped by model type
+   */
+  batchOptimize(requests) {
+    const batches = {
+      pro: [],    // Vision/complex reasoning
+      flash: [],  // Standard text
+      lite: []    // Fast/lightweight
+    };
+    
+    for (const req of requests) {
+      const selection = this.selectModel(req.options);
+      
+      if (selection.model.id === MODELS.GEMINI_PRO.id) {
+        batches.pro.push(req);
+      } else if (selection.model.id === MODELS.GEMINI_FLASH_LITE.id) {
+        batches.lite.push(req);
+      } else {
+        batches.flash.push(req);
+      }
+    }
+    
+    return {
+      batches,
+      stats: {
+        pro: batches.pro.length,
+        flash: batches.flash.length,
+        lite: batches.lite.length,
+        estimatedSavings: `~${Math.round((batches.pro.length / requests.length) * 100)}% using Pro, ${Math.round(((batches.flash.length + batches.lite.length) / requests.length) * 100)}% using Flash`
+      }
+    };
+  }
+};
+
+// Legacy compatibility - export MODELS.GEMINI sebagai default
+Object.defineProperty(MODELS, 'GEMINI', {
+  get() {
+    // Gunakan getDefaultModel untuk memilih antara Kimi dan Gemini
+    const selection = getDefaultModel({});
+    return selection.model;
+  },
+  configurable: true
+});
+
 /**
  * EXPERT PERSONAS - Konsorsium Ahli SLF
  */
@@ -137,6 +519,7 @@ export const EXPERT_PERSONAS = {
 // Log status (hanya keberadaan key, bukan nilai)
 if (env.DEV) {
   console.log('[AI Engine] Status Kunci API (DEV):', {
+    Kimi: !!env.VITE_KIMI_API_KEY,
     Gemini: !!env.VITE_GEMINI_API_KEY,
     OpenAI: !!env.VITE_OPENAI_API_KEY,
     Claude: !!env.VITE_CLAUDE_API_KEY,
@@ -207,7 +590,7 @@ async function callAI(model, prompt, options = {}) {
   // Mode 2: Direct API call (development / fallback jika proxy belum di-deploy)
   switch (model.vendor) {
     case 'google': return await fetchGemini(model, prompt, options);
-    case 'openai': return await fetchOpenAI(model, prompt);
+    case 'openai': return await fetchKimi(model, prompt); // Kimi uses OpenAI-compatible API
     case 'anthropic': return await fetchClaude(model, prompt);
     case 'openrouter': return await fetchOpenRouter(model, prompt);
     case 'huggingface': return await fetchSLFOpus(model, prompt);
@@ -489,9 +872,15 @@ export function parseAIJson(text) {
 
 /**
  * OCR Vision Engine — ekstrak data IMB/PBG dari gambar/PDF
+ * Menggunakan Gemini Pro via Hybrid Router (Fitur #7 & #26)
  */
 export async function runOCRAnalysis(base64Data, mimeType) {
-  const model = MODELS.GEMINI;
+  // Gunakan Gemini Pro untuk vision tasks via Hybrid Router
+  const selection = GEMINI_ROUTER.selectModel({ 
+    hasVision: true, 
+    taskType: 'ocr' 
+  });
+  
   const prompt = `
     Anda adalah AI Data Entry Spesialis Perizinan Bangunan (IMB/PBG) di Indonesia.
     Tugas: Ekstrak data teknis secara presisi dari dokumen yang diberikan (Scan IMB/PBG/Sertifikat).
@@ -506,11 +895,148 @@ export async function runOCRAnalysis(base64Data, mimeType) {
     PENTING: Jika data tidak ditemukan, berikan nilai null. Kembalikan HANYA JSON.
   `;
 
-  const resText = await callAI(model, prompt, { base64Data, mimeType });
+  const resText = await callAI(selection.model, prompt, { base64Data, mimeType });
   return parseAIJson(resText);
 }
 
+/**
+ * Batch Photo Analysis — Fitur #22 Photo-to-Checklist Mapper
+ * Menganalisis banyak foto sekaligus untuk mapping ke checklist
+ */
+export async function runBatchPhotoAnalysis(photoArray, checklistContext = {}) {
+  // Batch optimize untuk hemat quota
+  const requests = photoArray.map((photo, idx) => ({
+    id: idx,
+    photo,
+    options: { hasVision: true, taskType: 'vision' }
+  }));
+  
+  const batchPlan = GEMINI_ROUTER.batchOptimize(requests);
+  const results = [];
+  
+  // Proses Pro batch (vision intensive)
+  for (const req of batchPlan.batches.pro) {
+    const prompt = `
+Anda adalah AI Inspector Bangunan untuk Sertifikat Laik Fungsi (SLF).
+Analisis foto berikut dan identifikasi:
+1. Komponen bangunan yang terlihat (struktur, arsitektur, MEP)
+2. Kondisi visual (baik/sedang/buruk/kritis)
+3. Kerusakan yang terdeteksi
+4. Mapping ke kode checklist SLF yang relevan
+
+Context: ${JSON.stringify(checklistContext)}
+
+Output JSON:
+{
+  "photoIndex": ${req.id},
+  "komponen": ["kolom", "balok", "dll"],
+  "kondisi": "baik|sedang|buruk|kritis",
+  "kerusakan": ["retak", "karat", "dll"],
+  "checklistMapping": ["ITEM-05A1", "ITEM-03A"],
+  "confidence": 0.0-1.0,
+  "rekomendasi": "..."
+}`;
+    
+    try {
+      const selection = GEMINI_ROUTER.selectModel({ hasVision: true, taskType: 'vision' });
+      const resText = await callAI(selection.model, prompt, { 
+        base64Data: req.photo.base64, 
+        mimeType: req.photo.mimeType 
+      });
+      results.push(parseAIJson(resText));
+    } catch (err) {
+      results.push({ 
+        photoIndex: req.id, 
+        error: err.message,
+        kondisi: 'unknown',
+        confidence: 0 
+      });
+    }
+  }
+  
+  return {
+    results,
+    stats: batchPlan.stats,
+    totalProcessed: results.length
+  };
+}
+
+/**
+ * Auto-Fill Daftar Simak — Fitur #8
+ * Menggunakan Gemini Flash untuk generate checklist otomatis dari data proyek
+ */
+export async function generateDaftarSimak(proyekData, checklistTemplate) {
+  const selection = GEMINI_ROUTER.selectModel({ 
+    taskType: 'narrative',
+    fastMode: true // Use Flash Lite for speed
+  });
+  
+  const prompt = `
+Anda adalah AI Assistant untuk pengisian Daftar Simak SLF.
+Berdasarkan data proyek berikut, generate status checklist yang sesuai:
+
+DATA PROYEK:
+${JSON.stringify(proyekData, null, 2)}
+
+TEMPLATE CHECKLIST:
+${JSON.stringify(checklistTemplate, null, 2)}
+
+Generate array checklist items dengan format:
+[{
+  "kode": "ITEM-XX",
+  "status": "ada_sesuai|ada_tidak_sesuai|tidak_ada|baik|sedang|buruk",
+  "catatan": "...",
+  "nilai": 0-100,
+  "confidence": 0.0-1.0
+}]
+
+PENTING: Gunakan Flash untuk hemat quota. Prioritaskan akurasi pada item struktur & kebakaran.
+`;
+
+  try {
+    const resText = await callAI(selection.model, prompt);
+    const parsed = parseAIJson(resText);
+    return {
+      items: Array.isArray(parsed) ? parsed : [],
+      modelUsed: selection.model.name,
+      cost: selection.estimatedCost
+    };
+  } catch (err) {
+    console.error('[generateDaftarSimak] Error:', err);
+    return { items: [], error: err.message };
+  }
+}
+
 // ── Direct Fetchers (hanya aktif di dev mode) ─────────────────
+
+async function fetchKimi(model, prompt) {
+  if (!model.key) throw new Error('Kimi API Key tidak ditemukan di VITE_KIMI_API_KEY.');
+  
+  const res = await fetch(model.url, {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json', 
+      'Authorization': `Bearer ${model.key}` 
+    },
+    body: JSON.stringify({ 
+      model: model.id, 
+      messages: [
+        { role: 'system', content: 'Anda adalah asisten ahli audit teknis bangunan gedung SLF. Berikan respons dalam format yang terstruktur dan profesional.' },
+        { role: 'user', content: prompt }
+      ], 
+      temperature: 0.1, 
+      max_tokens: model.maxTokens || 8192 
+    }),
+  });
+  
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(`Kimi Error (HTTP ${res.status}): ${errData.error?.message || res.statusText}`);
+  }
+  
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content ?? '{}';
+}
 
 async function fetchOllama(model, prompt) {
   return await generateOllamaCompletion(

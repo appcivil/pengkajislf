@@ -46,7 +46,7 @@ export async function dashboardPage() {
             <div style="display:flex; align-items:center; gap:12px">
                <p class="page-subtitle" style="font-family:var(--font-mono); font-size: 0.7rem; letter-spacing:1.5px; opacity:0.6; text-transform:uppercase; display:flex; align-items:center; gap:6px">
                  <span style="width:6px; height:6px; border-radius:50%; background:var(--success-400); box-shadow:0 0 8px var(--success-400)"></span>
-                 PRESIDENTIAL COMMAND CENTER
+                 PENGKAJI COMMAND CENTER
                </p>
                <span style="width:1px; height:12px; background:var(--border-subtle)"></span>
                <p style="font-family:var(--font-mono); font-size: 0.7rem; letter-spacing:1px; opacity:0.6; text-transform:uppercase">
@@ -77,7 +77,7 @@ export async function dashboardPage() {
         <div class="card-quartz" style="padding:0; display:flex; flex-direction:column; min-height:600px; border: 1px solid var(--border-strong);">
           <div class="card-header" style="padding: var(--space-5) var(--space-6); border-bottom:1px solid var(--border-subtle); background: hsla(220, 20%, 100%, 0.02); display:flex; justify-content:space-between; align-items:center">
             <div>
-              <div class="card-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 1.1rem; letter-spacing: 0.05em">STRATEGIC OPERATIONS MAP</div>
+              <div class="card-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 1.1rem; letter-spacing: 0.05em">PETA LOKASI PENGKAJIAN</div>
               <div class="card-subtitle" style="font-size: 0.7rem; opacity:0.5; text-transform:uppercase; letter-spacing:1px">Real-time geospatial project distribution</div>
             </div>
             <div style="width:40px; height:40px; border-radius:10px; background:hsla(220, 95%, 52%, 0.1); display:flex; align-items:center; justify-content:center; border:1px solid hsla(220, 95%, 52%, 0.2)">
@@ -185,7 +185,7 @@ export async function dashboardPage() {
 // ── KPI Cards ──────────────────────────────────────────────
 function renderKPICards(kpi) {
   const cards = [
-    { label: 'OP-COMMAND PORTFOLIO', value: kpi.totalProyek || 0, icon: 'fa-briefcase', color: 'var(--brand-400)', bg: 'hsla(220, 95%, 52%, 0.1)' },
+    { label: 'PROTOFOLIO PENGKAJIAN', value: kpi.totalProyek || 0, icon: 'fa-briefcase', color: 'var(--brand-400)', bg: 'hsla(220, 95%, 52%, 0.1)' },
     { label: 'STRUCTURAL COMPLIANCE', value: kpi.laikFungsi || 0, icon: 'fa-shield-check', color: 'var(--success-400)', bg: 'hsla(158, 85%, 45%, 0.1)' },
     { label: 'ACTIVE FIELD OPS', value: kpi.proyekAktif || 0, icon: 'fa-location-dot', color: 'var(--gold-400)', bg: 'hsla(45, 90%, 60%, 0.1)' },
     { label: 'REMEDIAL ACTIONS', value: kpi.tidakLaik || 0, icon: 'fa-triangle-exclamation', color: 'var(--danger-400)', bg: 'hsla(350, 95%, 52%, 0.1)' },

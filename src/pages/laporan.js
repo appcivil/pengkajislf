@@ -9,6 +9,8 @@ import { logActivity, saveReportVersion } from '../lib/audit-service.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { marked } from 'marked';
 import { generateDocx, generateDocxBlob } from '../lib/docx-service.js';
+import { fetchElectricalSummary } from '../components/electrical-system-module.js';
+import { fetchStrukturBangunanSummary } from '../components/struktur-bangunan-summary.js';
 import { generatePDF } from '../lib/pdf-service.js';
 import { parseNarasiAI, renderToHTML } from '../lib/report-formatter.js';
 import { getSettings } from '../lib/settings.js';
@@ -33,13 +35,15 @@ export async function laporanPage(params = {}) {
   const root = document.getElementById('page-root');
   if (root) root.innerHTML = renderSkeleton();
 
-  const [proyek, analisis, checklist, settings, starredPhotos, proyekFiles] = await Promise.all([
+  const [proyek, analisis, checklist, settings, starredPhotos, proyekFiles, electricalSummary, strukturSummary] = await Promise.all([
     fetchProyek(id),
     fetchLastAnalisis(id),
     fetchChecklist(id),
     getSettings(),
     fetchStarredPhotos(id),
-    fetchProyekFiles(id)
+    fetchProyekFiles(id),
+    fetchElectricalSummary(id),
+    fetchStrukturBangunanSummary(id)
   ]);
 
   if (!proyek) { navigate('proyek'); showError('Proyek tidak ditemukan.'); return ''; }
@@ -49,16 +53,16 @@ export async function laporanPage(params = {}) {
   const gdocStatus = await checkGoogleIntegration();
   const cachedDoc = getCachedDocId(id);
 
-  const html = buildHtml(proyek, analisis, checklist, settings, gdocStatus, cachedDoc, proyekFiles);
+  const html = buildHtml(proyek, analisis, checklist, settings, gdocStatus, cachedDoc, proyekFiles, electricalSummary, strukturSummary);
   if (root) {
     root.innerHTML = html;
-    initLaporanActions(proyek, analisis, checklist, settings, gdocStatus, cachedDoc, proyekFiles);
+    initLaporanActions(proyek, analisis, checklist, settings, gdocStatus, cachedDoc, proyekFiles, electricalSummary, strukturSummary);
     initExportDropdown();
   }
   return html;
 }
 
-function buildHtml(proyek, analisis, checklist, settings, gdocStatus, cachedDoc, proyekFiles) {
+function buildHtml(proyek, analisis, checklist, settings, gdocStatus, cachedDoc, proyekFiles, electricalSummary, strukturSummary) {
   if (!analisis) {
     return `
       <div id="laporan-page" style="animation: page-fade-in 0.8s ease-out">
@@ -703,7 +707,7 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
             <li><b>Keselamatan Kebakaran:</b> Proteksi aktif dan pasif.</li>
           </ul>
 
-          <h2 style="font-size:14pt; margin-bottom:5mm">1.4. Data Bangunan</h2>
+          <h2 style="font-size:14pt; margin-bottom:5mm">1.4. DATA BANGUNAN</h2>
           <table style="margin-bottom:10mm">
              <tr><th style="width:35%">Faktor</th><th>Keterangan</th></tr>
              <tr><td>Nama Bangunan</td><td><b>${escHtml(proyek.nama_bangunan)}</b></td></tr>
@@ -1127,7 +1131,7 @@ function renderForensicAnalysisNarrative(items, proyekFiles = []) {
 
 // ── Shared Actions ─────────────────────────────────────────────
 
-function initLaporanActions(proyek, analisis, checklist, settings, gdocStatus, cachedDoc) {
+function initLaporanActions(proyek, analisis, checklist, settings, gdocStatus, cachedDoc, proyekFiles, electricalSummary, strukturSummary) {
   const showProgress = (pct, msg) => {
     const overlay = document.getElementById('export-progress-overlay');
     const fill = document.getElementById('export-progress-fill');
@@ -1355,7 +1359,7 @@ function initLaporanActions(proyek, analisis, checklist, settings, gdocStatus, c
     if (_previewDone && _docxBlob) return; // Sudah dirender, tidak perlu ulang
     _showDocxLoading();
     try {
-      const { blob } = await generateDocxBlob(proyek, analisis, checklist, null);
+      const { blob } = await generateDocxBlob(proyek, analisis, checklist, null, electricalSummary, strukturSummary);
       await _renderDocxBlob(blob);
     } catch (err) {
       console.error('[DocxPreview]', err);
@@ -1368,7 +1372,7 @@ function initLaporanActions(proyek, analisis, checklist, settings, gdocStatus, c
     _docxBlob   = null;
     _showDocxLoading();
     try {
-      const { blob } = await generateDocxBlob(proyek, analisis, checklist, null);
+      const { blob } = await generateDocxBlob(proyek, analisis, checklist, null, electricalSummary, strukturSummary);
       await _renderDocxBlob(blob);
       showSuccess('DOCX Preview berhasil diperbarui.');
     } catch (err) {
@@ -1428,7 +1432,7 @@ function initLaporanActions(proyek, analisis, checklist, settings, gdocStatus, c
     try {
       if (!_docxBlob) {
         showInfo('Sedang menyiapkan file DOCX...');
-        const { blob } = await generateDocxBlob(proyek, analisis, checklist, null);
+        const { blob } = await generateDocxBlob(proyek, analisis, checklist, null, electricalSummary, strukturSummary);
         _docxBlob = blob;
       }
       const { saveAs } = await import('file-saver');

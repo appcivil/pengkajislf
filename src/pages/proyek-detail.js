@@ -12,6 +12,9 @@ import { confirm }   from '../components/modal.js';
 import { APP_CONFIG } from '../lib/config.js';
 import { syncWithSIMBG, pushToSIMBG } from '../lib/simbg.js';
 import { getProjectPIC } from '../lib/team-service.js';
+import { getSimulasiSummary, loadSimulasi } from '../lib/simulation-engine.js';
+import { renderStrukturBangunanCard, initStrukturBangunanHandlers } from '../components/struktur-bangunan-module.js';
+import { renderElectricalSystemCard, initElectricalSystemHandlers, fetchElectricalSummary } from '../components/electrical-system-module.js';
 
 export async function proyekDetailPage(params = {}) {
   const id = params.id;
@@ -27,22 +30,24 @@ export async function proyekDetailPage(params = {}) {
     return '';
   }
 
-  const [checklistStats, analisisData, pic] = await Promise.all([
+  const [checklistStats, analisisData, pic, simulasiSummary, electricalSummary] = await Promise.all([
     fetchChecklistStats(id),
     fetchLastAnalisis(id),
     getProjectPIC(id),
+    getSimulasiSummary(id),
+    fetchElectricalSummary(id)
   ]);
 
-  const html = buildHtml(proyek, checklistStats, analisisData, pic);
+  const html = buildHtml(proyek, checklistStats, analisisData, pic, simulasiSummary, electricalSummary);
   if (root) {
     root.innerHTML = html;
-    initProyekDetailAfterRender(proyek, checklistStats, analisisData);
+    initProyekDetailAfterRender(proyek, checklistStats, analisisData, simulasiSummary);
   }
   return html;
 }
 
 // ── HTML Builder ─────────────────────────────────────────────
-function buildHtml(p, stats, analisis, pic) {
+function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSummary = {}) {
   const statusMap = {
     LAIK_FUNGSI:           { label: 'LAIK FUNGSI',       cls: 'badge-laik',       icon: 'fa-shield-check',   color: 'var(--success-400)' },
     LAIK_FUNGSI_BERSYARAT: { label: 'LAIK BERSYARAT',    cls: 'badge-bersyarat',  icon: 'fa-triangle-exclamation', color: 'var(--gold-400)' },
@@ -73,7 +78,7 @@ function buildHtml(p, stats, analisis, pic) {
          <div class="flex-between flex-stack" style="align-items:flex-start; position:relative; z-index:2; gap:var(--space-6)">
             <div style="flex:1">
                <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek')" style="margin-bottom:20px; color:var(--brand-300); padding:0; font-weight:700; letter-spacing:1px">
-                 <i class="fas fa-arrow-left" style="margin-right:8px"></i> SEMUA ASSET STRATEGIS
+                 <i class="fas fa-arrow-left" style="margin-right:8px"></i> KEMBALI LIST PROYEK
                </button>
                <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; color:white; letter-spacing:-0.03em; margin:0; line-height:1.1">
                  ${escHtml(p.nama_bangunan)}
@@ -176,6 +181,12 @@ function buildHtml(p, stats, analisis, pic) {
                 </div>
               </div>
             </div>
+
+            <!-- PEMERIKSAAN STRUKTUR BANGUNAN MODULE -->
+            ${renderStrukturBangunanCard(p, { tier1: stats.pct, tier2: 0, tier3: 0 })}
+
+            <!-- SISTEM KELISTRIKAN MODULE -->
+            ${renderElectricalSystemCard(p, electricalSummary)}
 
             <!-- Analisis Card -->
             <div class="card-quartz clickable" onclick="window.navigate('analisis',{id:'${p.id}'})" style="padding: var(--space-6)">
@@ -289,7 +300,7 @@ function buildHtml(p, stats, analisis, pic) {
 
           <!-- PIC Card -->
           <div class="card-quartz" style="padding: var(--space-6); border-left: 4px solid var(--brand-400)">
-            <div style="font-weight:800; font-size: 0.8rem; color:var(--brand-400); margin-bottom:16px; font-family:var(--font-mono); letter-spacing:1.5px">COMMANDING OFFICER</div>
+            <div style="font-weight:800; font-size: 0.8rem; color:var(--brand-400); margin-bottom:16px; font-family:var(--font-mono); letter-spacing:1.5px">PIC PENGKAJI</div>
             ${pic ? `
               <div style="display:flex; align-items:center; gap:16px">
                 <div style="width:56px; height:56px; border-radius:50%; background:var(--gradient-brand); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; border:2px solid hsla(220, 95%, 52%, 0.3)">
@@ -312,7 +323,7 @@ function buildHtml(p, stats, analisis, pic) {
 
           <!-- Ownership -->
           <div class="card-quartz" style="padding: var(--space-6)">
-            <div style="font-weight:800; font-size: 0.8rem; color:var(--gold-400); margin-bottom:16px; font-family:var(--font-mono); letter-spacing:1.5px">ASSET PROPRIETARY</div>
+            <div style="font-weight:800; font-size: 0.8rem; color:var(--gold-400); margin-bottom:16px; font-family:var(--font-mono); letter-spacing:1.5px">PEMILIK BANGUNAN</div>
             <div style="display:flex; flex-direction:column; gap:12px">
                <div style="display:flex; align-items:center; gap:12px">
                   <i class="fas fa-building-user" style="color:var(--text-tertiary); width:16px"></i>
@@ -348,6 +359,56 @@ function buildHtml(p, stats, analisis, pic) {
              </div>
 
              ${!p.simbg_email ? `<p style="font-size:9px; color:var(--text-tertiary); text-align:center; margin-top:12px"><i class="fas fa-shield-slash"></i> Credentials missing in manifest.</p>` : ''}
+          </div>
+
+          <!-- Engineering Simulation Card -->
+          <div class="card-quartz" style="padding: var(--space-6); background:hsla(45, 90%, 60%, 0.05); border-color:hsla(45, 90%, 60%, 0.2)">
+             <div class="flex-between" style="margin-bottom:20px">
+                <div style="display:flex; align-items:center; gap:12px">
+                   <i class="fas fa-flask" style="color:var(--gold-400)"></i>
+                   <div style="font-weight:800; font-size:0.85rem; color:white">ENGINEERING SIMULATION</div>
+                </div>
+                <div style="font-size:8px; font-family:var(--font-mono); color:var(--text-tertiary)">
+                   ${simulasiSummary.total_simulasi || 0} RUNS
+                </div>
+             </div>
+             
+             <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; margin-bottom:16px">
+                <div style="background:hsla(220, 20%, 100%, 0.03); padding:8px; border-radius:8px; text-align:center">
+                   <div style="font-size:1.2rem; font-weight:800; color:${simulasiSummary.sim_pencahayaan ? 'var(--success-400)' : 'var(--text-tertiary)'}">${simulasiSummary.sim_pencahayaan || 0}</div>
+                   <div style="font-size:9px; color:var(--text-tertiary)">Cahaya</div>
+                </div>
+                <div style="background:hsla(220, 20%, 100%, 0.03); padding:8px; border-radius:8px; text-align:center">
+                   <div style="font-size:1.2rem; font-weight:800; color:${simulasiSummary.sim_ventilasi ? 'var(--success-400)' : 'var(--text-tertiary)'}">${simulasiSummary.sim_ventilasi || 0}</div>
+                   <div style="font-size:9px; color:var(--text-tertiary)">Angin</div>
+                </div>
+                <div style="background:hsla(220, 20%, 100%, 0.03); padding:8px; border-radius:8px; text-align:center">
+                   <div style="font-size:1.2rem; font-weight:800; color:${simulasiSummary.sim_evakuasi ? 'var(--success-400)' : 'var(--text-tertiary)'}">${simulasiSummary.sim_evakuasi || 0}</div>
+                   <div style="font-size:9px; color:var(--text-tertiary)">Evakuasi</div>
+                </div>
+                <div style="background:hsla(220, 20%, 100%, 0.03); padding:8px; border-radius:8px; text-align:center">
+                   <div style="font-size:1.2rem; font-weight:800; color:${simulasiSummary.sim_ndt ? 'var(--success-400)' : 'var(--text-tertiary)'}">${simulasiSummary.sim_ndt || 0}</div>
+                   <div style="font-size:9px; color:var(--text-tertiary)">NDT</div>
+                </div>
+             </div>
+
+             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px">
+                <button class="btn-presidential gold" style="width:100%; height:44px; border-radius:12px; font-size:10px" onclick="window._openSimulationModal('${p.id}')">
+                   <i class="fas fa-play" style="margin-right:8px"></i> RUN NEW
+                </button>
+                <button class="btn btn-outline" style="width:100%; height:44px; border-radius:12px; font-size:10px; border-color:hsla(45, 90%, 60%, 0.2); color:white" onclick="window._viewSimulationHistory('${p.id}')">
+                   <i class="fas fa-history" style="margin-right:8px"></i> HISTORY
+                </button>
+             </div>
+
+             ${simulasiSummary.avg_skor_kelayakan ? `
+                <div style="margin-top:16px; padding-top:16px; border-top:1px solid hsla(220, 20%, 100%, 0.05)">
+                   <div style="font-size:9px; color:var(--text-tertiary); margin-bottom:4px">AVG KELAYAKAN</div>
+                   <div style="font-size:1.5rem; font-weight:800; color:${simulasiSummary.avg_skor_kelayakan >= 70 ? 'var(--success-400)' : simulasiSummary.avg_skor_kelayakan >= 50 ? 'var(--warning-400)' : 'var(--danger-400)'}">
+                      ${Math.round(simulasiSummary.avg_skor_kelayakan)}%
+                   </div>
+                </div>
+             ` : ''}
           </div>
 
           <!-- SIMBG PROGRESS OVERLAY -->
@@ -386,13 +447,19 @@ function buildHtml(p, stats, analisis, pic) {
 }
 
 // ── After Render Logic ──────────────────────────────────────────
-function initProyekDetailAfterRender(p, stats, analisis) {
+function initProyekDetailAfterRender(p, stats, analisis, simulasiSummary = {}, electricalSummary = {}) {
   // Initialize Radar Chart
   initProjectRadar(analisis);
 
   // Fetch Logs & Versions
   renderAuditTrail(p.id);
   renderReportVersions(p.id);
+
+  // Initialize Struktur Bangunan Module
+  initStrukturBangunanHandlers(p.id);
+
+  // Initialize Electrical System Module
+  initElectricalSystemHandlers(p.id, electricalSummary);
 
   // Tab Switcher
   window._switchAuditTab = (type) => {
@@ -577,6 +644,86 @@ window._hapusProyek = async (id) => {
       }
     };
   }
+
+  // ============================================================
+  //  SIMULATION HANDLERS
+  //  Integrasi simulasi engineering per proyek
+  // ============================================================
+  
+  window._openSimulationModal = (proyekId) => {
+    navigate('simulation', { proyekId, mode: 'project' });
+  };
+
+  window._viewSimulationHistory = async (proyekId) => {
+    const { openModal, closeModal } = await import('../components/modal.js');
+    const { loadSimulasi } = await import('../lib/simulation-engine.js');
+    
+    showInfo('Memuat history simulasi...');
+    
+    try {
+      const simulations = await loadSimulasi(proyekId);
+      
+      const typeLabels = {
+        'pencahayaan': '<i class="fas fa-sun"></i> Pencahayaan',
+        'ventilasi': '<i class="fas fa-wind"></i> Ventilasi',
+        'evakuasi': '<i class="fas fa-running"></i> Evakuasi',
+        'ndt_rebound': '<i class="fas fa-hammer"></i> NDT Rebound',
+        'ndt_upv': '<i class="fas fa-wave-square"></i> NDT UPV'
+      };
+      
+      const listHtml = simulations.length === 0 
+        ? '<p style="text-align:center; padding:40px; color:var(--text-tertiary)">Belum ada simulasi yang dijalankan.</p>'
+        : simulations.map(sim => {
+            const date = new Date(sim.created_at).toLocaleString('id-ID', { 
+              day: 'numeric', month: 'short', year: 'numeric',
+              hour: '2-digit', minute: '2-digit'
+            });
+            const skor = sim.skor_kelayakan || 0;
+            const skorColor = skor >= 70 ? 'var(--success-400)' : skor >= 50 ? 'var(--warning-400)' : 'var(--danger-400)';
+            
+            return `
+              <div style="background:hsla(220, 20%, 100%, 0.02); padding:16px; border-radius:12px; border:1px solid hsla(220, 20%, 100%, 0.05); margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                  <div>
+                    <div style="font-weight:800; font-size:0.85rem; color:white; margin-bottom:4px;">${typeLabels[sim.tipe_simulasi] || sim.tipe_simulasi}</div>
+                    <div style="font-size:0.7rem; color:var(--text-tertiary);">${date}</div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-size:1.5rem; font-weight:800; color:${skorColor};">${skor}%</div>
+                    <div style="font-size:0.65rem; color:var(--text-tertiary);">KELAYAKAN</div>
+                  </div>
+                </div>
+                ${sim.rekomendasi && sim.rekomendasi.length > 0 ? `
+                  <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:8px; padding-top:8px; border-top:1px solid hsla(220, 20%, 100%, 0.05);">
+                    <i class="fas fa-lightbulb" style="color:var(--gold-400); margin-right:6px;"></i>
+                    ${sim.rekomendasi[0]}
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('');
+      
+      openModal({
+        title: 'SIMULATION HISTORY',
+        body: `
+          <div style="max-height:500px; overflow-y:auto; padding:4px;">
+            ${listHtml}
+          </div>
+        `,
+        footer: `
+          <button class="btn btn-ghost" onclick="closeModal()">Tutup</button>
+          <button class="btn btn-primary" onclick="window._openSimulationModal('${proyekId}'); closeModal();">
+            <i class="fas fa-play"></i> Jalankan Simulasi Baru
+          </button>
+        `
+      });
+      
+      document.querySelector('.modal-footer button.btn-ghost').onclick = closeModal;
+      
+    } catch (err) {
+      showError('Gagal memuat history: ' + err.message);
+    }
+  };
 }
 
 function initProjectRadar(analisis) {

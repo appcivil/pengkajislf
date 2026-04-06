@@ -59,7 +59,7 @@ export function renderBab1(proyek) {
   return [
     heading1('BAB I: GAMBARAN UMUM'),
     bodyText(
-      'Bab ini menyajikan gambaran umum objek kajian sebagai dasar penyusunan pemeriksaan teknis bangunan gedung. Uraian meliputi latar belakang, tujuan, ruang lingkup, dasar hukum dan rujukan teknis, data umum bangunan, lokasi bangunan, dan kondisi awal eksisting yang menjadi dasar analisis pada bab-bab berikutnya.'
+      'Bab ini menyajikan gambaran umum objek kajian sebagai dasar penyusunan pemeriksaan teknis bangunan gedung. Uraian meliputi latar belakang, tujuan, ruang lingkup, dasar hukum dan rujukan teknis, data umum bangunan, TITIK KOORDINAT BG, dan kondisi awal eksisting yang menjadi dasar analisis pada bab-bab berikutnya.'
     ),
 
     heading2('1.1. Latar Belakang'),
@@ -224,14 +224,14 @@ export function renderBab1(proyek) {
       `Bangunan yang menjadi objek kajian berlokasi pada koordinat geografis ${safeText(coordText)}. Penentuan koordinat ini dilakukan untuk memastikan akurasi posisi bangunan terhadap konteks lingkungan sekitar, aksesibilitas kawasan, serta keterkaitan dengan tata ruang wilayah.`
     ),
     bodyText(
-      'Visualisasi lokasi bangunan ditampilkan menggunakan citra satelit untuk memberikan gambaran kondisi eksisting tapak, lingkungan sekitar, serta hubungan spasial dengan infrastruktur di sekitarnya.'
+      'Visualisasi TITIK KOORDINAT BG ditampilkan menggunakan citra satelit untuk memberikan gambaran kondisi eksisting tapak, lingkungan sekitar, serta hubungan spasial dengan infrastruktur di sekitarnya.'
     ),
 
     proyek.maps_screenshot
       ? new Paragraph({
         children: [
           new TextRun({
-            text: 'Gambar 1.1. Lokasi Bangunan (Citra Satelit)',
+            text: 'Gambar 1.1. TITIK KOORDINAT BG (Citra Satelit)',
             italics: true,
             size: FONT_SIZE_CAPTION,
           }),

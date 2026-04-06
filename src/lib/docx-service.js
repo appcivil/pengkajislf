@@ -17,6 +17,8 @@ import { renderBab3 } from './docx/outline-bab3.js';
 import { renderBab4 } from './docx/outline-bab4.js';
 import { renderBab5 } from './docx/outline-bab5.js';
 import { renderBab6 } from './docx/outline-bab6.js';
+import { renderElectricalSystemSection } from './docx/outline-electrical.js';
+import { renderStrukturBangunanSection } from './docx/outline-struktur.js';
 import { renderExpertTeam, renderLampiranA, renderLampiranB } from './docx/outline-lampiran.js';
 
 export async function generateDocx(proyek, analisis, checklist, onProgress) {
@@ -27,7 +29,7 @@ export async function generateDocx(proyek, analisis, checklist, onProgress) {
   return fileName;
 }
 
-export async function generateDocxBlob(proyek, analisis, checklist, onProgress) {
+export async function generateDocxBlob(proyek, analisis, checklist, onProgress, electricalData = null, strukturData = null) {
   if (onProgress) onProgress(5, 'Cek ketersediaan template kustom...');
   
   const settings = await getSettings();
@@ -180,6 +182,12 @@ export async function generateDocxBlob(proyek, analisis, checklist, onProgress) 
 
           // BAB IV
           ...renderBab4(checklist, proyek),
+
+          // STRUKTUR BANGUNAN SECTION
+          ...(strukturData ? renderStrukturBangunanSection(strukturData) : []),
+
+          // ELECTRICAL SYSTEM SECTION
+          ...(electricalData ? renderElectricalSystemSection(electricalData) : []),
 
           // BAB V
           ...renderBab5(checklist, proyek),
