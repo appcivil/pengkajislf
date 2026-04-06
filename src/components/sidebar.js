@@ -29,6 +29,7 @@ const PROJECT_NAV = [
   { path: 'files',         label: 'Dokumen SIMBG',      icon: 'fa-folder-open' },
   { path: 'checklist',     label: 'Checklist Teknis',  icon: 'fa-clipboard-check' },
   { path: 'kondisi',       label: 'Pemeriksaan Kondisi', icon: 'fa-building-circle-exclamation' },
+  { path: 'electrical-inspection', label: 'Sistem Kelistrikan', icon: 'fa-bolt', badge: 'PUIL 2020' },
   { path: 'galeri',        label: 'Galeri Visual',     icon: 'fa-images' },
   { path: 'analisis',      label: 'Analisis Smart AI', icon: 'fa-brain', badge: 'Active' },
   { path: 'laporan',       label: 'Laporan Final SLF', icon: 'fa-file-contract' },

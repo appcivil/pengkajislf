@@ -74,7 +74,7 @@ export const DEEP_REASONING_HOOKS = {
                 enrichmentTasks: [
                     {
                         task: "Identifikasi Zona Gempa",
-                        source: "Lokasi bangunan",
+                        source: "TITIK KOORDINAT BG",
                         action: "Retrieve data SNI 1726:2019 untuk zona gempa",
                         output: "Zona gempa, parameter gempa, faktor kecepatan"
                     },
