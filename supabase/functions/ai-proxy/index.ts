@@ -61,14 +61,26 @@ serve(async (req: Request) => {
           parts.push({ inlineData: { mimeType, data: base64Data } });
         }
 
+        // Determine which Gemini model to use based on request
+        // Flash: text/narrative, fast, cost-effective
+        // Pro: vision, complex reasoning, long context
+        const isVisionRequest = !!base64Data;
+        const modelToUse = isVisionRequest 
+          ? (model || "gemini-2.5-pro-exp-03-25") // Default to Pro for vision
+          : (model || "gemini-2.0-flash"); // Default to Flash for text
+
         const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${GEMINI_KEY}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               contents: [{ parts }],
-              generationConfig: { temperature: 0.1, maxOutputTokens: maxTokens },
+              generationConfig: { 
+                temperature: 0.1, 
+                maxOutputTokens: maxTokens,
+                ...(isVisionRequest ? {} : { topP: 0.95 }) // Flash optimized params
+              },
             }),
           }
         );
