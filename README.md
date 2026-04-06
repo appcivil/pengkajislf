@@ -20,8 +20,10 @@
 
 ## Fitur Utama v3.0 Professional
 - 🧠 **Forensic AI Engine**: Analisis 6-langkah (Identifikasi s/d Rekomendasi).
-- 🏗️ **Multi-Disciplinary Experts**: Konsorsium AI Arsitektur, Struktur, dan MEP.
-- 📄 **Executive Report Synthesis**: Laporan 6-bab dengan desain cover premium.
+- 🏗️ **Multi-Disciplinary Experts**: Konsorsium AI Arsitektur, Struktur, MEP, dan Kelistrikan.
+- 🔌 **Sistem Kelistrikan PUIL 2020**: Inspeksi panel, thermal imaging, proteksi, dan compliance.
+- 🏛️ **Struktur Bangunan ASCE 41-17**: Evaluasi tier, NDT testing (Rebound/UPV), analisis seismik.
+- 📄 **Executive Report Synthesis**: Laporan 6-bab dengan integrasi data Struktur & Kelistrikan.
 - 🛡️ **Security Hardened (Supabase v15.0)**: RLS ketat dan audit trail.
 - ☁️ **Cloud Sync Integration**: Sinkronisasi otomatis dengan Google Docs & Drive.
 *   **SNI 9273:2025**: Standar nasional terbaru untuk Evaluasi Bangunan Gedung Eksisting.
@@ -51,9 +53,33 @@ Integrasi dengan **Google Apps Script (GAS)** memungkinkan unggahan file foto da
 ### 5. 📑 Professional Word Reporting & Synthesis
 Mengompilasi temuan dari ratusan titik sampel menjadi draf **BAB IV – ANALISIS DAN EVALUASI** otomatis. Laporan dihasilkan dalam format `.docx` profesional lengkap dengan matriks risiko dan rekomendasi perbaikan teknis.
 
+### 6. ⚡ Sistem Kelistrikan (PUIL 2020 / SNI / IEC)
+Modul inspeksi sistem kelistrikan dengan fitur lengkap:
+*   **Panel Management**: Registrasi MDB, SMDB, DB dengan spesifikasi lengkap.
+*   **Load Analysis**: Analisis pembebanan real-time dengan status Safe/Warning/Overload.
+*   **Thermal Imaging**: Upload & analisis gambar inframerah untuk deteksi hotspot.
+*   **Protection Coordination**: Verifikasi koordinasi proteksi MCB/MCCB.
+*   **Data Logger Import**: Import CSV/Excel dari power meter otomatis.
+*   **Simulasi**: MCB Upgrade, Load Transfer, dan Cable Sizing.
+*   **Compliance Check**: Validasi terhadap PUIL 2020, SNI 0225:2011, IEC 60364.
+
+### 7. 🏛️ Struktur Bangunan (ASCE 41-17 / SNI 1726:2019)
+Evaluasi ketahanan gempa dan kondisi struktur:
+*   **ASCE 41-17 Tier Evaluation**: Tier 1 (Screening), Tier 2 (Evaluation), Tier 3 (Detailed).
+*   **NDT Testing**: Rebound Hammer Test (ASTM C805) & UPV Test (ASTM C597).
+*   **Seismic Analysis**: Perhitungan parameter seismik SNI 1726:2019.
+*   **Pushover Analysis**: Analisis performa gempa non-linear.
+*   **Material Strength**: Evaluasi kekuatan beton hasil uji NDT.
+
+### 8. � Laporan DOCX Terintegrasi
+Laporan kajian SLF kini mencakup:
+*   **BAB 3.5**: Pemeriksaan Struktur Bangunan (hasil NDT, tier evaluation, rekomendasi).
+*   **BAB 3.6**: Pemeriksaan Sistem Kelistrikan (status panel, thermal, proteksi).
+*   Template-based generation dengan data real-time dari database.
+
 ---
 
-## 🛠️ Stack Teknologi
+## �🛠️ Stack Teknologi
 
 *   **Runtime**: [Vite](https://vitejs.dev/) & Vanilla JavaScript (ESM).
 *   **Persistence**: [Supabase](https://supabase.com/) (PostgreSQL & RLS Policy).
@@ -67,13 +93,17 @@ Mengompilasi temuan dari ratusan titik sampel menjadi draf **BAB IV – ANALISIS
 ```text
 ├── gas/                 # Google Apps Script (Drive Proxy & PDF Generator)
 ├── src/
-│   ├── lib/             # Logic (AI Router, Supabase, Prompt Library)
-│   ├── pages/           # Page Controller (Checklist, Dashboard, Auth)
+│   ├── components/      # UI Components (Electrical, Struktur, Checklist)
+│   ├── lib/             # Logic (AI Router, Supabase, DOCX Generator, Electrical Calc)
+│   ├── pages/           # Page Controller (Checklist, Dashboard, Electrical, Struktur)
 │   ├── styles/          # Design System (Yellow Block Forensic CSS)
 │   └── main.js          # Entry Point Aplikasi
 ├── public/              # Assets & Favicon
+├── supabase/            # Edge Functions & SQL Migrations
+│   └── functions/
 ├── .env.example         # Template Konfigurasi Environment
-└── supabase_schema.sql  # Skema Database PostgreSQL
+├── supabase_schema.sql  # Skema Database PostgreSQL
+└── supabase_electrical_tables.sql  # Skema Tabel Electrical Inspection
 ```
 
 ---

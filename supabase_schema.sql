@@ -392,5 +392,125 @@ CREATE OR REPLACE TRIGGER trg_profiles_updated_at
 
 
 -- ===========================================================
+-- TABEL: hasil_simulasi (Fitur Simulasi Engineering per Proyek)
+-- Menyimpan hasil simulasi pencahayaan, ventilasi, evakuasi, NDT
+-- ===========================================================
+CREATE TABLE IF NOT EXISTS public.hasil_simulasi (
+  id              uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  proyek_id       uuid NOT NULL REFERENCES public.proyek(id) ON DELETE CASCADE,
+  created_by      uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  
+  -- Jenis Simulasi
+  tipe_simulasi   text NOT NULL CHECK (tipe_simulasi IN (
+    'pencahayaan', 'ventilasi', 'evakuasi', 'ndt_rebound', 'ndt_upv'
+  )),
+  
+  -- Input Parameters (JSON)
+  input_params    jsonb NOT NULL DEFAULT '{}',
+  
+  -- Hasil Simulasi (JSON)
+  hasil           jsonb NOT NULL DEFAULT '{}',
+  
+  -- Summary Metrics
+  skor_kelayakan  integer,  -- 0-100
+  status          text DEFAULT 'draft' CHECK (status IN ('draft', 'final', 'archived')),
+  
+  -- Compliance & Rekomendasi
+  compliance      jsonb DEFAULT '{}',
+  rekomendasi     text[],
+  
+  -- Metadata
+  created_at      timestamptz DEFAULT now(),
+  updated_at      timestamptz DEFAULT now()
+);
+
+-- RLS Policies - hasil_simulasi
+ALTER TABLE public.hasil_simulasi ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Authenticated users can manage simulasi for their projects"
+  ON public.hasil_simulasi FOR ALL
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+
+-- Index untuk hasil_simulasi
+CREATE INDEX IF NOT EXISTS idx_simulasi_proyek ON public.hasil_simulasi(proyek_id);
+CREATE INDEX IF NOT EXISTS idx_simulasi_tipe ON public.hasil_simulasi(tipe_simulasi);
+CREATE INDEX IF NOT EXISTS idx_simulasi_status ON public.hasil_simulasi(status);
+
+-- Trigger updated_at
+CREATE OR REPLACE TRIGGER trg_hasil_simulasi_updated_at
+  BEFORE UPDATE ON public.hasil_simulasi
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+-- ===========================================================
+-- VIEW: simulasi_summary (Aggregated view per proyek)
+-- ===========================================================
+CREATE OR REPLACE VIEW public.simulasi_summary AS
+SELECT 
+  proyek_id,
+  COUNT(*) as total_simulasi,
+  COUNT(*) FILTER (WHERE tipe_simulasi = 'pencahayaan') as sim_pencahayaan,
+  COUNT(*) FILTER (WHERE tipe_simulasi = 'ventilasi') as sim_ventilasi,
+  COUNT(*) FILTER (WHERE tipe_simulasi = 'evakuasi') as sim_evakuasi,
+  COUNT(*) FILTER (WHERE tipe_simulasi IN ('ndt_rebound', 'ndt_upv')) as sim_ndt,
+  AVG(skor_kelayakan) as avg_skor_kelayakan,
+  MAX(created_at) as last_simulasi_at
+FROM public.hasil_simulasi
+GROUP BY proyek_id;
+
+-- ===========================================================
+-- TABEL: field_test_data - Data pengujian lapangan (Excel, PDF, CSV, CAD)
+-- ===========================================================
+CREATE TABLE IF NOT EXISTS public.field_test_data (
+  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  proyek_id uuid NOT NULL REFERENCES public.proyek(id) ON DELETE CASCADE,
+  tipe_pengujian text NOT NULL CHECK (tipe_pengujian IN ('pencahayaan', 'ventilasi', 'evakuasi', 'ndt_rebound', 'ndt_upv', 'unknown')),
+  source_filename text NOT NULL,
+  source_format text NOT NULL CHECK (source_format IN ('excel', 'csv', 'pdf', 'dwg', 'rvt', 'unknown')),
+  raw_data jsonb NOT NULL DEFAULT '{}',
+  parsed_params jsonb DEFAULT '{}',
+  storage_url text,
+  storage_path text,
+  imported_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  imported_at timestamptz DEFAULT now(),
+  notes text,
+  linked_simulasi_id uuid REFERENCES public.hasil_simulasi(id) ON DELETE SET NULL
+);
+
+-- Enable RLS
+ALTER TABLE public.field_test_data ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policy: Users can only access their own project field data
+CREATE POLICY "Field data access policy" ON public.field_test_data
+  FOR ALL USING (
+    auth.uid() IN (
+      SELECT created_by FROM public.proyek WHERE id = proyek_id
+    ) OR auth.uid() IN (
+      SELECT user_id FROM public.proyek_access WHERE proyek_id = proyek_id
+    )
+  );
+
+-- Index untuk pencarian cepat
+CREATE INDEX IF NOT EXISTS idx_field_test_proyek ON public.field_test_data(proyek_id);
+CREATE INDEX IF NOT EXISTS idx_field_test_tipe ON public.field_test_data(tipe_pengujian);
+CREATE INDEX IF NOT EXISTS idx_field_test_imported_at ON public.field_test_data(imported_at);
+
+-- View untuk summary field data per proyek
+CREATE OR REPLACE VIEW public.field_test_summary AS
+SELECT 
+  proyek_id,
+  COUNT(*) as total_imports,
+  COUNT(*) FILTER (WHERE tipe_pengujian = 'pencahayaan') as import_pencahayaan,
+  COUNT(*) FILTER (WHERE tipe_pengujian = 'ventilasi') as import_ventilasi,
+  COUNT(*) FILTER (WHERE tipe_pengujian = 'evakuasi') as import_evakuasi,
+  COUNT(*) FILTER (WHERE tipe_pengujian IN ('ndt_rebound', 'ndt_upv')) as import_ndt,
+  array_agg(DISTINCT source_format) as available_formats,
+  MAX(imported_at) as last_import_at
+FROM public.field_test_data
+GROUP BY proyek_id;
+
+-- ===========================================================
 -- SELESAI: Semua tabel berhasil disiapkan!
 -- ===========================================================
