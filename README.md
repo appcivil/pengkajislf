@@ -1,109 +1,190 @@
 <div align="center">
-  <img src="/smartaipengkaji/favicon.svg" width="80" height="80" alt="Logo" />
+  <img src="./favicon.svg" width="80" height="80" alt="Logo" />
   <h1>🏢 Smart AI Pengkaji SLF</h1>
   <p><strong>Sistem Pakar Berbasis AI untuk Audit Forensik & Pengkajian Teknis Sertifikat Laik Fungsi (SLF) Bangunan Gedung</strong></p>
   
   <p>
-    <img src="https://img.shields.io/badge/Version-1.1.0-blue?style=for-the-badge" alt="Version" />
+    <img src="https://img.shields.io/badge/Version-2.1.0-blue?style=for-the-badge" alt="Version" />
     <img src="https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E" alt="Vite" />
     <img src="https://img.shields.io/badge/Mistral_AI-FF6300?style=for-the-badge&logo=mistral&logoColor=black" alt="Mistral AI" />
     <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
-    <img src="https://img.shields.io/badge/Forensic_1:1-000000?style=for-the-badge&logo=pdf&logoColor=white" alt="Forensic 1:1" />
+    <img src="https://img.shields.io/badge/Three.js-000000?style=for-the-badge&logo=three.js&logoColor=white" alt="Three.js" />
+    <img src="https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="TensorFlow" />
   </p>
 </div>
 
 ---
 
-## 📖 Deskripsi# Smart AI Pengkaji SLF (v3.0 Professional)
+## 📖 Deskripsi
 
-**Smart AI Pengkaji SLF** adalah platform *forensic engineering* berbasis AI yang dirancang untuk mengotomatisasi proses pengkajian teknis Bangunan Gedung (SLF) di Indonesia. Sistem ini menggabungkan kecerdasan buatan multi-agent dengan standar regulasi **PP No. 16 Tahun 2021 (NSPK PUPR)** untuk menghasilkan laporan kajian yang audit-ready, komprehensif, dan profesional.
+**Smart AI Pengkaji SLF** adalah platform *forensic engineering* berbasis AI yang dirancang untuk mengotomatisasi proses pengkajian teknis Bangunan Gedung (SLF) di Indonesia sesuai **PP No. 16 Tahun 2021 (NSPK PUPR)** dan standar terkini.
 
-## Fitur Utama v3.0 Professional
-- 🧠 **Forensic AI Engine**: Analisis 6-langkah (Identifikasi s/d Rekomendasi).
-- 🏗️ **Multi-Disciplinary Experts**: Konsorsium AI Arsitektur, Struktur, MEP, dan Kelistrikan.
-- 🔌 **Sistem Kelistrikan PUIL 2020**: Inspeksi panel, thermal imaging, proteksi, dan compliance.
-- 🏛️ **Struktur Bangunan ASCE 41-17**: Evaluasi tier, NDT testing (Rebound/UPV), analisis seismik.
-- 📄 **Executive Report Synthesis**: Laporan 6-bab dengan integrasi data Struktur & Kelistrikan.
-- 🛡️ **Security Hardened (Supabase v15.0)**: RLS ketat dan audit trail.
-- ☁️ **Cloud Sync Integration**: Sinkronisasi otomatis dengan Google Docs & Drive.
-*   **SNI 9273:2025**: Standar nasional terbaru untuk Evaluasi Bangunan Gedung Eksisting.
-*   **Standar PUPR**: Format Daftar Simak Forensik 1:1 dan logika skoring kerusakan I - V.
+### Standar Regulasi yang Diimplementasikan
 
----
-
-## ✨ Fitur Unggulan Terbaru
-
-### 1. 🧠 Multi-Model AI Router (Mistral AI Integrated)
-Sistem cerdas `ai-router.js` kini mendukung **Mistral AI** (Mistral Large & Pixtral) sebagai tenaga ahli tambahan. Dilengkapi jalur failover otomatis:
-*   **Primary**: Google Gemini 2.0 & Mistral Large.
-*   **Alternative**: OpenAI GPT-4o & Claude 3.5 Sonnet.
-*   **Vision**: Pixtral 12B & Gemini Vision untuk deteksi kerusakan visual.
-
-### 2. 🗂️ Multi-Sample Point Inspection
-Mendukung inspeksi banyak titik dalam satu parameter pemeriksaan (misal: Ruang Kelas 1, 2, 3...). Fitur5.  **Audit Laporan**: Sistem akan menyintesis Bab IV menggunakan 6-Step Forensic Logic.
-6.  **Finalisasi**: Tanda tangani secara digital dan simpan versi PDF/Word.
-tetap terorganisir.
-
-### 3. 🎨 Yellow Block Forensic UI (Standard PUPR 1:1)
-Antarmuka pada tab "Daftar Simak" didesain identik dengan formulir fisik audit forensik PUPR. Menggunakan sistem blok kontras tinggi (Yellow Block) untuk meminimalkan kesalahan input dan memudahkan verifikasi visual.
-
-### 4. ☁️ Google Drive Proxy Storage
-Integrasi dengan **Google Apps Script (GAS)** memungkinkan unggahan file foto dan PDF audit berukuran besar langsung ke Google Drive Proyek, menjaga database Supabase tetap ringan dan file mudah diakses secara kolaboratif.
-
-### 5. 📑 Professional Word Reporting & Synthesis
-Mengompilasi temuan dari ratusan titik sampel menjadi draf **BAB IV – ANALISIS DAN EVALUASI** otomatis. Laporan dihasilkan dalam format `.docx` profesional lengkap dengan matriks risiko dan rekomendasi perbaikan teknis.
-
-### 6. ⚡ Sistem Kelistrikan (PUIL 2020 / SNI / IEC)
-Modul inspeksi sistem kelistrikan dengan fitur lengkap:
-*   **Panel Management**: Registrasi MDB, SMDB, DB dengan spesifikasi lengkap.
-*   **Load Analysis**: Analisis pembebanan real-time dengan status Safe/Warning/Overload.
-*   **Thermal Imaging**: Upload & analisis gambar inframerah untuk deteksi hotspot.
-*   **Protection Coordination**: Verifikasi koordinasi proteksi MCB/MCCB.
-*   **Data Logger Import**: Import CSV/Excel dari power meter otomatis.
-*   **Simulasi**: MCB Upgrade, Load Transfer, dan Cable Sizing.
-*   **Compliance Check**: Validasi terhadap PUIL 2020, SNI 0225:2011, IEC 60364.
-
-### 7. 🏛️ Struktur Bangunan (ASCE 41-17 / SNI 1726:2019)
-Evaluasi ketahanan gempa dan kondisi struktur:
-*   **ASCE 41-17 Tier Evaluation**: Tier 1 (Screening), Tier 2 (Evaluation), Tier 3 (Detailed).
-*   **NDT Testing**: Rebound Hammer Test (ASTM C805) & UPV Test (ASTM C597).
-*   **Seismic Analysis**: Perhitungan parameter seismik SNI 1726:2019.
-*   **Pushover Analysis**: Analisis performa gempa non-linear.
-*   **Material Strength**: Evaluasi kekuatan beton hasil uji NDT.
-
-### 8. � Laporan DOCX Terintegrasi
-Laporan kajian SLF kini mencakup:
-*   **BAB 3.5**: Pemeriksaan Struktur Bangunan (hasil NDT, tier evaluation, rekomendasi).
-*   **BAB 3.6**: Pemeriksaan Sistem Kelistrikan (status panel, thermal, proteksi).
-*   Template-based generation dengan data real-time dari database.
+| Standar | Deskripsi |
+|---------|-----------|
+| **PP No. 16/2021** | NSPK PUPR - Persyaratan Sertifikat Laik Fungsi |
+| **SNI 1726:2019** | Tata cara perencanaan ketahanan gempa |
+| **SNI 6197:2011** | Penerangan alami pada bangunan gedung |
+| **PUIL 2020** | Persyaratan umum instalasi listrik |
+| **ASCE 41-17** | Seismic Evaluation and Retrofit of Existing Buildings |
+| **SNI 8131:2015** | Aksesibilitas pada bangunan gedung |
 
 ---
 
-## �🛠️ Stack Teknologi
+## ✨ Modul Pengkajian Lengkap (12 Aspek SLF)
 
-*   **Runtime**: [Vite](https://vitejs.dev/) & Vanilla JavaScript (ESM).
-*   **Persistence**: [Supabase](https://supabase.com/) (PostgreSQL & RLS Policy).
-*   **Storage Proxy**: [Google Apps Script](https://developers.google.com/apps-script).
-*   **LLM Providers**: Gemini API, Mistral API, OpenAI API, Anthropic API, Hugging Face.
+### 🏛️ 1. Arsitektur
+- Kesesuaian rencana tapak
+- Intensitas bangunan (KDB, KLB, KDH)
+- Jalur evakuasi dan keluar
+- Persyaratan arsitektural
+
+### �️ 2. Struktur Bangunan
+- **ASCE 41-17 Tier Evaluation**: Tier 1 (Screening), Tier 2 (Evaluation), Tier 3 (Detailed)
+- **NDT Testing**: Rebound Hammer Test (ASTM C805) & UPV Test (ASTM C597)
+- **Seismic Analysis**: Perhitungan parameter seismik SNI 1726:2019
+- **ETABS Integration**: Import dan analisis model struktur
+- **Pushover Analysis**: Analisis performa gempa non-linear
+
+### 🔌 3. Sistem Kelistrikan
+- Panel Management (MDB, SMDB, DB)
+- Load Analysis real-time (Safe/Warning/Overload)
+- Thermal Imaging untuk deteksi hotspot
+- Protection Coordination (MCB/MCCB)
+- Data Logger Import (CSV/Excel)
+- Simulasi: MCB Upgrade, Load Transfer, Cable Sizing
+
+### 🔥 4. Proteksi Kebakaran
+- Klasifikasi bahaya kebakaran
+- Sistem deteksi dan alarm
+- Sistem sprinkler dan hidran
+- Perhitungan egress capacity
+- Kompartementasi
+
+### ⚡ 5. Proteksi Petir
+- Risk assessment SNI 2848:2020
+- External LPS (air terminal, down conductor)
+- Internal LPS
+- Surge Protection Device (SPD)
+
+### 💧 6. Sistem Air Bersih
+- Perhitungan kebutuhan air
+- Sumber air dan distribusi
+- Kapasitas tangki penyimpanan
+- Tekanan dan debit
+
+### 🚿 7. Sistem Air Kotor & Sanitasi
+- Sistem pembuangan air limbah
+- Ventilasi plumbing
+- Perhitungan unit plumbing fixture
+
+### ♿ 8. Aspek Kemudahan (Aksesibilitas)
+- Ramp dan kemiringan (SNI 8131:2015)
+- Lebar tangga, koridor, pintu
+- Fasilitas difabel
+- Elevator dan eskalator
+
+### 🌡️ 9. Aspek Kenyamanan
+- Pencahayaan alami dan buatan
+- Penghawaan alami
+- Suhu dan kelembaban
+- Kebisingan (dB)
+
+### 🌧️ 10. Pengelolaan Air Hujan
+- Drainase permukaan
+- Sistem resapan
+- Sistem detensi/retensi
+- Perhitungan runoff
+
+### 🌍 11. Pengendalian Dampak Lingkungan
+- Dampak udara, air, tanah
+- Kebisingan lingkungan
+- Manajemen sampah
+
+### 🌊 12. Mitigasi Bencana
+- Analisis risiko gempa (INARisk integration)
+- Peta bahaya bencana
+- Rencana mitigasi
 
 ---
 
-## 📂 Struktur Direktori Utama
+## 🧠 Fitur AI & Smart Engine
 
-```text
-├── gas/                 # Google Apps Script (Drive Proxy & PDF Generator)
-├── src/
-│   ├── components/      # UI Components (Electrical, Struktur, Checklist)
-│   ├── lib/             # Logic (AI Router, Supabase, DOCX Generator, Electrical Calc)
-│   ├── pages/           # Page Controller (Checklist, Dashboard, Electrical, Struktur)
-│   ├── styles/          # Design System (Yellow Block Forensic CSS)
-│   └── main.js          # Entry Point Aplikasi
-├── public/              # Assets & Favicon
-├── supabase/            # Edge Functions & SQL Migrations
-│   └── functions/
-├── .env.example         # Template Konfigurasi Environment
-├── supabase_schema.sql  # Skema Database PostgreSQL
-└── supabase_electrical_tables.sql  # Skema Tabel Electrical Inspection
+### Multi-Model AI Router
+- **Primary**: Google Gemini 2.0, Mistral Large
+- **Alternative**: OpenAI GPT-4o, Claude 3.5 Sonnet
+- **Vision**: Pixtral 12B, Gemini Vision untuk deteksi kerusakan visual
+- **Failover**: Otomatis switch ke model alternatif jika primary gagal
+
+### SmartAI Pipeline
+- **Document Analysis**: OCR + AI untuk ekstraksi data dari PDF/DWG
+- **Image Analysis**: Deteksi kerusakan struktural dari foto
+- **Report Synthesis**: Auto-generate BAB IV - Analisis dan Evaluasi
+- **RAG Engine**: Retrieval Augmented Generation untuk referensi standar
+
+### Forensic 1:1 UI
+- Yellow Block design system (sesuai standar PUPR)
+- Multi-sample point inspection
+- Audit trail dan versioning
+
+---
+
+## 🛠️ Stack Teknologi
+
+| Kategori | Teknologi |
+|----------|-----------|
+| **Build Tool** | Vite 6.0 |
+| **Database** | Supabase (PostgreSQL + RLS) |
+| **3D Visualization** | Three.js |
+| **Machine Learning** | TensorFlow.js |
+| **AI/ML Models** | Transformers.js (Xenova) |
+| **Charts** | Chart.js |
+| **Document** | DOCX, DOCXTemplater, PizZip |
+| **PDF** | jsPDF, jsPDF-AutoTable |
+| **OCR** | Tesseract.js |
+| **Storage** | Google Apps Script (Drive Proxy) |
+| **DXF Parsing** | dxf-parser |
+| **State** | IDB (IndexedDB) |
+
+---
+
+## 📂 Struktur Proyek (Clean Architecture)
+
+```
+src/
+├── application/          # Use Cases & DTOs
+│   ├── dto/
+│   ├── mappers/
+│   └── use-cases/
+├── components/           # UI Components (30+ modul)
+│   ├── common/
+│   └── workspace/
+├── core/                 # Smart AI Core Engine
+│   └── smart-ai/
+├── domain/               # Entities & Business Rules
+│   ├── entities/
+│   └── errors/
+├── engine/               # Simulation Engines
+├── infrastructure/       # External Services
+│   ├── ai/
+│   ├── persistence/
+│   ├── pipeline/
+│   └── security/
+├── lib/                  # Utilities & Services (115+ file)
+│   ├── docx/
+│   ├── evacuation/
+│   ├── fire/
+│   └── archsim/
+├── modules/              # Domain Modules
+│   ├── disaster/
+│   ├── plumbing/
+│   └── stormwater/
+├── pages/                # Page Controllers (50+ halaman)
+│   └── laporan/
+├── services/             # Application Services
+├── styles/               # CSS Design System
+└── tests/                # Test Suite
 ```
 
 ---
@@ -113,37 +194,67 @@ Laporan kajian SLF kini mencakup:
 ### 1. Instalasi
 ```bash
 git clone https://github.com/bangPUPR/Pengkaji-smart-AI.git
+cd Pengkaji-smart-AI
 npm install
 ```
 
-### 2. Konfigurasi Environment (`.env`)
-Salin file `.env.example` menjadi `.env` dan lengkapi kredensial:
+### 2. Konfigurasi Environment
+Buat file `.env` di root:
 
 ```env
-# SUPABASE SETUP
+# Supabase
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
 
-# AI ENGINE API KEYS
+# AI Providers (minimal 1)
 VITE_GEMINI_API_KEY=...
 VITE_MISTRAL_API_KEY=...
 VITE_OPENAI_API_KEY=...
+VITE_CLAUDE_API_KEY=...
+VITE_OPENROUTER_API_KEY=...
 
-# DRIVE PROXY
-VITE_DRIVE_PROXY_URL=https://script.google.com/macros/s/.../exec
+# Google Integration
+VITE_GOOGLE_APPS_SCRIPT_URL=...
+VITE_GOOGLE_DOC_TEMPLATE_ID=...
+VITE_GCP_API_KEY=...
 ```
 
-### 3. Jalankan Aplikasi
+### 3. Jalankan Development
 ```bash
 npm run dev
 ```
 
+### 4. Build Production
+```bash
+npm run build
+```
+
+### 5. Deploy Google Apps Script
+```bash
+npm run deploy-gas
+```
+
+---
+
+## 🔄 CI/CD (GitHub Actions)
+
+Workflow otomatis saat push ke branch `main`:
+
+1. **Install dependencies**
+2. **Deploy Supabase Edge Functions** (AI Proxy)
+3. **Build aplikasi** (Vite)
+4. **Deploy ke GitHub Pages**
+
+Lihat `.github/workflows/deploy.yml` untuk detail.
+
 ---
 
 ## 📄 Lisensi & Disclaimer
-Sistem ini adalah alat bantu (*Expert Support System*). Seluruh output yang dihasilkan oleh AI tetap memerlukan validasi dan pengesahan akhir oleh **Insinyur Pengkaji Berlisensi**. 
+
+Sistem ini adalah alat bantu (*Expert Support System*). Seluruh output yang dihasilkan oleh AI tetap memerlukan validasi dan pengesahan akhir oleh **Insinyur Pengkaji Berlisensi**.
 
 ---
+
 <div align="center">
   <p>Dikembangkan oleh <strong>Tim Smart AI Pengkaji</strong></p>
   <p>&copy; 2026 - Forensic AI Building Audit System</p>
