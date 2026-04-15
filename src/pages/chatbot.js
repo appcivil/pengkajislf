@@ -511,13 +511,33 @@ const chatStyles = `
 }
 
 .typing-indicator {
-  opacity: 0.7;
+  opacity: 0.9;
+}
+
+.typing-indicator .message-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+}
+
+.typing-status {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #94a3b8);
+  font-style: italic;
+  margin-bottom: 0.25rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 
 .typing-dots {
   display: flex;
   gap: 0.25rem;
-  padding: 0.5rem 0;
+  padding: 0.25rem 0;
 }
 
 .typing-dots span {
@@ -663,12 +683,13 @@ export async function chatbotPage(params = {}) {
 function setupChatEventListeners(chatContainer) {
   // Send message
   document.addEventListener('chat-send-message', async (e) => {
-    const { sessionId, content, projectId, moduleContext, model, reasoningMode } = e.detail;
+    const { sessionId, content, attachments, projectId, moduleContext, model, reasoningMode } = e.detail;
 
     try {
       const request = new SendMessageRequest({
         sessionId,
         content,
+        attachments,
         options: {
           projectId,
           moduleContext,
@@ -707,22 +728,31 @@ function setupChatEventListeners(chatContainer) {
   // Create session
   document.addEventListener('chat-create-session', async (e) => {
     try {
-      const { projectId, moduleContext } = e.detail;
+      const { projectId, moduleContext, title } = e.detail;
       const request = {
-        title: 'Chat Baru',
+        title: title || 'Chat Baru',
         projectId,
         moduleContext
       };
 
       const session = await createSessionUseCase.execute(request);
-      
+
       chatContainer.setSession(session.id);
       chatContainer.loadMessages(session.messages);
-      
+
+      // Dispatch success event for listeners
+      document.dispatchEvent(new CustomEvent('chat-session-created', {
+        detail: { success: true, sessionId: session.id, session }
+      }));
+
       // Refresh session list
       refreshSessionList(chatContainer);
     } catch (error) {
       console.error('Error creating session:', error);
+      // Dispatch failure event
+      document.dispatchEvent(new CustomEvent('chat-session-created', {
+        detail: { success: false, error: error.message }
+      }));
     }
   });
 

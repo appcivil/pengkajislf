@@ -25,6 +25,7 @@ import { renderSanitationCard, initSanitationHandlers, fetchSanitationSummary } 
 import { renderWaterSystemCard, initWaterSystemHandlers, fetchWaterSystemSummary } from '../components/water-system-module.js';
 import { renderStormwaterCard, initStormwaterHandlers, fetchStormwaterSummary } from '../components/stormwater-module.js';
 import { renderAccessibilityCard, fetchAccessibilitySummary, initAccessibilityHandlers } from '../components/accessibility-module.js';
+import { renderSimulationHubCard, fetchSimulationHubSummary, initSimulationHubHandlers } from '../components/simulation-hub-module.js';
 
 export async function proyekDetailPage(params = {}) {
   const id = params.id;
@@ -40,7 +41,7 @@ export async function proyekDetailPage(params = {}) {
     return '';
   }
 
-  const [checklistStats, analisisData, pic, simulasiSummary, electricalSummary, lpsSummary, fireProtectionSummary, buildingIntensitySummary, architecturalSummary, egressSummary, environmentalSummary, sanitationSummary, waterSummary, accessibilitySummary, stormwaterSummary] = await Promise.all([
+  const [checklistStats, analisisData, pic, simulasiSummary, electricalSummary, lpsSummary, fireProtectionSummary, buildingIntensitySummary, architecturalSummary, egressSummary, environmentalSummary, sanitationSummary, waterSummary, accessibilitySummary, stormwaterSummary, simulationHubSummary] = await Promise.all([
     fetchChecklistStats(id),
     fetchLastAnalisis(id),
     getProjectPIC(id),
@@ -55,19 +56,23 @@ export async function proyekDetailPage(params = {}) {
     fetchSanitationSummary(id),
     fetchWaterSystemSummary(id),
     fetchAccessibilitySummary(id),
-    fetchStormwaterSummary(id)
+    fetchStormwaterSummary(id),
+    fetchSimulationHubSummary(id).catch(err => {
+      console.warn('[ProyekDetail] SimulationHub fetch failed:', err);
+      return {}; // Return empty object sebagai fallback
+    })
   ]);
 
-  const html = buildHtml(proyek, checklistStats, analisisData, pic, simulasiSummary, electricalSummary, lpsSummary, fireProtectionSummary, buildingIntensitySummary, architecturalSummary, egressSummary, environmentalSummary, sanitationSummary, accessibilitySummary, waterSummary, stormwaterSummary);
+  const html = buildHtml(proyek, checklistStats, analisisData, pic, simulasiSummary, electricalSummary, lpsSummary, fireProtectionSummary, buildingIntensitySummary, architecturalSummary, egressSummary, environmentalSummary, sanitationSummary, accessibilitySummary, waterSummary, stormwaterSummary, simulationHubSummary);
   if (root) {
     root.innerHTML = html;
-    initProyekDetailAfterRender(proyek, checklistStats, analisisData, simulasiSummary, electricalSummary, lpsSummary, fireProtectionSummary, buildingIntensitySummary, architecturalSummary, egressSummary, environmentalSummary, sanitationSummary, accessibilitySummary, waterSummary, stormwaterSummary);
+    initProyekDetailAfterRender(proyek, checklistStats, analisisData, simulasiSummary, electricalSummary, lpsSummary, fireProtectionSummary, buildingIntensitySummary, architecturalSummary, egressSummary, environmentalSummary, sanitationSummary, accessibilitySummary, waterSummary, stormwaterSummary, simulationHubSummary);
   }
   return html;
 }
 
 // ── HTML Builder ─────────────────────────────────────────────
-function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSummary = {}, lpsSummary = {}, fireProtectionSummary = {}, buildingIntensitySummary = {}, architecturalSummary = {}, egressSummary = {}, environmentalSummary = {}, sanitationSummary = {}, accessibilitySummary = {}, waterSummary = {}, stormwaterSummary = {}) {
+function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSummary = {}, lpsSummary = {}, fireProtectionSummary = {}, buildingIntensitySummary = {}, architecturalSummary = {}, egressSummary = {}, environmentalSummary = {}, sanitationSummary = {}, accessibilitySummary = {}, waterSummary = {}, stormwaterSummary = {}, simulationHubSummary = {}) {
   const statusMap = {
     LAIK_FUNGSI:           { label: 'LAIK FUNGSI',       cls: 'badge-laik',       icon: 'fa-shield-check',   color: 'var(--success-400)' },
     LAIK_FUNGSI_BERSYARAT: { label: 'LAIK BERSYARAT',    cls: 'badge-bersyarat',  icon: 'fa-triangle-exclamation', color: 'var(--gold-400)' },
@@ -225,6 +230,9 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
                 <span class="badge" style="background:hsla(220, 95%, 52%, 0.1); color:var(--brand-400); border:1px solid hsla(220, 95%, 52%, 0.2); font-size:9px">ASHRAE 55</span>
               </div>
             </div>
+
+            <!-- SIMULATION HUB MODULE -->
+            ${renderSimulationHubCard(p, simulationHubSummary)}
 
             <!-- Analisis Card -->
             <div class="card-quartz clickable" onclick="window.navigate('analisis',{id:'${p.id}'})" style="padding: var(--space-6)">
@@ -485,9 +493,12 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
 }
 
 // ── After Render Logic ──────────────────────────────────────────
-function initProyekDetailAfterRender(p, stats, analisis, simulasiSummary = {}, electricalSummary = {}, lpsSummary = {}, fireProtectionSummary = {}, buildingIntensitySummary = {}, architecturalSummary = {}, egressSummary = {}, environmentalSummary = {}, sanitationSummary = {}, accessibilitySummary = {}, waterSummary = {}, stormwaterSummary = {}) {
+function initProyekDetailAfterRender(p, stats, analisis, simulasiSummary = {}, electricalSummary = {}, lpsSummary = {}, fireProtectionSummary = {}, buildingIntensitySummary = {}, architecturalSummary = {}, egressSummary = {}, environmentalSummary = {}, sanitationSummary = {}, accessibilitySummary = {}, waterSummary = {}, stormwaterSummary = {}, simulationHubSummary = {}) {
   // Initialize Radar Chart
   initProjectRadar(analisis);
+  
+  // Initialize Simulation Hub Handlers
+  initSimulationHubHandlers(p.id);
 
   // Fetch Logs & Versions
   renderAuditTrail(p.id);

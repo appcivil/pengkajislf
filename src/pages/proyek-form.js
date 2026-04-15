@@ -137,14 +137,14 @@ export async function proyekFormPage(params = {}) {
                  <div class="grid-2-col" style="margin-top:24px">
                     <div class="form-group">
                        <label class="form-label-xs">LATITUDE</label>
-                       <input type="text" id="input-lat" name="latitude" value="${data.latitude || ''}" class="form-input-compact" readonly>
+                       <input type="text" id="input-lat" name="latitude" value="${data.latitude || ''}" class="form-input-compact" placeholder="-6.2088" onchange="window._updateMapFromInput()">
                     </div>
                     <div class="form-group">
                        <label class="form-label-xs">LONGITUDE</label>
-                       <input type="text" id="input-lng" name="longitude" value="${data.longitude || ''}" class="form-input-compact" readonly>
+                       <input type="text" id="input-lng" name="longitude" value="${data.longitude || ''}" class="form-input-compact" placeholder="106.8456" onchange="window._updateMapFromInput()">
                     </div>
                  </div>
-                 <p style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); margin-top:16px; line-height:1.5"><i class="fas fa-info-circle"></i> Drag the digital pin to precisely synchronize high-fidelity satellite coordinates with the asset footprint.</p>
+                 <p style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); margin-top:16px; line-height:1.5"><i class="fas fa-info-circle"></i> Drag pin di peta atau ketik koordinat manual. Latitude: -90 sampai 90, Longitude: -180 sampai 180.</p>
               </div>
 
            </div>
@@ -427,6 +427,29 @@ window.initProyekMap = function(initLat, initLng) {
 };
 
 /**
+ * Update map position from manual coordinate input
+ */
+window._updateMapFromInput = function() {
+  const latInput = document.getElementById('input-lat');
+  const lngInput = document.getElementById('input-lng');
+  if (!latInput || !lngInput) return;
+
+  const lat = parseFloat(latInput.value);
+  const lng = parseFloat(lngInput.value);
+
+  if (isNaN(lat) || isNaN(lng)) return;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+    showError('Koordinat tidak valid. Latitude: -90 sampai 90, Longitude: -180 sampai 180');
+    return;
+  }
+
+  if (window._proyekMap && window._proyekMarker) {
+    window._proyekMap.setView([lat, lng], 17);
+    window._proyekMarker.setLatLng([lat, lng]);
+  }
+};
+
+/**
  * AI OCR Logic
  */
 window._triggerOCRScan = () => {
@@ -535,9 +558,11 @@ window.submitProyek = async function(event) {
     if (id) {
       await supabase.from('proyek').update(cleanData).eq('id', id);
     } else {
-      const { data: created } = await supabase.from('proyek').insert(cleanData).select().single();
+      cleanData.created_at = new Date().toISOString();
+      const { data: created, error: insertError } = await supabase.from('proyek').insert(cleanData).select().single();
+      if (insertError) throw insertError;
       if (created) {
-         try { await initializeProjectFolder(created.id, created.nama_bangunan); } catch(e){}
+         try { await initializeProjectFolder(created.id, created.nama_bangunan); } catch(e){ console.warn('Drive init failed:', e); }
          setTimeout(() => navigate('proyek-detail', { id: created.id }), 800);
       }
     }
