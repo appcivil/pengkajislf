@@ -91,11 +91,23 @@ serve(async (req: Request) => {
       }
 
       case "openai":
-      case "groq": {
-        const key = provider === "openai" ? Deno.env.get("OPENAI_API_KEY") : Deno.env.get("GROQ_API_KEY");
-        const url = provider === "openai"
-          ? "https://api.openai.com/v1/chat/completions"
-          : "https://api.groq.com/openai/v1/chat/completions";
+      case "groq":
+      case "kimi": {
+        let key: string | undefined;
+        let url: string;
+
+        if (provider === "openai") {
+          key = Deno.env.get("OPENAI_API_KEY");
+          url = "https://api.openai.com/v1/chat/completions";
+        } else if (provider === "groq") {
+          key = Deno.env.get("GROQ_API_KEY");
+          url = "https://api.groq.com/openai/v1/chat/completions";
+        } else {
+          // kimi - Moonshot AI Global Endpoint
+          key = Deno.env.get("KIMI_API_KEY");
+          url = "https://api.moonshot.ai/v1/chat/completions";
+        }
+
         if (!key) throw new Error(`${provider.toUpperCase()}_API_KEY tidak dikonfigurasi`);
 
         const messages = systemPrompt
