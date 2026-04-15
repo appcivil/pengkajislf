@@ -19,6 +19,16 @@ import { renderBab5 } from './docx/outline-bab5.js';
 import { renderBab6 } from './docx/outline-bab6.js';
 import { renderElectricalSystemSection } from './docx/outline-electrical.js';
 import { renderStrukturBangunanSection } from './docx/outline-struktur.js';
+import { renderEgressSystemSection } from './docx/outline-egress.js';
+import { renderEnvironmentalSection } from './docx/outline-environmental.js';
+import { renderLPSSection } from './docx/outline-lps.js';
+import { renderFireProtectionSection } from './docx/outline-fire-protection.js';
+import { renderBuildingIntensitySection } from './docx/outline-building-intensity.js';
+import { renderEtabsAnalysisSection } from './docx/outline-etabs.js';
+import { renderArchSimSection } from './docx/outline-archsim.js';
+import { renderPathfinderSection } from './docx/outline-pathfinder.js';
+import { renderArchitecturalSection } from './docx/outline-architectural.js';
+import { renderFireDesignerSection } from './docx/outline-firedesigner.js';
 import { renderExpertTeam, renderLampiranA, renderLampiranB } from './docx/outline-lampiran.js';
 
 export async function generateDocx(proyek, analisis, checklist, onProgress) {
@@ -29,7 +39,7 @@ export async function generateDocx(proyek, analisis, checklist, onProgress) {
   return fileName;
 }
 
-export async function generateDocxBlob(proyek, analisis, checklist, onProgress, electricalData = null, strukturData = null) {
+export async function generateDocxBlob(proyek, analisis, checklist, onProgress, electricalData = null, strukturData = null, egressData = null, environmentalData = null, lpsData = null, fireData = null, intensityData = null, architecturalData = null, etabsData = null, archSimData = null, pathfinderData = null, fireDesignerData = null) {
   if (onProgress) onProgress(5, 'Cek ketersediaan template kustom...');
   
   const settings = await getSettings();
@@ -188,6 +198,36 @@ export async function generateDocxBlob(proyek, analisis, checklist, onProgress, 
 
           // ELECTRICAL SYSTEM SECTION
           ...(electricalData ? renderElectricalSystemSection(electricalData) : []),
+
+          // LPS SECTION (Sistem Proteksi Petir)
+          ...(lpsData ? renderLPSSection(lpsData) : []),
+
+          // FIRE PROTECTION SECTION
+          ...(fireData ? renderFireProtectionSection(fireData) : []),
+
+          // BUILDING INTENSITY SECTION
+          ...(intensityData ? renderBuildingIntensitySection(intensityData) : []),
+
+          // ARCHITECTURAL REQUIREMENTS SECTION
+          ...(architecturalData ? renderArchitecturalSection(architecturalData) : []),
+
+          // EGRESS SYSTEM SECTION
+          ...(egressData ? renderEgressSystemSection(egressData) : []),
+
+          // ENVIRONMENTAL SECTION
+          ...(environmentalData ? renderEnvironmentalSection(environmentalData) : []),
+
+          // ETABS/FEMA 356 STRUCTURAL ANALYSIS SECTION
+          ...(etabsData ? renderEtabsAnalysisSection(proyek, etabsData, settings) : []),
+
+          // ARCHSIM PASAL 218 COMPLIANCE SECTION
+          ...(archSimData ? renderArchSimSection(proyek, archSimData, settings) : []),
+
+          // PATHFINDER EVACUATION SIMULATION SECTION
+          ...(pathfinderData ? renderPathfinderSection(proyek, pathfinderData, settings) : []),
+
+          // FIRE DESIGNER FIRE SIMULATION SECTION
+          ...(fireDesignerData ? renderFireDesignerSection(proyek, fireDesignerData, settings) : []),
 
           // BAB V
           ...renderBab5(checklist, proyek),

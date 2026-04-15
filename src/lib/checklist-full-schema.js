@@ -8,7 +8,8 @@ export const CHECKLIST_SECTIONS = [
   { id: 'tata-bangunan', label: 'Tata Bangunan Gedung', icon: 'fa-drafting-compass' },
   { id: 'keselamatan', label: 'Persyaratan Keselamatan', icon: 'fa-shield-halved' },
   { id: 'kesehatan', label: 'Persyaratan Kesehatan', icon: 'fa-heart-pulse' },
-  { id: 'kemudahan', label: 'Persyaratan Kemudahan', icon: 'fa-wheelchair' }
+  { id: 'kemudahan', label: 'Persyaratan Kemudahan', icon: 'fa-wheelchair' },
+  { id: 'kenyamanan', label: 'Persyaratan Kenyamanan', icon: 'fa-couch' }
 ];
 
 export const FULL_CHECKLIST_SCHEMA = [
@@ -73,7 +74,21 @@ export const FULL_CHECKLIST_SCHEMA = [
   { kode: 'E-03', category: 'kemudahan', nama: 'Ketersediaan Lift/Ram', type: 'boolean' },
   { kode: 'E-04', category: 'kemudahan', nama: 'Toilet Khusus Difabel', type: 'boolean', sub: 'Fasilitas Prasarana' },
   { kode: 'E-05', category: 'kemudahan', nama: 'Ruang Laktasi', type: 'boolean' },
-  { kode: 'E-06', category: 'kemudahan', nama: 'Ruang Ibadah', type: 'boolean' }
+  { kode: 'E-06', category: 'kemudahan', nama: 'Ruang Ibadah', type: 'boolean' },
+
+  // --- KENYAMANAN (Section 6) ---
+  { kode: 'C-01', category: 'kenyamanan', nama: 'Suhu Udara Dalam Ruang', type: 'number', unit: '°C', sub: 'Kenyamanan Termal' },
+  { kode: 'C-02', category: 'kenyamanan', nama: 'Kecepatan Udara (Air Velocity)', type: 'number', unit: 'm/s' },
+  { kode: 'C-03', category: 'kenyamanan', nama: 'Kelembaban Relatif (RH)', type: 'number', unit: '%' },
+  { kode: 'C-04', category: 'kenyamanan', nama: 'Indeks PMV (Predicted Mean Vote)', type: 'number', unit: 'skala' },
+  { kode: 'C-05', category: 'kenyamanan', nama: 'Indeks PPD (Predicted Percentage Dissatisfied)', type: 'number', unit: '%', sub: 'Indeks Kenyamanan' },
+  { kode: 'C-06', category: 'kenyamanan', nama: 'Pencahayaan Alami (Daylight Factor)', type: 'number', unit: '%', sub: 'Kenyamanan Visual' },
+  { kode: 'C-07', category: 'kenyamanan', nama: 'Glare Index (Dazzle)', type: 'number', unit: 'GI' },
+  { kode: 'C-08', category: 'kenyamanan', nama: 'Tingkat Kebisingan Dalam Ruang', type: 'number', unit: 'dB', sub: 'Kenyamanan Akustik' },
+  { kode: 'C-09', category: 'kenyamanan', nama: 'Transmisi Suara Antar Ruang (STC)', type: 'number', unit: 'dB' },
+  { kode: 'C-10', category: 'kenyamanan', nama: 'Getaran Lantai (Vibration)', type: 'boolean', sub: 'Kenyamanan Fisik' },
+  { kode: 'C-11', category: 'kenyamanan', nama: 'Ruang Gerak dan Orientasi', type: 'boolean' },
+  { kode: 'C-12', category: 'kenyamanan', nama: 'Pandangan Keluar (View Out)', type: 'text', sub: 'Kualitas Lingkungan Binaan' }
 ];
 
 export const SCALE_OPTIONS = [
