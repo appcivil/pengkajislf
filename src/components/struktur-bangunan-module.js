@@ -931,9 +931,11 @@ export function initStrukturBangunanHandlers(proyekId) {
       b.style.background = '';
       b.style.color = 'var(--text-tertiary)';
     });
-    btn.classList.add('active');
-    btn.style.background = 'var(--gradient-brand)';
-    btn.style.color = 'white';
+    if (btn) {
+      btn.classList.add('active');
+      btn.style.background = 'var(--gradient-brand)';
+      btn.style.color = 'white';
+    }
 
     // Show/hide content
     document.querySelectorAll('.struktur-tab-content').forEach(content => {

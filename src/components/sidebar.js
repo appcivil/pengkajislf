@@ -14,6 +14,8 @@ const GLOBAL_NAV = [
   { path: 'surat-pernyataan-list',  label: 'Kumpulan Surat SP',  icon: 'fa-file-signature', badge: 'Global' },
   { path: 'files',                  label: 'SLFdrive',           icon: 'fa-cloud-arrow-up' },
   { path: 'smart-ai',             label: 'SmartAI Pipeline',   icon: 'fa-microchip', badge: 'New' },
+  { path: 'chatbot',              label: 'AI Chatbot',         icon: 'fa-comments', badge: 'GPT' },
+  { path: 'canva-studio',         label: 'AI Design Studio',  icon: 'fa-palette', badge: 'Canva' },
   { path: 'multi-agent',            label: 'Multi Agent AI Hub', icon: 'fa-robot', badge: 'Baru' },
   { path: 'lighting-simulation',    label: 'Simulasi Pencahayaan', icon: 'fa-lightbulb', badge: 'DIALux' },
 

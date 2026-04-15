@@ -937,9 +937,11 @@ export function initEgressSystemHandlers(projectId) {
       b.style.background = '';
       b.style.color = 'var(--text-tertiary)';
     });
-    btn.classList.add('active');
-    btn.style.background = 'var(--gradient-brand)';
-    btn.style.color = 'white';
+    if (btn) {
+      btn.classList.add('active');
+      btn.style.background = 'var(--gradient-brand)';
+      btn.style.color = 'white';
+    }
 
     document.querySelectorAll('.egress-tab-content').forEach(content => {
       content.style.display = 'none';
