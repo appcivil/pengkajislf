@@ -13,7 +13,9 @@ const GLOBAL_NAV = [
   { path: 'proyek',                 label: 'Daftar Proyek SLF',  icon: 'fa-folder-tree' },
   { path: 'surat-pernyataan-list',  label: 'Kumpulan Surat SP',  icon: 'fa-file-signature', badge: 'Global' },
   { path: 'files',                  label: 'SLFdrive',           icon: 'fa-cloud-arrow-up' },
+  { path: 'smart-ai',             label: 'SmartAI Pipeline',   icon: 'fa-microchip', badge: 'New' },
   { path: 'multi-agent',            label: 'Multi Agent AI Hub', icon: 'fa-robot', badge: 'Baru' },
+  { path: 'lighting-simulation',    label: 'Simulasi Pencahayaan', icon: 'fa-lightbulb', badge: 'DIALux' },
 
   { section: 'ADMINISTRASI', icon: 'fa-shield-halved', adminOnly: true },
   { path: 'todo',         label: 'TODO Board',          icon: 'fa-list-check', adminOnly: true },
@@ -30,6 +32,7 @@ const PROJECT_NAV = [
   { path: 'checklist',     label: 'Checklist Teknis',  icon: 'fa-clipboard-check' },
   { path: 'kondisi',       label: 'Pemeriksaan Kondisi', icon: 'fa-building-circle-exclamation' },
   { path: 'electrical-inspection', label: 'Sistem Kelistrikan', icon: 'fa-bolt', badge: 'PUIL 2020' },
+  { path: 'water-inspection', label: 'Sistem Air Bersih', icon: 'fa-water', badge: 'SNI 6774' },
   { path: 'galeri',        label: 'Galeri Visual',     icon: 'fa-images' },
   { path: 'analisis',      label: 'Analisis Smart AI', icon: 'fa-brain', badge: 'Active' },
   { path: 'laporan',       label: 'Laporan Final SLF', icon: 'fa-file-contract' },

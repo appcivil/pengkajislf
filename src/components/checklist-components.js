@@ -160,6 +160,14 @@ export function renderChecklistSection(sectionId, items, dataMap) {
                               <i class="fas fa-camera" style="font-size: 1.1rem"></i>
                               FOTO
                            </button>
+                           <label class="btn btn-outline" 
+                                  style="width: 64px; height: 64px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 0.6rem; cursor: pointer; border-color: hsla(220, 20%, 100%, 0.2); color: var(--text-secondary)">
+                              <i class="fas fa-folder-open" style="font-size: 1.1rem"></i>
+                              DOKUMEN
+                              <input type="file" multiple accept="image/*,application/pdf,.doc,.docx" 
+                                     style="display: none" 
+                                     onchange="window._handleMultiFileSelect(event, '${item.kode}', '${item.nama}', '${sectionId}')">
+                           </label>
                         </div>
                      </div>
 
