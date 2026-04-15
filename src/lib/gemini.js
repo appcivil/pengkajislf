@@ -8,9 +8,21 @@ const env = import.meta.env;
 import { getSmartAIIntegration } from '../infrastructure/ai/deep-reasoning-integration.js';
 
 const MODELS = {
+  GROQ_VISION: {
+    id: 'llama-3.2-11b-vision-preview',
+    url: env.PROD ? 'https://api.groq.com/openai/v1/chat/completions' : '/api/groq/v1/chat/completions',
+    key: env.VITE_GROQ_API_KEY,
+    proxyProvider: 'groq'
+  },
+  GROQ_REASONING: {
+    id: 'deepseek-r1-distill-llama-70b',
+    url: env.PROD ? 'https://api.groq.com/openai/v1/chat/completions' : '/api/groq/v1/chat/completions',
+    key: env.VITE_GROQ_API_KEY,
+    proxyProvider: 'groq'
+  },
   GEMINI: {
-    id: 'gemini-3.1-flash-lite-preview',
-    url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${env.VITE_GEMINI_API_KEY}`
+    id: 'gemini-2.0-flash',
+    url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.VITE_GEMINI_API_KEY}`
   },
   OPENAI: {
     id: 'gpt-4o',
@@ -55,24 +67,34 @@ export async function analyzeChecklistImage(filesData, componentName, kategori =
   }
 
   // 1. Tentukan Urutan Provider (Chain of Responsibility)
-  // Default: Gemini (Paling murah/gratis) -> OpenAI -> Claude
-  let providerChain = ['gemini', 'openai', 'claude'];
+  // Prioritaskan Groq gratis untuk vision dan reasoning
+  let providerChain = ['groq_vision', 'groq_reasoning', 'gemini', 'openai'];
 
   // Custom priority based on complexity
   const a = aspek.toLowerCase();
   if (a.includes('struktur') || a.includes('kebakaran')) {
-    providerChain = ['slf_opus', 'claude', 'openai', 'gemini'];
+    // Struktur dan kebakaran perlu reasoning mendalam + vision
+    providerChain = ['groq_vision', 'groq_reasoning', 'slf_opus', 'claude', 'gemini'];
   } else if (kategori === 'administrasi') {
-    providerChain = ['gemini', 'slf_opus', 'openai'];
+    providerChain = ['groq_reasoning', 'gemini', 'slf_opus'];
   } else {
-    // Default chain with custom model as secondary
-    providerChain = ['slf_opus', 'gemini', 'openai'];
+    // Default chain dengan Groq Vision diprioritaskan (gratis & multimodal)
+    providerChain = ['groq_vision', 'groq_reasoning', 'slf_opus', 'gemini'];
   }
 
   // 2. Siapkan Prompt Bersama dengan Deep Reasoning Engineering
+  const bahasaDirective = `[Bahasa Indonesia Protocol - WAJIB]
+✓ Gunakan Bahasa Indonesia yang baik dan benar (eyd yang sempurna)
+✓ Gaya bahasa: akademik, teknis, formal, profesional
+✓ Terminologi: gunakan istilah engineering dan perizinan bangunan Indonesia yang tepat
+✓ Hindari: slang, singkatan tidak baku, campur-campur bahasa
+✓ Struktur: logis, komprehensif, mudah dipahami
+
+`;
+
   let systemPrompt = '';
   if (kategori === 'administrasi') {
-    systemPrompt = `Anda adalah seorang Auditor Administrasi Tingkat Lanjut untuk Sertifikat Laik Fungsi (SLF) Bangunan Gedung di Indonesia.
+    systemPrompt = bahasaDirective + `Anda adalah seorang Auditor Administrasi Tingkat Lanjut untuk Sertifikat Laik Fungsi (SLF) Bangunan Gedung di Indonesia.
 Gunakan mekanisme "Deep Reasoning Engineering" untuk menelaah secara komprehensif terhadap ${filesData.length} sampel dokumen pada komponen: "${componentName}".
 Verifikasi kesesuaian berdasarkan PP No. 16 Tahun 2021.
 Format JSON wajib: { 
@@ -82,7 +104,7 @@ Format JSON wajib: {
 }
 PENTING: Isi 'catatan' meskipun status 'ada_sesuai' (jelaskan apa yang ada).`;
   } else {
-    systemPrompt = `Anda adalah seorang Insinyur Sipil/Struktur Ahli Audit Keandalan Bangunan (SNI 9273:2025).
+    systemPrompt = bahasaDirective + `Anda adalah seorang Insinyur Sipil/Struktur Ahli Audit Keandalan Bangunan (SNI 9273:2025).
 Gunakan "Deep Reasoning Engineering" untuk mendiagnosa ${filesData.length} sampel visual dari komponen: "${componentName}".
 Analisis patologi material, risiko kegagalan, dan integritas struktur.
 Format JSON wajib: { 

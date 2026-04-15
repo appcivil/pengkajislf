@@ -115,11 +115,120 @@ export const MODELS = {
   },
   GROQ: {
     id: 'llama-3.3-70b-versatile',
-    name: 'Groq Llama 3.3',
+    name: 'Groq Llama 3.3 70B (Ultra-Fast)',
     url: DIRECT_ENDPOINTS.groq,
     key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
+    type: 'text',
+    costTier: 'free',
+    maxTokens: 8192,
+    contextWindow: 128000,
+    capabilities: ['reasoning', 'analysis', 'code', 'narrative'],
+  },
+  GROQ_VISION: {
+    id: 'llama-3.2-11b-vision-preview',
+    name: 'Groq Llama 3.2 11B Vision (Multimodal)',
+    url: DIRECT_ENDPOINTS.groq,
+    key: env.VITE_GROQ_API_KEY,
+    vendor: 'openai',
+    proxyProvider: 'groq',
+    type: 'vision',
+    costTier: 'free',
+    maxTokens: 4096,
+    contextWindow: 128000,
+    capabilities: ['vision', 'analysis', 'multimodal', 'documents'],
+  },
+  GROQ_REASONING: {
+    id: 'deepseek-r1-distill-llama-70b',
+    name: 'Groq DeepSeek R1 (Advanced Reasoning)',
+    url: DIRECT_ENDPOINTS.groq,
+    key: env.VITE_GROQ_API_KEY,
+    vendor: 'openai',
+    proxyProvider: 'groq',
+    type: 'reasoning',
+    costTier: 'free',
+    maxTokens: 8192,
+    contextWindow: 128000,
+    capabilities: ['deep_reasoning', 'chain_of_thought', 'analysis', 'problem_solving'],
+  },
+  GROQ_GPT_OSS_20B: {
+    id: 'openai/gpt-oss-20b',
+    name: 'Groq GPT-OSS 20B (Gratis - Lightweight)',
+    url: DIRECT_ENDPOINTS.groq,
+    key: env.VITE_GROQ_API_KEY,
+    vendor: 'openai',
+    proxyProvider: 'groq',
+    type: 'text',
+    costTier: 'free',
+    maxTokens: 4096,
+    contextWindow: 128000,
+    capabilities: ['text', 'analysis', 'lightweight'],
+  },
+  GROQ_GPT_OSS_120B: {
+    id: 'openai/gpt-oss-120b',
+    name: 'Groq GPT-OSS 120B (Gratis - Powerful)',
+    url: DIRECT_ENDPOINTS.groq,
+    key: env.VITE_GROQ_API_KEY,
+    vendor: 'openai',
+    proxyProvider: 'groq',
+    type: 'text',
+    costTier: 'free',
+    maxTokens: 8192,
+    contextWindow: 128000,
+    capabilities: ['text', 'analysis', 'complex_reasoning'],
+    recommended: true,
+  },
+  GROQ_QWEN_32B: {
+    id: 'qwen/qwen3-32b',
+    name: 'Groq Qwen 3 32B (Gratis - Multilingual)',
+    url: DIRECT_ENDPOINTS.groq,
+    key: env.VITE_GROQ_API_KEY,
+    vendor: 'openai',
+    proxyProvider: 'groq',
+    type: 'text',
+    costTier: 'free',
+    maxTokens: 8192,
+    contextWindow: 128000,
+    capabilities: ['text', 'multilingual', 'analysis', 'coding'],
+  },
+  GROQ_LLAMA_4_SCOUT: {
+    id: 'meta-llama/llama-4-scout-17b-16e-instruct',
+    name: 'Groq Llama 4 Scout 17B (Gratis - Latest)',
+    url: DIRECT_ENDPOINTS.groq,
+    key: env.VITE_GROQ_API_KEY,
+    vendor: 'openai',
+    proxyProvider: 'groq',
+    type: 'text',
+    costTier: 'free',
+    maxTokens: 8192,
+    contextWindow: 128000,
+    capabilities: ['text', 'analysis', 'reasoning', 'latest'],
+    recommended: true,
+  },
+  GROQ_WHISPER_TURBO: {
+    id: 'whisper-large-v3-turbo',
+    name: 'Groq Whisper Turbo (Speech-to-Text)',
+    url: DIRECT_ENDPOINTS.groq,
+    key: env.VITE_GROQ_API_KEY,
+    vendor: 'openai',
+    proxyProvider: 'groq',
+    type: 'audio',
+    costTier: 'free',
+    maxTokens: 4096,
+    capabilities: ['speech_recognition', 'multilingual', 'fast'],
+  },
+  GROQ_WHISPER_LARGE: {
+    id: 'whisper-large-v3',
+    name: 'Groq Whisper Large V3 (Speech-to-Text)',
+    url: DIRECT_ENDPOINTS.groq,
+    key: env.VITE_GROQ_API_KEY,
+    vendor: 'openai',
+    proxyProvider: 'groq',
+    type: 'audio',
+    costTier: 'free',
+    maxTokens: 4096,
+    capabilities: ['speech_recognition', 'multilingual', 'high_accuracy'],
   },
   OPENROUTER: {
     id: 'google/gemini-2.0-flash-lite:free',
@@ -278,12 +387,12 @@ export function getDefaultModel(options = {}) {
     };
   }
   
-  // Emergency fallback
+  // Emergency fallback - prioritaskan Groq gratis yang cepat
   return {
-    model: MODELS.GROQ || MODELS.OPENROUTER,
-    reason: 'Emergency fallback',
-    estimatedCost: 'unknown',
-    advantage: 'Fallback ketika Kimi dan Gemini tidak tersedia'
+    model: MODELS.GROQ || MODELS.GROQ_REASONING || MODELS.OPENROUTER,
+    reason: 'Emergency fallback to Groq (gratis & cepat)',
+    estimatedCost: 'free',
+    advantage: 'Groq Llama 4 195B Multimodal gratis dengan inference super cepat'
   };
 }
 
@@ -642,10 +751,19 @@ function getPromptForItem(item, aspek, roleTitle, standard) {
 
   const promptConfig = getPromptConfig();
   let deepReasoningHeader = '';
+  const bahasaDirective = `[Bahasa Indonesia Protocol - WAJIB]
+✓ Gunakan Bahasa Indonesia yang baik dan benar (eyd yang sempurna)
+✓ Gaya bahasa: akademik, teknis, formal, profesional
+✓ Terminologi: gunakan istilah engineering dan perizinan bangunan Indonesia yang tepat
+✓ Hindari: slang, singkatan tidak baku, campur-campur bahasa (kecuali istilah teknis standar)
+✓ Struktur: logis, komprehensif, mudah dipahami
+
+`;
+
   if (promptConfig?.active) {
-    deepReasoningHeader = `\n[DEEP REASONING CUSTOM ACTIVE]\n${injectPromptConfig(promptConfig.system_instructions, promptConfig.principles)}\n`;
+    deepReasoningHeader = `\n[DEEP REASONING CUSTOM ACTIVE]\n${bahasaDirective}${injectPromptConfig(promptConfig.system_instructions, promptConfig.principles)}\n`;
   } else {
-    deepReasoningHeader = `[SISTEM CONTINUOUS LEARNING V6 & HYBRID AI AKTIF]\nAnda adalah ${currentPersona}`;
+    deepReasoningHeader = `[SISTEM CONTINUOUS LEARNING V6 & HYBRID AI AKTIF]\n${bahasaDirective}Anda adalah ${currentPersona}`;
   }
 
   return `${deepReasoningHeader}
@@ -699,7 +817,8 @@ export async function runAspectAnalysis(aspek, items, onProgress, options = {}) 
     const name = experts.structure?.name ? `(${experts.structure.name})` : '';
     roleTitle = `Chief Structural Engineer & Seismis Expert ${name}`;
     standard = 'SNI 9273:2025 (Existing Buildings Evaluation)';
-    if (MODELS.CLAUDE.key || USE_PROXY) targetModel = MODELS.CLAUDE;
+    // Prioritaskan Groq Reasoning untuk analisis struktur yang kompleks, gratis & powerful
+    targetModel = MODELS.GROQ_REASONING || MODELS.GROQ || MODELS.CLAUDE;
   } else if (a.includes('administrasi')) {
     roleTitle = 'Principal Engineering Auditor';
     standard = 'PP No. 16 Tahun 2021 & Perundangan Bangunan';
@@ -711,6 +830,8 @@ export async function runAspectAnalysis(aspek, items, onProgress, options = {}) 
     const name = experts.mep?.name ? `(${experts.mep.name})` : '';
     roleTitle = `Senior MEP & Fire Safety Engineer ${name}`;
     standard = 'NSPK Utilitas & MEP';
+    // MEP & Fire Safety analysis requires complex reasoning - use Groq Reasoning
+    targetModel = MODELS.GROQ_REASONING || MODELS.GROQ_VISION || MODELS.GROQ;
   }
 
   const results = [];
@@ -792,8 +913,20 @@ export async function runSingleItemAnalysis(item, aspek, options = {}) {
     const respText = await safeCall(async () => {
       const settings = await getSettings();
 
-      // Failover chain
-      const order = [targetModel, MODELS.SLF_OPUS, MODELS.MISTRAL, MODELS.GEMMA_3, MODELS.GROQ, MODELS.OPENROUTER, MODELS.OPENAI, MODELS.CLAUDE, MODELS.GEMINI];
+      // Failover chain - Prioritaskan model gratis & reasoning-capable
+      const order = [
+        targetModel, 
+        MODELS.GROQ_REASONING,  // DeepSeek R1 Distill - advanced reasoning, gratis
+        MODELS.GROQ_VISION,     // Llama 3.2 11B Vision - multimodal, gratis
+        MODELS.GROQ,            // Llama 3.3 70B - fast & capable, gratis
+        MODELS.SLF_OPUS, 
+        MODELS.MISTRAL, 
+        MODELS.GEMMA_3, 
+        MODELS.OPENROUTER, 
+        MODELS.OPENAI, 
+        MODELS.CLAUDE, 
+        MODELS.GEMINI
+      ];
       const failoverChain = [];
       const seen = new Set();
 
@@ -1082,7 +1215,7 @@ export async function fetchOpenRouter(model, prompt) {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${model.key}`,
-      'HTTP-Referer': 'https://smartaipengkaji.app',
+      'HTTP-Referer': 'https://appcivil.github.io/pengkajislf',
       'X-Title': 'Smart AI Pengkaji SLF',
     },
     body: JSON.stringify({ model: model.id, messages: [{ role: 'user', content: prompt }], temperature: 0.1 }),
