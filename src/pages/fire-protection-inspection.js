@@ -1297,33 +1297,35 @@ function getFireStyles() {
 }
 
 // ============================================================
+// TAB SWITCHING
+// ============================================================
+
+function _switchFireTab(tabId, btn) {
+  currentTab = tabId;
+  
+  // Update button states
+  document.querySelectorAll('.fire-tab-item').forEach(b => {
+    b.classList.remove('active');
+    b.style.background = 'transparent';
+    b.style.boxShadow = 'none';
+    b.style.color = 'var(--text-tertiary)';
+  });
+  
+  if (btn) {
+    btn.classList.add('active');
+    btn.style.background = 'var(--gradient-brand)';
+    btn.style.boxShadow = 'var(--shadow-sapphire)';
+    btn.style.color = 'white';
+  }
+  
+  renderCurrentTab();
+}
+
+// ============================================================
 // EVENT HANDLERS
 // ============================================================
 
 function initEventListeners() {
-  // Tab switching
-  window._switchFireTab = (tabId, btn) => {
-    currentTab = tabId;
-    
-    // Update button styles
-    document.querySelectorAll('.fire-tab-item').forEach(item => {
-      item.classList.remove('active');
-      item.style.background = 'transparent';
-      item.style.color = 'var(--text-tertiary)';
-      item.style.boxShadow = 'none';
-    });
-    
-    if (btn) {
-      btn.classList.add('active');
-      btn.style.background = 'var(--gradient-brand)';
-      btn.style.color = 'white';
-      btn.style.boxShadow = 'var(--shadow-sapphire)';
-    }
-    
-    // Render tab content
-    renderCurrentTab();
-  };
-  
   // Modal functions
   window.showAparModal = () => {
     document.getElementById('apar-modal').style.display = 'flex';
