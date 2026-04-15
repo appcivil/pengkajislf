@@ -26,7 +26,7 @@ const DIRECT_ENDPOINTS = {
     ? `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.VITE_GEMINI_API_KEY}`
     : `/api/gemini/v1beta/models/${model}:generateContent?key=${env.VITE_GEMINI_API_KEY}`,
   kimi: (model) => env.PROD
-    ? `https://api.moonshot.cn/v1/chat/completions`
+    ? `https://api.moonshot.ai/v1/chat/completions`
     : `/api/kimi/v1/chat/completions`,
   openai: env.PROD ? 'https://api.openai.com/v1/chat/completions' : '/api/openai/v1/chat/completions',
   groq: env.PROD ? 'https://api.groq.com/openai/v1/chat/completions' : '/api/groq/v1/chat/completions',
