@@ -21,10 +21,14 @@ export class SendMessageRequest {
   }
 
   validate() {
-    if (!this.content || this.content.trim().length === 0) {
-      throw new Error('Content tidak boleh kosong');
+    // Allow empty content if there are attachments
+    const hasContent = this.content && this.content.trim().length > 0;
+    const hasAttachments = this.attachments && this.attachments.length > 0;
+
+    if (!hasContent && !hasAttachments) {
+      throw new Error('Content atau lampiran file tidak boleh kosong');
     }
-    if (this.content.length > 10000) {
+    if (this.content && this.content.length > 10000) {
       throw new Error('Content terlalu panjang (max 10000 karakter)');
     }
     return true;

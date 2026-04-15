@@ -15,8 +15,10 @@ export class ChatContainer {
     this.inputArea = null;
     this.sessionId = null;
     this.isLoading = false;
+    this.loadingStatus = ''; // Current loading status message
     this.selectedModel = 'KIMI'; // Default model - KIMI Moonshot
     this.reasoningMode = null; // think, deep, research, daily
+    this.pendingAttachments = []; // File attachments waiting to be sent
   }
 
   /**
@@ -41,14 +43,24 @@ export class ChatContainer {
         </div>
         <div class="chat-header-right">
           <select class="model-selector" id="model-selector" title="Pilih Model AI">
+            <option value="" disabled>━━━ 🚀 GROQ (Gratis & Cepat) ━━━</option>
+            <option value="GROQ_LLAMA_4_SCOUT">� Llama 4 Scout 17B (Latest)</option>
+            <option value="GROQ_GPT_OSS_120B">� GPT-OSS 120B (Powerful)</option>
+            <option value="GROQ_REASONING">🧩 DeepSeek R1 (Advanced Reasoning)</option>
+            <option value="GROQ_VISION">👁️ Llama 3.2 90B Vision (Multimodal)</option>
+            <option value="GROQ">⚡ Llama 3.3 70B (Ultra-Fast)</option>
+            <option value="GROQ_GPT_OSS_20B">🆕 GPT-OSS 20B (Lightweight)</option>
+            <option value="GROQ_QWEN_32B">🆕 Qwen 3 32B (Multilingual)</option>
+            <option value="GROQ_WHISPER_TURBO">🎤 Whisper Turbo (Speech-to-Text)</option>
+            <option value="" disabled>━━━ 🌙 KIMI (Gratis) ━━━</option>
             <option value="KIMI">🌙 KIMI 8K (Moonshot)</option>
             <option value="KIMI_32K">🌙 KIMI 32K</option>
             <option value="KIMI_128K">🌙 KIMI 128K</option>
-            <option value="GROQ">🚀 Groq Llama 3.3</option>
+            <option value="" disabled>━━━ 🔮 LAINNYA ━━━</option>
             <option value="OPENAI">🧠 OpenAI GPT-4o</option>
             <option value="CLAUDE">📝 Claude 3.5 Sonnet</option>
             <option value="GEMINI_FLASH">⚡ Gemini Flash</option>
-            <option value="GEMINI_PRO">🔬 Gemini Pro</option>
+            <option value="GEMINI_PRO">🔬 Gemini Pro (Vision)</option>
             <option value="MISTRAL">🌊 Mistral Large</option>
             <option value="OPENROUTER">🌐 OpenRouter</option>
           </select>
@@ -128,7 +140,7 @@ export class ChatContainer {
                 <button class="btn btn-icon attach-btn" id="attach-btn" title="Lampirkan file">
                   <i class="fas fa-paperclip"></i>
                 </button>
-                <input type="file" id="file-input" hidden accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
+                <input type="file" id="file-input" hidden multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.md,.json,.csv">
               </div>
               <button class="btn btn-primary send-btn" id="send-btn" disabled>
                 <i class="fas fa-paper-plane"></i>
@@ -193,10 +205,27 @@ export class ChatContainer {
     // File attachment
     const attachBtn = this.element.querySelector('#attach-btn');
     const fileInput = this.element.querySelector('#file-input');
-    
+
     if (attachBtn && fileInput) {
       attachBtn.addEventListener('click', () => fileInput.click());
       fileInput.addEventListener('change', (e) => this._handleFileSelect(e));
+    }
+
+    // Drag and drop support
+    const inputContainer = this.element.querySelector('.input-container');
+    if (inputContainer) {
+      inputContainer.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        inputContainer.classList.add('dragover');
+      });
+      inputContainer.addEventListener('dragleave', () => {
+        inputContainer.classList.remove('dragover');
+      });
+      inputContainer.addEventListener('drop', (e) => {
+        e.preventDefault();
+        inputContainer.classList.remove('dragover');
+        this._handleFileDrop(e);
+      });
     }
 
     // New chat button
@@ -241,22 +270,66 @@ export class ChatContainer {
   async _handleSend() {
     const input = this.element.querySelector('#chat-input');
     const content = input.value.trim();
-    
-    if (!content || this.isLoading) return;
+    const attachments = this.pendingAttachments || [];
 
-    // Clear input
+    if ((!content && attachments.length === 0) || this.isLoading) return;
+
+    // If no session exists, create one first
+    if (!this.sessionId) {
+      console.log('[ChatContainer] No active session, creating new session...');
+      const sessionCreated = await this._createNewSession();
+      if (!sessionCreated) {
+        this._addMessage({
+          role: 'assistant',
+          content: 'Gagal membuat sesi chat. Silakan coba lagi.',
+          isError: true
+        });
+        return;
+      }
+    }
+
+    // Clear input and attachments
     input.value = '';
     input.style.height = 'auto';
-    
-    // Add user message
+    input.placeholder = 'Ketik pesan atau perintah AI...';
+    this.pendingAttachments = [];
+
+    // Add user message with attachments preview
     this._addMessage({
       role: 'user',
-      content,
+      content: content || (attachments.length > 0 ? `Mengirim ${attachments.length} file...` : ''),
+      attachments: attachments.map(f => ({ name: f.name, type: f.type, size: f.size })),
       timestamp: new Date().toISOString()
     });
 
-    // Show loading
-    this._setLoading(true);
+    // Show loading with step-by-step status
+    this._setLoading(true, 'Membuat sesi chat...');
+
+    // Step 1: Create session if needed
+    if (!this.sessionId) {
+      this._updateLoadingStatus('Membuat sesi chat baru...');
+      const sessionCreated = await this._createNewSession();
+      if (!sessionCreated) {
+        this._addMessage({
+          role: 'assistant',
+          content: 'Gagal membuat sesi chat. Silakan coba lagi.',
+          isError: true
+        });
+        this._setLoading(false);
+        return;
+      }
+    }
+
+    // Step 2: Process file attachments if any
+    if (attachments.length > 0) {
+      this._updateLoadingStatus(`Memproses ${attachments.length} file...`);
+      attachments.forEach((file, idx) => {
+        this._updateLoadingStatus(`Mengekstrak konten: ${file.name} (${idx + 1}/${attachments.length})...`);
+      });
+    }
+
+    // Step 3: Send message to AI
+    this._updateLoadingStatus('Mengirim pesan ke AI...');
 
     try {
       // Dispatch event untuk diproses use case
@@ -264,6 +337,7 @@ export class ChatContainer {
         detail: {
           sessionId: this.sessionId,
           content,
+          attachments,
           projectId: this.options.projectId,
           moduleContext: this.options.moduleContext,
           model: this.selectedModel,
@@ -280,6 +354,47 @@ export class ChatContainer {
       });
       this._setLoading(false);
     }
+  }
+
+  /**
+   * Create new session before sending message
+   * @returns {Promise<boolean>}
+   */
+  async _createNewSession() {
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        console.error('[ChatContainer] Session creation timeout');
+        resolve(false);
+      }, 5000);
+
+      const onSessionCreated = (e) => {
+        clearTimeout(timeout);
+        document.removeEventListener('chat-session-created', onSessionCreated);
+        if (e.detail?.success && e.detail?.sessionId) {
+          this.setSession(e.detail.sessionId);
+          console.log('[ChatContainer] Session created:', e.detail.sessionId);
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+      };
+
+      document.addEventListener('chat-session-created', onSessionCreated);
+
+      // Get content from input for session title
+      const input = this.element.querySelector('#chat-input');
+      const content = input?.value?.trim() || '';
+
+      // Dispatch create session event
+      const event = new CustomEvent('chat-create-session', {
+        detail: {
+          projectId: this.options.projectId,
+          moduleContext: this.options.moduleContext,
+          title: content || (this.pendingAttachments?.length > 0 ? 'Chat dengan Lampiran' : 'Chat Baru')
+        }
+      });
+      document.dispatchEvent(event);
+    });
   }
 
   /**
@@ -347,23 +462,42 @@ export class ChatContainer {
   }
 
   /**
-   * Handle file selection
+   * Handle file selection - supports multiple files
    */
   _handleFileSelect(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+    const files = Array.from(event.target.files);
+    if (files.length === 0) return;
+
+    // Store files for sending
+    this.pendingAttachments = files;
 
     // Show file attachment preview
     const input = this.element.querySelector('#chat-input');
-    input.placeholder = `Lampiran: ${file.name}`;
-    input.dataset.attachment = JSON.stringify({
-      name: file.name,
-      size: file.size,
-      type: file.type
-    });
+    if (files.length === 1) {
+      input.placeholder = `Lampiran: ${files[0].name}`;
+    } else {
+      input.placeholder = `Lampiran: ${files.length} file`;
+    }
 
     // Reset file input
     event.target.value = '';
+  }
+
+  /**
+   * Handle file drop - drag and drop support
+   */
+  _handleFileDrop(event) {
+    const files = Array.from(event.dataTransfer.files);
+    if (files.length === 0) return;
+
+    this.pendingAttachments = files;
+
+    const input = this.element.querySelector('#chat-input');
+    if (files.length === 1) {
+      input.placeholder = `Lampiran: ${files[0].name}`;
+    } else {
+      input.placeholder = `Lampiran: ${files.length} file`;
+    }
   }
 
   /**
@@ -465,17 +599,18 @@ export class ChatContainer {
   }
 
   /**
-   * Set loading state
+   * Set loading state with status message
    */
-  _setLoading(loading) {
+  _setLoading(loading, status = '') {
     this.isLoading = loading;
+    this.loadingStatus = status;
     const sendBtn = this.element.querySelector('#send-btn');
     const input = this.element.querySelector('#chat-input');
 
     if (sendBtn) {
       sendBtn.disabled = loading;
-      sendBtn.innerHTML = loading 
-        ? '<i class="fas fa-spinner fa-spin"></i>' 
+      sendBtn.innerHTML = loading
+        ? '<i class="fas fa-spinner fa-spin"></i>'
         : '<i class="fas fa-paper-plane"></i>';
     }
 
@@ -483,18 +618,20 @@ export class ChatContainer {
       input.disabled = loading;
     }
 
-    // Show/hide typing indicator
+    // Show/hide typing indicator with status
     const messagesContainer = this.element.querySelector('#chat-messages');
     const existingIndicator = messagesContainer.querySelector('.typing-indicator');
-    
+
     if (loading && !existingIndicator) {
       const indicator = document.createElement('div');
       indicator.className = 'chat-message assistant typing-indicator';
+      indicator.id = 'typing-indicator';
       indicator.innerHTML = `
         <div class="message-avatar">
           <i class="fas fa-robot"></i>
         </div>
         <div class="message-content">
+          <div class="typing-status">${status || 'Sedang mengetik...'}</div>
           <div class="typing-dots">
             <span></span>
             <span></span>
@@ -504,9 +641,30 @@ export class ChatContainer {
       `;
       messagesContainer.appendChild(indicator);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    } else if (loading && existingIndicator) {
+      // Update existing indicator status
+      const statusEl = existingIndicator.querySelector('.typing-status');
+      if (statusEl && status) {
+        statusEl.textContent = status;
+      }
     } else if (!loading && existingIndicator) {
       existingIndicator.remove();
     }
+  }
+
+  /**
+   * Update loading status text
+   */
+  _updateLoadingStatus(status) {
+    this.loadingStatus = status;
+    const indicator = this.element.querySelector('#typing-indicator');
+    if (indicator) {
+      const statusEl = indicator.querySelector('.typing-status');
+      if (statusEl) {
+        statusEl.textContent = status;
+      }
+    }
+    console.log(`[ChatContainer] ${status}`);
   }
 
   /**

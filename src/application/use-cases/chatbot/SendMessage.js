@@ -56,7 +56,8 @@ export class SendMessage {
         ...request.options,
         model,
         reasoningMode,
-        context: aiContext
+        context: aiContext,
+        attachments: request.attachments || []  // Pass attachments for processing
       }
     );
 
