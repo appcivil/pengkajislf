@@ -27,6 +27,7 @@ export default defineConfig({
           'docx':       ['docx', 'file-saver'],
           'markdown':   ['marked'],
           'dompurify':  ['dompurify'],
+          'tesseract':  ['tesseract.js'], // Pre-bundle tesseract to avoid CDN worker issues
           // INSPECTION MODULES: Bundle semua inspection pages bersama
           // untuk mengurangi HTTP requests dan memastikan tab switching lancar
           'inspection-modules': [
@@ -41,6 +42,14 @@ export default defineConfig({
         }
       }
     }
+  },
+  optimizeDeps: {
+    include: ['tesseract.js'],
+    esbuildOptions: {
+      define: {
+        global: 'globalThis',
+      },
+    },
   },
   server: {
     port: 5173,
