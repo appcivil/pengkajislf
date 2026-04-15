@@ -35,6 +35,7 @@ export const COLOR_MUTED = '6b7280';
 export const COLOR_SUCCESS = '065f46';
 export const COLOR_DANGER = '991b1b';
 export const COLOR_WARNING = '92400e';
+export const COLOR_INFO = '0369a1'; // Blue info color
 export const COLOR_HEADER_BG = 'f1f5f9';
 export const COLOR_TABLE_ALT = 'f9fafb';
 export const COLOR_BORDER = 'd1d5db';
