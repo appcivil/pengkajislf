@@ -4,45 +4,82 @@
  */
 import { MODELS } from '../../lib/ai-router.js';
 import { supabase } from '../../lib/supabase.js';
+import { getAIProviderRegistry } from '../../lib/ai-rate-limit-manager.js';
 
 export class AdvancedReasoningService {
   constructor(options = {}) {
     this.defaultModel = options.model || MODELS.GROQ;
     this.temperature = options.temperature || 0.7;
     this.maxTokens = options.maxTokens || 4096;
+    this.providerRegistry = getAIProviderRegistry();
   }
 
   /**
-   * Mode Berpikir - Chain of Thought dengan visible reasoning
+   * Mode Berpikir - Chain of Thought dengan visible reasoning (Claude Opus 4.6 Style)
    */
   async think(query, context = {}) {
-    const thinkingPrompt = `[MODE BERPIKIR]
+    // Prioritaskan Groq Reasoning untuk chain-of-thought terbaik
+    const model = context.model || MODELS.GROQ_REASONING || MODELS.GROQ || this.defaultModel;
 
-Anda adalah AI Ahli Pengkajian SLF dengan kemampuan berpikir mendalam.
-Tunjukkan proses berpikir Anda langkah demi langkah.
+    const thinkingPrompt = `[SYSTEM: CLAUDE OPUS 4.6 REASONING PROTOCOL]
 
-Format jawaban:
-<think>
-1. [Analisis permasalahan]
-2. [Identifikasi faktor-faktor penting]
-3. [Evaluasi berdasarkan standar SNI/NSPK]
-4. [Pertimbangan teknis]
-5. [Kesimpulan sementara]
-</think>
+[Bahasa Indonesia Protocol - WAJIB]
+✓ Gunakan Bahasa Indonesia yang baik dan benar (eyd yang sempurna)
+✓ Gaya bahasa: akademik, teknis, formal, profesional
+✓ Terminologi: gunakan istilah engineering dan perizinan bangunan Indonesia yang tepat
+✓ Hindari: slang, singkatan tidak baku, campur-campur bahasa (kecuali istilah teknis standar seperti 'beam', 'column', 'stress', 'load')
+✓ Struktur: logis, komprehensif, mudah dipahami
 
-<answer>
-[Jawaban final yang komprehensif dan terstruktur]
-</answer>
+Anda adalah AI Senior Consultant SLF dengan kapabilitas reasoning kelas dunia. 
+Gunakan metodologi analisis berikut:
 
-Pertanyaan: ${query}
+## Phase 1: Deconstruction & Framing
+- Identifikasi core question dan implicit assumptions
+- Frame problem space dengan boundary conditions yang jelas
+- Identifikasi stakeholders dan constraints (regulasi, teknis, ekonomi)
 
-${context.projectData ? `Data Proyek:\n${JSON.stringify(context.projectData, null, 2)}` : ''}
-${context.moduleContext ? `Konteks Modul: ${context.moduleContext}` : ''}`;
+## Phase 2: Multi-Dimensional Analysis  
+- Legal/Regulatory Dimension: Mapping ke Peraturan, SNI, NSPK
+- Technical Dimension: Parameter engineering, safety factors, material specs
+- Practical Dimension: Constructability, maintenance, lifecycle cost
+- Risk Dimension: Hazard identification, mitigation hierarchy
 
-    const response = await this._callAI(thinkingPrompt, this.defaultModel);
+## Phase 3: Evidence Synthesis
+- Cross-reference antar sumber data (gambar, dokumen, field observation)
+- Weight of evidence assessment (strong/moderate/weak)
+- Identify knowledge gaps dan uncertainty levels
+
+## Phase 4: Structured Reasoning Chain
+<thinking_process>
+[Langkah 1: Problem decomposition dengan MECE framework]
+[Langkah 2: Generate hypotheses untuk setiap component]
+[Langkah 3: Test hypotheses against available evidence]
+[Langkah 4: Synthesize findings into coherent narrative]
+[Langkah 5: Validate conclusions dengan sanity checks]
+</thinking_process>
+
+## Phase 5: Actionable Output
+<answer_structure>
+📋 EXECUTIVE SUMMARY: Key findings dalam 3-5 bullet points
+🔍 TECHNICAL ANALYSIS: Detail evaluasi berdasarkan standar
+⚠️ RISK ASSESSMENT: Critical issues dengan severity ranking
+💡 RECOMMENDATIONS: Prioritized action items dengan rationale
+📚 COMPLIANCE MAPPING: Referensi regulasi spesifik
+</answer_structure>
+
+[INPUT DATA]
+Query: ${query}
+
+${context.projectData ? `Project Context:\n${JSON.stringify(context.projectData, null, 2)}` : ''}
+${context.moduleContext ? `Technical Domain: ${context.moduleContext}` : ''}
+${context.historicalData ? `Historical Data:\n${context.historicalData}` : ''}
+
+Execute full reasoning protocol now.`;
+
+    const response = await this._callAI(thinkingPrompt, model);
 
     // Parse thinking dan answer
-    const thinkMatch = response.match(/<think>([\s\S]*?)<\/think>/);
+    const thinkMatch = response.match(/<thinking>([\s\S]*?)<\/thinking>/);
     const answerMatch = response.match(/<answer>([\s\S]*?)<\/answer>/);
 
     return {
@@ -51,60 +88,154 @@ ${context.moduleContext ? `Konteks Modul: ${context.moduleContext}` : ''}`;
       answer: answerMatch ? answerMatch[1].trim() : response,
       raw: response,
       metadata: {
-        model: this.defaultModel.id || this.defaultModel,
+        model: model.id || model,
         timestamp: new Date().toISOString()
       }
     };
   }
 
   /**
-   * Mode Deep Reasoning - Analisis multi-layer kompleks
+   * Mode Deep Reasoning - Advanced Multi-Layer Analysis (Claude Opus 4.6 Architecture)
    */
   async deepReason(query, context = {}) {
-    const deepPrompt = `[MODE DEEP REASONING]
+    // Use Groq Reasoning model for advanced chain-of-thought, fallback to others
+    const model = context.model || MODELS.GROQ_REASONING || MODELS.CLAUDE || MODELS.GROQ || this.defaultModel;
 
-Anda adalah Senior Technical Consultant SLF dengan 20+ tahun pengalaman.
-Lakukan analisis mendalam dengan pendekatan:
+    const deepPrompt = `[SYSTEM: ADVANCED DEEP REASONING - OPUS 4.6 ARCHITECTURE]
 
-## Layer 1: Analisis Konseptual
-- Identifikasi prinsip dasar yang relevan
-- Mapping ke regulasi dan standar
+[Bahasa Indonesia Protocol - WAJIB]
+✓ Gunakan Bahasa Indonesia yang baik dan benar (eyd yang sempurna)
+✓ Gaya bahasa: akademik, teknis, formal, profesional
+✓ Terminologi: gunakan istilah engineering dan perizinan bangunan Indonesia yang tepat
+✓ Hindari: slang, singkatan tidak baku, campur-campur bahasa
+✓ Struktur: logis, komprehensif, mudah dipahami
 
-## Layer 2: Analisis Teknis
-- Evaluasi parameter teknis
-- Identifikasi critical points
-- Analisis risk assessment
+Anda adalah Principal Technical Advisor SLF dengan 25+ tahun pengalaman multidisiplin.
+Analisis mengikuti arsitektur berpikir sistemik berikut:
 
-## Layer 3: Analisis Implementasi
-- Feasibility dari segi konstruksi
-- Cost-benefit implikasi
-- Timeline dan resource requirements
+═══════════════════════════════════════════════════════════════
+PHASE 0: COGNITIVE PRIMING
+═══════════════════════════════════════════════════════════════
+✓ Activate expert mode untuk engineering judgment
+✓ Calibrate confidence levels (definitive/likely/possible/speculative)
+✓ Set reasoning depth: COMPREHENSIVE (all layers mandatory)
 
-## Layer 4: Analisis Compliance
-- Mapping ke Peraturan Menteri PUPR
-- NSPK (Norma, Standar, Prosedur, Kriteria)
-- SNI yang berlaku
+═══════════════════════════════════════════════════════════════
+PHASE 1: SYSTEM BOUNDARY DEFINITION
+═══════════════════════════════════════════════════════════════
+□ Scope delineation: What is IN vs OUT of analysis scope?
+□ Constraint mapping: Hard constraints (regulatory) vs Soft constraints (preferential)
+□ Stakeholder matrix: Owner, Designer, Contractor, Authority, End-users
+□ Success criteria definition: Measurable KPIs untuk "laik fungsi"
 
-## Layer 5: Rekomendasi Strategis
-- Prioritas aksi
-- Mitigasi risiko
-- Alternative solutions
+═══════════════════════════════════════════════════════════════
+PHASE 2: MULTI-LAYER TECHNICAL ANALYSIS
+═══════════════════════════════════════════════════════════════
 
-Pertanyaan: ${query}
+LAYER A - FUNDAMENTAL ANALYSIS
+├─ First principles review (physics, material science, structural mechanics)
+├─ Code compliance baseline (Permen PUPR, SNI terkait)
+├─ Safety philosophy alignment (LRFD, WSD, performance-based)
+└─ Uncertainty quantification (confidence intervals, safety margins)
 
-${context.projectData ? `\n### DATA PROYEK\n${JSON.stringify(context.projectData, null, 2)}` : ''}
-${context.historicalData ? `\n### DATA HISTORIS\n${context.historicalData}` : ''}
+LAYER B - SYSTEMS INTEGRATION  
+├─ Inter-component dependencies mapping
+├─ Interface analysis (arsitektur-struktur-MEP interfaces)
+├─ Constructability sequencing impact
+├─ Operational phase maintainability
+└─ Failure mode propagation analysis
 
-Berikan output terstruktur dengan format di atas.`;
+LAYER C - REGULATORY INTELLIGENCE
+├─ Primary regulations: Permen PUPR No. 2/PRT/M/2022 dan turunannya
+├─ Secondary standards: SNI suite (struktur, kebakaran, kesehatan, aksesibilitas)
+├─ Tertiary guidelines: NSPK, best practices internasional (NFPA, IBC, ASCE)
+├─ Local bylaws dan perda regional
+└─ Compliance gap analysis matrix
 
-    const response = await this._callAI(deepPrompt, MODELS.CLAUDE || this.defaultModel);
+LAYER D - RISK & RESILIENCE ENGINEERING
+├─ Hazard identification (natural: gempa, angin, banjir | man-made: kebakaran, utilitas)
+├─ Vulnerability assessment (component-level fragility)
+├─ Consequence analysis (life safety, property, business continuity)
+├─ Risk prioritization matrix (probability × severity)
+└─ Mitigation strategy hierarchy (elimination → substitution → engineering → administrative → PPE)
+
+LAYER E - ECONOMIC & SUSTAINABILITY ANALYSIS
+├─ Lifecycle cost implications (CAPEX vs OPEX)
+├─ Sustainability metrics (carbon footprint, material efficiency)
+├─ Future adaptability (flexibility untuk repurposing)
+└─ Value engineering opportunities
+
+═══════════════════════════════════════════════════════════════
+PHASE 3: SYNTHESIS & JUDGMENT FORMATION
+═══════════════════════════════════════════════════════════════
+□ Cross-layer consistency check (konflik antar layer?)
+□ Sensitivity analysis (which variables drive outcomes?)
+□ Scenario testing (best case / expected / worst case)
+□ Decision tree mapping untuk recommended actions
+□ Confidence level assignment untuk setiap kesimpulan
+
+═══════════════════════════════════════════════════════════════
+PHASE 4: KNOWLEDGE TRANSLATION
+═══════════════════════════════════════════════════════════════
+<structured_output>
+
+📊 EXECUTIVE BRIEFING (untuk Decision Makers)
+├─ Situation summary (2-3 paragraf)
+├─ Critical decision points identified
+├─ Recommended decision dengan risk-adjusted rationale
+└─ Resource requirements overview
+
+🔬 TECHNICAL DEEP DIVE (untuk Technical Team)
+├─ Detailed findings per aspek (arsitektur, struktur, MEP, safety)
+├─ Quantified parameters dengan acceptable ranges
+├─ Non-conformance items dengan severity classification
+├─ Technical debt identification
+└─ Peer review checkpoints
+
+⚡ ACTIONABLE INTELLIGENCE (untuk Implementation)
+├─ Prioritized task list (MoSCoW: Must/Should/Could/Won't)
+├─ Quick wins (low effort, high impact)
+├─ Strategic initiatives (high effort, transformational)
+├─ Risk mitigation actions dengan timelines
+└─ Verification & validation protocols
+
+📚 COMPLIANCE DOCUMENTATION
+├─ Regulatory requirement mapping table
+├─ Compliance status per item (✓ Compliant / ⚠ Partial / ✗ Non-compliant / ? Unknown)
+├─ Required certifications dan approvals
+├─ Documentation gaps untuk SLF submission
+└─ Authority communication strategy
+
+🔮 FORESIGHT & ADAPTATION
+├─ Emerging risks identification
+├─ Future regulatory trajectory prediction
+├─ Technology obsolescence assessment
+├─ Adaptive capacity recommendations
+└─ Continuous monitoring protocols
+
+</structured_output>
+
+═══════════════════════════════════════════════════════════════
+INPUT QUERY
+═══════════════════════════════════════════════════════════════
+${query}
+
+${context.projectData ? `PROJECT INTELLIGENCE:\n${JSON.stringify(context.projectData, null, 2)}` : ''}
+${context.historicalData ? `HISTORICAL BASELINE:\n${context.historicalData}` : ''}
+${context.simulationResults ? `SIMULATION DATA:\n${context.simulationResults}` : ''}
+
+═══════════════════════════════════════════════════════════════
+EXECUTE COMPLETE REASONING PROTOCOL
+═══════════════════════════════════════════════════════════════`;
+
+    const response = await this._callAI(deepPrompt, model);
 
     return {
       mode: 'deep_reasoning',
       answer: response,
       layers: this._parseLayers(response),
       metadata: {
-        model: (MODELS.CLAUDE || this.defaultModel).id,
+        model: model.id || model,
         timestamp: new Date().toISOString(),
         complexity: 'high'
       }
@@ -115,9 +246,19 @@ Berikan output terstruktur dengan format di atas.`;
    * Mode Research - Pengumpulan dan sintesis informasi
    */
   async research(topic, options = {}) {
-    const { depth = 'comprehensive', sources = ['regulasi', 'standar', 'best_practices'] } = options;
+    const { depth = 'comprehensive', sources = ['regulasi', 'standar', 'best_practices'], model: modelOption } = options;
+
+    // Use model from options or fall back to GEMINI_PRO then default
+    const model = modelOption || MODELS.GEMINI_PRO || this.defaultModel;
 
     const researchPrompt = `[MODE RESEARCH]
+
+[Bahasa Indonesia Protocol - WAJIB]
+✓ Gunakan Bahasa Indonesia yang baik dan benar (eyd yang sempurna)
+✓ Gaya bahasa: akademik, teknis, formal, profesional
+✓ Terminologi: gunakan istilah engineering dan perizinan bangunan Indonesia yang tepat
+✓ Hindari: slang, singkatan tidak baku, campur-campur bahasa
+✓ Struktur: logis, komprehensif, mudah dipahami
 
 Anda adalah Research Assistant untuk Pengkajian SLF.
 Lakukan research komprehensif tentang topik berikut:
@@ -163,7 +304,7 @@ Pastikan output:
 ✓ Praktis dan dapat diimplementasikan
 ✓ Menggunakan bahasa Indonesia akademik dan teknis`;
 
-    const response = await this._callAI(researchPrompt, MODELS.GEMINI_PRO || this.defaultModel, {
+    const response = await this._callAI(researchPrompt, model, {
       maxTokens: 8192
     });
 
@@ -173,7 +314,7 @@ Pastikan output:
       answer: response,
       sections: this._parseResearchSections(response),
       metadata: {
-        model: (MODELS.GEMINI_PRO || this.defaultModel).id,
+        model: model.id || model,
         timestamp: new Date().toISOString(),
         depth,
         sources
@@ -185,7 +326,10 @@ Pastikan output:
    * Mode Daily - Ringkasan dan insight harian
    */
   async daily(userId, options = {}) {
-    const { date = new Date(), projectId = null } = options;
+    const { date = new Date(), projectId = null, model: modelOption } = options;
+
+    // Use model from options or fall back to GROQ then default
+    const model = modelOption || MODELS.GROQ || this.defaultModel;
 
     // Ambil data aktivitas dari Supabase
     const { data: sessions } = await supabase
@@ -203,6 +347,12 @@ Pastikan output:
     };
 
     const dailyPrompt = `[MODE DAILY INSIGHTS]
+
+[Bahasa Indonesia Protocol - WAJIB]
+✓ Gunakan Bahasa Indonesia yang baik dan benar (eyd yang sempurna)
+✓ Gaya bahasa: akademik, teknis, formal, profesional namun tetap friendly
+✓ Terminologi: gunakan istilah engineering dan perizinan bangunan Indonesia yang tepat
+✓ Hindari: slang, singkatan tidak baku, campur-campur bahasa
 
 Berikan ringkasan harian untuk user Pengkajian SLF berdasarkan aktivitas berikut:
 
@@ -231,7 +381,7 @@ Saran prioritas untuk fokus esok hari.
 
 Tulis dalam gaya profesional namun santai, menggunakan bahasa Indonesia.`;
 
-    const response = await this._callAI(dailyPrompt, MODELS.GROQ);
+    const response = await this._callAI(dailyPrompt, model);
 
     return {
       mode: 'daily',
@@ -239,42 +389,60 @@ Tulis dalam gaya profesional namun santai, menggunakan bahasa Indonesia.`;
       answer: response,
       stats: dailyData,
       metadata: {
-        model: MODELS.GROQ.id,
+        model: model.id || model,
         timestamp: new Date().toISOString()
       }
     };
   }
 
   /**
-   * Helper: Call AI via Edge Function
+   * Helper: Call AI via Edge Function dengan Fallback
    */
   async _callAI(prompt, model, options = {}) {
-    const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-proxy`;
-    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const callFn = async (currentModel) => {
+      const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-proxy`;
+      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-    const response = await fetch(functionUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': anonKey,
-        'Authorization': `Bearer ${anonKey}`
-      },
-      body: JSON.stringify({
-        provider: model.proxyProvider || 'groq',
-        model: model.id,
-        prompt,
-        temperature: options.temperature || this.temperature,
-        maxTokens: options.maxTokens || this.maxTokens
-      })
+      const response = await fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': anonKey,
+          'Authorization': `Bearer ${anonKey}`
+        },
+        body: JSON.stringify({
+          provider: currentModel.proxyProvider || 'groq',
+          model: currentModel.id,
+          prompt,
+          temperature: options.temperature || this.temperature,
+          maxTokens: options.maxTokens || this.maxTokens
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`AI call failed: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      return data.result || data.content || data.text || '';
+    };
+
+    // Get preferred provider from model
+    const preferredProvider = model?.proxyProvider || model?.vendor || 'groq';
+
+    // Execute with fallback
+    const result = await this.providerRegistry.executeWithFallback(callFn, {
+      preferredProvider,
+      priority: options.priority || 'high'
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`AI call failed: ${response.status} - ${errorText}`);
+    // Log fallback usage
+    if (result.fallbackUsed) {
+      console.log(`[AdvancedReasoningService] Fallback used. Final provider: ${result.provider}`);
     }
 
-    const data = await response.json();
-    return data.result || data.content || data.text || '';
+    return result.result;
   }
 
   /**

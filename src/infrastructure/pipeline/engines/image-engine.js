@@ -13,7 +13,8 @@ import { FileType, PipelineType } from '../../../core/smart-ai/types.js';
 export class ImageEngine extends IImageEngine {
   constructor(config = {}) {
     super('ImageEngine', config);
-    
+
+    this.config = config;
     this.supportedTypes = [
       FileType.JPEG,
       FileType.JPG,
@@ -22,12 +23,13 @@ export class ImageEngine extends IImageEngine {
       FileType.WEBP,
       FileType.TIFF
     ];
-    
+
     this.enableOCR = config.enableOCR !== false;
     this.enablePreprocessing = config.enablePreprocessing !== false;
     this.ocrLanguage = config.ocrLanguage || 'ind+eng';
     this.maxFileSize = config.maxFileSize || 20 * 1024 * 1024; // 20MB
-    
+    this.workerPath = config.workerPath || null; // Custom worker path to avoid CDN
+
     // Tesseract instance (lazy load)
     this.tesseract = null;
     this.tesseractWorker = null;
@@ -43,17 +45,46 @@ export class ImageEngine extends IImageEngine {
         // Dynamic import Tesseract.js
         const Tesseract = await import('tesseract.js');
         this.tesseract = Tesseract.default || Tesseract;
-        
-        // Create worker
-        this.tesseractWorker = await this.tesseract.createWorker(this.ocrLanguage);
-        
-        console.log('[ImageEngine] Tesseract initialized');
+
+        // Configure local worker paths to avoid CDN dependency issues
+        // Tesseract.js v7 tries to load worker from CDN by default
+        // Providing workerPath allows offline/air-gapped usage
+        const workerOptions = {
+          langPath: this.config.langPath || undefined,
+          workerPath: this.workerPath || undefined,
+          logger: this.config.debug ? m => console.log('[Tesseract]', m) : undefined
+        };
+
+        // Create worker with error handling and retry logic
+        let retries = 2;
+        while (retries > 0) {
+          try {
+            // Use local worker if available, fallback to CDN
+            this.tesseractWorker = await this.tesseract.createWorker(
+              this.ocrLanguage,
+              1, // OEM_DEFAULT
+              workerOptions
+            );
+            console.log('[ImageEngine] Tesseract initialized');
+            break;
+          } catch (workerError) {
+            retries--;
+            if (retries === 0) {
+              throw workerError;
+            }
+            console.warn('[ImageEngine] Worker creation failed, retrying...', workerError.message);
+            await new Promise(r => setTimeout(r, 1000));
+          }
+        }
       } catch (error) {
         console.warn('[ImageEngine] Tesseract initialization failed:', error);
+        console.warn('[ImageEngine] OCR will be disabled. Images will be processed without text extraction.');
         this.enableOCR = false;
+        this.tesseract = null;
+        this.tesseractWorker = null;
       }
     }
-    
+
     this.isInitialized = true;
     return true;
   }

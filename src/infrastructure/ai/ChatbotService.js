@@ -6,17 +6,18 @@ import { IChatbotService } from '../../domain/services/IChatbotService.js';
 import { MODELS, fetchOpenRouter, parseAIJson } from '../../lib/ai-router.js';
 import { supabase } from '../../lib/supabase.js';
 import { AdvancedReasoningService } from './AdvancedReasoningService.js';
+import { extractTextFromPDF, extractTextFromImage, batchOCRProcess } from '../../lib/ocr-service.js';
 
 export class ChatbotService extends IChatbotService {
   constructor(options = {}) {
     super();
-    this.defaultModel = options.model || MODELS.GROQ_LLAMMA;
+    this.defaultModel = options.model || MODELS.GROQ_REASONING || MODELS.GROQ;
     this.temperature = options.temperature || 0.7;
     this.maxTokens = options.maxTokens || 4096;
     this.dataProvider = options.dataProvider || null;
     this.memoryService = options.memoryService || null;
     this.reasoningService = new AdvancedReasoningService({
-      model: this.defaultModel,
+      model: MODELS.GROQ_REASONING || MODELS.GROQ, // Prioritaskan reasoning model
       temperature: this.temperature,
       maxTokens: this.maxTokens
     });
@@ -29,6 +30,18 @@ export class ChatbotService extends IChatbotService {
     const model = options.model || this.defaultModel;
     const context = options.context || {};
     const reasoningMode = options.reasoningMode || null;
+    const attachments = options.attachments || [];
+
+    // Process attachments - read file content
+    let attachmentContent = '';
+    if (attachments && attachments.length > 0) {
+      attachmentContent = await this._processAttachments(attachments);
+    }
+
+    // Combine message with attachment content
+    const fullMessage = attachmentContent
+      ? `${message}\n\n=== KONTEN FILE LAMPIRAN ===\n${attachmentContent}`
+      : message;
 
     // Handle reasoning modes
     if (reasoningMode) {
@@ -37,12 +50,13 @@ export class ChatbotService extends IChatbotService {
         const reasoningContext = {
           projectData: context.applicationData,
           moduleContext: context.moduleContext,
-          userId: context.userId
+          userId: context.userId,
+          model // Pass selected model
         };
 
         switch (reasoningMode) {
           case 'think':
-            result = await this.reasoningService.think(message, reasoningContext);
+            result = await this.reasoningService.think(fullMessage, reasoningContext);
             return {
               content: result.thinking
                 ? `<div class="thinking-process"><strong>🧠 Proses Berpikir:</strong><pre>${result.thinking}</pre></div><div class="final-answer">${result.answer}</div>`
@@ -56,7 +70,7 @@ export class ChatbotService extends IChatbotService {
             };
 
           case 'deep':
-            result = await this.reasoningService.deepReason(message, reasoningContext);
+            result = await this.reasoningService.deepReason(fullMessage, reasoningContext);
             return {
               content: result.answer,
               metadata: {
@@ -69,9 +83,10 @@ export class ChatbotService extends IChatbotService {
             };
 
           case 'research':
-            result = await this.reasoningService.research(message, {
+            result = await this.reasoningService.research(fullMessage, {
               depth: 'comprehensive',
-              sources: ['regulasi', 'standar', 'best_practices']
+              sources: ['regulasi', 'standar', 'best_practices'],
+              model // Pass selected model
             });
             return {
               content: result.answer,
@@ -91,7 +106,9 @@ export class ChatbotService extends IChatbotService {
                 metadata: { mode: 'daily', error: 'no_user' }
               };
             }
-            result = await this.reasoningService.daily(reasoningContext.userId);
+            result = await this.reasoningService.daily(reasoningContext.userId, {
+              model // Pass selected model
+            });
             return {
               content: result.answer,
               metadata: {
@@ -135,31 +152,26 @@ export class ChatbotService extends IChatbotService {
       }
     }
 
-    // Build prompt dengan context dan memory
-    const prompt = this._buildChatPrompt(message, session, context, memoryContext);
+    // Build prompt dengan context dan memory (gunakan fullMessage yang sudah include konten lampiran)
+    const prompt = this._buildChatPrompt(fullMessage, session, context, memoryContext);
 
     try {
-      // Panggil AI service
-      const response = await this._callAI(prompt, model, options);
+      // Panggil AI service dengan fallback dan progress reporting
+      const response = await this._callAIWithFallback(prompt, model, options, (status, data) => {
+        this._dispatchProgressEvent('ai_progress', { status, ...data });
+      });
 
       return {
         content: response.content,
         metadata: {
-          model: model.id || model,
+          model: response.modelUsed || model.id || model,
           tokens: response.tokens,
-          temperature: options.temperature || this.temperature,
           finishReason: response.finishReason,
-          responseTime: response.responseTime
+          responseTime: response.responseTime,
+          attachments: attachments?.length || 0,
+          fallbackUsed: response.fallbackUsed || false
         }
       };
-
-      // Learn dari conversation jika memory service tersedia
-      if (this.memoryService && context.userId) {
-        this._learnFromConversation(context.userId, session.id, message, result.content, context)
-          .catch(err => console.error('[ChatbotService] Learning error:', err));
-      }
-
-      return result;
     } catch (error) {
       console.error('[ChatbotService] generateResponse error:', error);
       
@@ -179,7 +191,20 @@ export class ChatbotService extends IChatbotService {
    */
   async generateStreamingResponse(message, session, onChunk, options = {}) {
     const model = options.model || this.defaultModel;
-    const prompt = this._buildChatPrompt(message, session, {});
+    const attachments = options.attachments || [];
+
+    // Process attachments - read file content (same as generateResponse)
+    let attachmentContent = '';
+    if (attachments && attachments.length > 0) {
+      attachmentContent = await this._processAttachments(attachments);
+    }
+
+    // Combine message with attachment content
+    const fullMessage = attachmentContent
+      ? `${message}\n\n=== KONTEN FILE LAMPIRAN ===\n${attachmentContent}`
+      : message;
+
+    const prompt = this._buildChatPrompt(fullMessage, session, {});
 
     try {
       // Untuk sekarang, simulate streaming dengan chunking
@@ -394,6 +419,18 @@ Gunakan bahasa Indonesia untuk header kolom.`;
   _buildChatPrompt(message, session, context, memoryContext = '') {
     const parts = [];
 
+    // System directive: Bahasa Indonesia wajib
+    parts.push(`[SYSTEM DIRECTIVE - LANGUAGE PROTOCOL]
+Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) Indonesia.
+✓ WAJIB menggunakan Bahasa Indonesia yang baik dan benar
+✓ Gaya bahasa: akademik, teknis, formal, profesional
+✓ Hindari slang, singkatan tidak baku, atau campuran bahasa (kecuali istilah teknis standar)
+✓ Gunakan terminologi engineering dan perizinan bangunan Indonesia yang tepat
+✓ Struktur kalimat: jelas, logis, komprehensif
+✓ Prioritaskan kejelasan dan akurasi teknis
+---`);
+    parts.push('');
+
     // Memory context (jika ada)
     if (memoryContext) {
       parts.push(memoryContext);
@@ -430,9 +467,90 @@ Gunakan bahasa Indonesia untuk header kolom.`;
   }
 
   /**
-   * Call AI service
+   * Call AI service with fallback chain and progress reporting
    */
-  async _callAI(prompt, model, options = {}) {
+  async _callAIWithFallback(prompt, model, options = {}, onProgress = null) {
+    const startTime = Date.now();
+    const fallbackChain = this._buildFallbackChain(model);
+
+    let lastError = null;
+
+    for (let i = 0; i < fallbackChain.length; i++) {
+      const currentModel = fallbackChain[i];
+      const modelName = currentModel.name || currentModel.id || 'Unknown';
+
+      // Report progress
+      if (onProgress) {
+        if (i === 0) {
+          onProgress('Mencoba model utama...', { model: modelName, attempt: i + 1, total: fallbackChain.length });
+        } else {
+          onProgress(`Model sebelumnya gagal, mencoba fallback ${i}...`, { model: modelName, attempt: i + 1, total: fallbackChain.length, previousError: lastError?.message });
+        }
+      }
+
+      try {
+        const result = await this._callSingleAI(prompt, currentModel, options);
+
+        if (onProgress) {
+          onProgress('Berhasil mendapatkan respons!', { model: modelName, responseTime: result.responseTime });
+        }
+
+        return {
+          ...result,
+          modelUsed: modelName,
+          fallbackUsed: i > 0
+        };
+      } catch (error) {
+        lastError = error;
+        console.warn(`[ChatbotService] Model ${modelName} gagal:`, error.message);
+
+        if (onProgress) {
+          onProgress(`Model ${modelName} gagal: ${error.message.substring(0, 50)}...`, { error: error.message, model: modelName });
+        }
+
+        // Jeda sebelum retry
+        if (i < fallbackChain.length - 1) {
+          await new Promise(r => setTimeout(r, 1000));
+        }
+      }
+    }
+
+    throw new Error(`Semua model AI gagal. Error terakhir: ${lastError?.message}`);
+  }
+
+  /**
+   * Build fallback chain of models to try
+   */
+  _buildFallbackChain(primaryModel) {
+    const chain = [primaryModel];
+
+    // Tambahkan model fallback berdasarkan yang tersedia
+    const fallbacks = [
+      MODELS.GROQ_REASONING,
+      MODELS.GROQ,
+      MODELS.KIMI,
+      MODELS.KIMI_32K,
+      MODELS.GEMINI_FLASH,
+      MODELS.MISTRAL,
+      MODELS.OPENROUTER
+    ];
+
+    for (const fallback of fallbacks) {
+      if (fallback && fallback.id !== primaryModel?.id) {
+        // Hindari duplikat
+        if (!chain.some(m => m.id === fallback.id)) {
+          chain.push(fallback);
+        }
+      }
+    }
+
+    return chain.filter(m => m); // Hapus null/undefined
+  }
+
+  /**
+   * Call single AI service (original implementation)
+   */
+  async _callSingleAI(prompt, model, options = {}) {
     const startTime = Date.now();
 
     // Get current session untuk authorization
@@ -479,6 +597,24 @@ Gunakan bahasa Indonesia untuk header kolom.`;
       finishReason: data.finish_reason,
       responseTime
     };
+  }
+
+  /**
+   * Legacy: Call AI service (single call, no fallback)
+   */
+  async _callAI(prompt, model, options = {}) {
+    return this._callAIWithFallback(prompt, model, options);
+  }
+
+  /**
+   * Dispatch progress event untuk UI updates
+   */
+  _dispatchProgressEvent(type, data) {
+    const event = new CustomEvent('chat-ai-progress', {
+      detail: { type, ...data, timestamp: Date.now() }
+    });
+    document.dispatchEvent(event);
+    console.log(`[ChatbotService] Progress: ${type}`, data);
   }
 
   /**
@@ -603,5 +739,424 @@ Gunakan bahasa Indonesia untuk header kolom.`;
     } catch (error) {
       console.error('[ChatbotService] Learning error:', error);
     }
+  }
+
+  /**
+   * Process attachments - extract file content for AI using DocumentEngine and OCR
+   */
+  async _processAttachments(attachments) {
+    const contents = [];
+
+    for (const file of attachments) {
+      try {
+        let content = '';
+        const fileName = file.name?.toLowerCase() || '';
+        const fileType = file.type || '';
+
+        // Determine file type and process accordingly
+        if (fileType.startsWith('image/')) {
+          // For images, use OCR to extract text
+          console.log(`[ChatbotService] Processing image: ${file.name}`);
+          content = await this._extractImageContent(file);
+        } else if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+          // For PDFs, use OCR service
+          console.log(`[ChatbotService] Processing PDF: ${file.name}`);
+          content = await this._extractPDFContent(file);
+        } else if (this._isTextFile(file)) {
+          // For text files, read as text
+          content = await this._fileToText(file);
+          if (content.length > 10000) {
+            content = content.substring(0, 10000) + '\n... (truncated)';
+          }
+        } else if (fileName.endsWith('.docx') || fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+          // For DOCX, extract text using DocumentEngine
+          console.log(`[ChatbotService] Processing DOCX: ${file.name}`);
+          content = await this._extractDOCXContent(file);
+        } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.csv') ||
+                   fileType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+                   fileType === 'text/csv') {
+          // For spreadsheets, extract tables
+          console.log(`[ChatbotService] Processing spreadsheet: ${file.name}`);
+          content = await this._extractSpreadsheetContent(file);
+        } else if (fileName.endsWith('.pptx') || fileType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
+          // For PowerPoint, extract slides
+          console.log(`[ChatbotService] Processing PPTX: ${file.name}`);
+          content = await this._extractPPTXContent(file);
+        } else {
+          // For other files, note the type
+          content = `[File: ${file.name}, Type: ${file.type || 'unknown'}, Size: ${this._formatFileSize(file.size)}]\nNote: File content extraction not supported for this file type.`;
+        }
+
+        contents.push(`--- ${file.name} ---\n${content}`);
+      } catch (error) {
+        console.error(`[ChatbotService] Error processing attachment ${file.name}:`, error);
+        contents.push(`--- ${file.name} ---\nError: ${error.message || 'Could not read file content'}`);
+      }
+    }
+
+    return contents.join('\n\n');
+  }
+
+  /**
+   * Extract content from image using OCR
+   */
+  async _extractImageContent(file) {
+    try {
+      const result = await extractTextFromImage(file, {
+        language: 'ind',
+        logger: (m) => {
+          if (m.status === 'recognizing text') {
+            console.log(`[OCR] ${file.name}: ${(m.progress * 100).toFixed(0)}%`);
+          }
+        }
+      });
+
+      if (result.success && result.text?.trim()) {
+        let content = `[Image: ${file.name}]\n`;
+        content += `Extracted Text:\n${result.text}`;
+        if (result.confidence) {
+          content += `\n\nOCR Confidence: ${result.confidence}%`;
+        }
+        return content;
+      } else {
+        // Fallback to base64 if no text extracted
+        const base64 = await this._fileToBase64(file);
+        return `[Image: ${file.name}]\nBase64: ${base64.substring(0, 100)}... (truncated)\nNote: No text could be extracted from this image.`;
+      }
+    } catch (error) {
+      console.error(`[ChatbotService] OCR error for ${file.name}:`, error);
+      return `[Image: ${file.name}]\nError during OCR: ${error.message}`;
+    }
+  }
+
+  /**
+   * Extract content from PDF using OCR service with chunking support
+   */
+  async _extractPDFContent(file, options = {}) {
+    const maxPages = options.maxPages || 50; // Increased from 10 to 50
+    const chunkSize = options.chunkSize || 12000; // Characters per chunk
+
+    try {
+      const result = await extractTextFromPDF(file, {
+        extractImages: true,
+        maxPages,
+        onProgress: (current, total, msg) => {
+          console.log(`[PDF OCR] ${file.name}: ${msg}`);
+        }
+      });
+
+      if (result.success && result.fullText?.trim()) {
+        let fullText = result.fullText;
+
+        // Check if text needs chunking
+        if (fullText.length > chunkSize) {
+          console.log(`[ChatbotService] PDF ${file.name} exceeds ${chunkSize} chars, using chunking`);
+          return this._chunkDocumentContent(file.name, fullText, {
+            type: 'PDF',
+            totalPages: result.numPages,
+            hasTables: result.hasTables,
+            chunkSize
+          });
+        }
+
+        let content = `[PDF: ${file.name}, Pages: ${result.numPages}]\n`;
+        content += `Extracted Text:\n${fullText}`;
+
+        if (result.hasTables) {
+          content += `\n\n[Tables detected in PDF]`;
+        }
+
+        return content;
+      } else {
+        return `[PDF: ${file.name}]\nNote: Could not extract text from this PDF. It may be a scanned image without OCR layer.`;
+      }
+    } catch (error) {
+      console.error(`[ChatbotService] PDF extraction error for ${file.name}:`, error);
+      return `[PDF: ${file.name}]\nError during PDF extraction: ${error.message}`;
+    }
+  }
+
+  /**
+   * Chunk large document content into manageable pieces
+   */
+  _chunkDocumentContent(fileName, fullText, metadata = {}) {
+    const { type = 'Document', chunkSize = 12000, totalPages, hasTables } = metadata;
+
+    // Split text into chunks by paragraphs to preserve context
+    const chunks = this._splitIntoChunks(fullText, chunkSize);
+    const totalChunks = chunks.length;
+
+    let content = `[${type}: ${fileName}`;
+    if (totalPages) content += `, Pages: ${totalPages}`;
+    content += `]\n`;
+    content += `Total Chunks: ${totalChunks}\n`;
+    content += `Note: Document is split into ${totalChunks} parts due to size. AI will process all parts.\n\n`;
+
+    if (hasTables) {
+      content += `[Tables detected in document]\n\n`;
+    }
+
+    // Include all chunks with separators
+    chunks.forEach((chunk, index) => {
+      content += `=== CHUNK ${index + 1}/${totalChunks} ===\n`;
+      content += chunk;
+      content += '\n\n';
+    });
+
+    return content;
+  }
+
+  /**
+   * Split text into chunks at paragraph boundaries
+   */
+  _splitIntoChunks(text, maxChunkSize) {
+    const chunks = [];
+    const paragraphs = text.split(/\n\n+/);
+
+    let currentChunk = '';
+
+    for (const paragraph of paragraphs) {
+      // If single paragraph is too long, split it by sentences
+      if (paragraph.length > maxChunkSize) {
+        // First, save current chunk if exists
+        if (currentChunk.trim()) {
+          chunks.push(currentChunk.trim());
+          currentChunk = '';
+        }
+
+        // Split long paragraph by sentences
+        const sentences = paragraph.match(/[^.!?]+[.!?]+/g) || [paragraph];
+        for (const sentence of sentences) {
+          if (currentChunk.length + sentence.length > maxChunkSize) {
+            if (currentChunk.trim()) {
+              chunks.push(currentChunk.trim());
+            }
+            currentChunk = sentence;
+          } else {
+            currentChunk += sentence;
+          }
+        }
+      } else {
+        // Check if adding this paragraph would exceed chunk size
+        if (currentChunk.length + paragraph.length + 2 > maxChunkSize) {
+          chunks.push(currentChunk.trim());
+          currentChunk = paragraph + '\n\n';
+        } else {
+          currentChunk += paragraph + '\n\n';
+        }
+      }
+    }
+
+    // Don't forget the last chunk
+    if (currentChunk.trim()) {
+      chunks.push(currentChunk.trim());
+    }
+
+    return chunks;
+  }
+
+  /**
+   * Extract content from DOCX file with chunking support
+   */
+  async _extractDOCXContent(file, options = {}) {
+    const chunkSize = options.chunkSize || 12000;
+
+    try {
+      // Dynamic import DocumentEngine
+      const { default: DocumentEngine } = await import('../pipeline/engines/document-engine.js');
+      const engine = new DocumentEngine();
+      await engine.initialize();
+
+      const result = await engine.process({ file, type: 'docx' });
+      await engine.dispose();
+
+      let fullText = result.text || '';
+
+      // Add structure info if available
+      if (result.structure?.length > 0) {
+        const headings = result.structure.filter(s => s.level > 0);
+        if (headings.length > 0) {
+          fullText += '\n\nDocument Structure:\n';
+          headings.forEach(h => {
+            fullText += `${'  '.repeat(h.level - 1)}- ${h.text}\n`;
+          });
+        }
+      }
+
+      // Check if chunking is needed
+      if (fullText.length > chunkSize) {
+        console.log(`[ChatbotService] DOCX ${file.name} exceeds ${chunkSize} chars, using chunking`);
+        return this._chunkDocumentContent(file.name, fullText, {
+          type: 'Document',
+          chunkSize
+        });
+      }
+
+      let content = `[Document: ${file.name}]\n`;
+      content += `Extracted Text:\n${fullText}`;
+
+      return content;
+    } catch (error) {
+      console.error(`[ChatbotService] DOCX extraction error for ${file.name}:`, error);
+      return `[Document: ${file.name}]\nError during document extraction: ${error.message}`;
+    }
+  }
+
+  /**
+   * Extract content from spreadsheet (XLSX/CSV) with row limit
+   */
+  async _extractSpreadsheetContent(file, options = {}) {
+    const maxRowsPerSheet = options.maxRowsPerSheet || 100; // Increased from 20 to 100
+    const chunkSize = options.chunkSize || 12000;
+
+    try {
+      // Dynamic import DocumentEngine
+      const { default: DocumentEngine } = await import('../pipeline/engines/document-engine.js');
+      const engine = new DocumentEngine();
+      await engine.initialize();
+
+      const type = file.name.endsWith('.csv') ? 'csv' : 'xlsx';
+      const result = await engine.process({ file, type });
+      await engine.dispose();
+
+      let content = `[Spreadsheet: ${file.name}]\n`;
+      let fullText = '';
+
+      if (result.tables?.length > 0) {
+        result.tables.forEach((table, idx) => {
+          fullText += `\n--- Sheet: ${table.name} (${table.rowCount} rows) ---\n`;
+          // Show first N rows
+          const previewRows = table.data.slice(0, maxRowsPerSheet);
+          previewRows.forEach(row => {
+            fullText += row.join('\t') + '\n';
+          });
+          if (table.rowCount > maxRowsPerSheet) {
+            fullText += `... (${table.rowCount - maxRowsPerSheet} more rows - not shown)\n`;
+          }
+        });
+      } else if (result.text?.trim()) {
+        fullText = result.text;
+      }
+
+      // Check if chunking is needed
+      if (fullText.length > chunkSize) {
+        console.log(`[ChatbotService] Spreadsheet ${file.name} exceeds ${chunkSize} chars, using chunking`);
+        return this._chunkDocumentContent(file.name, fullText, {
+          type: 'Spreadsheet',
+          chunkSize,
+          totalSheets: result.tables?.length
+        });
+      }
+
+      content += fullText;
+      return content;
+    } catch (error) {
+      console.error(`[ChatbotService] Spreadsheet extraction error for ${file.name}:`, error);
+      return `[Spreadsheet: ${file.name}]\nError during extraction: ${error.message}`;
+    }
+  }
+
+  /**
+   * Extract content from PowerPoint (PPTX) with chunking support
+   */
+  async _extractPPTXContent(file, options = {}) {
+    const chunkSize = options.chunkSize || 12000;
+
+    try {
+      // Dynamic import DocumentEngine
+      const { default: DocumentEngine } = await import('../pipeline/engines/document-engine.js');
+      const engine = new DocumentEngine();
+      await engine.initialize();
+
+      const result = await engine.process({ file, type: 'pptx' });
+      await engine.dispose();
+
+      let fullText = '';
+
+      if (result.structure?.length > 0) {
+        fullText += `Slides:\n`;
+        result.structure.forEach(slide => {
+          fullText += `\n--- Slide ${slide.index} ---\n${slide.text}`;
+        });
+      }
+
+      if (result.text?.trim() && !result.structure?.length) {
+        fullText += `Content:\n${result.text}`;
+      }
+
+      // Check if chunking is needed
+      if (fullText.length > chunkSize) {
+        console.log(`[ChatbotService] PPTX ${file.name} exceeds ${chunkSize} chars, using chunking`);
+        return this._chunkDocumentContent(file.name, fullText, {
+          type: 'Presentation',
+          totalSlides: result.structure?.length,
+          chunkSize
+        });
+      }
+
+      let content = `[Presentation: ${file.name}]\n`;
+      content += fullText;
+
+      return content;
+    } catch (error) {
+      console.error(`[ChatbotService] PPTX extraction error for ${file.name}:`, error);
+      return `[Presentation: ${file.name}]\nError during extraction: ${error.message}`;
+    }
+  }
+
+  /**
+   * Check if file is a text file that can be read
+   */
+  _isTextFile(file) {
+    const textTypes = [
+      'text/', 'application/json', 'application/xml',
+      'application/javascript', 'application/typescript',
+      'application/x-httpd-php', 'application/x-python-code',
+      '.txt', '.md', '.csv', '.json', '.xml', '.js', '.ts',
+      '.html', '.css', '.py', '.php', '.java', '.c', '.cpp',
+      '.h', '.sql', '.log'
+    ];
+
+    const fileName = file.name?.toLowerCase() || '';
+    const fileType = file.type?.toLowerCase() || '';
+
+    return textTypes.some(type =>
+      fileType.includes(type) || fileName.endsWith(type)
+    );
+  }
+
+  /**
+   * Read file as text
+   */
+  _fileToText(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = (e) => reject(e);
+      reader.readAsText(file);
+    });
+  }
+
+  /**
+   * Read file as base64
+   */
+  _fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = (e) => reject(e);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /**
+   * Format file size
+   */
+  _formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 }
