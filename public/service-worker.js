@@ -61,8 +61,13 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (request.method !== 'GET') return;
   
-  // Skip Supabase API calls
+  // Skip Supabase API calls dan non-HTTP schemes
   if (url.hostname.includes('supabase.co')) {
+    return;
+  }
+
+  // Skip non-HTTP schemes (chrome-extension, blob, data, etc.)
+  if (!url.protocol.startsWith('http')) {
     return;
   }
   

@@ -49,6 +49,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip non-HTTP schemes (chrome-extension, blob, data, etc.)
+  if (!url.protocol.startsWith('http')) {
+    return;
+  }
+
   // 2. STATIC ASSETS: Stale-While-Revalidate
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
