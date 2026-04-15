@@ -27,6 +27,17 @@ export default defineConfig({
           'docx':       ['docx', 'file-saver'],
           'markdown':   ['marked'],
           'dompurify':  ['dompurify'],
+          // INSPECTION MODULES: Bundle semua inspection pages bersama
+          // untuk mengurangi HTTP requests dan memastikan tab switching lancar
+          'inspection-modules': [
+            './src/pages/fire-protection-inspection.js',
+            './src/pages/building-intensity-inspection.js',
+            './src/pages/architectural-inspection.js',
+            './src/pages/egress-inspection.js',
+            './src/pages/lps-inspection.js',
+            './src/pages/electrical-inspection.js',
+            './src/pages/environmental-inspection.js',
+          ],
         }
       }
     }
