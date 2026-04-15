@@ -592,14 +592,17 @@ function initEventListeners() {
     // Update active state
     document.querySelectorAll('.sanitation-tab-item').forEach(item => {
       item.classList.remove('active');
-      item.style.background = '';
+      item.style.background = 'transparent';
       item.style.color = 'var(--text-tertiary)';
+      item.style.boxShadow = 'none';
     });
-    
-    btn.classList.add('active');
-    btn.style.background = 'var(--gradient-brand)';
-    btn.style.color = 'white';
-    btn.style.boxShadow = 'var(--shadow-sapphire)';
+
+    if (btn) {
+      btn.classList.add('active');
+      btn.style.background = 'var(--gradient-brand)';
+      btn.style.color = 'white';
+      btn.style.boxShadow = 'var(--shadow-sapphire)';
+    }
     
     renderCurrentTab();
   };

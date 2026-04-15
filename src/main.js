@@ -20,12 +20,15 @@ import { OpenRouterAIService } from './infrastructure/ai/OpenRouterService.js';
 import { SyncData } from './application/use-cases/SyncData.js';
 import { AnalisisDokumenAI } from './application/use-cases/AnalisisDokumenAI.js';
 import { ForensicAnalysis } from './application/use-cases/ForensicAnalysis.js';
+import { MemoryService } from './infrastructure/memory/MemoryService.js';
+import { SupabaseAIMemoryRepository } from './infrastructure/persistence/SupabaseAIMemoryRepository.js';
 import { getCurrentRoute } from './lib/router.js';
 import { APP_CONFIG } from './lib/config.js';
 import { startBackgroundSync } from './lib/sync.js';
 import { supabase, isSupabaseConfigured } from './lib/supabase.js';
 import { uploadToGoogleDrive } from './lib/drive.js';
 import { initSyncIndicator } from './components/sync-ui.js';
+import { floatingChatStyles } from './components/chatbot/index.js';
 
 // SmartAI Pipeline Integration
 import { initializePipeline, getPipelineIntegration } from './infrastructure/pipeline/pipeline-integration.js';
@@ -34,8 +37,15 @@ import { initializePipeline, getPipelineIntegration } from './infrastructure/pip
 const checklistRepo       = new SupabaseChecklistRepository();
 const fileRepo            = new SupabaseFileRepository();
 const auditLogger         = new DatabaseAuditLogger();
-const aiService           = new OpenRouterAIService();
 const notificationService = new BrowserNotificationService();
+
+// AI Memory Setup
+const aiMemoryRepo        = new SupabaseAIMemoryRepository();
+const memoryService       = new MemoryService(aiMemoryRepo);
+
+// AI Service dengan Memory
+const aiService           = new OpenRouterAIService();
+// Inject memory service ke ai service akan dilakukan setelah instance creation
 
 const syncDataUseCase = new SyncData(checklistRepo, notificationService);
 const analyseUseCase  = new AnalisisDokumenAI(fileRepo, aiService, notificationService, auditLogger);
@@ -44,6 +54,7 @@ const forensicUseCase = new ForensicAnalysis(checklistRepo, fileRepo, notificati
 // Global Navigation
 window.navigate = (path, params = {}) => navigate(path, params);
 window.forensicUseCase = forensicUseCase; // Expose for UI pages
+window.memoryService = memoryService; // Expose memory service untuk chatbot
 
 // AI Processing UI Controls
 window.showAIOverlay = (title = 'AI Analisis Sedang Berjalan') => {
@@ -183,6 +194,8 @@ const pages = {
   wastewaterInspection:   () => import('./pages/wastewater-inspection.js'),
   disasterInspection:   () => import('./pages/disaster-inspection.js'),
   smartAIDashboard:   () => import('./pages/smart-ai-dashboard.js'),
+  chatbot:            () => import('./pages/chatbot.js'),
+  canvaStudio:        () => import('./pages/canva-studio.js'),
 };
 
 // Pre-fetch halaman yang paling sering diakses setelah login
@@ -481,6 +494,22 @@ function registerRoutes() {
     return h;
   });
 
+  // AI Chatbot
+  route('chatbot', async (p) => {
+    const { chatbotPage, afterChatbotRender } = await pages.chatbot();
+    const h = await chatbotPage(p);
+    setTimeout(() => afterChatbotRender(p), 50);
+    return h;
+  });
+
+  // Canva AI Studio
+  route('canva-studio', async (p) => {
+    const { canvaStudioPage, afterCanvaStudioRender } = await pages.canvaStudio();
+    const h = await canvaStudioPage(p);
+    setTimeout(() => afterCanvaStudioRender(p), 50);
+    return h;
+  });
+
   const taskRoute = async (p) => {
     const { taskDetailPage, afterTaskDetailRender } = await pages.taskDetail();
     const h = await taskDetailPage(p);
@@ -619,6 +648,30 @@ async function bootstrap() {
   setTimeout(() => {
     if (isAuthenticated()) startBackgroundSync(supabase, uploadToGoogleDrive);
   }, 2000);
+
+  // Inject floating chat styles
+  if (!document.getElementById('floating-chat-styles')) {
+    const styleEl = document.createElement('style');
+    styleEl.id = 'floating-chat-styles';
+    styleEl.textContent = floatingChatStyles;
+    document.head.appendChild(styleEl);
+  }
+
+  // Initialize floating chat button (lazy load)
+  setTimeout(() => {
+    if (isAuthenticated()) {
+      import('./components/chatbot/FloatingChatButton.js').then(({ FloatingChatButton }) => {
+        const fab = new FloatingChatButton();
+        const fabEl = fab.render();
+        document.body.appendChild(fabEl);
+        
+        // Store reference for cleanup
+        window._floatingChatButton = fab;
+      }).catch(err => {
+        console.error('[App] Failed to load floating chat button:', err);
+      });
+    }
+  }, 3000);
 
   window.addEventListener('online', updateSyncUI);
   window.addEventListener('offline', updateSyncUI);

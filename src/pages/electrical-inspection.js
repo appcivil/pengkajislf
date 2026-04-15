@@ -1444,7 +1444,6 @@ function escapeHtml(text) {
 }
 
 // Make functions available globally
-window.switchTab = switchTab;
 window._switchElectricalTab = _switchElectricalTab;
 window.showPanelModal = showPanelModal;
 window.showMeasurementModal = showMeasurementModal;
@@ -1538,10 +1537,12 @@ function _switchElectricalTab(tabId, btn) {
     tab.style.boxShadow = 'none';
   });
   
-  btn.classList.add('active');
-  btn.style.background = 'var(--gradient-brand)';
-  btn.style.color = 'white';
-  btn.style.boxShadow = 'var(--shadow-sapphire)';
+  if (btn) {
+    btn.classList.add('active');
+    btn.style.background = 'var(--gradient-brand)';
+    btn.style.color = 'white';
+    btn.style.boxShadow = 'var(--shadow-sapphire)';
+  }
   
   // Update content visibility
   document.querySelectorAll('.electrical-tab-content').forEach(content => {
@@ -1578,47 +1579,6 @@ function _switchElectricalTab(tabId, btn) {
       break;
     case 'protection':
       if (content) content.innerHTML = renderProtectionTab();
-      break;
-  }
-}
-
-function switchTab(tabId) {
-  currentTab = tabId;
-  
-  // Update nav tabs
-  document.querySelectorAll('.nav-tab').forEach(tab => {
-    tab.classList.toggle('active', tab.dataset.tab === tabId);
-  });
-  
-  // Update content
-  const content = document.getElementById('electrical-content');
-  switch(tabId) {
-    case 'dashboard':
-      content.innerHTML = renderDashboard();
-      break;
-    case 'panels':
-      content.innerHTML = renderPanelsList();
-      break;
-    case 'measurements':
-      content.innerHTML = renderMeasurementsTab();
-      break;
-    case 'analysis':
-      content.innerHTML = renderAnalysisTab();
-      break;
-    case 'thermal':
-      content.innerHTML = renderThermalTab();
-      break;
-    case 'protection':
-      content.innerHTML = renderProtectionTab();
-      break;
-    case 'compliance':
-      content.innerHTML = renderComplianceTab();
-      break;
-    case 'simulation':
-      content.innerHTML = renderSimulationTab();
-      break;
-    case 'reports':
-      content.innerHTML = renderReportsTab();
       break;
   }
 }
