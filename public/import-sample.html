@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Import Sample Project - SKT Puncak Darajat</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: #e2e8f0;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 36px;
+      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    .project-info {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 16px;
+      padding: 24px;
+      margin: 30px 0;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .project-info h2 {
+      font-size: 18px;
+      color: #60a5fa;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #94a3b8; font-size: 14px; }
+    .info-value { color: #e2e8f0; font-weight: 500; font-size: 14px; }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .module-tag {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      text-align: center;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    .actions {
+      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .btn {
+      padding: 16px 24px;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(59, 130, 246, 0.5);
+    }
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-secondary {
+      background: transparent;
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+    }
+    .progress-bar {
+      display: none;
+      margin: 20px 0;
+    }
+    .progress-bar.active { display: block; }
+    .progress-track {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+    .progress-text {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    .result {
+      display: none;
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .result.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #4ade80;
+    }
+    .result.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+    .result .btn {
+      padding: 10px 16px;
+      font-size: 14px;
+      margin: 5px;
+    }
+    .result .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .result .btn-secondary {
+      background: transparent;
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .data-preview {
+      margin-top: 20px;
+      max-height: 200px;
+      overflow-y: auto;
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .note {
+      margin-top: 20px;
+      padding: 16px;
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      border-radius: 12px;
+      font-size: 13px;
+      color: #fbbf24;
+    }
+    .note-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    a { color: #60a5fa; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="icon">🏨</div>
+      <h1>Import Sample Project</h1>
+      <p class="subtitle">SKT Puncak Darajat - Resort & Hot Spring</p>
+    </div>
+
+    <div class="project-info">
+      <h2>📋 Informasi Proyek</h2>
+      <div class="info-row">
+        <span class="info-label">Nama Bangunan</span>
+        <span class="info-value">Puncak Darajat Resort & Hot Spring</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Lokasi</span>
+        <span class="info-value">Garut, Jawa Barat</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Jenis Bangunan</span>
+        <span class="info-value">Komersial (Hotel & Resort)</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Jumlah Lantai</span>
+        <span class="info-value">4 Lantai</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Luas Bangunan</span>
+        <span class="info-value">2,850.5 m²</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Status SLF</span>
+        <span class="status-badge">
+          <span>⏳</span> Dalam Pengkajian
+        </span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Progress</span>
+        <span class="info-value">45%</span>
+      </div>
+      
+      <div class="modules-grid">
+        <div class="module-tag">Administrasi</div>
+        <div class="module-tag">Arsitektur</div>
+        <div class="module-tag">Struktur</div>
+        <div class="module-tag">Proteksi Kebakaran</div>
+        <div class="module-tag">Proteksi Petir</div>
+        <div class="module-tag">Kelistrikan</div>
+        <div class="module-tag">Air Bersih</div>
+        <div class="module-tag">Air Kotor</div>
+        <div class="module-tag">Limbah</div>
+        <div class="module-tag">Kenyamanan</div>
+        <div class="module-tag">Air Hujan</div>
+        <div class="module-tag">Lingkungan</div>
+      </div>
+    </div>
+
+    <div class="note">
+      <div class="note-title">⚠️ Catatan Penting</div>
+      <p>Import akan menyimpan data ke <strong>IndexedDB (Local)</strong> saja untuk menghindari error skema Supabase. Data akan tersedia offline dan bisa di-edit. Untuk sinkronisasi ke cloud, gunakan fitur sync manual dari aplikasi utama setelah proyek dibuat.</p>
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text" id="progressText">Memulai import...</div>
+    </div>
+
+    <div class="result" id="result"></div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="btnImport" onclick="startImport()">
+        <span>📥</span> Import Sample Project
+      </button>
+      <button class="btn btn-secondary" onclick="window.location.href='/'">
+        <span>←</span> Kembali ke Aplikasi
+      </button>
+    </div>
+
+    <div class="data-preview" id="dataPreview" style="display: none;">
+      <strong>Debug Console:</strong><br>
+      <span id="debugOutput"></span>
+    </div>
+  </div>
+
+  <script type="module">
+    // BLOCK Supabase requests - pastikan tidak ada request ke Supabase dari halaman ini
+    const originalFetch = window.fetch;
+    window.fetch = function(...args) {
+      const url = args[0]?.toString() || '';
+      if (url.includes('supabase.co')) {
+        console.warn('[Import] Blocked Supabase request:', url);
+        return Promise.reject(new Error('Supabase requests are disabled in import mode'));
+      }
+      return originalFetch.apply(this, args);
+    };
+    
+    // Import required modules - Hanya IndexedDB, tidak menggunakan Supabase
+    let localDataManager;
+    
+    async function initModules() {
+      try {
+        // Hanya import local-data-manager, skip Supabase untuk menghindari error
+        localDataManager = await import('../src/lib/local-data-manager.js');
+        return true;
+      } catch (err) {
+        console.error('Failed to load modules:', err);
+        showResult('error', 'Gagal memuat modul aplikasi. Pastikan aplikasi sudah di-build dengan benar.');
+        return false;
+      }
+    }
+
+    // Sample project data - matching Supabase schema exactly
+    const SAMPLE_PROJECT = {
+      "version": "2.1",
+      "exportedAt": "2026-04-15T21:30:00.000Z",
+      "project": {
+        "id": "skt-puncak-darajat-001",
+        "nama_bangunan": "Puncak Darajat Resort & Hot Spring",
+        "jenis_bangunan": "Komersial",
+        "alamat": "Jl. Puncak Darajat No. 123, Desa Tanjung Karya, Kecamatan Pasirwangi, Kabupaten Garut, Jawa Barat 44161",
+        "pemilik": "PT Puncak Darajat Sejahtera",
+        "penanggung_jawab": "Otang Sugianto",
+        "telepon": "+62 812-3456-7890",
+        "email_pemilik": "info@puncakdarajat.com",
+        "tanggal_mulai": "2023-10-15",
+        "tanggal_target": "2024-03-15",
+        "jumlah_lantai": 4,
+        "luas_bangunan": 2850.5,
+        "jenis_konstruksi": "Beton Bertulang",
+        "nomor_pbg": "PBG-2023-12345678",
+        "latitude": -7.2108,
+        "longitude": 107.9026,
+        "gsb": 5.0,
+        "kdb": 0.65,
+        "klb": 2.8,
+        "kdh": 0.35,
+        "no_dokumen_tanah": "HGB No. 97/Garut",
+        "nama_pemilik_tanah": "Otang Sugianto",
+        "pemilik_tanah_sama": false,
+        "assigned_to": null,
+        "simbg_id": "SIMBG-2023-987654321",
+        "simbg_email": "admin@puncakdarajat.com",
+        "simbg_password": null,
+        "drive_proxy_url": null,
+        "created_at": "2023-10-15T08:30:00.000Z",
+        "updated_at": "2026-04-15T14:22:00.000Z"
+      },
+      "checklists": {
+        "tier1": {
+          "administrasi": {
+            "status": "compliant",
+            "score": 85,
+            "items": {
+              "ADM-001": { "kode": "ADM-001", "nama": "Izin Mendirikan Bangunan (IMB/PBG)", "status": "ada", "keterangan": "PBG-2023-12345678 terbit 15 Mei 2023", "verified": true },
+              "ADM-002": { "kode": "ADM-002", "nama": "Sertifikat Tanah", "status": "ada", "keterangan": "HGB No. 97 atas nama Otang Sugianto", "verified": true },
+              "ADM-003": { "kode": "ADM-003", "nama": "Akta Jual Beli", "status": "ada", "keterangan": "AJB tanggal 20 Oktober 2019", "verified": true },
+              "ADM-004": { "kode": "ADM-004", "nama": "Ijin Pemanfaatan", "status": "ada", "keterangan": "IP dari Dinas Pariwisata Garut", "verified": true },
+              "ADM-005": { "kode": "ADM-005", "nama": "Surat Pernyataan Laik Fungsi", "status": "proses", "keterangan": "Dalam penyusunan", "verified": false }
+            }
+          },
+          "arsitektur": {
+            "status": "partial",
+            "score": 72,
+            "items": {
+              "ARS-001": { "kode": "ARS-001", "nama": "Kesesuaian Rencana Tapak", "status": "sesuai", "keterangan": "Site plan sesuai KRK", "verified": true },
+              "ARS-002": { "kode": "ARS-002", "nama": "Intensitas Bangunan (KDB)", "status": "perlu_perhatian", "keterangan": "KDB aktual 68%, batas maksimal 65%", "nilai_aktual": 68, "nilai_batas": 65, "verified": false },
+              "ARS-003": { "kode": "ARS-003", "nama": "Intensitas Bangunan (KLB)", "status": "sesuai", "keterangan": "KLB aktual 2.8, batas maksimal 3.0", "nilai_aktual": 2.8, "nilai_batas": 3.0, "verified": true },
+              "ARS-004": { "kode": "ARS-004", "nama": "Jalur Evakuasi", "status": "sesuai", "keterangan": "2 jalur evakuasi tersedia, lebar tangga 1.4m", "verified": true },
+              "ARS-005": { "kode": "ARS-005", "nama": "Persyaratan Kemudahan (Accessibility)", "status": "perlu_perhatian", "keterangan": "Ramp ada tapi kemiringan 10%, melebihi batas 8.33%", "verified": false }
+            }
+          }
+        },
+        "tier2": {
+          "struktur": {
+            "status": "compliant",
+            "score": 88,
+            "items": {
+              "STR-001": { "kode": "STR-001", "nama": "Sistem Struktur Utama", "status": "sesuai", "keterangan": "Sistem rangka pemikul momen (SRPM) beton bertulang", "verified": true },
+              "STR-002": { "kode": "STR-002", "nama": "Analisis Ketahanan Gempa", "status": "sesuai", "keterangan": "Analisis ETABS telah dilakukan", "verified": true },
+              "STR-003": { "kode": "STR-003", "nama": "Uji Non-Destructive Test (NDT)", "status": "sesuai", "keterangan": "Hammer test dan UPV dilakukan 2023", "verified": true }
+            }
+          },
+          "proteksi_kebakaran": {
+            "status": "partial",
+            "score": 68,
+            "items": {
+              "PKB-001": { "kode": "PKB-001", "nama": "Deteksi dan Alarm Kebakaran", "status": "sesuai", "keterangan": "Smoke detector dan manual call point terpasang di semua lantai", "verified": true },
+              "PKB-002": { "kode": "PKB-002", "nama": "Sistem Sprinkler", "status": "tidak_sesuai", "keterangan": "Hanya terpasang di area dapur dan boiler room", "rekomendasi": "Tambah sprinkler di koridor dan kamar hotel", "verified": false },
+              "PKB-003": { "kode": "PKB-003", "nama": "Sistem Hidran", "status": "sesuai", "keterangan": "Hydrant indoor dan outdoor tersedia dengan tekanan memadai", "verified": true },
+              "PKB-004": { "kode": "PKB-004", "nama": "Material Tahan Api", "status": "perlu_perhatian", "keterangan": "Sebagian partisi menggunakan gypsum tahan api, perlu verifikasi rating", "verified": false }
+            }
+          },
+          "proteksi_petir": {
+            "status": "compliant",
+            "score": 82,
+            "items": {
+              "PPT-001": { "kode": "PPT-001", "nama": "External LPS", "status": "sesuai", "keterangan": "Air terminal Franklin rod terpasang 4 titik", "verified": true },
+              "PPT-002": { "kode": "PPT-002", "nama": "Internal LPS", "status": "sesuai", "keterangan": "Bonding dan isolasi jarak aman sesuai SNI 2848:2020", "verified": true },
+              "PPT-003": { "kode": "PPT-003", "nama": "Surge Protection Device (SPD)", "status": "perlu_perhatian", "keterangan": "SPD terpasang di panel utama tapi perlu verifikasi koordinasi level", "verified": false }
+            }
+          },
+          "kelistrikan": {
+            "status": "compliant",
+            "score": 85,
+            "items": {
+              "KLT-001": { "kode": "KLT-001", "nama": "Sumber Daya dan Distribusi", "status": "sesuai", "keterangan": "Daya terpasang 250 kVA dari PLN, genset backup 100 kVA", "verified": true },
+              "KLT-002": { "kode": "KLT-002", "nama": "Sistem Penerangan", "status": "sesuai", "keterangan": "Iluminasi sesuai SNI 6197:2011, rata-rata 300 lux", "verified": true },
+              "KLT-003": { "kode": "KLT-003", "nama": "Sistem Grounding", "status": "sesuai", "keterangan": "Resistansi grounding 3.2 ohm, dibawah batas 5 ohm", "verified": true }
+            }
+          }
+        },
+        "tier3": {
+          "air_bersih": {
+            "status": "compliant",
+            "score": 80,
+            "items": {
+              "AB-001": { "kode": "AB-001", "nama": "Kebutuhan Air Bersih", "status": "sesuai", "keterangan": "Kebutuhan 35.000 liter/hari untuk 80 kamar + restoran + kolam", "verified": true },
+              "AB-002": { "kode": "AB-002", "nama": "Tangki Penyimpanan", "status": "sesuai", "keterangan": "Tangki ground 50.000 liter + roof tank 10.000 liter", "verified": true },
+              "AB-003": { "kode": "AB-003", "nama": "Kualitas Air", "status": "sesuai", "keterangan": "Hasil uji lab memenuhi Permenkes", "verified": true }
+            }
+          },
+          "air_kotor": {
+            "status": "partial",
+            "score": 65,
+            "items": {
+              "AK-001": { "kode": "AK-001", "nama": "Sistem Pembuangan Air Kotor", "status": "sesuai", "keterangan": "Sistem pemipaan terpisah untuk black water dan grey water", "verified": true },
+              "AK-002": { "kode": "AK-002", "nama": "Ventilasi Plumbing", "status": "perlu_perhatian", "keterangan": "Vent stack ada tapi diameter kurang dari spec", "rekomendasi": "Perbesar vent stack dari 2 inch ke 3 inch", "verified": false }
+            }
+          },
+          "limbah": {
+            "status": "compliant",
+            "score": 78,
+            "items": {
+              "LMB-001": { "kode": "LMB-001", "nama": "Sistem Pembuangan Kotoran", "status": "sesuai", "keterangan": "Septic tank 2 kompartemen dengan volume 30 m³", "verified": true },
+              "LMB-002": { "kode": "LMB-002", "nama": "Sistem Pengelolaan Sampah", "status": "sesuai", "keterangan": "TPS terpadu dengan pemilahan organik-anorganik", "verified": true }
+            }
+          },
+          "kenyamanan": {
+            "status": "compliant",
+            "score": 86,
+            "items": {
+              "KNY-001": { "kode": "KNY-001", "nama": "Pencahayaan Alami", "status": "sesuai", "keterangan": "Daylight Factor rata-rata 1.8% di ruang tamu dan kamar", "verified": true },
+              "KNY-002": { "kode": "KNY-002", "nama": "Penghawaan Alami", "status": "sesuai", "keterangan": "Kecepatan udara 0.18 m/s dengan temperatur 26°C", "verified": true },
+              "KNY-003": { "kode": "KNY-003", "nama": "Kebisingan", "status": "sesuai", "keterangan": "Noise level 42 dB di area kamar", "verified": true }
+            }
+          },
+          "air_hujan": {
+            "status": "partial",
+            "score": 70,
+            "items": {
+              "AH-001": { "kode": "AH-001", "nama": "Drainase Permukaan", "status": "sesuai", "keterangan": "Sistem drainase tersedia dengan kapasitas cukup", "verified": true },
+              "AH-002": { "kode": "AH-002", "nama": "Sistem Resapan", "status": "perlu_perhatian", "keterangan": "Sumur resapan ada 4 unit, perlu ditambah untuk luas lahan", "rekomendasi": "Tambah 2 sumur resapan di area parkir timur", "verified": false }
+            }
+          },
+          "lingkungan": {
+            "status": "compliant",
+            "score": 88,
+            "items": {
+              "LGK-001": { "kode": "LGK-001", "nama": "Dampak Udara", "status": "sesuai", "keterangan": "Emisi boiler dan genset dalam batas aman", "verified": true },
+              "LGK-002": { "kode": "LGK-002", "nama": "Dampak Air", "status": "sesuai", "keterangan": "Efluen dari IPAL memenuhi baku mutu", "verified": true }
+            }
+          }
+        }
+      }
+    };
+
+    window.startImport = async function() {
+      const btn = document.getElementById('btnImport');
+      const progressBar = document.getElementById('progressBar');
+      const progressFill = document.getElementById('progressFill');
+      const progressText = document.getElementById('progressText');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳</span> Sedang Import...';
+      progressBar.classList.add('active');
+      
+      try {
+        // Initialize modules
+        progressFill.style.width = '10%';
+        progressText.textContent = 'Memuat modul...';
+        
+        const modulesLoaded = await initModules();
+        if (!modulesLoaded) return;
+        
+        // Initialize IndexedDB
+        progressFill.style.width = '30%';
+        progressText.textContent = 'Inisialisasi database lokal...';
+        await localDataManager.initLocalDB();
+        console.log('[Import] IndexedDB initialized successfully');
+        
+        // Check if project exists in IndexedDB (hanya local, tidak cek Supabase)
+        progressFill.style.width = '40%';
+        progressText.textContent = 'Memeriksa proyek existing...';
+        
+        const existingProject = await localDataManager.getProject(SAMPLE_PROJECT.project.id);
+        console.log('[Import] Checking for existing project:', SAMPLE_PROJECT.project.id, 'Found:', !!existingProject);
+        
+        if (existingProject && !window.confirmOverwrite) {
+          progressBar.classList.remove('active');
+          showResult('error', `
+            <strong>Proyek sudah ada di database lokal!</strong><br><br>
+            ID: ${SAMPLE_PROJECT.project.id}<br>
+            Nama: ${existingProject.nama_bangunan || 'Unknown'}<br><br>
+            <button class="btn btn-primary" onclick="window.confirmOverwrite = true; window.startImport();" style="margin-top: 10px;">
+              <span>🔄</span> Overwrite Data
+            </button>
+            <button class="btn btn-secondary" onclick="window.location.href='/?page=proyek'" style="margin-top: 10px; margin-left: 10px;">
+              <span>←</span> Lihat Proyek
+            </button>
+          `);
+          btn.disabled = false;
+          btn.innerHTML = '<span>📥</span> Import Sample Project';
+          return;
+        }
+        
+        // Reset flag setelah overwrite
+        window.confirmOverwrite = false;
+        
+        // Save to IndexedDB only (TIDAK menyimpan ke Supabase untuk menghindari error UUID)
+        progressFill.style.width = '60%';
+        progressText.textContent = 'Menyimpan data proyek ke IndexedDB...';
+        console.log('[Import] Saving project to IndexedDB:', SAMPLE_PROJECT.project.id);
+        
+        // Save project
+        await localDataManager.saveProject(SAMPLE_PROJECT.project);
+        
+        progressFill.style.width = '80%';
+        progressText.textContent = 'Menyimpan checklist...';
+        
+        // Save checklists
+        console.log('[Import] Saving checklists...');
+        await localDataManager.saveChecklist(SAMPLE_PROJECT.project.id, 'tier1', SAMPLE_PROJECT.checklists.tier1);
+        await localDataManager.saveChecklist(SAMPLE_PROJECT.project.id, 'tier2', SAMPLE_PROJECT.checklists.tier2);
+        await localDataManager.saveChecklist(SAMPLE_PROJECT.project.id, 'tier3', SAMPLE_PROJECT.checklists.tier3);
+        console.log('[Import] Checklists saved successfully');
+        
+        progressFill.style.width = '95%';
+        progressText.textContent = 'Menyelesaikan...';
+        
+        progressFill.style.width = '100%';
+        
+        setTimeout(() => {
+          progressBar.classList.remove('active');
+          showResult('success', '✅ Sample project berhasil diimport!<br><br>Proyek "Puncak Darajat Resort & Hot Spring" sekarang tersedia di aplikasi.<br><br><a href="/?page=proyek">Klik di sini untuk melihat daftar proyek</a>');
+          btn.innerHTML = '<span>✅</span> Import Berhasil';
+        }, 500);
+        
+      } catch (error) {
+        progressBar.classList.remove('active');
+        console.error('Import error:', error);
+        showResult('error', '❌ Import gagal: ' + error.message);
+        btn.disabled = false;
+        btn.innerHTML = '<span>📥</span> Coba Lagi';
+      }
+    };
+    
+    function showResult(type, message) {
+      const result = document.getElementById('result');
+      result.className = 'result ' + type;
+      result.innerHTML = message;
+    }
+    
+    // Debug info
+    console.log('[Import] Sample Project Import Page Loaded');
+    console.log('[Import] Project Data:', SAMPLE_PROJECT.project);
+    console.log('[Import] Mode: IndexedDB Only (Supabase bypassed)');
+  </script>
+</body>
+</html>

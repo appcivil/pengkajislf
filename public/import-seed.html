@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inject Seed Data - Database Check</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: #e2e8f0;
+    }
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 36px;
+      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+    .subtitle { color: #94a3b8; font-size: 14px; }
+    
+    .status-card {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .status-title {
+      font-size: 14px;
+      color: #94a3b8;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .status-value {
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .status-value.connected { color: #4ade80; }
+    .status-value.error { color: #f87171; }
+    .status-value.warning { color: #fbbf24; }
+    
+    .schema-check {
+      margin-top: 20px;
+    }
+    .schema-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: rgba(15, 23, 42, 0.4);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .schema-item.valid { border-left: 3px solid #22c55e; }
+    .schema-item.invalid { border-left: 3px solid #ef4444; }
+    .schema-item.warning { border-left: 3px solid #f59e0b; }
+    .schema-name { font-weight: 500; }
+    .schema-status { font-size: 12px; color: #94a3b8; }
+    
+    .actions {
+      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .btn {
+      padding: 14px 24px;
+      border-radius: 12px;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+    }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(59, 130, 246, 0.5);
+    }
+    .btn-secondary {
+      background: transparent;
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+    }
+    
+    .log-container {
+      margin-top: 20px;
+      padding: 16px;
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+    .log-entry {
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .log-entry.success { color: #4ade80; }
+    .log-entry.error { color: #f87171; }
+    .log-entry.info { color: #60a5fa; }
+    .log-entry.warn { color: #fbbf24; }
+    
+    .result {
+      display: none;
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .result.show { display: block; }
+    .result.success {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #4ade80;
+    }
+    .result.error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="icon">🌱</div>
+      <h1>Database Seed Injector</h1>
+      <p class="subtitle">Cek struktur database & inject seed data</p>
+    </div>
+
+    <div class="status-card">
+      <div class="status-title">Koneksi Supabase</div>
+      <div class="status-value" id="connectionStatus">
+        <span>⏳</span> Mengecek koneksi...
+      </div>
+    </div>
+
+    <div class="status-card">
+      <div class="status-title">Skema Database</div>
+      <div class="schema-check" id="schemaCheck">
+        <div class="schema-item">
+          <span class="schema-name">⏳ Memeriksa struktur tabel...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="log-container" id="logContainer" style="display: none;">
+      <div class="log-entry info">[SYSTEM] Log initialized</div>
+    </div>
+
+    <div class="result" id="result"></div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="btnCheck" onclick="checkDatabase()">
+        <span>🔍</span> Cek Struktur Database
+      </button>
+      <button class="btn btn-primary" id="btnInject" onclick="injectSeed()" disabled>
+        <span>🌱</span> Inject Seed Data
+      </button>
+      <button class="btn btn-secondary" onclick="window.location.href='/'">
+        <span>←</span> Kembali ke Aplikasi
+      </button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase, isSupabaseConfigured } from '../src/lib/supabase.js';
+    
+    let dbSchema = null;
+    let canInject = false;
+    let injectMode = 'none'; // 'supabase', 'indexeddb', 'none'
+    
+    // Logger
+    function log(message, type = 'info') {
+      const container = document.getElementById('logContainer');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      container.appendChild(entry);
+      container.scrollTop = container.scrollHeight;
+      console.log(`[SeedInjector] ${message}`);
+    }
+    
+    function showResult(type, message) {
+      const result = document.getElementById('result');
+      result.className = `result ${type} show`;
+      result.innerHTML = message;
+    }
+    
+    function updateConnectionStatus(status, message) {
+      const el = document.getElementById('connectionStatus');
+      el.className = `status-value ${status}`;
+      el.innerHTML = message;
+    }
+    
+    function updateSchemaCheck(items) {
+      const container = document.getElementById('schemaCheck');
+      container.innerHTML = items.map(item => `
+        <div class="schema-item ${item.valid ? 'valid' : item.warning ? 'warning' : 'invalid'}">
+          <span class="schema-name">${item.icon} ${item.name}</span>
+          <span class="schema-status">${item.status}</span>
+        </div>
+      `).join('');
+    }
+    
+    // Generate UUID v4
+    function generateUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+    
+    // Cek struktur database
+    window.checkDatabase = async function() {
+      document.getElementById('logContainer').style.display = 'block';
+      log('Memulai pengecekan database...', 'info');
+      
+      // Cek konfigurasi Supabase
+      if (!isSupabaseConfigured()) {
+        updateConnectionStatus('error', '<span>❌</span> Supabase tidak dikonfigurasi');
+        log('Supabase tidak dikonfigurasi - akan menggunakan IndexedDB', 'warn');
+        
+        updateSchemaCheck([
+          { icon: '⚠️', name: 'Supabase Config', status: 'Missing - fallback to IndexedDB', valid: false, warning: true },
+          { icon: '📦', name: 'Mode', status: 'IndexedDB Only', valid: true }
+        ]);
+        
+        canInject = true;
+        injectMode = 'indexeddb';
+        document.getElementById('btnInject').disabled = false;
+        document.getElementById('btnInject').innerHTML = '<span>🌱</span> Inject ke IndexedDB';
+        
+        showResult('success', 'Mode IndexedDB aktif. Data akan disimpan lokal.');
+        return;
+      }
+      
+      // Cek koneksi Supabase
+      try {
+        log('Mengecek koneksi Supabase...', 'info');
+        const { data, error } = await supabase.from('proyek').select('count', { count: 'exact', head: true });
+        
+        if (error) {
+          throw error;
+        }
+        
+        updateConnectionStatus('connected', '<span>✅</span> Terhubung ke Supabase');
+        log('Koneksi Supabase berhasil', 'success');
+        
+        // Cek struktur tabel
+        await checkTableSchema();
+        
+      } catch (err) {
+        updateConnectionStatus('error', `<span>❌</span> Error: ${err.message}`);
+        log(`Supabase error: ${err.message}`, 'error');
+        log('Fallback ke IndexedDB', 'warn');
+        
+        updateSchemaCheck([
+          { icon: '❌', name: 'Supabase Connection', status: err.message, valid: false },
+          { icon: '📦', name: 'Fallback Mode', status: 'IndexedDB', valid: true, warning: true }
+        ]);
+        
+        canInject = true;
+        injectMode = 'indexeddb';
+        document.getElementById('btnInject').disabled = false;
+        document.getElementById('btnInject').innerHTML = '<span>🌱</span> Inject ke IndexedDB';
+      }
+    };
+    
+    // Cek skema tabel
+    async function checkTableSchema() {
+      log('Mengecek skema tabel proyek...', 'info');
+      
+      try {
+        // Cek dengan query ke information_schema (dengan try-catch, bukan .catch())
+        let columns = null;
+        let error = null;
+        try {
+          const result = await supabase.rpc('get_table_columns', { table_name: 'proyek' });
+          columns = result.data;
+          error = result.error;
+        } catch (rpcErr) {
+          // RPC function mungkin tidak ada, lanjutkan dengan test insert
+          log('RPC get_table_columns tidak tersedia, menggunakan test insert', 'info');
+          columns = null;
+          error = null;
+        }
+        
+        if (error) {
+          log(`Error cek skema: ${error.message}`, 'error');
+        }
+        
+        // Coba insert data test dengan UUID (minimal field yang required)
+        log('Testing insert dengan UUID...', 'info');
+        const testId = generateUUID();
+        const { error: insertError } = await supabase
+          .from('proyek')
+          .insert({
+            id: testId,
+            nama_bangunan: 'TEST_DELETE_ME',
+            jenis_bangunan: 'Test',
+            jumlah_lantai: 1,
+            luas_bangunan: 1
+            // created_at dan updated_at akan di-set otomatis oleh database
+          })
+          .select()
+          .single();
+        
+        // Hapus data test
+        if (!insertError) {
+          await supabase.from('proyek').delete().eq('id', testId);
+          log('Test insert berhasil - skema compatible', 'success');
+        }
+        
+        const schemaItems = [
+          { icon: '✅', name: 'Tabel proyek', status: 'Accessible', valid: true },
+          { icon: insertError ? '⚠️' : '✅', name: 'Insert Test', status: insertError ? insertError.message : 'Success', valid: !insertError, warning: !!insertError },
+          { icon: '🔑', name: 'ID Type', status: 'UUID (auto-generated)', valid: true }
+        ];
+        
+        if (columns && Array.isArray(columns)) {
+          const idColumn = columns.find(c => c.column_name === 'id');
+          if (idColumn) {
+            schemaItems.push({
+              icon: '📋',
+              name: 'id column type',
+              status: idColumn.data_type,
+              valid: idColumn.data_type === 'uuid'
+            });
+          }
+        }
+        
+        updateSchemaCheck(schemaItems);
+        
+        if (insertError) {
+          // Ada error insert - mungkin RLS atau constraint
+          if (insertError.code === '42501' || insertError.message.includes('permission')) {
+            log('RLS Policy error - menggunakan IndexedDB', 'warn');
+            canInject = true;
+            injectMode = 'indexeddb';
+            document.getElementById('btnInject').disabled = false;
+            document.getElementById('btnInject').innerHTML = '<span>🌱</span> Inject ke IndexedDB';
+            showResult('warning', 'Supabase RLS policy membatasi akses. Mode IndexedDB aktif.');
+          } else {
+            log(`Insert error: ${insertError.message}`, 'error');
+            canInject = false;
+            showResult('error', `Error: ${insertError.message}`);
+          }
+        } else {
+          canInject = true;
+          injectMode = 'supabase';
+          document.getElementById('btnInject').disabled = false;
+          document.getElementById('btnInject').innerHTML = '<span>🌱</span> Inject ke Supabase';
+          showResult('success', 'Database siap! Skema valid dan test insert berhasil.');
+        }
+        
+      } catch (err) {
+        log(`Error cek skema: ${err.message}`, 'error');
+        updateSchemaCheck([
+          { icon: '❌', name: 'Schema Check', status: err.message, valid: false }
+        ]);
+      }
+    }
+    
+    // Inject seed data
+    window.injectSeed = async function() {
+      if (!canInject) {
+        showResult('error', 'Database belum dicek atau tidak siap');
+        return;
+      }
+      
+      const btn = document.getElementById('btnInject');
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳</span> Injecting...';
+      
+      log(`Memulai inject seed data ke ${injectMode}...`, 'info');
+      
+      try {
+        // Generate UUID untuk proyek
+        const projectUUID = generateUUID();
+        log(`Generated Project UUID: ${projectUUID}`, 'info');
+        
+        // Sesuaikan dengan schema Supabase (hanya field yang ada di tabel)
+        const seedData = {
+          id: projectUUID,
+          nama_bangunan: 'Puncak Darajat Resort & Hot Spring',
+          jenis_bangunan: 'Komersial',
+          jenis_konstruksi: 'Beton Bertulang',
+          alamat: 'Jl. Puncak Darajat No. 123, Desa Tanjung Karya, Kecamatan Pasirwangi, Kabupaten Garut, Jawa Barat 44161',
+          kecamatan: 'Pasirwangi',
+          kelurahan: 'Tanjung Karya',
+          kota: 'Garut',
+          provinsi: 'Jawa Barat',
+          latitude: -7.2108,
+          longitude: 107.9026,
+          luas_bangunan: 2850.5,
+          luas_lahan: 5000.0,
+          jumlah_lantai: 4,
+          tahun_dibangun: 2023,
+          nomor_pbg: 'PBG-2023-12345678',
+          pemilik: 'PT Puncak Darajat Sejahtera',
+          penanggung_jawab: 'Otang Sugianto',
+          telepon: '+62 812-3456-7890',
+          email_pemilik: 'info@puncakdarajat.com',
+          kondisi_umum: 'Baik',
+          status_slf: 'DALAM_PENGKAJIAN',
+          tanggal_mulai: '2023-10-15',
+          tanggal_target: '2024-03-15',
+          progress: 45,
+          gsb: 5.0,
+          kdb: 0.65,
+          klb: 2.8,
+          kdh: 0.35,
+          simbg_id: 'SIMBG-2023-987654321',
+          simbg_email: 'admin@puncakdarajat.com',
+          jenis_dokumen_tanah: 'HGB',
+          no_dokumen_tanah: 'HGB No. 97/Garut',
+          tgl_terbit_tanah: '2019-10-20',
+          hak_kepemilikan: 'HGB',
+          nama_pemilik_tanah: 'Otang Sugianto',
+          tanah_provinsi: 'Jawa Barat',
+          tanah_kota: 'Garut',
+          tanah_kecamatan: 'Pasirwangi',
+          tanah_kelurahan: 'Tanjung Karya',
+          alamat_tanah_lengkap: 'Jl. Puncak Darajat No. 123, Desa Tanjung Karya, Kecamatan Pasirwangi, Kabupaten Garut, Jawa Barat 44161',
+          pemilik_tanah_sama: false,
+          no_surat_perjanjian: null,
+          tgl_surat_perjanjian: null,
+          penerima_perjanjian: null
+          // created_at dan updated_at akan di-set otomatis oleh database
+        };
+        
+        if (injectMode === 'supabase') {
+          // Inject ke Supabase
+          log('Inserting ke Supabase...', 'info');
+          const { data, error } = await supabase
+            .from('proyek')
+            .insert(seedData)
+            .select()
+            .single();
+          
+          if (error) throw error;
+          
+          log('Insert ke Supabase berhasil!', 'success');
+          showResult('success', `
+            <strong>✅ Seed data berhasil diinject!</strong><br><br>
+            ID: ${projectUUID}<br>
+            Nama: ${seedData.nama_bangunan}<br>
+            Mode: Supabase<br><br>
+            <a href="/?page=proyek">Lihat Proyek →</a>
+          `);
+          
+        } else {
+          // Inject ke IndexedDB
+          log('Inserting ke IndexedDB...', 'info');
+          const localDataManager = await import('../src/lib/local-data-manager.js');
+          await localDataManager.initLocalDB();
+          await localDataManager.saveProject(seedData);
+          
+          // Simpan mapping UUID untuk reference
+          localStorage.setItem('last_seed_project_id', projectUUID);
+          localStorage.setItem('last_seed_project_name', seedData.nama_bangunan);
+          
+          log('Insert ke IndexedDB berhasil!', 'success');
+          showResult('success', `
+            <strong>✅ Seed data berhasil diinject!</strong><br><br>
+            ID: ${projectUUID}<br>
+            Nama: ${seedData.nama_bangunan}<br>
+            Mode: IndexedDB (Local)<br><br>
+            <a href="/?page=proyek">Lihat Proyek →</a>
+          `);
+        }
+        
+        btn.innerHTML = '<span>✅</span> Inject Berhasil';
+        
+      } catch (err) {
+        log(`Inject error: ${err.message}`, 'error');
+        showResult('error', `Inject gagal: ${err.message}`);
+        btn.disabled = false;
+        btn.innerHTML = '<span>🌱</span> Coba Lagi';
+      }
+    };
+    
+    // Auto-check saat load
+    setTimeout(() => {
+      if (isSupabaseConfigured()) {
+        checkDatabase();
+      }
+    }, 500);
+    
+    log('Seed Injector ready', 'info');
+  </script>
+</body>
+</html>
