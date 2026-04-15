@@ -206,6 +206,26 @@ window._handleImageSelect = (e, kode, nama, kategori) => {
   runVisionAnalysis(e.target.files, kode, nama, kategori, 'Teknis').then(() => renderTabContent());
 };
 
+window._handleMultiFileSelect = (e, kode, nama, kategori) => {
+  const files = e.target.files;
+  if (!files || files.length === 0) return;
+  
+  // Proses multi upload dengan loading indicator
+  showInfo(`Mengunggah ${files.length} dokumen untuk ${nama}...`);
+  
+  runVisionAnalysis(files, kode, nama, kategori, 'Teknis')
+    .then(() => {
+      showSuccess(`${files.length} dokumen berhasil diunggah.`);
+      renderTabContent();
+    })
+    .catch(err => {
+      showError('Gagal mengunggah dokumen: ' + err.message);
+    });
+  
+  // Reset input untuk memungkinkan upload file yang sama lagi
+  e.target.value = '';
+};
+
 window._autoFillFromAgents = () => {
     autoFillFromAgents().then(() => renderTabContent());
 };

@@ -118,7 +118,12 @@ export function afterElectricalInspectionRender() {
   initEventListeners();
   initDataImportListeners();
   initThermalUploadListeners();
-  renderDashboard();
+  
+  // Render dashboard content
+  const dashboardContent = document.getElementById('electrical-tab-dashboard');
+  if (dashboardContent) {
+    dashboardContent.innerHTML = renderDashboardTab();
+  }
   
   if (panels.length > 0 && !selectedPanel) {
     selectPanel(panels[0].id);
@@ -132,13 +137,13 @@ export function afterElectricalInspectionRender() {
 async function loadProjectInfo() {
   try {
     const { data, error } = await supabase
-      .from('projects')
-      .select('id, name, location')
+      .from('proyek')
+      .select('id, nama_bangunan, alamat')
       .eq('id', currentProjectId)
       .single();
     
     if (data) {
-      currentProjectName = data.name;
+      currentProjectName = data.nama_bangunan;
     }
   } catch (e) {
     currentProjectName = 'Proyek Tidak Dikenal';
@@ -2319,3 +2324,33 @@ function renderReportsTab() {
     </div>
   `;
 }
+
+function showSimulationModal() {
+  const modal = document.getElementById('simulation-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+// ============================================================
+// WINDOW EXPORTS
+// ============================================================
+
+window.renderDashboardTab = renderDashboardTab;
+window.showPanelModal = showPanelModal;
+window.showMeasurementModal = showMeasurementModal;
+window.showThermalModal = showThermalModal;
+window.showImportModal = showImportModal;
+window.generateFullReport = generateFullReport;
+window.closeModal = closeModal;
+window.savePanel = savePanel;
+window.saveMeasurement = saveMeasurement;
+window.saveThermalImage = saveThermalImage;
+window.confirmImport = confirmImport;
+window.previewCalculation = previewCalculation;
+window.selectPanel = selectPanel;
+window.runMCBSimulation = runMCBSimulation;
+window.switchSimTab = switchSimTab;
+window.updateSimPanel = updateSimPanel;
+window.showSimulationModal = showSimulationModal;
+window._switchElectricalTab = _switchElectricalTab;

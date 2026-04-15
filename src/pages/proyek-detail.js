@@ -6,7 +6,7 @@
 import { supabase } from '../lib/supabase.js';
 import { isAdmin }  from '../lib/auth.js';
 import { getAuditLogs, getReportVersions } from '../lib/audit-service.js';
-import { navigate }  from '../lib/router.js';
+import { navigate, getParams }  from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { confirm }   from '../components/modal.js';
 import { APP_CONFIG } from '../lib/config.js';
@@ -15,6 +15,16 @@ import { getProjectPIC } from '../lib/team-service.js';
 import { getSimulasiSummary, loadSimulasi } from '../lib/simulation-engine.js';
 import { renderStrukturBangunanCard, initStrukturBangunanHandlers } from '../components/struktur-bangunan-module.js';
 import { renderElectricalSystemCard, initElectricalSystemHandlers, fetchElectricalSummary } from '../components/electrical-system-module.js';
+import { renderLPSCard, initLPSHandlers, fetchLPSSummary } from '../components/lightning-protection-module.js';
+import { renderFireProtectionCard, initFireProtectionHandlers, fetchFireProtectionSummary } from '../components/fire-protection-module.js';
+import { renderArchitecturalCard, initArchitecturalHandlers, fetchArchitecturalSummary } from '../components/architectural-requirements-module.js';
+import { renderBuildingIntensityCard, initBuildingIntensityHandlers, fetchBuildingIntensitySummary } from '../components/building-intensity-module.js';
+import { renderEgressSystemCard, initEgressSystemHandlers, fetchEgressSummary } from '../components/egress-system-module.js';
+import { renderEnvironmentalCard, initEnvironmentalHandlers, fetchEnvironmentalSummary } from '../components/environmental-module.js';
+import { renderSanitationCard, initSanitationHandlers, fetchSanitationSummary } from '../components/sanitation-module.js';
+import { renderWaterSystemCard, initWaterSystemHandlers, fetchWaterSystemSummary } from '../components/water-system-module.js';
+import { renderStormwaterCard, initStormwaterHandlers, fetchStormwaterSummary } from '../components/stormwater-module.js';
+import { renderAccessibilityCard, fetchAccessibilitySummary, initAccessibilityHandlers } from '../components/accessibility-module.js';
 
 export async function proyekDetailPage(params = {}) {
   const id = params.id;
@@ -30,24 +40,34 @@ export async function proyekDetailPage(params = {}) {
     return '';
   }
 
-  const [checklistStats, analisisData, pic, simulasiSummary, electricalSummary] = await Promise.all([
+  const [checklistStats, analisisData, pic, simulasiSummary, electricalSummary, lpsSummary, fireProtectionSummary, buildingIntensitySummary, architecturalSummary, egressSummary, environmentalSummary, sanitationSummary, waterSummary, accessibilitySummary, stormwaterSummary] = await Promise.all([
     fetchChecklistStats(id),
     fetchLastAnalisis(id),
     getProjectPIC(id),
     getSimulasiSummary(id),
-    fetchElectricalSummary(id)
+    fetchElectricalSummary(id),
+    fetchLPSSummary(id),
+    fetchFireProtectionSummary(id),
+    fetchBuildingIntensitySummary(id),
+    fetchArchitecturalSummary(id),
+    fetchEgressSummary(id),
+    fetchEnvironmentalSummary(id),
+    fetchSanitationSummary(id),
+    fetchWaterSystemSummary(id),
+    fetchAccessibilitySummary(id),
+    fetchStormwaterSummary(id)
   ]);
 
-  const html = buildHtml(proyek, checklistStats, analisisData, pic, simulasiSummary, electricalSummary);
+  const html = buildHtml(proyek, checklistStats, analisisData, pic, simulasiSummary, electricalSummary, lpsSummary, fireProtectionSummary, buildingIntensitySummary, architecturalSummary, egressSummary, environmentalSummary, sanitationSummary, accessibilitySummary, waterSummary, stormwaterSummary);
   if (root) {
     root.innerHTML = html;
-    initProyekDetailAfterRender(proyek, checklistStats, analisisData, simulasiSummary);
+    initProyekDetailAfterRender(proyek, checklistStats, analisisData, simulasiSummary, electricalSummary, lpsSummary, fireProtectionSummary, buildingIntensitySummary, architecturalSummary, egressSummary, environmentalSummary, sanitationSummary, accessibilitySummary, waterSummary, stormwaterSummary);
   }
   return html;
 }
 
 // ── HTML Builder ─────────────────────────────────────────────
-function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSummary = {}) {
+function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSummary = {}, lpsSummary = {}, fireProtectionSummary = {}, buildingIntensitySummary = {}, architecturalSummary = {}, egressSummary = {}, environmentalSummary = {}, sanitationSummary = {}, accessibilitySummary = {}, waterSummary = {}, stormwaterSummary = {}) {
   const statusMap = {
     LAIK_FUNGSI:           { label: 'LAIK FUNGSI',       cls: 'badge-laik',       icon: 'fa-shield-check',   color: 'var(--success-400)' },
     LAIK_FUNGSI_BERSYARAT: { label: 'LAIK BERSYARAT',    cls: 'badge-bersyarat',  icon: 'fa-triangle-exclamation', color: 'var(--gold-400)' },
@@ -132,34 +152,6 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
           <!-- Functional Modules Grid -->
           <div class="grid-2-col">
             
-            <!-- Remedial Tasks -->
-            <div class="card-quartz clickable" onclick="window.navigate('task',{id:'${p.id}'})" style="padding: var(--space-6)">
-              <div class="flex-between" style="margin-bottom:12px">
-                <i class="fas fa-list-check" style="color:var(--gold-400)"></i>
-                <span style="font-family:var(--font-mono); font-size:10px; opacity:0.6">TASKS</span>
-              </div>
-              <h4 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:0.9rem; color:white">Remedial Action</h4>
-            </div>
-
-            <!-- SIMBG Data Synergy Card -->
-            <div class="card-quartz" style="padding: var(--space-6); background: linear-gradient(135deg, hsla(220, 95%, 52%, 0.05) 0%, transparent 100%); border-color: hsla(220, 95%, 52%, 0.2)">
-              <div class="flex-between" style="margin-bottom:12px">
-                <i class="fas fa-cloud-arrow-down" style="color:var(--brand-400); cursor:pointer" onclick="window._syncProjectWithSIMBG('${p.id}')"></i>
-                <div class="flex gap-2">
-                  <button class="btn btn-ghost btn-xs" onclick="window._openSIMBGConfig('${p.id}', '${p.simbg_id || ''}', '${p.simbg_email || ''}', '${p.simbg_password || ''}')" title="Configure Account">
-                    <i class="fas fa-cog" style="color:var(--text-tertiary)"></i>
-                  </button>
-                  <span id="simbg-sync-status" style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--brand-300); cursor:pointer" onclick="window._syncProjectWithSIMBG('${p.id}')">
-                    ${p.simbg_last_sync ? 'SYNCED' : 'READY'}
-                  </span>
-                </div>
-              </div>
-              <div class="clickable" onclick="window._syncProjectWithSIMBG('${p.id}')">
-                <h4 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:0.9rem; color:white; margin-bottom:4px">SIMBG Data Synergy</h4>
-                <p style="font-size:0.7rem; color:var(--text-tertiary); line-height:1.4">Sync technical data & land docs from national portal.</p>
-              </div>
-            </div>
-
             <!-- Checklist Card -->
             <div class="card-quartz clickable" onclick="window.navigate('checklist',{id:'${p.id}'})" style="padding: var(--space-6)">
               <div class="flex-between" style="margin-bottom:20px">
@@ -187,6 +179,52 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
 
             <!-- SISTEM KELISTRIKAN MODULE -->
             ${renderElectricalSystemCard(p, electricalSummary)}
+
+            <!-- SISTEM PROTEKSI PETIR MODULE -->
+            ${renderLPSCard(p, lpsSummary)}
+
+            <!-- FIRE PROTECTION & LIFE SAFETY MODULE -->
+            ${renderFireProtectionCard(p, fireProtectionSummary)}
+
+            <!-- INTENSITAS BANGUNAN & KESESUAIAN FUNGSI MODULE -->
+            ${renderBuildingIntensityCard(p, buildingIntensitySummary)}
+
+            <!-- PERSYARATAN ARSITEKTUR MODULE -->
+            ${renderArchitecturalCard(p, architecturalSummary)}
+
+            <!-- SISTEM JALUR EVAKUASI MODULE -->
+            ${renderEgressSystemCard(p, egressSummary)}
+
+            <!-- PENGENDALIAN DAMPAK LINGKUNGAN MODULE -->
+            ${renderEnvironmentalCard(p, environmentalSummary)}
+
+            <!-- SISTEM PENGELOLAAN AIR HUJAN MODULE -->
+            ${renderStormwaterCard(p, stormwaterSummary)}
+
+            <!-- SISTEM PEMBUANGAN KOTORAN & SAMPAH MODULE -->
+            ${renderSanitationCard(p, sanitationSummary)}
+
+            <!-- AKSESIBILITAS MODULE -->
+            ${renderAccessibilityCard(p, accessibilitySummary)}
+
+            <!-- SISTEM AIR BERSIH MODULE -->
+            ${renderWaterSystemCard(p, waterSummary)}
+
+            <!-- ASPEK KENYAMANAN MODULE -->
+            <div class="card-quartz clickable" onclick="window.navigate('comfort-inspection',{id:'${p.id}'})" style="padding: var(--space-6)">
+              <div class="flex-between" style="margin-bottom:20px">
+                <div style="width:48px; height:48px; border-radius:14px; background:linear-gradient(135deg, hsla(160, 100%, 45%, 0.15), hsla(220, 95%, 52%, 0.1)); display:flex; align-items:center; justify-content:center; color:var(--success-400)">
+                  <i class="fas fa-couch" style="font-size:1.4rem"></i>
+                </div>
+                <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--success-400)">PHASE 02D</div>
+              </div>
+              <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--text-primary); margin-bottom:4px">Aspek Kenyamanan</h3>
+              <p style="font-size:0.75rem; color:var(--text-tertiary); line-height:1.5">Evaluasi ruang gerak, kondisi udara (PMV/PPD), pandangan, getaran & kebisingan.</p>
+              <div style="margin-top:20px; display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+                <span class="badge" style="background:hsla(160, 100%, 45%, 0.1); color:var(--success-400); border:1px solid hsla(160, 100%, 45%, 0.2); font-size:9px">PP 16/2021</span>
+                <span class="badge" style="background:hsla(220, 95%, 52%, 0.1); color:var(--brand-400); border:1px solid hsla(220, 95%, 52%, 0.2); font-size:9px">ASHRAE 55</span>
+              </div>
+            </div>
 
             <!-- Analisis Card -->
             <div class="card-quartz clickable" onclick="window.navigate('analisis',{id:'${p.id}'})" style="padding: var(--space-6)">
@@ -447,7 +485,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
 }
 
 // ── After Render Logic ──────────────────────────────────────────
-function initProyekDetailAfterRender(p, stats, analisis, simulasiSummary = {}, electricalSummary = {}) {
+function initProyekDetailAfterRender(p, stats, analisis, simulasiSummary = {}, electricalSummary = {}, lpsSummary = {}, fireProtectionSummary = {}, buildingIntensitySummary = {}, architecturalSummary = {}, egressSummary = {}, environmentalSummary = {}, sanitationSummary = {}, accessibilitySummary = {}, waterSummary = {}, stormwaterSummary = {}) {
   // Initialize Radar Chart
   initProjectRadar(analisis);
 
@@ -460,6 +498,50 @@ function initProyekDetailAfterRender(p, stats, analisis, simulasiSummary = {}, e
 
   // Initialize Electrical System Module
   initElectricalSystemHandlers(p.id, electricalSummary);
+
+  // Initialize LPS Module
+  initLPSHandlers(p.id);
+
+  // Initialize Fire Protection Module
+  initFireProtectionHandlers(p.id);
+
+  // Initialize Building Intensity Module
+  initBuildingIntensityHandlers(p.id);
+
+  // Initialize Architectural Requirements Module
+  initArchitecturalHandlers(p.id);
+
+  // Initialize Egress System Module
+  initEgressSystemHandlers(p.id);
+
+  // Initialize Environmental Module
+  initEnvironmentalHandlers(p.id);
+
+  // Initialize Sanitation Module
+  initSanitationHandlers(p.id);
+
+  // Initialize Water System Module
+  initWaterSystemHandlers();
+
+  // Initialize Accessibility Module
+  initAccessibilityHandlers(p.id, accessibilitySummary);
+
+  // Initialize Stormwater Module
+  initStormwaterHandlers(p.id, stormwaterSummary);
+
+  // PRELOAD INSPECTION MODULES: Load semua inspection pages di background
+  // untuk memastikan tab switching lancar saat user navigasi
+  import('../main.js').then(({ onProyekDetailEnter }) => {
+    onProyekDetailEnter();
+  }).catch(err => {
+    console.warn('[ProyekDetail] Failed to preload inspection modules:', err);
+  });
+
+  // Handle tab parameter for direct module navigation
+  const params = getParams();
+  if (params.tab) {
+    handleModuleTabNavigation(params.tab);
+  }
 
   // Tab Switcher
   window._switchAuditTab = (type) => {
@@ -884,4 +966,44 @@ function renderSkeleton() {
 
 function escHtml(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Module Tab Navigation Handler ─────────────────────────────────────
+function handleModuleTabNavigation(tab) {
+  const moduleMap = {
+    'lps': 'lps-module-card',
+    'fire': 'fire-protection-card',
+    'intensity': 'building-intensity-card',
+    'architectural': 'architectural-card',
+    'egress': 'egress-system-card',
+    'environmental': 'environmental-card',
+    'accessibility': 'accessibility-card',
+    'electrical': 'electrical-card',
+    'struktur': 'struktur-bangunan-card'
+  };
+
+  const cardId = moduleMap[tab];
+  if (!cardId) return;
+
+  setTimeout(() => {
+    const card = document.getElementById(cardId);
+    if (card) {
+      // Scroll ke card
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      // Highlight card dengan animasi
+      card.style.transition = 'box-shadow 0.3s ease';
+      card.style.boxShadow = '0 0 30px var(--brand-400), 0 0 60px var(--brand-400)66';
+      
+      // Hapus highlight setelah 2 detik
+      setTimeout(() => {
+        card.style.boxShadow = '';
+      }, 2000);
+      
+      // Jika modul punya tab internal, bisa di-expand di sini
+      if (tab === 'lps' && window._expandLPSCard) {
+        window._expandLPSCard();
+      }
+    }
+  }, 300);
 }

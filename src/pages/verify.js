@@ -260,7 +260,7 @@ function buildVerifyHtml(p, a, s, expertType, expert, integrity, cert) {
             </div>
             <div style="text-align:right">
                <div style="font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">SYSTEM POWERED BY</div>
-               <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.4rem; color:hsl(224, 30%, 12%)">Smart AI <span style="background:var(--gradient-brand); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">ENGINE v7</span></div>
+               <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.4rem; color:hsl(224, 30%, 12%)">Smart <span style="background:var(--gradient-brand); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">ENGINE v7</span></div>
             </div>
          </div>
          <div style="width:100%; margin:40px auto 0; padding:40px 20px 0; border-top:1px solid rgba(0,0,0,0.05); text-align:center; font-family:var(--font-mono); font-size:10px; color:var(--text-tertiary); letter-spacing:1px">

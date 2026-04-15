@@ -132,6 +132,12 @@ export async function pengaturanPage() {
       <!-- TAB CONTENT: APLIKASI -->
       <div id="tab-aplikasi" class="tab-content route-fade" style="display:none">
         <form id="settings-form" onsubmit="handleSaveSettings(event)">
+          <!-- Tombol Simpan di Atas -->
+          <div style="margin-bottom:24px; display:flex; justify-content:flex-end">
+            <button type="submit" class="btn-presidential gold" id="btn-save-settings" style="height:48px; padding:0 32px; font-size:0.9rem; border-radius:12px">
+              <i class="fas fa-shield-check" style="margin-right:10px"></i> SIMPAN PENGATURAN
+            </button>
+          </div>
           <div class="grid-main-side">
             
             <div style="display:flex; flex-direction:column; gap: 32px">
@@ -314,17 +320,18 @@ export async function pengaturanPage() {
             </div>
           </div>
 
-          <div style="margin-top:48px; display:flex; justify-content:flex-end">
-            <button type="submit" class="btn-presidential gold" id="btn-save-settings" style="height:56px; padding:0 48px; font-size:1rem; border-radius:14px">
-              <i class="fas fa-shield-check" style="margin-right:12px"></i> SEAL GLOBAL CONFIGURATION
-            </button>
-          </div>
         </form>
       </div>
 
       <!-- TAB CONTENT: WATERMARK -->
       <div id="tab-watermark" class="tab-content route-fade" style="display:none">
         <form id="watermark-form" onsubmit="handleSaveWatermark(event)">
+          <!-- Tombol Simpan di Atas -->
+          <div style="margin-bottom:24px; display:flex; justify-content:flex-end">
+            <button type="submit" class="btn-presidential gold" id="btn-save-watermark" style="height:48px; padding:0 32px; font-size:0.9rem; border-radius:12px">
+              <i class="fas fa-check-double" style="margin-right:10px"></i> SIMPAN WATERMARK
+            </button>
+          </div>
           <div class="grid-main-side" style="gap: 40px">
             <div class="card-quartz" style="padding:40px">
               <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.4rem; color:white; margin-bottom:32px; display:flex; align-items:center; gap:16px">
@@ -393,11 +400,6 @@ export async function pengaturanPage() {
             </div>
           </div>
           
-          <div style="margin-top:48px; display:flex; justify-content:flex-end">
-            <button type="submit" class="btn-presidential gold" id="btn-save-watermark" style="height:56px; padding:0 48px; font-size:1rem; border-radius:14px">
-              <i class="fas fa-check-double" style="margin-right:12px"></i> UPDATE CALIBRATION LOG
-            </button>
-          </div>
         </form>
       </div>
 
@@ -584,6 +586,9 @@ window.handleSaveSettings = async function(e) {
   btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> SEALING CONFIG...';
 
   try {
+    // Ambil settings existing untuk preservasi data yang tidak di-edit
+    const currentSettings = await getSettings();
+    
     const payload = {
       consultant: {
         name: fd.get('consultant_name'),
@@ -602,7 +607,7 @@ window.handleSaveSettings = async function(e) {
         ollamaEnabled: fd.get('ollama_enabled') === 'on',
         ollamaEndpoint: fd.get('ollama_endpoint'),
         ollamaModel: fd.get('ollama_model'),
-        availableLocalModels: settings.ai?.availableLocalModels || []
+        availableLocalModels: currentSettings.ai?.availableLocalModels || []
       },
       experts: {
         architecture: { name: fd.get('exp_arch_name'), skk: fd.get('exp_arch_skk'), signature: fd.get('exp_arch_sig'), qr_code: fd.get('exp_arch_qr') },

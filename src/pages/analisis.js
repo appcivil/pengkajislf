@@ -33,6 +33,7 @@ import {
 } from '../lib/ai-router.js';
 import { runNSPKBot } from '../lib/nspk-bot.js';
 import { SmartAIIntegration } from '../infrastructure/ai/deep-reasoning-integration.js';
+import { getPipelineAnalisisIntegration } from '../infrastructure/pipeline/pipeline-analisis-integration.js';
 
 // ── Page Entry ────────────────────────────────────────────────
 export async function analisisPage(params = {}) {
@@ -470,12 +471,176 @@ window._runNSPKBotForItem = async (itemId, itemName) => {
         
         if (result && result.status === 'success') {
             showSuccess(`Berhasil memetakan referensi: ${result.name}`);
-            // Anda dapat menambahkan logika tambahan di sini untuk mengupdate UI jika perlu
         } else if (result && result.status === 'not_found') {
             showInfo(`Bot tidak menemukan dokumen spesifik untuk "${result.query}" di Drive global.`);
         }
     } catch (err) {
         hideAIProgress();
         showError('Kesalahan bot: ' + err.message);
+    }
+};
+
+// ── SmartAI Pipeline Integration ────────────────────────────────
+
+window._runAspectWithPipeline = async (aspekTarget) => {
+    const { currentProyekId, checklistData, currentAnalisis, proyekFiles } = store.get();
+    
+    try {
+        showAIProgress(`Analisis Pipeline ${aspekTarget}`, 'Menginisialisasi pipeline AI...');
+        
+        const targetItems = checklistData.filter(item => {
+            const itemAsp = item.kategori === 'administrasi' ? 'Administrasi' : (item.aspek || 'Lainnya');
+            return itemAsp === aspekTarget;
+        });
+
+        if (targetItems.length === 0) {
+            hideAIProgress();
+            showError(`Tidak ada data untuk aspek ${aspekTarget}`);
+            return;
+        }
+
+        // Initialize Pipeline Integration
+        const pipelineAnalisis = getPipelineAnalisisIntegration();
+        await pipelineAnalisis.initialize();
+        
+        showAIProgress(`Analisis ${aspekTarget}`, 'Meng-query knowledge base dengan RAG...');
+        
+        // Run analysis dengan RAG
+        const result = await pipelineAnalisis.analyzeAspectWithRAG(aspekTarget, targetItems, {
+            projectId: currentProyekId,
+            evidence: proyekFiles || []
+        });
+        
+        showAIProgress(`Analisis ${aspekTarget}`, 'Menyimpan hasil...');
+        
+        // Update DB dengan hasil dari Pipeline
+        const colMap = {
+            'Administrasi': 'skor_administrasi',
+            'Pemanfaatan': 'skor_mep',
+            'Arsitektur': 'skor_arsitektur',
+            'Struktur': 'skor_struktur',
+            'Mekanikal': 'skor_kebakaran',
+            'Kesehatan': 'skor_kesehatan',
+            'Kenyamanan': 'skor_kenyamanan',
+            'Kemudahan': 'skor_kemudahan'
+        };
+        
+        const payload = {
+            proyek_id: currentProyekId,
+            [colMap[aspekTarget]]: result.skor_aspek,
+            narasi_teknis: result.narasi_teknis,
+            metadata: {
+                ...(currentAnalisis?.metadata || {}),
+                pipeline_analysis: {
+                    aspek: aspekTarget,
+                    timestamp: new Date().toISOString(),
+                    rag_stats: pipelineAnalisis.getRAGStats(),
+                    regulasi_references: result.regulasi_references,
+                    confidence: result.confidence
+                }
+            },
+            updated_at: new Date().toISOString()
+        };
+
+        const { data, error } = await supabase.from('hasil_analisis').upsert(payload, { onConflict: 'proyek_id' }).select().single();
+        if (error) throw error;
+
+        store.set({ currentAnalisis: data });
+        hideAIProgress();
+        showSuccess(`Analisis ${aspekTarget} dengan Pipeline AI berhasil! (${result.regulasi_references?.length || 0} referensi regulasi ditemukan)`);
+        render(document.getElementById('page-root'));
+
+    } catch (err) {
+        hideAIProgress();
+        console.error('[Pipeline Analysis Error]', err);
+        showError('Gagal analisis dengan Pipeline: ' + err.message);
+    }
+};
+
+window._runSingleItemWithPipeline = async (itemId, aspek) => {
+    const { checklistData, currentProyekId, proyekFiles } = store.get();
+    const item = checklistData.find(it => it.id === itemId);
+    if (!item) return;
+
+    try {
+        showAIProgress('Pipeline Deep Analysis', `Menganalisis: ${item.nama}...`);
+        
+        const pipelineAnalisis = getPipelineAnalisisIntegration();
+        await pipelineAnalisis.initialize();
+        
+        // Analisis dengan RAG
+        const result = await pipelineAnalisis.analyzeWithRAG(item, aspek, {
+            projectId: currentProyekId,
+            evidence: proyekFiles || []
+        });
+        
+        // Simpan ke catatan item di DB
+        const { error } = await supabase
+            .from('checklist_items')
+            .update({ 
+                catatan: result.analysis,
+                status: result.status,
+                metadata: {
+                    ...(item.metadata || {}),
+                    pipeline_analysis: {
+                        timestamp: new Date().toISOString(),
+                        rag_context: result.ragContext?.length || 0,
+                        sources: result.sources,
+                        confidence: result.confidence
+                    }
+                }
+            })
+            .eq('id', itemId);
+
+        if (error) throw error;
+
+        // Refresh Local State
+        const updatedData = checklistData.map(it => it.id === itemId ? { 
+            ...it, 
+            catatan: result.analysis, 
+            status: result.status,
+            metadata: { ...it.metadata, pipeline_analysis: result }
+        } : it);
+        
+        store.set({ checklistData: updatedData });
+        
+        hideAIProgress();
+        showSuccess(`Pipeline analysis selesai untuk ${item.nama}`);
+        render(document.getElementById('page-root'));
+
+    } catch (err) {
+        hideAIProgress();
+        console.error('[Pipeline Single Item Error]', err);
+        showError('Gagal Pipeline Analysis: ' + err.message);
+    }
+};
+
+window._queryRegulasiWithPipeline = async (query) => {
+    try {
+        showAIProgress('RAG Query', 'Mencari referensi regulasi...');
+        
+        const pipelineAnalisis = getPipelineAnalisisIntegration();
+        await pipelineAnalisis.initialize();
+        
+        const result = await pipelineAnalisis.queryRegulasi(query, {
+            topK: 5,
+            minScore: 0.6
+        });
+        
+        hideAIProgress();
+        
+        if (result.chunks?.length === 0) {
+            showInfo('Tidak ditemukan referensi regulasi untuk query tersebut');
+            return null;
+        }
+        
+        // Return result untuk ditampilkan di modal
+        return result;
+        
+    } catch (err) {
+        hideAIProgress();
+        console.error('[Pipeline Query Error]', err);
+        showError('Gagal query regulasi: ' + err.message);
+        return null;
     }
 };

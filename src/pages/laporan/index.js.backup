@@ -1,0 +1,334 @@
+// ============================================================
+//  LAPORAN PAGE - CLEAN ARCHITECTURE REFACTOR
+//  Executive Document Orchestration System v2.0
+//  Desain: Word Web Style DOCX Preview dengan Navigation
+// ============================================================
+
+import { supabase } from '../../lib/supabase.js';
+import { navigate } from '../../lib/router.js';
+import { showSuccess, showError, showInfo } from '../../components/toast.js';
+import { generateDocxBlob } from '../../lib/docx-service.js';
+import { getPipelineLaporanIntegration } from '../../infrastructure/pipeline/pipeline-laporan-integration.js';
+import { archState } from '../../lib/archsim/StateManager.js';
+import * as docxPreview from 'docx-preview';
+
+// Services
+import { fetchAllOutlineData } from './services/laporanService.js';
+import { aggregateOutlineData } from './utils/outlineAggregator.js';
+
+// Hooks
+import { useDocxPreview } from './hooks/useDocxPreview.js';
+
+// Components
+import { renderDocxPreviewTab } from './components/DocxPreviewTab.js';
+import { renderControlBar } from './components/ControlBar.js';
+import { renderNavigationPane } from './components/NavigationPane.js';
+import { renderZoomControls } from './components/ZoomControls.js';
+
+// ============================================================
+// MAIN PAGE EXPORT
+// ============================================================
+
+export async function laporanPage(params = {}) {
+  const id = params.id;
+  if (!id) { 
+    navigate('proyek'); 
+    return ''; 
+  }
+
+  // Fetch all data
+  const root = document.getElementById('page-root');
+  if (root) root.innerHTML = renderSkeleton();
+
+  try {
+    console.log('[LaporanPage] Fetching data for project:', id);
+    const outlineData = await fetchAllOutlineData(id);
+    console.log('[LaporanPage] Data fetched:', outlineData);
+    
+    const aggregatedData = aggregateOutlineData(outlineData);
+    console.log('[LaporanPage] Aggregated data:', aggregatedData);
+
+    if (root) {
+      console.log('[LaporanPage] Rendering page...');
+      // Pastikan aggregatedData valid
+      const safeAggregatedData = aggregatedData || {
+        electrical: null,
+        struktur: null,
+        egress: null,
+        environmental: null,
+        lps: null,
+        fireProtection: null,
+        buildingIntensity: null,
+        architectural: null,
+        etabs: null,
+        archSim: null,
+        pathfinder: null,
+        fireDesigner: null,
+        summary: { totalSections: 0, sections: [], hasSimulations: false, hasFullAnalysis: false }
+      };
+      
+      if (!outlineData.proyek) {
+        console.error('[LaporanPage] Project data is null');
+        root.innerHTML = renderError('Data proyek tidak ditemukan');
+        return '';
+      }
+      
+      // Render dengan defensive checks
+      try {
+        console.log('[LaporanPage] Generating HTML components...');
+        
+        const controlBarHTML = renderControlBar(outlineData.proyek, safeAggregatedData);
+        console.log('[LaporanPage] ControlBar generated');
+        
+        const previewHTML = renderDocxPreviewTab(outlineData.proyek);
+        console.log('[LaporanPage] PreviewTab generated');
+        
+        // Build HTML secara bertahap untuk debugging
+        const laporanContainer = document.createElement('div');
+        laporanContainer.className = 'laporan-container';
+        laporanContainer.style.cssText = 'display:flex;flex-direction:column;gap:16px;padding:20px;height:calc(100vh - 80px);overflow:hidden;box-sizing:border-box;';
+        
+        laporanContainer.innerHTML = controlBarHTML + previewHTML;
+        
+        root.innerHTML = '';
+        root.appendChild(laporanContainer);
+        
+        console.log('[LaporanPage] Page rendered to DOM, children count:', laporanContainer.children.length);
+        
+      } catch (renderErr) {
+        console.error('[LaporanPage] Render error:', renderErr);
+        root.innerHTML = renderError('Gagal render halaman: ' + renderErr.message);
+        return '';
+      }
+      
+      console.log('[LaporanPage] Waiting for DOM stabilization...');
+      
+      // Tunggu DOM siap dengan delay lebih lama (800ms)
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Verifikasi container dengan multiple attempts
+      let container = null;
+      for (let i = 0; i < 3; i++) {
+        container = document.getElementById('docx-render-container');
+        if (container) {
+          console.log('[LaporanPage] Container found after', (i + 1), 'checks');
+          break;
+        }
+        console.log('[LaporanPage] Container check', (i + 1), '/3 - not found, waiting...');
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      
+      console.log('[LaporanPage] Final container check:', { exists: !!container });
+      
+      try {
+        console.log('[LaporanPage] Initializing preview engine...');
+        // Initialize DOCX Preview Engine
+        const previewEngine = useDocxPreview({
+          containerId: 'docx-render-container',
+          navContainerId: 'docx-nav-list',
+          onError: (err) => {
+            console.error('[PreviewEngine] Error:', err);
+            showError('Preview Error: ' + err.message);
+          },
+          onSuccess: () => {
+            console.log('[PreviewEngine] Success');
+            showSuccess('DOCX Preview siap');
+          }
+        });
+
+        // Store engine instance globally for button callbacks
+        window._laporanPreviewEngine = previewEngine;
+        window._laporanData = { proyek: outlineData.proyek, aggregatedData: safeAggregatedData };
+
+        // Auto-trigger preview - hook memiliki retry mechanism sendiri
+        console.log('[LaporanPage] Starting preview generation...');
+        setTimeout(() => {
+          previewEngine.generateAndPreview(
+            outlineData.proyek, 
+            outlineData.analisis || {},
+            outlineData.checklist || [],
+            safeAggregatedData
+          ).catch(err => {
+            console.error('[LaporanPage] Preview generation failed:', err);
+          });
+        }, 100);
+      } catch (engineErr) {
+        console.error('[LaporanPage] Failed to initialize preview engine:', engineErr);
+        showError('Gagal inisialisasi preview: ' + engineErr.message);
+        
+        // Fallback: tampilkan data dasar saja
+        root.innerHTML += renderFallbackContent(outlineData.proyek, outlineData.analisis);
+      }
+    }
+
+    return '';
+  } catch (err) {
+    console.error('[LaporanPage]', err);
+    if (root) root.innerHTML = renderError(err.message);
+    return '';
+  }
+}
+
+// ============================================================
+// SKELETON LOADER
+// ============================================================
+
+function renderSkeleton() {
+  return `
+    <div class="page-laporan">
+      <div class="skeleton-header"></div>
+      <div class="skeleton-content">
+        <div class="skeleton-sidebar"></div>
+        <div class="skeleton-main"></div>
+      </div>
+    </div>
+    <style>
+      .page-laporan { padding: 24px; }
+      .skeleton-header { height: 60px; background: hsla(220,20%,100%,0.05); border-radius: 12px; margin-bottom: 20px; animation: pulse 1.5s ease-in-out infinite; }
+      .skeleton-content { display: grid; grid-template-columns: 280px 1fr; gap: 20px; height: calc(100vh - 140px); }
+      .skeleton-sidebar { background: hsla(220,20%,100%,0.03); border-radius: 12px; animation: pulse 1.5s ease-in-out infinite; }
+      .skeleton-main { background: hsla(220,20%,100%,0.03); border-radius: 12px; animation: pulse 1.5s ease-in-out infinite 0.2s; }
+      @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.7; } }
+    </style>
+  `;
+}
+
+function renderError(message) {
+  return `
+    <div style="padding: 40px; text-align: center;">
+      <i class="fas fa-triangle-exclamation" style="font-size: 3rem; color: var(--warning-400); margin-bottom: 16px;"></i>
+      <h3 style="color: white; margin-bottom: 8px;">Gagal Memuat Laporan</h3>
+      <p style="color: var(--text-tertiary);">${message}</p>
+      <button onclick="navigate('proyek')" class="btn-primary" style="margin-top: 20px;">
+        Kembali ke Daftar Proyek
+      </button>
+    </div>
+  `;
+}
+
+function renderFallbackContent(proyek, analisis) {
+  return `
+    <div style="padding: 20px; background: #1a1a2e; border-radius: 12px; margin-top: 20px;">
+      <h3 style="color: white; margin-bottom: 16px;">Data Proyek (Fallback Mode)</h3>
+      <table style="width: 100%; color: #94a3b8; font-size: 14px;">
+        <tr><td style="padding: 8px; border-bottom: 1px solid #333;">Nama Bangunan</td><td style="padding: 8px; border-bottom: 1px solid #333; color: white;">${proyek?.nama_bangunan || '-'}</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #333;">Alamat</td><td style="padding: 8px; border-bottom: 1px solid #333; color: white;">${proyek?.alamat || '-'}</td></tr>
+        <tr><td style="padding: 8px; border-bottom: 1px solid #333;">Status SLF</td><td style="padding: 8px; border-bottom: 1px solid #333; color: white;">${proyek?.status_slf || '-'}</td></tr>
+        <tr><td style="padding: 8px;">Skor Total</td><td style="padding: 8px; color: white;">${analisis?.skor_total || '-'}</td></tr>
+      </table>
+      <p style="margin-top: 16px; color: #64748b; font-size: 12px;">
+        * Preview DOCX tidak tersedia. Silakan cek console untuk detail error.
+      </p>
+    </div>
+  `;
+}
+
+// ============================================================
+// GLOBAL HANDLER FUNCTIONS untuk tombol ControlBar
+// ============================================================
+
+window._toggleExportMenu = () => {
+  const menu = document.getElementById('export-dropdown');
+  if (menu) menu.classList.toggle('show');
+};
+
+window._exportDOCX = async () => {
+  const engine = window._laporanPreviewEngine;
+  const data = window._laporanData;
+  if (!engine || !data) return;
+  
+  const blob = engine.getBlob();
+  if (!blob) {
+    showError('DOCX belum siap. Tunggu preview selesai.');
+    return;
+  }
+  
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Laporan_Kajian_${data.proyek.nama?.replace(/\s+/g, '_') || 'Proyek'}.docx`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showSuccess('DOCX berhasil diunduh!');
+};
+
+window._exportXLSX = () => {
+  showInfo('Export XLSX dalam pengembangan');
+};
+
+window._exportPDF = () => {
+  showInfo('Export PDF dalam pengembangan');
+};
+
+window._printDocument = () => {
+  window.print();
+};
+
+window._refreshPreview = async () => {
+  const engine = window._laporanPreviewEngine;
+  const data = window._laporanData;
+  if (engine && data) {
+    showInfo('Memperbarui preview...');
+    await engine.generateAndPreview(
+      data.proyek, 
+      data.aggregatedData.analisis, 
+      data.aggregatedData.checklist,
+      data.aggregatedData
+    );
+  }
+};
+
+window._applyTTE = () => {
+  showInfo('Fitur TTE dalam pengembangan');
+};
+
+window._downloadTemplate = () => {
+  showInfo('Download template dalam pengembangan');
+};
+
+window._uploadTemplate = () => {
+  showInfo('Upload template dalam pengembangan');
+};
+
+window._extractStructure = () => {
+  showInfo('Extract structure dalam pengembangan');
+};
+
+window._generateSummary = () => {
+  showInfo('AI Summary dalam pengembangan');
+};
+
+window._retryPreview = () => {
+  window._refreshPreview();
+};
+
+window._toggleNavPane = () => {
+  const engine = window._laporanPreviewEngine;
+  if (engine) engine.toggleNavigation();
+};
+
+window._docxZoomIn = () => {
+  const engine = window._laporanPreviewEngine;
+  if (engine) engine.zoomIn();
+};
+
+window._docxZoomOut = () => {
+  const engine = window._laporanPreviewEngine;
+  if (engine) engine.zoomOut();
+};
+
+window._docxFitWidth = () => {
+  const engine = window._laporanPreviewEngine;
+  if (engine) engine.fitWidth();
+};
+
+// Close dropdown saat click outside
+document.addEventListener('click', (e) => {
+  const dropdown = document.getElementById('export-dropdown');
+  const btn = e.target.closest('.dropdown');
+  if (dropdown && !btn) {
+    dropdown.classList.remove('show');
+  }
+});

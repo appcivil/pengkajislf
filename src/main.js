@@ -27,6 +27,9 @@ import { supabase, isSupabaseConfigured } from './lib/supabase.js';
 import { uploadToGoogleDrive } from './lib/drive.js';
 import { initSyncIndicator } from './components/sync-ui.js';
 
+// SmartAI Pipeline Integration
+import { initializePipeline, getPipelineIntegration } from './infrastructure/pipeline/pipeline-integration.js';
+
 // Dependency Injection Setup
 const checklistRepo       = new SupabaseChecklistRepository();
 const fileRepo            = new SupabaseFileRepository();
@@ -121,6 +124,23 @@ function hideLoading() {
 // PERFORMANCE FIX: Semua halaman diload secara lazy (on-demand)
 // Ini mengurangi bundle awal secara signifikan.
 
+// CRITICAL MODULES: Preload untuk memastikan tab switching lancar
+const CRITICAL_INSPECTION_MODULES = [
+  'electricalInspection',
+  'lpsInspection', 
+  'fireProtectionInspection',
+  'egressInspection',
+  'buildingIntensityInspection',
+  'architecturalInspection',
+  'environmentalInspection',
+  'accessibilityInspection',
+  'comfortInspection',
+  'stormwaterInspection',
+  'waterInspection',
+  'wastewaterInspection',
+  'disasterInspection',
+];
+
 const pages = {
   login:             () => import('./pages/login.js'),
   dashboard:         () => import('./pages/dashboard.js'),
@@ -135,7 +155,7 @@ const pages = {
   ndtCalculator:     () => import('./pages/ndt-calculator.js'),
   seismicCalculator: () => import('./pages/seismic-calculator.js'),
   multiAgent:        () => import('./pages/multi-agent.js'),
-  laporan:           () => import('./pages/laporan.js'),
+  laporan:           () => import('./pages/laporan/index.js'),
   suratPernyataan:   () => import('./pages/surat-pernyataan.js'),
   suratPernyataanList:() => import('./pages/surat-pernyataan-list.js'),
   verify:            () => import('./pages/verify.js'),
@@ -149,6 +169,20 @@ const pages = {
   passwordModal:     () => import('./components/password-modal.js'),
   simulation:        () => import('./pages/simulation.js'),
   electricalInspection: () => import('./pages/electrical-inspection.js'),
+  lpsInspection:       () => import('./pages/lps-inspection.js'),
+  fireProtectionInspection: () => import('./pages/fire-protection-inspection.js'),
+  comfortInspection:   () => import('./pages/comfort-inspection.js'),
+  sanitationInspection: () => import('./pages/sanitation-inspection.js'),
+  egressInspection:    () => import('./pages/egress-inspection.js'),
+  buildingIntensityInspection: () => import('./pages/building-intensity-inspection.js'),
+  architecturalInspection: () => import('./pages/architectural-inspection.js'),
+  environmentalInspection: () => import('./pages/environmental-inspection.js'),
+  accessibilityInspection: () => import('./pages/accessibility-inspection.js'),
+  lightingSimulation:     () => import('./pages/lighting-simulation.js'),
+  stormwaterInspection: () => import('./pages/stormwater-inspection.js'),
+  wastewaterInspection:   () => import('./pages/wastewater-inspection.js'),
+  disasterInspection:   () => import('./pages/disaster-inspection.js'),
+  smartAIDashboard:   () => import('./pages/smart-ai-dashboard.js'),
 };
 
 // Pre-fetch halaman yang paling sering diakses setelah login
@@ -157,6 +191,35 @@ function prefetchCriticalPages() {
     pages.dashboard();
     pages.proyekList();
   }, 3000);
+}
+
+// PRELOAD INSPECTION MODULES: Dipanggil saat user masuk proyek-detail
+// untuk memastikan semua tab modul siap digunakan
+export function preloadInspectionModules() {
+  console.log('[Preload] Starting inspection modules preload...');
+  
+  // Preload semua inspection modules secara parallel
+  const preloadPromises = CRITICAL_INSPECTION_MODULES.map(moduleName => {
+    if (pages[moduleName]) {
+      return pages[moduleName]().catch(err => {
+        console.warn(`[Preload] Failed to load ${moduleName}:`, err);
+        return null;
+      });
+    }
+    return Promise.resolve();
+  });
+  
+  Promise.all(preloadPromises).then(() => {
+    console.log('[Preload] All inspection modules loaded successfully');
+  }).catch(err => {
+    console.error('[Preload] Error loading inspection modules:', err);
+  });
+}
+
+// Preload saat user navigasi ke proyek-detail (predictive prefetching)
+export function onProyekDetailEnter() {
+  // Preload inspection modules dengan delay kecil
+  setTimeout(preloadInspectionModules, 500);
 }
 
 // ── Routing ───────────────────────────────────────────────────
@@ -184,6 +247,11 @@ function registerRoutes() {
   route('proyek-baru', async () => {
     const { proyekFormPage } = await pages.proyekForm();
     return await proyekFormPage();
+  });
+
+  route('proyek-edit', async (p) => {
+    const { proyekFormPage } = await pages.proyekForm();
+    return await proyekFormPage(p);
   });
 
   route('proyek-detail', async (p) => {
@@ -302,6 +370,117 @@ function registerRoutes() {
     return h;
   });
 
+  // Module routes - redirect to proyek-detail with module tab
+  route('lps-inspection', async (p) => {
+    const { lpsInspectionPage, afterLPSInspectionRender } = await pages.lpsInspection();
+    const h = await lpsInspectionPage(p);
+    setTimeout(() => afterLPSInspectionRender(p), 50);
+    return h;
+  });
+
+  route('fire-protection', async (p) => {
+    const { fireProtectionInspectionPage, afterFireProtectionInspectionRender } = await pages.fireProtectionInspection();
+    const h = await fireProtectionInspectionPage(p);
+    setTimeout(() => afterFireProtectionInspectionRender(p), 50);
+    return h;
+  });
+
+  route('building-intensity', async (p) => {
+    const { buildingIntensityInspectionPage, afterBuildingIntensityInspectionRender } = await pages.buildingIntensityInspection();
+    const h = await buildingIntensityInspectionPage(p);
+    setTimeout(() => afterBuildingIntensityInspectionRender(p), 50);
+    return h;
+  });
+
+  route('architectural', async (p) => {
+    const { architecturalInspectionPage, afterArchitecturalInspectionRender } = await pages.architecturalInspection();
+    const h = await architecturalInspectionPage(p);
+    setTimeout(() => afterArchitecturalInspectionRender(p), 50);
+    return h;
+  });
+
+  route('egress-system', async (p) => {
+    const { egressInspectionPage, afterEgressInspectionRender } = await pages.egressInspection();
+    const h = await egressInspectionPage(p);
+    setTimeout(() => afterEgressInspectionRender(p), 50);
+    return h;
+  });
+
+  route('environmental', async (p) => {
+    const { environmentalInspectionPage, afterEnvironmentalInspectionRender } = await pages.environmentalInspection();
+    const h = await environmentalInspectionPage(p);
+    setTimeout(() => afterEnvironmentalInspectionRender(p), 50);
+    return h;
+  });
+
+  route('accessibility', async (p) => {
+    const { accessibilityInspectionPage, afterAccessibilityInspectionRender } = await pages.accessibilityInspection();
+    const h = await accessibilityInspectionPage(p);
+    setTimeout(() => afterAccessibilityInspectionRender(p), 50);
+    return h;
+  });
+
+  route('lighting-simulation', async (p) => {
+    const { lightingSimulationPage, afterLightingSimulationRender, cleanup } = await pages.lightingSimulation();
+    const h = await lightingSimulationPage(p);
+    setTimeout(() => afterLightingSimulationRender(p), 50);
+    // Cleanup when route changes
+    const cleanupHandler = () => {
+      cleanup?.();
+      window.removeEventListener('route-changed', cleanupHandler);
+    };
+    window.addEventListener('route-changed', cleanupHandler);
+    return h;
+  });
+
+  route('water-inspection', async (p) => {
+    const { waterInspectionPage, afterWaterInspectionRender } = await pages.waterInspection();
+    const h = await waterInspectionPage(p);
+    setTimeout(() => afterWaterInspectionRender(p), 50);
+    return h;
+  });
+
+  route('wastewater-inspection', async (p) => {
+    const { wastewaterInspectionPage, afterWastewaterInspectionRender } = await pages.wastewaterInspection();
+    const h = await wastewaterInspectionPage(p);
+    setTimeout(() => afterWastewaterInspectionRender(p), 50);
+    return h;
+  });
+
+  route('environmental-impact', async (p) => {
+    navigate('proyek-detail', { id: p.id, tab: 'environmental' });
+    return '';
+  });
+
+  route('stormwater', async (p) => {
+    const { stormwaterInspectionPage, afterStormwaterInspectionRender } = await pages.stormwaterInspection();
+    const h = await stormwaterInspectionPage(p);
+    setTimeout(() => afterStormwaterInspectionRender(p), 50);
+    return h;
+  });
+
+  route('sanitation-inspection', async (p) => {
+    const { sanitationInspectionPage, afterSanitationInspectionRender } = await pages.sanitationInspection();
+    const h = await sanitationInspectionPage(p);
+    setTimeout(() => afterSanitationInspectionRender(p), 50);
+    return h;
+  });
+
+  route('disaster-mitigation', async (p) => {
+    const { disasterInspectionPage, afterDisasterInspectionRender } = await pages.disasterInspection();
+    const h = await disasterInspectionPage(p);
+    setTimeout(() => afterDisasterInspectionRender(p), 50);
+    return h;
+  });
+
+  // SmartAI Pipeline Dashboard
+  route('smart-ai', async () => {
+    const { smartAIDashboardPage, afterSmartAIDashboardRender } = await pages.smartAIDashboard();
+    const h = await smartAIDashboardPage();
+    setTimeout(afterSmartAIDashboardRender, 50);
+    return h;
+  });
+
   const taskRoute = async (p) => {
     const { taskDetailPage, afterTaskDetailRender } = await pages.taskDetail();
     const h = await taskDetailPage(p);
@@ -349,6 +528,15 @@ async function bootstrap() {
   import('./infrastructure/ai/deep-reasoning-integration.js')
     .then(({ initializeSmartAIIntegration }) => initializeSmartAIIntegration())
     .catch(e => console.error('[App] Background AI initialization failed:', e));
+
+  // Initialize SmartAI Pipeline (background, non-blocking)
+  initializePipeline()
+    .then(() => {
+      console.log('[App] SmartAI Pipeline initialized');
+      // Expose ke global untuk akses dari UI
+      window.smartAIPipeline = getPipelineIntegration();
+    })
+    .catch(e => console.error('[App] SmartAI Pipeline initialization failed:', e));
 
   registerRoutes();
 
