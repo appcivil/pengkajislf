@@ -49,7 +49,7 @@ export class SunSimulator {
     // Local sidereal time
     const d = julianDay - 2451545;
     const GMST = 18.697374558 + 24.06570982441908 * d;
-    const LMST = (GMST * 15 + this.longitude) % 360;
+    let LMST = (GMST * 15 + this.longitude) % 360;
     if (LMST < 0) LMST += 360;
     
     // Hour angle

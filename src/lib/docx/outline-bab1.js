@@ -12,6 +12,115 @@ import {
   LevelFormat, convertInchesToTwip
 } from './utils.js';
 import { ImageRun } from 'docx';
+import { DEEP_REASONING_RULES } from '../../infrastructure/ai/deep-reasoning-rules.js';
+
+// Helper function untuk legal bullet - didefinisikan di level modul
+const legalBullet = (text) => bulletItem(text);
+
+// ============================================================
+// DYNAMIC LEGAL REFERENCES GENERATOR
+// Mengambil data regulasi dari DEEP_REASONING_RULES untuk
+// menghindari hardcoding dan memudahkan maintenance.
+// ============================================================
+
+/**
+ * Generate numbered items dari array rules
+ * @param {Array} rules - Array rule objects dari DEEP_REASONING_RULES
+ * @param {string} prefix - Prefix untuk numbering (a, b, c, ...)
+ * @returns {Array} Array of numberedItem components
+ */
+function generateNumberedItemsFromRules(rules, startChar = 'a') {
+  if (!rules || !Array.isArray(rules) || rules.length === 0) {
+    return [bodyText('(Data regulasi tidak tersedia)')];
+  }
+  
+  return rules.map((rule, index) => {
+    const char = String.fromCharCode(startChar.charCodeAt(0) + index);
+    return numberedItem(char, rule.name || rule.id || 'Regulasi tidak bernama');
+  });
+}
+
+/**
+ * Generate bullet items dari array SNI rules
+ * @param {Array} sniRules - Array SNI rule objects
+ * @returns {Array} Array of legalBullet components
+ */
+function generateSNIBullets(sniRules) {
+  if (!sniRules || !Array.isArray(sniRules) || sniRules.length === 0) {
+    return [bodyText('(Data SNI tidak tersedia)')];
+  }
+  
+  return sniRules.map(rule => legalBullet(rule.name || rule.id || 'SNI tidak bernama'));
+}
+
+/**
+ * Render section dasar hukum secara dinamis dari DEEP_REASONING_RULES
+ * Fase 3 Audit Report: Dynamic Referencing Implementation
+ */
+function renderDynamicLegalReferences() {
+  const nspk = DEEP_REASONING_RULES?.nspkCompliance;
+  
+  if (!nspk) {
+    return [
+      heading3('1.4.1 Undang-Undang'),
+      bodyText('(Data regulasi tidak tersedia - DEEP_REASONING_RULES tidak dimuat)'),
+    ];
+  }
+
+  const sections = [
+    heading3('1.4.1 Undang-Undang'),
+    ...(nspk.undangUndang?.rules ? generateNumberedItemsFromRules(nspk.undangUndang.rules, 'a') : []),
+    
+    heading3('1.4.2 Peraturan Pemerintah'),
+    ...(nspk.peraturanPemerintah?.rules ? generateNumberedItemsFromRules(nspk.peraturanPemerintah.rules, 'a') : []),
+    
+    heading3('1.4.3 Peraturan Menteri PUPR'),
+    ...(nspk.permenPUPR?.rules ? generateNumberedItemsFromRules(nspk.permenPUPR.rules, 'a') : []),
+    
+    heading3('1.4.4 Standar Nasional Indonesia'),
+    bodyText('a. SNI Arsitektur'),
+    ...(nspk.sniArsitektur ? generateSNIBullets(nspk.sniArsitektur) : []),
+    
+    bodyText('b. SNI Struktur'),
+    ...(nspk.sniStruktur ? generateSNIBullets(nspk.sniStruktur) : []),
+    
+    bodyText('c. SNI MEP'),
+    ...(nspk.sniMep ? generateSNIBullets(nspk.sniMep) : []),
+    
+    heading3('1.4.5 Aturan Terkait Lainnya'),
+    ...(nspk.aturanLain ? renderOtherRegulations(nspk.aturanLain) : []),
+  ];
+  
+  return sections;
+}
+
+/**
+ * Render aturan dari kementerian lain
+ */
+function renderOtherRegulations(aturanLain) {
+  const items = [];
+  
+  if (aturanLain.lingkunganHidup?.length > 0) {
+    items.push(numberedItem('a', `Kementerian Lingkungan Hidup dan Kehutanan: ${aturanLain.lingkunganHidup.map(r => r.name).join(', ')}.`));
+  }
+  if (aturanLain.esdm?.length > 0) {
+    items.push(numberedItem('b', `Kementerian ESDM: ${aturanLain.esdm.map(r => r.name).join(', ')}.`));
+  }
+  if (aturanLain.kesehatan?.length > 0) {
+    items.push(numberedItem('c', `Kementerian Kesehatan: ${aturanLain.kesehatan.map(r => r.name).join(', ')}.`));
+  }
+  if (aturanLain.atrBpn?.length > 0) {
+    items.push(numberedItem('d', `Kementerian ATR/BPN: ${aturanLain.atrBpn.map(r => r.name).join(', ')}.`));
+  }
+  if (aturanLain.dalamNegeri?.length > 0) {
+    items.push(numberedItem('e', `Kementerian Dalam Negeri: ${aturanLain.dalamNegeri.map(r => r.name).join(', ')}.`));
+  }
+  if (aturanLain.perdagangan?.length > 0) {
+    items.push(numberedItem('f', `Kementerian Perdagangan: ${aturanLain.perdagangan.map(r => r.name).join(', ')}.`));
+  }
+  
+  return items.length > 0 ? items : [numberedItem('a', 'Referensi aturan terkait lainnya sesuai kebutuhan teknis.')];
+}
 
 // ============================================================
 export function renderBab1(proyek) {
@@ -53,8 +162,6 @@ export function renderBab1(proyek) {
   ]
     .filter(Boolean)
     .join(' ');
-
-  const legalBullet = (text) => bulletItem(text);
 
   return [
     heading1('BAB I: GAMBARAN UMUM'),
@@ -107,94 +214,9 @@ export function renderBab1(proyek) {
       'Penyusunan laporan kajian teknis ini berpedoman pada ketentuan peraturan perundang-undangan, peraturan pelaksanaan, serta standar nasional Indonesia yang relevan dengan penyelenggaraan bangunan gedung. Seluruh dasar hukum dan rujukan teknis berikut digunakan sebagai acuan dalam pemeriksaan administratif, pengamatan visual, pengujian teknis, analisis kesesuaian, dan penyusunan rekomendasi kelaikan fungsi bangunan gedung.'
     ),
 
-    heading3('1.4.1 Undang-Undang'),
-    numberedItem('a', 'Undang-Undang Nomor 28 Tahun 2002 tentang Bangunan Gedung.'),
-    numberedItem('b', 'Undang-Undang Nomor 2 Tahun 2017 tentang Jasa Konstruksi.'),
-    numberedItem('c', 'Undang-Undang Nomor 6 Tahun 2017 tentang Arsitek.'),
-    numberedItem('d', 'Undang-Undang Nomor 11 Tahun 2020 tentang Cipta Kerja.'),
-    numberedItem('e', 'Peraturan Pemerintah Pengganti Undang-Undang Nomor 2 Tahun 2022 tentang Cipta Kerja.'),
-    numberedItem('f', 'Undang-Undang Nomor 6 Tahun 2023 tentang Penetapan Peraturan Pemerintah Pengganti Undang-Undang Nomor 2 Tahun 2022 tentang Cipta Kerja Menjadi Undang-Undang.'),
-
-    heading3('1.4.2 Peraturan Pemerintah'),
-    numberedItem('a', 'Peraturan Pemerintah Nomor 6 Tahun 2021 tentang Penyelenggaraan Perizinan Berusaha di Daerah.'),
-    numberedItem('b', 'Peraturan Pemerintah Nomor 14 Tahun 2021 tentang Perubahan atas Peraturan Pemerintah Nomor 22 Tahun 2020 tentang Peraturan Pelaksanaan Undang-Undang Nomor 2 Tahun 2017 tentang Jasa Konstruksi.'),
-    numberedItem('c', 'Peraturan Pemerintah Nomor 15 Tahun 2021 tentang Peraturan Pelaksanaan Undang-Undang Nomor 6 Tahun 2017 tentang Arsitek.'),
-    numberedItem('d', 'Peraturan Pemerintah Nomor 16 Tahun 2021 tentang Peraturan Pelaksanaan Undang-Undang Nomor 28 Tahun 2002 tentang Bangunan Gedung.'),
-
-    heading3('1.4.3 Peraturan Menteri PUPR'),
-    numberedItem('a', 'Peraturan Menteri Pekerjaan Umum dan Perumahan Rakyat Nomor 24/PRT/M/2008 tentang Pedoman Pemeliharaan dan Perawatan Bangunan Gedung.'),
-    numberedItem('b', 'Peraturan Menteri Pekerjaan Umum dan Perumahan Rakyat Nomor 16/PRT/M/2010 tentang Pedoman Teknis Pemeriksaan Berkala Bangunan Gedung.'),
-    numberedItem('c', 'Peraturan Menteri Pekerjaan Umum dan Perumahan Rakyat Nomor 14/PRT/M/2017 tentang Persyaratan Kemudahan Bangunan Gedung.'),
-    numberedItem('d', 'Peraturan Menteri Pekerjaan Umum dan Perumahan Rakyat Nomor 11/PRT/M/2018 tentang Tim Ahli Bangunan Gedung, Pengkaji Teknis, dan Penilik Bangunan.'),
-    numberedItem('e', 'Peraturan Menteri Pekerjaan Umum dan Perumahan Rakyat Nomor 22/PRT/M/2018 tentang Pembangunan Bangunan Gedung Negara.'),
-    numberedItem('f', 'Peraturan Menteri Pekerjaan Umum dan Perumahan Rakyat Nomor 27/PRT/M/2018 tentang Sertifikat Laik Fungsi Bangunan Gedung.'),
-    numberedItem('g', 'Peraturan Menteri Pekerjaan Umum dan Perumahan Rakyat Nomor 2 Tahun 2020 tentang Perubahan Kedua atas Peraturan Menteri Pekerjaan Umum dan Perumahan Rakyat Nomor 05/PRT/M/2016 tentang Izin Mendirikan Bangunan Gedung.'),
-    numberedItem('h', 'Peraturan Menteri Pekerjaan Umum dan Perumahan Rakyat Nomor 3 Tahun 2020 tentang Perubahan atas Peraturan Menteri Pekerjaan Umum dan Perumahan Rakyat Nomor 27/PRT/M/2018 tentang Sertifikat Laik Fungsi Bangunan Gedung.'),
-    numberedItem('i', 'Peraturan Menteri Pekerjaan Umum dan Perumahan Rakyat Nomor 8 Tahun 2021 tentang Penilai Ahli, Kegagalan Bangunan, dan Penilaian Kegagalan Bangunan.'),
-    numberedItem('j', 'Peraturan Menteri Pekerjaan Umum dan Perumahan Rakyat Nomor 18 Tahun 2021 tentang Standar Pembongkaran Bangunan Gedung.'),
-    numberedItem('k', 'Peraturan Menteri Pekerjaan Umum dan Perumahan Rakyat Nomor 19 Tahun 2021 tentang Pedoman Teknis Penyelenggaraan Bangunan Gedung Cagar Budaya yang Dilestarikan.'),
-    numberedItem('l', 'Peraturan Menteri Pekerjaan Umum dan Perumahan Rakyat Nomor 20 Tahun 2021 tentang Bangunan Gedung Fungsi Khusus.'),
-    numberedItem('m', 'Peraturan Menteri Pekerjaan Umum dan Perumahan Rakyat Nomor 10 Tahun 2023 tentang Bangunan Gedung Cerdas.'),
-
-    heading3('1.4.4 Standar Nasional Indonesia'),
-    bodyText('a. SNI Arsitektur'),
-    legalBullet('SNI 02-1733-2004 tentang Tata Cara Perencanaan Lingkungan Perumahan di Perkotaan.'),
-
-    bodyText('b. SNI Struktur'),
-    legalBullet('SNI 1726:2019 tentang Tata Cara Perencanaan Ketahanan Gempa untuk Struktur Bangunan Gedung dan Non Gedung.'),
-    legalBullet('SNI 1727:2020 tentang Beban Desain Minimum dan Kriteria Terkait untuk Bangunan Gedung dan Struktur Lain.'),
-    legalBullet('SNI 1729:2020 tentang Spesifikasi untuk Bangunan Gedung Baja Struktural.'),
-    legalBullet('SNI 8900:2020 tentang Panduan Desain Sederhana untuk Bangunan Gedung.'),
-    legalBullet('SNI 7860:2020 tentang Ketentuan Seismik untuk Bangunan Gedung Baja Struktural.'),
-    legalBullet('SNI 2847:2019 tentang Persyaratan Beton Struktural untuk Bangunan Gedung.'),
-    legalBullet('SNI 2052:2017 tentang Baja Tulangan Beton.'),
-    legalBullet('SNI 8046:2016 tentang Stabilitas Lereng.'),
-    legalBullet('SNI 03-1734-1989 tentang Tata Cara Perencanaan Beton dan Struktur Dinding Bertulang untuk Rumah dan Gedung.'),
-    legalBullet('SNI 03-3976-1995 tentang Tata Cara Pengadukan dan Pengecoran Beton.'),
-    legalBullet('SNI 03-2834-2000 tentang Tata Cara Pembuatan Rencana Campuran Beton Normal.'),
-    legalBullet('SNI 03-3449-2002 tentang Tata Cara Rencana Pembuatan Campuran Beton Ringan dengan Agregat Ringan.'),
-    legalBullet('SNI 03-2847-2002 tentang Jumlah Benda Uji.'),
-    legalBullet('SNI 03-4803-1998 tentang Uji Pantul Beton.'),
-    legalBullet('SNI 03-1973-1980 tentang Metode Pengujian Berat Isi Beton.'),
-    legalBullet('SNI 03-4330-1997 tentang Metode Pengujian Elemen Struktur Beton dengan Alat Palu Beton.'),
-    legalBullet('SNI 03-2459-2002 tentang Spesifikasi Sumur Resapan Air Hujan untuk Lahan Pekarangan.'),
-    legalBullet('SNI 03-6481-2000 tentang Sistem Plambing 2000.'),
-    legalBullet('SNI 04-7018-2004 tentang Sistem Pasokan Daya Listrik Darurat dan Siaga.'),
-    legalBullet('SNI 04-7019-2004 tentang Sistem Pasokan Daya Listrik Darurat Menggunakan Energi Tersimpan.'),
-    legalBullet('SNI 03-6572-2001 tentang Tata Cara Perancangan Sistem Ventilasi dan Pengkondisian Udara pada Bangunan Gedung.'),
-    legalBullet('SNI 03-6169-2000 tentang Prosedur Audit Energi pada Bangunan Gedung.'),
-    legalBullet('SNI 03-7017.2-2004 tentang Lift Traksi Listrik pada Bangunan Gedung Bagian 2: Pemeriksaan dan Pengujian Berkala.'),
-    legalBullet('SNI 03-6575-2001 tentang Tata Cara Perancangan Sistem Pencahayaan Buatan pada Bangunan Gedung.'),
-    legalBullet('SNI 03-2453-2002 tentang Tata Cara Perencanaan Perancangan Sumur Resapan Air Hujan untuk Lahan Pekarangan.'),
-    legalBullet('SNI 03-2396-2001 tentang Tata Cara Perancangan Sistem Pencahayaan Alami pada Bangunan Gedung.'),
-
-    bodyText('c. SNI MEP'),
-    legalBullet('SNI 0225:2020 tentang Persyaratan Umum Instalasi Listrik (PUIL 2020).'),
-    legalBullet('SNI 0225:2011 tentang Persyaratan Umum Instalasi Listrik (PUIL 2011).'),
-    legalBullet('SNI 6390:2020 tentang Konservasi Energi Sistem Tata Udara pada Bangunan Gedung.'),
-    legalBullet('SNI 6389:2020 tentang Konservasi Energi Selubung Bangunan pada Bangunan Gedung.'),
-    legalBullet('SNI 6197:2020 tentang Konservasi Energi pada Sistem Pencahayaan.'),
-    legalBullet('SNI 8153:2015 tentang Sistem Plambing pada Bangunan Gedung.'),
-    legalBullet('SNI 04-0227-2003 tentang Tegangan Standar.'),
-    legalBullet('SNI 03-1746-2000 tentang Tata Cara Perencanaan dan Pemasangan Sarana Jalan Keluar untuk Penyelamatan terhadap Bahaya Kebakaran pada Bangunan Gedung.'),
-    legalBullet('SNI 03-6573-2001 tentang Tata Cara Perancangan Sistem Transportasi Vertikal dalam Gedung (Lift).'),
-    legalBullet('SNI 05-7052-2004 tentang Syarat-syarat Umum Konstruksi Lift Penumpang yang Dijalankan dengan Motor Traksi Tanpa Kamar Mesin.'),
-    legalBullet('SNI 03-3987-1995 tentang Tata Cara Perencanaan dan Pemasangan Pemadam Api Ringan untuk Pencegahan Bahaya Kebakaran pada Bangunan Rumah dan Gedung.'),
-    legalBullet('SNI 03-1745-2000 tentang Tata Cara Perencanaan dan Pemasangan Sistem Pipa Tegak dan Slang untuk Pencegahan Bahaya Kebakaran pada Bangunan Gedung.'),
-    legalBullet('SNI 03-3985-2000 tentang Tata Cara Perencanaan, Pemasangan, dan Pengujian Sistem Deteksi dan Alarm Kebakaran untuk Pencegahan Bahaya Kebakaran pada Bangunan Gedung.'),
-    legalBullet('SNI 03-3989-2000 tentang Tata Cara Perencanaan dan Pemasangan Sistem Springkler Otomatik untuk Pencegahan Bahaya Kebakaran pada Bangunan Gedung.'),
-    legalBullet('SNI 03-6571-2001 tentang Sistem Pengendalian Asap Kebakaran pada Bangunan Gedung.'),
-    legalBullet('SNI 03-0712-2004 tentang Sistem Manajemen Asap dalam Mal, Atrium, dan Ruangan Bervolume Besar.'),
-    legalBullet('SNI 7062:2019 tentang Pengukuran Intensitas Pencahayaan di Tempat Kerja.'),
-    legalBullet('SNI 0225:2011 tentang Persyaratan Umum Instalasi Listrik.'),
-
-    heading3('1.4.5 Aturan Terkait Lainnya'),
-    numberedItem('a', 'Kementerian Lingkungan Hidup dan Kehutanan, antara lain terkait pedoman pelaksanaan 3R melalui bank sampah dan baku mutu air limbah.'),
-    numberedItem('b', 'Kementerian ESDM, antara lain terkait penyediaan infrastruktur pengisian listrik untuk kendaraan bermotor listrik berbasis baterai.'),
-    numberedItem('c', 'Kementerian Kesehatan, antara lain terkait persyaratan kualitas air minum dan standar baku mutu kesehatan lingkungan.'),
-    numberedItem('d', 'Kementerian ATR/BPN, antara lain terkait penyediaan dan pemanfaatan ruang terbuka hijau.'),
-    numberedItem('e', 'Kementerian Dalam Negeri, antara lain terkait penataan ruang terbuka hijau.'),
-    numberedItem('f', 'Kementerian Perdagangan, antara lain terkait pedoman pembangunan dan pengelolaan sarana perdagangan.'),
+    // Fase 3 Audit Report: Dynamic Referencing dari DEEP_REASONING_RULES
+    // Menggantikan hardcoded string dengan data dinamis dari Single Source of Truth
+    ...renderDynamicLegalReferences(),
 
     bodyText(
       'Seluruh dasar hukum dan rujukan teknis tersebut digunakan secara selektif sesuai relevansi objek pemeriksaan, jenis bangunan, dan ketersediaan data lapangan. Apabila terdapat perbedaan tingkat penerapan antarstandar, maka penilaian teknis didasarkan pada hierarki regulasi, konteks penggunaan bangunan, dan bukti pemeriksaan yang dapat diverifikasi.'
