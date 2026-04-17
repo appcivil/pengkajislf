@@ -28,17 +28,8 @@ export default defineConfig({
           'markdown':   ['marked'],
           'dompurify':  ['dompurify'],
           'tesseract':  ['tesseract.js'], // Pre-bundle tesseract to avoid CDN worker issues
-          // INSPECTION MODULES: Bundle semua inspection pages bersama
-          // untuk mengurangi HTTP requests dan memastikan tab switching lancar
-          'inspection-modules': [
-            './src/pages/fire-protection-inspection.js',
-            './src/pages/building-intensity-inspection.js',
-            './src/pages/architectural-inspection.js',
-            './src/pages/egress-inspection.js',
-            './src/pages/lps-inspection.js',
-            './src/pages/electrical-inspection.js',
-            './src/pages/environmental-inspection.js',
-          ],
+          // Note: Inspection modules tidak dimasukkan ke manualChunks
+          // agar Vite dapat melakukan code-splitting dinamis per modul
         }
       }
     }

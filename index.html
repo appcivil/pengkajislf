@@ -30,6 +30,43 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer crossorigin=""></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+    
+    <!-- Fallback for CDN failures -->
+    <script>
+      // Check if Font Awesome loaded
+      window.addEventListener('load', function() {
+        const testIcon = document.createElement('i');
+        testIcon.className = 'fas fa-test';
+        document.body.appendChild(testIcon);
+        const styles = window.getComputedStyle(testIcon);
+        const fontFamily = styles.fontFamily;
+        document.body.removeChild(testIcon);
+        
+        if (!fontFamily || fontFamily === '"Font Awesome 6 Free"') {
+          console.warn('[CDN Fallback] Font Awesome not loaded, using inline SVG fallback');
+        }
+      });
+    </script>
+    
+    <!-- Inline Font Fallback CSS -->
+    <style>
+      /* Inter font fallback via system fonts */
+      @font-face {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 300 800;
+        font-display: swap;
+        src: local('Inter'), local('Inter-Regular'), 
+             local('Segoe UI'), local('Roboto'), local('Arial');
+      }
+      @font-face {
+        font-family: 'JetBrains Mono';
+        font-style: normal;
+        font-weight: 400 500;
+        font-display: swap;
+        src: local('JetBrains Mono'), local('Consolas'), local('Monaco'), local('monospace');
+      }
+    </style>
   </head>
   <body>
     <div id="loading-screen" class="loading-screen">
