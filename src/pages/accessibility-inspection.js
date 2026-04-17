@@ -9,25 +9,24 @@ import { supabase } from '../lib/supabase.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import {
-  calculateCorridorCompliance,
-  calculateRampCompliance,
-  calculateDoorCompliance,
-  calculateFloorCompliance,
-  calculateStairCompliance,
-  calculateElevatorCompliance,
-  calculateEscalatorCompliance,
-  calculateLandingCompliance,
-  calculateToiletCompliance,
-  calculateParkingCompliance,
-  calculateSignageCompliance,
-  calculateOverallScore,
+  calculateHorizontalAccessibility as calculateCorridorCompliance,
+  calculateRampAccessibility as calculateRampCompliance,
+  calculateDoorAccessibility as calculateDoorCompliance,
+  evaluateFloorSurface as calculateFloorCompliance,
+  calculateStairAccessibility as calculateStairCompliance,
+  calculateElevatorAccessibility as calculateElevatorCompliance,
+  calculateEscalatorAccessibility as calculateEscalatorCompliance,
+  calculateLandingZone as calculateLandingCompliance,
+  calculateAccessibleToilet as calculateToiletCompliance,
+  calculateAccessibleParking as calculateParkingCompliance,
+  checkSignageAccessibility as calculateSignageCompliance,
+  calculateAccessibilityScore as calculateOverallScore,
   getGradeFromScore,
-  generateEvacuationPathAnalysis,
-  generateRepairPriority,
-  generateInfrastructureChecklist,
-  generateAccessibilityReport,
-  ACCESSIBILITY_STANDARDS,
-  SCORING_WEIGHTS
+  analyzeAccessibleEvacuationPath as generateEvacuationPathAnalysis,
+  calculateRepairPriority as generateRepairPriority,
+  INFRASTRUCTURE_CHECKLIST as generateInfrastructureChecklist,
+  generateComplianceSummary as generateAccessibilityReport,
+  ACCESSIBILITY_STANDARDS
 } from '../lib/accessibility-calculators.js';
 
 // ============================================================

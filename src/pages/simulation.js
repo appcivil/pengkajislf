@@ -10,12 +10,20 @@ import {
   simulateLighting, 
   simulateVentilation, 
   simulateEvacuation,
-  simulateNDT,
+  simulateNDTRebound,
+  simulateNDTUPV,
+  simulateStormwater,
+  simulateWasteManagement,
+  simulateOTTV,
+  simulateSeismic,
+  simulateSanitation,
+  simulateAcoustics,
   createSimulationPanel,
   saveSimulasi,
   getSimulasiSummary,
-  loadFieldDataForSimulation
-} from '../lib/simulation-engine.js';
+  loadFieldDataForSimulation,
+  mergeWithFieldData
+} from '../lib/simulation-engine-v2.js';
 import { exportSimulationVisuals } from '../lib/simulation-visualization.js';
 import { exportSimulationToReport } from '../lib/simulation-report-integration.js';
 import { importFieldData, convertToSimulationParams, saveImportedFieldData } from '../lib/field-data-import.js';
@@ -97,8 +105,26 @@ export async function simulationPage(params = {}) {
               <button class="btn btn-secondary sim-tab" data-type="evacuation">
                 <i class="fas fa-running"></i> Evakuasi
               </button>
-              <button class="btn btn-secondary sim-tab" data-type="ndt">
-                <i class="fas fa-hammer"></i> NDT Test
+              <button class="btn btn-secondary sim-tab" data-type="ndt_rebound">
+                <i class="fas fa-hammer"></i> NDT Rebound
+              </button>
+              <button class="btn btn-secondary sim-tab" data-type="ndt_upv">
+                <i class="fas fa-wave-square"></i> NDT UPV
+              </button>
+              <button class="btn btn-secondary sim-tab" data-type="stormwater">
+                <i class="fas fa-cloud-rain"></i> Stormwater
+              </button>
+              <button class="btn btn-secondary sim-tab" data-type="ottv">
+                <i class="fas fa-thermometer-half"></i> OTTV
+              </button>
+              <button class="btn btn-secondary sim-tab" data-type="seismic">
+                <i class="fas fa-house-damage"></i> Seismic
+              </button>
+              <button class="btn btn-secondary sim-tab" data-type="sanitation">
+                <i class="fas fa-tint"></i> Sanitasi
+              </button>
+              <button class="btn btn-secondary sim-tab" data-type="acoustics">
+                <i class="fas fa-volume-up"></i> Akustik
               </button>
             </div>
           </div>
@@ -161,9 +187,12 @@ export async function simulationPage(params = {}) {
             <div class="card-title"><i class="fas fa-info-circle"></i> Informasi Standar</div>
             <div class="text-sm" style="line-height:1.6">
               <p><strong>SNI 03-2396-2001:</strong> Pencahayaan alami minimum Daylight Factor 0.5%</p>
-              <p><strong>SNI 03-6572-2001:</strong> Ventilasi minimum 5-6 ACH (Air Changes per Hour)</p>
+              <p><strong>SNI 03-6572-2001:</strong> Ventilasi minimum 5-6 ACH</p>
               <p><strong>SNI 03-1736-2012:</strong> Waktu evakuasi maksimum 3-5 menit</p>
               <p><strong>SNI 2847:2019:</strong> Kekuatan beton minimum K-250 (20.75 MPa)</p>
+              <p><strong>SNI 03-2453-2002:</strong> Stormwater Zero Runoff</p>
+              <p><strong>SNI 6389:2011:</strong> OTTV maksimum 35 W/m²</p>
+              <p><strong>SNI 1726:2019:</strong> Analisis respons gempa</p>
             </div>
           </div>
           
@@ -330,12 +359,18 @@ async function loadImportedFieldDataList(proyekId) {
     if (fieldData && fieldData.length > 0) {
       listContainer.style.display = 'block';
       
-      const typeLabels = {
+      const tipeMap = {
         'pencahayaan': 'Pencahayaan',
         'ventilasi': 'Ventilasi',
         'evakuasi': 'Evakuasi',
         'ndt_rebound': 'NDT Rebound',
         'ndt_upv': 'NDT UPV',
+        'stormwater': 'Stormwater',
+        'waste': 'Waste Management',
+        'ottv': 'OTTV',
+        'seismic': 'Seismic',
+        'sanitation': 'Sanitasi',
+        'acoustics': 'Akustik',
         'unknown': 'Unknown'
       };
       
@@ -453,13 +488,79 @@ function loadSimulation(type, proyekId) {
         reactionTime: params.reactionTime
       });
     },
-    ndt: async (params) => {
-      const parameters = {
-        material: 'concrete',
+    ndt_rebound: async (params) => {
+      return await simulateNDTRebound({
+        material: params.material || 'concrete',
         age: params.age,
-        exposure: params.exposure
-      };
-      return await simulateNDT(params.testType, parameters);
+        exposure: params.exposure,
+        numTestPoints: params.numTestPoints || 10
+      });
+    },
+    ndt_upv: async (params) => {
+      return await simulateNDTUPV({
+        age: params.age,
+        exposure: params.exposure,
+        numTestPoints: params.numTestPoints || 10,
+        crackProbability: params.crackProbability || 0.1
+      });
+    },
+    stormwater: async (params) => {
+      return await simulateStormwater({
+        roofArea: params.roofArea,
+        parkingArea: params.parkingArea,
+        pavedArea: params.pavedArea || 0,
+        grassArea: params.grassArea || 100,
+        rainfallIntensity: params.rainfallIntensity || 100,
+        rainfallDuration: params.rainfallDuration || 2,
+        location: params.location || 'Jakarta'
+      });
+    },
+    ottv: async (params) => {
+      return await simulateOTTV({
+        grossWallArea: params.grossWallArea,
+        windowArea: params.windowArea,
+        roofArea: params.roofArea || params.grossWallArea * 0.6,
+        floorArea: params.floorArea || params.grossWallArea,
+        uValueWall: params.uValueWall || 2.0,
+        uValueWindow: params.uValueWindow || 5.8,
+        solarFactorWindow: params.solarFactorWindow || 0.6,
+        wallAbsorptance: params.wallAbsorptance || 0.6
+      });
+    },
+    seismic: async (params) => {
+      return await simulateSeismic({
+        buildingHeight: params.buildingHeight,
+        numFloors: params.numFloors,
+        floorWeights: null // Use default distribution
+      }, {
+        seismicZone: params.seismicZone,
+        soilType: params.soilType || 'SD',
+        buildingType: 'moment_frame',
+        importanceFactor: 1.0
+      });
+    },
+    sanitation: async (params) => {
+      return await simulateSanitation({
+        buildingType: params.buildingType || 'apartment',
+        maxOccupants: params.maxOccupants,
+        floors: params.floors || 5,
+        floorHeight: params.floorHeight || 3,
+        hasCentralHotWater: params.hasCentralHotWater || false
+      }, {
+        waterSource: params.waterSource || 'PDAM',
+        pdamPressure: params.pdamPressure || 1.5,
+        pdamFlowRate: params.pdamFlowRate || 2.0
+      });
+    },
+    acoustics: async (params) => {
+      return await simulateAcoustics({
+        sourceType: params.sourceType || 'traffic',
+        distanceToSource: params.distanceToSource,
+        sourceNoiseLevel: params.sourceNoiseLevel || 0
+      }, {
+        wallMaterial: params.wallMaterial || 'single_glass',
+        roomType: params.roomType || 'office'
+      });
     }
   };
   
@@ -474,7 +575,13 @@ function loadSimulation(type, proyekId) {
         'lighting': 'pencahayaan',
         'ventilation': 'ventilasi',
         'evacuation': 'evakuasi',
-        'ndt': params.testType || 'ndt_rebound'
+        'ndt_rebound': 'ndt_rebound',
+        'ndt_upv': 'ndt_upv',
+        'stormwater': 'stormwater',
+        'ottv': 'ottv',
+        'seismic': 'seismic',
+        'sanitation': 'sanitation',
+        'acoustics': 'acoustics'
       };
       const tipePengujian = tipeMap[type];
       const fieldDataResult = await loadFieldDataForSimulation(proyekId, tipePengujian);
@@ -526,8 +633,24 @@ function renderResult(type, result, proyekId) {
     case 'evacuation':
       html = renderEvacuationResult(result);
       break;
-    case 'ndt':
+    case 'ndt_rebound':
+    case 'ndt_upv':
       html = renderNDTResult(result);
+      break;
+    case 'stormwater':
+      html = renderStormwaterResult(result);
+      break;
+    case 'ottv':
+      html = renderOTTVResult(result);
+      break;
+    case 'seismic':
+      html = renderSeismicResult(result);
+      break;
+    case 'sanitation':
+      html = renderSanitationResult(result);
+      break;
+    case 'acoustics':
+      html = renderAcousticsResult(result);
       break;
   }
   
@@ -551,7 +674,13 @@ function renderResult(type, result, proyekId) {
               'lighting': 'pencahayaan',
               'ventilation': 'ventilasi',
               'evacuation': 'evakuasi',
-              'ndt': result.test_type?.includes('Rebound') ? 'ndt_rebound' : 'ndt_upv'
+              'ndt_rebound': 'ndt_rebound',
+              'ndt_upv': 'ndt_upv',
+              'stormwater': 'stormwater',
+              'ottv': 'ottv',
+              'seismic': 'seismic',
+              'sanitation': 'sanitation',
+              'acoustics': 'acoustics'
             };
             
             // Save with visualization
@@ -693,15 +822,18 @@ function renderEvacuationResult(result) {
 }
 
 function renderNDTResult(result) {
-  const complianceClass = result.compliance.passes ? 'success' : 'danger';
+  const complianceClass = result.compliance?.passes ? 'success' : 'danger';
+  const value = result.fc_mean || result.velocity_mean || 0;
+  const unit = result.test_type?.includes('Rebound') ? 'MPa' : 'km/s';
+  const rating = result.compliance?.category || result.quality_rating || '-';
   
   return `
     <div style="margin-bottom:16px">
-    <div style="text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px;margin-bottom:16px">
-      <div style="font-size:2rem;font-weight:700;color:var(--${complianceClass})">${result.fc_mean || result.velocity_mean}</div>
-      <div class="text-xs text-tertiary">${result.test_type === 'Rebound Hammer (Schmidt)' ? 'Kekuatan (MPa)' : 'Pulse Velocity (km/s)'}</div>
-      <div class="text-sm" style="margin-top:4px;color:var(--${complianceClass})">${result.compliance.category || result.quality_rating}</div>
-    </div>
+      <div style="text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px;margin-bottom:16px">
+        <div style="font-size:2rem;font-weight:700;color:var(--${complianceClass})">${value}</div>
+        <div class="text-xs text-tertiary">${unit}</div>
+        <div class="text-sm" style="margin-top:4px;color:var(--${complianceClass})">${rating}</div>
+      </div>
       
       ${result.potential_cracks_detected > 0 ? `
         <div style="background:var(--danger-bg);padding:12px;border-radius:8px;margin-bottom:12px">
@@ -711,7 +843,195 @@ function renderNDTResult(result) {
         </div>
       ` : ''}
       
-      ${result.recommendations.length > 0 ? `
+      ${result.recommendations?.length > 0 ? `
+        <div style="background:var(--warning-bg);padding:12px;border-radius:8px">
+          <div class="text-sm font-bold" style="margin-bottom:4px;color:var(--warning)"><i class="fas fa-lightbulb"></i> Rekomendasi:</div>
+          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${r}</div>`).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderStormwaterResult(result) {
+  const complianceClass = result.compliance?.zero_runoff_achieved ? 'success' : 'warning';
+  
+  return `
+    <div style="margin-bottom:16px">
+      <div style="display:flex;gap:16px;margin-bottom:16px">
+        <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
+          <div style="font-size:2rem;font-weight:700">${result.total_runoff_volume_m3}</div>
+          <div class="text-xs text-tertiary">Total Runoff (m³)</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
+          <div style="font-size:2rem;font-weight:700;color:var(--${complianceClass})">${result.wells_required}</div>
+          <div class="text-xs text-tertiary">Sumur Resapan</div>
+        </div>
+      </div>
+      
+      <div style="margin-bottom:12px">
+        <div class="text-sm font-bold" style="margin-bottom:8px">Status: 
+          <span style="color:var(--${complianceClass})">${result.compliance?.message || '-'}</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span class="badge" style="background:var(--info-bg);color:var(--info)">
+            Runoff: ${result.runoff_managed_percentage}%
+          </span>
+          <span class="badge" style="background:var(--info-bg);color:var(--info)">
+            PAH: ${result.pah_size_recommended_m3} m³
+          </span>
+        </div>
+      </div>
+      
+      ${result.recommendations?.length > 0 ? `
+        <div style="background:var(--warning-bg);padding:12px;border-radius:8px">
+          <div class="text-sm font-bold" style="margin-bottom:4px;color:var(--warning)"><i class="fas fa-lightbulb"></i> Rekomendasi:</div>
+          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${r}</div>`).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderOTTVResult(result) {
+  const complianceClass = result.compliance?.passes ? 'success' : 'danger';
+  const gradeColor = result.energy_efficiency?.grade === 'A' ? 'success' : 
+                     result.energy_efficiency?.grade === 'B' ? 'info' :
+                     result.energy_efficiency?.grade === 'C' ? 'warning' : 'danger';
+  
+  return `
+    <div style="margin-bottom:16px">
+      <div style="display:flex;gap:16px;margin-bottom:16px">
+        <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
+          <div style="font-size:2rem;font-weight:700;color:var(--${complianceClass})">${result.ottv_total}</div>
+          <div class="text-xs text-tertiary">OTTV (W/m²)</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
+          <div style="font-size:2rem;font-weight:700;color:var(--${gradeColor})">${result.energy_efficiency?.grade || '-'}</div>
+          <div class="text-xs text-tertiary">Grade Energi</div>
+        </div>
+      </div>
+      
+      <div style="margin-bottom:12px">
+        <div class="text-sm font-bold" style="margin-bottom:8px">
+          Status: <span style="color:var(--${complianceClass})">${result.compliance?.passes ? 'Memenuhi SNI' : 'Tidak Memenuhi'}</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span class="badge" style="background:var(--info-bg);color:var(--info)">WWR: ${(result.thermal_parameters?.wwr * 100).toFixed(1)}%</span>
+          <span class="badge" style="background:var(--info-bg);color:var(--info)">AC: ${result.cooling_load?.ac_tons_required || 0} ton</span>
+        </div>
+      </div>
+      
+      ${result.recommendations?.length > 0 ? `
+        <div style="background:var(--warning-bg);padding:12px;border-radius:8px">
+          <div class="text-sm font-bold" style="margin-bottom:4px;color:var(--warning)"><i class="fas fa-lightbulb"></i> Rekomendasi:</div>
+          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${r}</div>`).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderSeismicResult(result) {
+  const complianceClass = result.compliance?.passes ? 'success' : 'warning';
+  
+  return `
+    <div style="margin-bottom:16px">
+      <div style="display:flex;gap:16px;margin-bottom:16px">
+        <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
+          <div style="font-size:2rem;font-weight:700">${result.building_response?.base_shear_kn || 0}</div>
+          <div class="text-xs text-tertiary">Base Shear (kN)</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
+          <div style="font-size:2rem;font-weight:700;color:var(--${complianceClass})">${result.building_response?.natural_period_sec || 0}s</div>
+          <div class="text-xs text-tertiary">Perioda Alami</div>
+        </div>
+      </div>
+      
+      <div style="margin-bottom:12px">
+        <div class="text-sm font-bold" style="margin-bottom:8px">
+          Zona Gempa: <span class="badge" style="background:var(--info-bg);color:var(--info)">${result.seismic_parameters?.zone || '-'}</span>
+          <span class="badge" style="background:var(--${complianceClass}-bg);color:var(--${complianceClass})">${result.compliance?.passes ? 'Drift OK' : 'Cek Drift'}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary)">
+          SDS: ${result.seismic_parameters?.sds || 0}g | SD1: ${result.seismic_parameters?.sd1 || 0}g
+        </div>
+      </div>
+      
+      ${result.recommendations?.length > 0 ? `
+        <div style="background:var(--warning-bg);padding:12px;border-radius:8px">
+          <div class="text-sm font-bold" style="margin-bottom:4px;color:var(--warning)"><i class="fas fa-lightbulb"></i> Rekomendasi:</div>
+          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${r}</div>`).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderSanitationResult(result) {
+  const complianceClass = result.compliance?.water_supply_compliance ? 'success' : 'warning';
+  
+  return `
+    <div style="margin-bottom:16px">
+      <div style="display:flex;gap:16px;margin-bottom:16px">
+        <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
+          <div style="font-size:2rem;font-weight:700">${result.water_demand?.daily_total_m3 || 0}</div>
+          <div class="text-xs text-tertiary">Air Harian (m³)</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
+          <div style="font-size:2rem;font-weight:700;color:var(--${complianceClass})">${result.tank_requirements?.total_storage_m3 || 0}</div>
+          <div class="text-xs text-tertiary">Tangki (m³)</div>
+        </div>
+      </div>
+      
+      <div style="margin-bottom:12px">
+        <div class="text-sm font-bold" style="margin-bottom:8px">
+          Supply: <span style="color:var(--${complianceClass})">${result.compliance?.water_supply_compliance ? 'OK' : 'Kurang'}</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span class="badge" style="background:var(--info-bg);color:var(--info)">Pompa: ${result.pump_requirements?.pump_power_kw || 0} kW</span>
+          <span class="badge" style="background:var(--info-bg);color:var(--info)">STP: ${result.stp_requirements?.stp_capacity_m3 || 0} m³</span>
+        </div>
+      </div>
+      
+      ${result.recommendations?.length > 0 ? `
+        <div style="background:var(--warning-bg);padding:12px;border-radius:8px">
+          <div class="text-sm font-bold" style="margin-bottom:4px;color:var(--warning)"><i class="fas fa-lightbulb"></i> Rekomendasi:</div>
+          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${r}</div>`).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAcousticsResult(result) {
+  const extCompliance = result.source_noise?.exterior_compliance ? 'success' : 'warning';
+  const intCompliance = result.interior_acoustics?.compliance ? 'success' : 'warning';
+  
+  return `
+    <div style="margin-bottom:16px">
+      <div style="display:flex;gap:16px;margin-bottom:16px">
+        <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
+          <div style="font-size:2rem;font-weight:700;color:var(--${extCompliance})">${result.source_noise?.exterior_level_db || 0}</div>
+          <div class="text-xs text-tertiary">Eksterior (dB)</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
+          <div style="font-size:2rem;font-weight:700;color:var(--${intCompliance})">${result.interior_acoustics?.calculated_noise_db || 0}</div>
+          <div class="text-xs text-tertiary">Interior (dB)</div>
+        </div>
+      </div>
+      
+      <div style="margin-bottom:12px">
+        <div class="text-sm font-bold" style="margin-bottom:8px">
+          STC: <span class="badge" style="background:var(--info-bg);color:var(--info)">${result.sound_isolation?.current_stc || 0}</span>
+          <span style="color:var(--${result.sound_isolation?.stc_adequate ? 'success' : 'warning'})">${result.sound_isolation?.stc_adequate ? 'Memenuhi' : 'Kurang'}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary)">
+          Target: ${result.interior_acoustics?.target_noise_db || 0} dB | Material: ${result.sound_isolation?.current_material || '-'}
+        </div>
+      </div>
+      
+      ${result.recommendations?.length > 0 ? `
         <div style="background:var(--warning-bg);padding:12px;border-radius:8px">
           <div class="text-sm font-bold" style="margin-bottom:4px;color:var(--warning)"><i class="fas fa-lightbulb"></i> Rekomendasi:</div>
           ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${r}</div>`).join('')}

@@ -1,7 +1,8 @@
 // ============================================================
-//  PROYEK DETAIL PAGE
+//  PROYEK DETAIL PAGE - REFACTORED
 //  PRESIDENTIAL CLASS (QUARTZ PREMIUM)
 //  Strategic Management Hub for Building Assets
+//  DECOUPLED: Module cards moved to separate components
 // ============================================================
 import { supabase } from '../lib/supabase.js';
 import { isAdmin }  from '../lib/auth.js';
@@ -13,6 +14,11 @@ import { APP_CONFIG } from '../lib/config.js';
 import { syncWithSIMBG, pushToSIMBG } from '../lib/simbg.js';
 import { getProjectPIC } from '../lib/team-service.js';
 import { getSimulasiSummary, loadSimulasi } from '../lib/simulation-engine.js';
+
+// New decoupled components
+import { renderProyekDetailFullSkeleton } from '../components/proyek-detail/ModuleCardSkeleton.js';
+
+// Legacy component imports (existing implementation)
 import { renderStrukturBangunanCard, initStrukturBangunanHandlers } from '../components/struktur-bangunan-module.js';
 import { renderElectricalSystemCard, initElectricalSystemHandlers, fetchElectricalSummary } from '../components/electrical-system-module.js';
 import { renderLPSCard, initLPSHandlers, fetchLPSSummary } from '../components/lightning-protection-module.js';
@@ -26,6 +32,10 @@ import { renderWaterSystemCard, initWaterSystemHandlers, fetchWaterSystemSummary
 import { renderStormwaterCard, initStormwaterHandlers, fetchStormwaterSummary } from '../components/stormwater-module.js';
 import { renderAccessibilityCard, fetchAccessibilitySummary, initAccessibilityHandlers } from '../components/accessibility-module.js';
 import { renderSimulationHubCard, fetchSimulationHubSummary, initSimulationHubHandlers } from '../components/simulation-hub-module.js';
+import { renderComfortCard, fetchComfortSummary, initComfortHandlers } from '../components/comfort-module.js';
+import { renderKondisiCard, fetchKondisiSummary, initKondisiHandlers } from '../components/kondisi-module.js';
+import { renderDisasterMitigationCard, fetchDisasterMitigationSummary, initDisasterMitigationHandlers } from '../components/disaster-mitigation-module.js';
+import { renderWastewaterCard, fetchWastewaterSummary, initWastewaterHandlers } from '../components/wastewater-module.js';
 
 export async function proyekDetailPage(params = {}) {
   const id = params.id;
@@ -41,38 +51,39 @@ export async function proyekDetailPage(params = {}) {
     return '';
   }
 
-  const [checklistStats, analisisData, pic, simulasiSummary, electricalSummary, lpsSummary, fireProtectionSummary, buildingIntensitySummary, architecturalSummary, egressSummary, environmentalSummary, sanitationSummary, waterSummary, accessibilitySummary, stormwaterSummary, simulationHubSummary] = await Promise.all([
-    fetchChecklistStats(id),
-    fetchLastAnalisis(id),
-    getProjectPIC(id),
-    getSimulasiSummary(id),
-    fetchElectricalSummary(id),
-    fetchLPSSummary(id),
-    fetchFireProtectionSummary(id),
-    fetchBuildingIntensitySummary(id),
-    fetchArchitecturalSummary(id),
-    fetchEgressSummary(id),
-    fetchEnvironmentalSummary(id),
-    fetchSanitationSummary(id),
-    fetchWaterSystemSummary(id),
-    fetchAccessibilitySummary(id),
-    fetchStormwaterSummary(id),
-    fetchSimulationHubSummary(id).catch(err => {
-      console.warn('[ProyekDetail] SimulationHub fetch failed:', err);
-      return {}; // Return empty object sebagai fallback
-    })
+  const [checklistStats, analisisData, pic, simulasiSummary, electricalSummary, lpsSummary, fireProtectionSummary, buildingIntensitySummary, architecturalSummary, egressSummary, environmentalSummary, sanitationSummary, waterSummary, accessibilitySummary, stormwaterSummary, simulationHubSummary, comfortSummary, kondisiSummary, disasterMitigationSummary, wastewaterSummary] = await Promise.all([
+    fetchChecklistStats(id).catch(err => { console.warn('[ProyekDetail] Checklist stats fetch failed:', err); return { done: 0, total: 0, pct: 0 }; }),
+    fetchLastAnalisis(id).catch(err => { console.warn('[ProyekDetail] Analisis fetch failed:', err); return null; }),
+    getProjectPIC(id).catch(err => { console.warn('[ProyekDetail] PIC fetch failed:', err); return null; }),
+    getSimulasiSummary(id).catch(err => { console.warn('[ProyekDetail] Simulasi fetch failed:', err); return {}; }),
+    fetchElectricalSummary(id).catch(err => { console.warn('[ProyekDetail] Electrical fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data kelistrikan' }; }),
+    fetchLPSSummary(id).catch(err => { console.warn('[ProyekDetail] LPS fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data proteksi petir' }; }),
+    fetchFireProtectionSummary(id).catch(err => { console.warn('[ProyekDetail] Fire protection fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data proteksi kebakaran' }; }),
+    fetchBuildingIntensitySummary(id).catch(err => { console.warn('[ProyekDetail] Building intensity fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data intensitas bangunan' }; }),
+    fetchArchitecturalSummary(id).catch(err => { console.warn('[ProyekDetail] Architectural fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data persyaratan arsitektur' }; }),
+    fetchEgressSummary(id).catch(err => { console.warn('[ProyekDetail] Egress fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data jalur evakuasi' }; }),
+    fetchEnvironmentalSummary(id).catch(err => { console.warn('[ProyekDetail] Environmental fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data lingkungan' }; }),
+    fetchSanitationSummary(id).catch(err => { console.warn('[ProyekDetail] Sanitation fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data sanitasi' }; }),
+    fetchWaterSystemSummary(id).catch(err => { console.warn('[ProyekDetail] Water system fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data air bersih' }; }),
+    fetchAccessibilitySummary(id).catch(err => { console.warn('[ProyekDetail] Accessibility fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data aksesibilitas' }; }),
+    fetchStormwaterSummary(id).catch(err => { console.warn('[ProyekDetail] Stormwater fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data air hujan' }; }),
+    fetchSimulationHubSummary(id).catch(err => { console.warn('[ProyekDetail] SimulationHub fetch failed:', err); return {}; }),
+    fetchComfortSummary(id).catch(err => { console.warn('[ProyekDetail] Comfort fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data kenyamanan' }; }),
+    fetchKondisiSummary(id).catch(err => { console.warn('[ProyekDetail] Kondisi fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data kondisi fisik' }; }),
+    fetchDisasterMitigationSummary(id).catch(err => { console.warn('[ProyekDetail] Disaster mitigation fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data mitigasi bencana' }; }),
+    fetchWastewaterSummary(id).catch(err => { console.warn('[ProyekDetail] Wastewater fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data air limbah' }; })
   ]);
 
-  const html = buildHtml(proyek, checklistStats, analisisData, pic, simulasiSummary, electricalSummary, lpsSummary, fireProtectionSummary, buildingIntensitySummary, architecturalSummary, egressSummary, environmentalSummary, sanitationSummary, accessibilitySummary, waterSummary, stormwaterSummary, simulationHubSummary);
+  const html = buildHtml(proyek, checklistStats, analisisData, pic, simulasiSummary, electricalSummary, lpsSummary, fireProtectionSummary, buildingIntensitySummary, architecturalSummary, egressSummary, environmentalSummary, sanitationSummary, waterSummary, accessibilitySummary, stormwaterSummary, simulationHubSummary, comfortSummary, kondisiSummary, disasterMitigationSummary, wastewaterSummary);
   if (root) {
     root.innerHTML = html;
-    initProyekDetailAfterRender(proyek, checklistStats, analisisData, simulasiSummary, electricalSummary, lpsSummary, fireProtectionSummary, buildingIntensitySummary, architecturalSummary, egressSummary, environmentalSummary, sanitationSummary, accessibilitySummary, waterSummary, stormwaterSummary, simulationHubSummary);
+    initProyekDetailAfterRender(proyek, checklistStats, analisisData, simulasiSummary, electricalSummary, lpsSummary, fireProtectionSummary, buildingIntensitySummary, architecturalSummary, egressSummary, environmentalSummary, sanitationSummary, waterSummary, accessibilitySummary, stormwaterSummary, simulationHubSummary, comfortSummary, kondisiSummary, disasterMitigationSummary, wastewaterSummary);
   }
   return html;
 }
 
 // ── HTML Builder ─────────────────────────────────────────────
-function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSummary = {}, lpsSummary = {}, fireProtectionSummary = {}, buildingIntensitySummary = {}, architecturalSummary = {}, egressSummary = {}, environmentalSummary = {}, sanitationSummary = {}, accessibilitySummary = {}, waterSummary = {}, stormwaterSummary = {}, simulationHubSummary = {}) {
+function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSummary = {}, lpsSummary = {}, fireProtectionSummary = {}, buildingIntensitySummary = {}, architecturalSummary = {}, egressSummary = {}, environmentalSummary = {}, sanitationSummary = {}, waterSummary = {}, accessibilitySummary = {}, stormwaterSummary = {}, simulationHubSummary = {}, comfortSummary = {}, kondisiSummary = {}, disasterMitigationSummary = {}, wastewaterSummary = {}) {
   const statusMap = {
     LAIK_FUNGSI:           { label: 'LAIK FUNGSI',       cls: 'badge-laik',       icon: 'fa-shield-check',   color: 'var(--success-400)' },
     LAIK_FUNGSI_BERSYARAT: { label: 'LAIK BERSYARAT',    cls: 'badge-bersyarat',  icon: 'fa-triangle-exclamation', color: 'var(--gold-400)' },
@@ -216,20 +227,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
             ${renderWaterSystemCard(p, waterSummary)}
 
             <!-- ASPEK KENYAMANAN MODULE -->
-            <div class="card-quartz clickable" onclick="window.navigate('comfort-inspection',{id:'${p.id}'})" style="padding: var(--space-6)">
-              <div class="flex-between" style="margin-bottom:20px">
-                <div style="width:48px; height:48px; border-radius:14px; background:linear-gradient(135deg, hsla(160, 100%, 45%, 0.15), hsla(220, 95%, 52%, 0.1)); display:flex; align-items:center; justify-content:center; color:var(--success-400)">
-                  <i class="fas fa-couch" style="font-size:1.4rem"></i>
-                </div>
-                <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--success-400)">PHASE 02D</div>
-              </div>
-              <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--text-primary); margin-bottom:4px">Aspek Kenyamanan</h3>
-              <p style="font-size:0.75rem; color:var(--text-tertiary); line-height:1.5">Evaluasi ruang gerak, kondisi udara (PMV/PPD), pandangan, getaran & kebisingan.</p>
-              <div style="margin-top:20px; display:flex; align-items:center; gap:8px; flex-wrap:wrap">
-                <span class="badge" style="background:hsla(160, 100%, 45%, 0.1); color:var(--success-400); border:1px solid hsla(160, 100%, 45%, 0.2); font-size:9px">PP 16/2021</span>
-                <span class="badge" style="background:hsla(220, 95%, 52%, 0.1); color:var(--brand-400); border:1px solid hsla(220, 95%, 52%, 0.2); font-size:9px">ASHRAE 55</span>
-              </div>
-            </div>
+            ${renderComfortCard(p, comfortSummary)}
 
             <!-- SIMULATION HUB MODULE -->
             ${renderSimulationHubCard(p, simulationHubSummary)}
@@ -249,24 +247,14 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
               </div>
             </div>
 
-            <!-- Kondisi Fisik Card -->
-            <div class="card-quartz clickable" onclick="window.navigate('kondisi',{id:'${p.id}'})" style="padding: var(--space-6)">
-              <div class="flex-between" style="margin-bottom:20px">
-                <div style="width:48px; height:48px; border-radius:14px; background:hsla(0, 85%, 60%, 0.1); display:flex; align-items:center; justify-content:center; color:var(--danger-400)">
-                  <i class="fas fa-building-circle-exclamation" style="font-size:1.4rem"></i>
-                </div>
-                <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--danger-400)">PHASE 02.5</div>
-              </div>
-              <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--text-primary); margin-bottom:4px">Pemeriksaan Kondisi</h3>
-              <p style="font-size:0.75rem; color:var(--text-tertiary); line-height:1.5">Penilaian tingkat kerusakan bangunan sesuai standar Permen PU 16/2010.</p>
-              ${analisis ? `
-                <div style="margin-top:20px; display:flex; align-items:center; gap:8px">
-                  <span class="badge" style="background:${analisis.skor_total > 70 ? 'var(--success-500)1a' : 'var(--danger-500)1a'}; color:${analisis.skor_total > 70 ? 'var(--success-400)' : 'var(--danger-400)'}; border:1px solid ${analisis.skor_total > 70 ? 'var(--success-500)44' : 'var(--danger-500)44'}; font-size:10px; font-weight:800">
-                    SKOR: ${analisis.skor_total}%
-                  </span>
-                </div>
-              ` : ''}
-            </div>
+            <!-- KONDISI FISIK MODULE -->
+            ${renderKondisiCard(p, kondisiSummary)}
+
+            <!-- DISASTER MITIGATION MODULE -->
+            ${renderDisasterMitigationCard(p, disasterMitigationSummary)}
+
+            <!-- WASTEWATER MODULE -->
+            ${renderWastewaterCard(p, wastewaterSummary)}
 
             <!-- Documents Card -->
             <div class="card-quartz clickable" onclick="window.navigate('proyek-files',{id:'${p.id}'})" style="padding: var(--space-6)">
@@ -493,7 +481,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
 }
 
 // ── After Render Logic ──────────────────────────────────────────
-function initProyekDetailAfterRender(p, stats, analisis, simulasiSummary = {}, electricalSummary = {}, lpsSummary = {}, fireProtectionSummary = {}, buildingIntensitySummary = {}, architecturalSummary = {}, egressSummary = {}, environmentalSummary = {}, sanitationSummary = {}, accessibilitySummary = {}, waterSummary = {}, stormwaterSummary = {}, simulationHubSummary = {}) {
+function initProyekDetailAfterRender(p, stats, analisis, simulasiSummary = {}, electricalSummary = {}, lpsSummary = {}, fireProtectionSummary = {}, buildingIntensitySummary = {}, architecturalSummary = {}, egressSummary = {}, environmentalSummary = {}, sanitationSummary = {}, waterSummary = {}, accessibilitySummary = {}, stormwaterSummary = {}, simulationHubSummary = {}, comfortSummary = {}, kondisiSummary = {}, disasterMitigationSummary = {}, wastewaterSummary = {}) {
   // Initialize Radar Chart
   initProjectRadar(analisis);
   
@@ -532,7 +520,7 @@ function initProyekDetailAfterRender(p, stats, analisis, simulasiSummary = {}, e
   initSanitationHandlers(p.id);
 
   // Initialize Water System Module
-  initWaterSystemHandlers();
+  initWaterSystemHandlers(p.id, waterSummary);
 
   // Initialize Accessibility Module
   initAccessibilityHandlers(p.id, accessibilitySummary);
@@ -540,7 +528,20 @@ function initProyekDetailAfterRender(p, stats, analisis, simulasiSummary = {}, e
   // Initialize Stormwater Module
   initStormwaterHandlers(p.id, stormwaterSummary);
 
-  // PRELOAD INSPECTION MODULES: Load semua inspection pages di background
+  // Initialize Comfort Module
+  initComfortHandlers(p, comfortSummary);
+
+  // Initialize Kondisi Module
+  initKondisiHandlers(p, kondisiSummary);
+
+  // Initialize Disaster Mitigation Module
+  initDisasterMitigationHandlers(p, disasterMitigationSummary);
+
+  // Initialize Wastewater Module
+  initWastewaterHandlers(p, wastewaterSummary);
+
+  // PRELOAD INSPECTION MODULES: On-demand loading berdasarkan data yang tersedia
+  // untuk mengurangi memory pressure pada perangkat dengan RAM terbatas
   // untuk memastikan tab switching lancar saat user navigasi
   import('../main.js').then(({ onProyekDetailEnter }) => {
     onProyekDetailEnter();
@@ -619,8 +620,10 @@ function initProyekDetailAfterRender(p, stats, analisis, simulasiSummary = {}, e
       showSuccess('Kredensial SIMBG berhasil disimpan.');
       closeModal();
       
-      // Hard refresh to ensure data consistency
-      setTimeout(() => { window.location.reload(); }, 1000);
+      // Soft refresh - update data tanpa reload halaman untuk UX yang lebih baik
+      setTimeout(async () => {
+        await refreshProjectData(proyekId);
+      }, 500);
     } catch (err) {
       showError('Gagal menyimpan: ' + err.message);
     }
@@ -645,10 +648,10 @@ window._syncProjectWithSIMBG = async (proyekId) => {
       btn.style.color = 'var(--success-400)';
     }
 
-    // Refresh page to show updated data
-    setTimeout(() => {
-      navigate('proyek-detail', { id: proyekId });
-    }, 1000);
+    // Soft state update - refresh data tanpa navigasi ulang
+    setTimeout(async () => {
+      await refreshProjectData(proyekId);
+    }, 500);
 
   } catch (err) {
     showError('Gagal sinkronisasi SIMBG: ' + err.message);
@@ -944,6 +947,47 @@ async function fetchProyek(id) {
   } catch { return null; }
 }
 
+/**
+ * Soft refresh - update data proyek tanpa reload halaman penuh
+ * untuk UX yang lebih mulus setelah SIMBG sync atau perubahan data
+ */
+async function refreshProjectData(proyekId) {
+  try {
+    showInfo('Memperbarui data proyek...');
+    
+    // Re-fetch project data
+    const proyek = await fetchProyek(proyekId);
+    if (!proyek) {
+      showError('Gagal memperbarui data proyek');
+      return;
+    }
+    
+    // Update header info
+    const titleEl = document.querySelector('h1.page-title');
+    if (titleEl) titleEl.textContent = proyek.nama_bangunan;
+    
+    const locationBadge = document.querySelector('.badge .fa-location-dot')?.parentElement;
+    if (locationBadge) {
+      locationBadge.innerHTML = `<i class="fas fa-location-dot" style="margin-right:6px; color:var(--brand-400)"></i> ${proyek.kota || 'INDONESIA'}`;
+    }
+    
+    const nomorPbgEl = document.querySelector('[style*="font-family:var(--font-mono)"][style*="var(--gold-400)"]');
+    if (nomorPbgEl) nomorPbgEl.textContent = proyek.nomor_pbg || 'NO REGISTRATION';
+    
+    // Re-fetch SIMBG sync status if exists
+    const simbgStatusEl = document.getElementById('simbg-sync-status');
+    if (simbgStatusEl && proyek.simbg_last_sync) {
+      simbgStatusEl.innerHTML = `<i class="fas fa-check-circle"></i> SYNCED`;
+      simbgStatusEl.style.color = 'var(--success-400)';
+    }
+    
+    showSuccess('Data proyek berhasil diperbarui');
+  } catch (err) {
+    console.error('Error refreshing project data:', err);
+    showError('Gagal memperbarui data: ' + err.message);
+  }
+}
+
 async function fetchChecklistStats(proyekId) {
   try {
     const { data } = await supabase.from('checklist_items').select('id, status').eq('proyek_id', proyekId);
@@ -961,18 +1005,8 @@ async function fetchLastAnalisis(proyekId) {
 }
 
 function renderSkeleton() {
-  return `
-    <div class="card-quartz" style="height:300px; margin-bottom:40px">
-      <div class="skeleton" style="height:48px; width:400px; margin-bottom:20px"></div>
-      <div class="skeleton" style="height:20px; width:200px"></div>
-    </div>
-    <div class="grid-dashboard-main">
-       <div class="grid-2-col">
-          ${Array(4).fill(0).map(() => `<div class="card-quartz" style="height:180px"></div>`).join('')}
-       </div>
-       <div class="card-quartz" style="height:500px"></div>
-    </div>
-  `;
+  // Gunakan premium skeleton screen dari komponen terpisah
+  return renderProyekDetailFullSkeleton();
 }
 
 function escHtml(s) {

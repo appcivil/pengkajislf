@@ -3670,3 +3670,200 @@ tbody tr:hover { background: var(--bg-elevated); }
   -webkit-text-fill-color: transparent;
   font-weight: 800;
 }
+
+/* ============================================================
+   MODULE CARD STYLES - Consistent Card Components
+   ============================================================ */
+
+.card-quartz {
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-quartz.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid;
+}
+
+.card-phase {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.card-title {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.card-description {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+}
+
+.card-badges {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge-regulation,
+.badge-standard {
+  font-size: 9px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+
+.card-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.metric-item {
+  text-align: center;
+  padding: 12px 8px;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 10px;
+  border: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+.metric-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.metric-label {
+  font-size: 10px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-empty-state {
+  text-align: center;
+  padding: 24px;
+  margin-top: 8px;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 12px;
+  border: 1px dashed rgba(100, 116, 139, 0.3);
+}
+
+.empty-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.card-error-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  margin-top: 16px;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: var(--danger-400);
+  font-size: 12px;
+}
+
+.card-error-state i {
+  font-size: 14px;
+}
+
+.card-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.card-last-updated {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  margin-top: 8px;
+  font-style: italic;
+}
+
+.card-score-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  margin-top: 16px;
+  border-radius: 12px;
+  border: 1px solid;
+}
+
+.score-display {
+  text-align: left;
+}
+
+.score-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.score-label {
+  font-size: 9px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.score-status {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.card-detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.detail-label {
+  color: var(--text-tertiary);
+}
+
+.detail-value {
+  color: var(--text-primary);
+  font-weight: 600;
+}

@@ -1671,7 +1671,9 @@ async function savePanel(event) {
     showSuccess('Panel berhasil ditambahkan');
     closeModal('panel-modal');
     await loadPanels();
-    renderDashboard();
+    // Re-render current tab content
+    const content = document.getElementById('electrical-content');
+    if (content) content.innerHTML = renderDashboardTab();
   } catch (error) {
     showError('Gagal menyimpan panel: ' + error.message);
   }

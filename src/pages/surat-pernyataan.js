@@ -145,6 +145,10 @@ function buildModernLayout(p, s) {
               <i class="fas fa-file-word"></i> Ekspor Ms. Word Resmi
            </button>
 
+           <button class="btn-modern btn-danger btn-lg shadow-red w-full mt-2" id="btn-export-pdf">
+              <i class="fas fa-file-pdf"></i> Ekspor PDF Resmi
+           </button>
+
            <div style="margin-top:20px; padding-top:15px; border-top:1px dashed rgba(0,0,0,0.1)">
               <button class="btn-modern btn-lg w-full" id="btn-finalize-doc" 
                       style="background:#0f172a; color:#fff; border:none">
@@ -382,6 +386,10 @@ function initModernHandlers(p, s, findings) {
   // Export Logic
   document.getElementById('btn-export-word').onclick = () => {
      downloadDocx(p, s);
+  };
+
+  document.getElementById('btn-export-pdf').onclick = () => {
+     downloadPdf(p, s, findings);
   };
 
   // Toggle Edit Mode
@@ -774,6 +782,25 @@ async function downloadDocx(p, s) {
    } catch (err) {
      console.error("Export Error:", err);
      showError("Gagal ekspor: " + err.message);
+   }
+}
+
+/**
+ * Handle PDF Export
+ */
+async function downloadPdf(p, s, findings) {
+   const activeCard = document.querySelector('.nav-card.active');
+   const type = activeCard ? activeCard.getAttribute('data-type') : 'konsultan';
+   
+   showSuccess(`Sedang mengekspor PDF ${type === 'konsultan' ? 'Pernyataan Konsultan' : 'Pernyataan Pemilik'}...`);
+   
+   try {
+     const { downloadLegalPdf } = await import('../lib/surat-pernyataan-pdf-service.js');
+     await downloadLegalPdf(p, s, type, findings);
+     showSuccess("Dokumen PDF berhasil dibuat.");
+   } catch (err) {
+     console.error("PDF Export Error:", err);
+     showError("Gagal ekspor PDF: " + err.message);
    }
 }
 

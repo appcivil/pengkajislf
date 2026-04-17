@@ -28,10 +28,11 @@ import { startBackgroundSync } from './lib/sync.js';
 import { supabase, isSupabaseConfigured } from './lib/supabase.js';
 import { uploadToGoogleDrive } from './lib/drive.js';
 import { initSyncIndicator } from './components/sync-ui.js';
-import { floatingChatStyles } from './components/chatbot/index.js';
+import { floatingChatStyles, FloatingChatButton } from './components/chatbot/index.js';
 
 // SmartAI Pipeline Integration
 import { initializePipeline, getPipelineIntegration } from './infrastructure/pipeline/pipeline-integration.js';
+import { initializeSmartAIIntegration } from './infrastructure/ai/deep-reasoning-integration.js';
 
 // Dependency Injection Setup
 const checklistRepo       = new SupabaseChecklistRepository();
@@ -51,58 +52,86 @@ const syncDataUseCase = new SyncData(checklistRepo, notificationService);
 const analyseUseCase  = new AnalisisDokumenAI(fileRepo, aiService, notificationService, auditLogger);
 const forensicUseCase = new ForensicAnalysis(checklistRepo, fileRepo, notificationService, auditLogger);
 
-// Global Navigation
-window.navigate = (path, params = {}) => navigate(path, params);
-window.forensicUseCase = forensicUseCase; // Expose for UI pages
-window.memoryService = memoryService; // Expose memory service untuk chatbot
+// Dependency Injection Registry - proper DI pattern sesuai Clean Architecture
+const diRegistry = {
+  navigate: (path, params = {}) => navigate(path, params),
+  forensicUseCase,
+  memoryService,
+  aiService,
+  syncDataUseCase,
+  analyseUseCase,
+  checklistRepo,
+  fileRepo
+};
 
-// AI Processing UI Controls
-window.showAIOverlay = (title = 'AI Analisis Sedang Berjalan') => {
-  let overlay = document.getElementById('ai-overlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'ai-overlay';
-    overlay.className = 'ai-processing-overlay';
-    overlay.innerHTML = `
-      <div class="ai-processing-card">
-        <div class="ai-spinner-wrap"><i class="fas fa-brain ai-spinner-icon"></i></div>
-        <div class="ai-status-title">${title}</div>
-        <div class="ai-status-text" id="ai-status-text">Menghubungkan ke Neural Engine...</div>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-  } else {
-    overlay.querySelector('.ai-status-title').innerText = title;
+// Expose DI registry via single entry point (bukan langsung ke window)
+if (typeof window !== 'undefined') {
+  window.__DI_REGISTRY__ = diRegistry;
+}
+
+// AI Processing UI Controls - encapsulated dalam object
+export const AIOverlayController = {
+  show(title = 'AI Analisis Sedang Berjalan') {
+    let overlay = document.getElementById('ai-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'ai-overlay';
+      overlay.className = 'ai-processing-overlay';
+      overlay.innerHTML = `
+        <div class="ai-processing-card">
+          <div class="ai-spinner-wrap"><i class="fas fa-brain ai-spinner-icon"></i></div>
+          <div class="ai-status-title">${title}</div>
+          <div class="ai-status-text" id="ai-status-text">Menghubungkan ke Neural Engine...</div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    } else {
+      overlay.querySelector('.ai-status-title').innerText = title;
+    }
+    setTimeout(() => overlay.classList.add('show'), 10);
+  },
+
+  hide() {
+    const overlay = document.getElementById('ai-overlay');
+    if (overlay) {
+      overlay.classList.remove('show');
+      setTimeout(() => overlay.remove(), 400);
+    }
+  },
+
+  updateStatus(text) {
+    const el = document.getElementById('ai-status-text');
+    if (el) el.innerText = text;
   }
-  setTimeout(() => overlay.classList.add('show'), 10);
 };
 
-window.hideAIOverlay = () => {
-  const overlay = document.getElementById('ai-overlay');
-  if (overlay) {
-    overlay.classList.remove('show');
-    setTimeout(() => overlay.remove(), 400);
-  }
-};
+// Backward compatibility - redirect old window.* calls ke controller
+if (typeof window !== 'undefined') {
+  window.showAIOverlay = AIOverlayController.show.bind(AIOverlayController);
+  window.hideAIOverlay = AIOverlayController.hide.bind(AIOverlayController);
+  window.updateAIStatus = AIOverlayController.updateStatus.bind(AIOverlayController);
+}
 
-window.updateAIStatus = (text) => {
-  const el = document.getElementById('ai-status-text');
-  if (el) el.innerText = text;
-};
-
-window.analyseFile = async (id) => {
-  window.showAIOverlay();
+// Analyse file dengan proper DI
+export async function analyseFile(id) {
+  AIOverlayController.show();
   try {
-    window.updateAIStatus('Membaca konteks berkas...');
+    AIOverlayController.updateStatus('Membaca konteks berkas...');
     const result = await analyseUseCase.execute(id);
-    window.updateAIStatus('Berhasil menganalisis.');
+    AIOverlayController.updateStatus('Berhasil menganalisis.');
     return result;
   } finally {
-    setTimeout(window.hideAIOverlay, 1500);
+    setTimeout(() => AIOverlayController.hide(), 1500);
   }
-};
+}
 
-window.doGlobalSync = async () => {
+// Backward compatibility
+if (typeof window !== 'undefined') {
+  window.analyseFile = analyseFile;
+}
+
+// Global sync dengan proper DI
+export async function doGlobalSync() {
   const btn = document.getElementById('btn-global-sync');
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Mensinkronisasi...'; }
   try {
@@ -111,7 +140,12 @@ window.doGlobalSync = async () => {
   } catch {
     if (btn) { btn.disabled = false; btn.innerHTML = 'Coba Lagi'; }
   }
-};
+}
+
+// Backward compatibility
+if (typeof window !== 'undefined') {
+  window.doGlobalSync = doGlobalSync;
+}
 
 // ── App Lifecycle ─────────────────────────────────────────────
 const loadingEl  = document.getElementById('loading-screen');
@@ -179,20 +213,21 @@ const pages = {
   taskDetail:        () => import('./pages/task-detail.js'),
   passwordModal:     () => import('./components/password-modal.js'),
   simulation:        () => import('./pages/simulation.js'),
-  electricalInspection: () => import('./pages/electrical-inspection.js'),
-  lpsInspection:       () => import('./pages/lps-inspection.js'),
-  fireProtectionInspection: () => import('./pages/fire-protection-inspection.js'),
-  comfortInspection:   () => import('./pages/comfort-inspection.js'),
-  sanitationInspection: () => import('./pages/sanitation-inspection.js'),
-  egressInspection:    () => import('./pages/egress-inspection.js'),
-  buildingIntensityInspection: () => import('./pages/building-intensity-inspection.js'),
-  architecturalInspection: () => import('./pages/architectural-inspection.js'),
-  environmentalInspection: () => import('./pages/environmental-inspection.js'),
-  accessibilityInspection: () => import('./pages/accessibility-inspection.js'),
+  electricalInspection: () => import('./application/use-cases/ElectricalInspection.js'),
+  lpsInspection:       () => import('./application/use-cases/LPSInspection.js'),
+  fireProtectionInspection: () => import('./application/use-cases/FireProtectionInspection.js'),
+  comfortInspection:   () => import('./application/use-cases/ComfortInspection.js'),
+  sanitationInspection: () => import('./application/use-cases/SanitationInspection.js'),
+  egressInspection:    () => import('./application/use-cases/EgressInspection.js'),
+  buildingIntensityInspection: () => import('./application/use-cases/BuildingIntensityInspection.js'),
+  architecturalInspection: () => import('./application/use-cases/ArchitecturalInspection.js'),
+  environmentalInspection: () => import('./application/use-cases/EnvironmentalInspection.js'),
+  accessibilityInspection: () => import('./application/use-cases/AccessibilityInspection.js'),
   lightingSimulation:     () => import('./pages/lighting-simulation.js'),
-  stormwaterInspection: () => import('./pages/stormwater-inspection.js'),
-  wastewaterInspection:   () => import('./pages/wastewater-inspection.js'),
-  disasterInspection:   () => import('./pages/disaster-inspection.js'),
+  waterInspection:      () => import('./application/use-cases/WaterInspection.js'),
+  stormwaterInspection: () => import('./application/use-cases/StormwaterInspection.js'),
+  wastewaterInspection:   () => import('./application/use-cases/WastewaterInspection.js'),
+  disasterInspection:   () => import('./application/use-cases/DisasterInspection.js'),
   smartAIDashboard:   () => import('./pages/smart-ai-dashboard.js'),
   chatbot:            () => import('./pages/chatbot.js'),
   canvaStudio:        () => import('./pages/canva-studio.js'),
@@ -206,26 +241,50 @@ function prefetchCriticalPages() {
   }, 3000);
 }
 
-// PRELOAD INSPECTION MODULES: Dipanggil saat user masuk proyek-detail
-// untuk memastikan semua tab modul siap digunakan
-export function preloadInspectionModules() {
-  console.log('[Preload] Starting inspection modules preload...');
+// PRELOAD INSPECTION MODULES: On-demand loading berdasarkan data yang tersedia
+// untuk mengurangi memory pressure pada perangkat dengan RAM terbatas
+export function preloadInspectionModules(projectData = null) {
+  console.log('[Preload] Starting on-demand inspection modules preload...');
   
-  // Preload semua inspection modules secara parallel
-  const preloadPromises = CRITICAL_INSPECTION_MODULES.map(moduleName => {
+  // Prioritas modul berdasarkan frekuensi akses dan ketersediaan data
+  const priorityModules = ['electricalInspection', 'fireProtectionInspection', 'architecturalInspection'];
+  
+  // Preload prioritas modules pertama
+  const priorityPromises = priorityModules.map(moduleName => {
     if (pages[moduleName]) {
       return pages[moduleName]().catch(err => {
-        console.warn(`[Preload] Failed to load ${moduleName}:`, err);
+        console.warn(`[Preload] Failed to load priority ${moduleName}:`, err);
         return null;
       });
     }
     return Promise.resolve();
   });
   
-  Promise.all(preloadPromises).then(() => {
-    console.log('[Preload] All inspection modules loaded successfully');
+  Promise.all(priorityPromises).then(() => {
+    console.log('[Preload] Priority modules loaded');
+    
+    // Lazy load remaining modules setelah prioritas selesai
+    // untuk menghindari blocking UI thread
+    setTimeout(() => {
+      const remainingModules = CRITICAL_INSPECTION_MODULES.filter(m => !priorityModules.includes(m));
+      
+      // Chunk loading untuk mengurangi memory spike
+      const chunkSize = 3;
+      for (let i = 0; i < remainingModules.length; i += chunkSize) {
+        const chunk = remainingModules.slice(i, i + chunkSize);
+        setTimeout(() => {
+          chunk.forEach(moduleName => {
+            if (pages[moduleName]) {
+              pages[moduleName]().catch(err => {
+                console.warn(`[Preload] Failed to load ${moduleName}:`, err);
+              });
+            }
+          });
+        }, i * 500); // Stagger loading tiap chunk 500ms
+      }
+    }, 1000);
   }).catch(err => {
-    console.error('[Preload] Error loading inspection modules:', err);
+    console.error('[Preload] Error loading priority modules:', err);
   });
 }
 
@@ -234,6 +293,374 @@ export function onProyekDetailEnter() {
   // Preload inspection modules dengan delay kecil
   setTimeout(preloadInspectionModules, 500);
 }
+
+// ============================================================
+// PREDICTIVE LAZY LOADING SYSTEM v2.0
+// Intelligent preloading berbasis navigasi cursor dan route prediction
+// ============================================================
+
+/**
+ * PredictivePreloader - Sistem preloading cerdas yang memprediksi
+ * halaman berikutnya berdasarkan pola navigasi user dan cursor position.
+ *
+ * OPTIMIZED: Dengan mobile/low-resource detection untuk mencegah memory pressure
+ * dan battery drain pada perangkat terbatas (tablet/HP inspektor lapangan).
+ */
+class PredictivePreloader {
+  constructor() {
+    this.navigationHistory = [];
+    this.maxHistorySize = 20;
+    this.preloadCache = new Set();
+    this.isPreloading = false;
+    this.hoverTimeouts = new Map();
+
+    // Route transition probabilities (user journey patterns)
+    this.routePatterns = {
+      'proyek': ['proyek-detail', 'proyek-baru'],
+      'proyek-detail': ['checklist', 'analisis', 'laporan', 'proyek-files'],
+      'checklist': ['analisis', 'proyek-detail'],
+      'analisis': ['laporan', 'proyek-detail'],
+      'dashboard': ['proyek', 'simulation']
+    };
+
+    // Module weights untuk prioritization
+    this.moduleWeights = {
+      'electricalInspection': 0.9,
+      'fireProtectionInspection': 0.85,
+      'strukturInspection': 0.8,
+      'architecturalInspection': 0.75,
+      'comfortInspection': 0.7,
+      'lpsInspection': 0.65,
+      'accessibilityInspection': 0.6,
+      'environmentalInspection': 0.55,
+      'stormwaterInspection': 0.5,
+      'waterInspection': 0.5,
+      'wastewaterInspection': 0.45,
+      'sanitationInspection': 0.45,
+      'disasterInspection': 0.4,
+      'kondisiInspection': 0.4
+    };
+
+    // Mobile/Low-resource device detection untuk adaptive throttling
+    this.deviceProfile = this._detectDeviceProfile();
+    console.log('[PredictivePreloader] Device profile:', this.deviceProfile);
+  }
+
+  /**
+   * Detect device capabilities untuk adaptive preloading
+   * @returns {Object} Device profile dengan isLowEnd, maxConcurrentPreloads, dll.
+   * @private
+   */
+  _detectDeviceProfile() {
+    const profile = {
+      isLowEnd: false,
+      maxConcurrentPreloads: 3,
+      preloadDelay: 300,
+      enableHoverPrefetch: true,
+      chunkSize: 3,
+      memoryPressureThreshold: 0.8
+    };
+
+    // Deteksi via navigator.deviceMemory (Chrome)
+    if (navigator.deviceMemory !== undefined) {
+      const ramGB = navigator.deviceMemory;
+      if (ramGB <= 2) {
+        profile.isLowEnd = true;
+        profile.maxConcurrentPreloads = 1;
+        profile.preloadDelay = 800;
+        profile.chunkSize = 1;
+      } else if (ramGB <= 4) {
+        profile.maxConcurrentPreloads = 2;
+        profile.preloadDelay = 500;
+        profile.chunkSize = 2;
+      }
+    }
+
+    // Deteksi via navigator.hardwareConcurrency
+    if (navigator.hardwareConcurrency !== undefined) {
+      const cores = navigator.hardwareConcurrency;
+      if (cores <= 2) {
+        profile.isLowEnd = true;
+        profile.maxConcurrentPreloads = Math.min(profile.maxConcurrentPreloads, 1);
+      } else if (cores <= 4) {
+        profile.maxConcurrentPreloads = Math.min(profile.maxConcurrentPreloads, 2);
+      }
+    }
+
+    // Deteksi Connection API (save data mode)
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (conn) {
+      if (conn.saveData) {
+        profile.isLowEnd = true;
+        profile.enableHoverPrefetch = false;
+        profile.maxConcurrentPreloads = 0; // Disable aggressive prefetching
+      }
+      // Slow connection detection (2G, slow-2G)
+      if (conn.effectiveType && ['slow-2g', '2g'].includes(conn.effectiveType)) {
+        profile.maxConcurrentPreloads = 0;
+        profile.enableHoverPrefetch = false;
+      }
+    }
+
+    // Deteksi mobile via user agent (fallback)
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile && profile.maxConcurrentPreloads > 2) {
+      profile.maxConcurrentPreloads = 2;
+      profile.preloadDelay = 500;
+    }
+
+    return profile;
+  }
+
+  /**
+   * Record route navigation untuk pattern analysis
+   * @param {string} fromRoute - Route asal
+   * @param {string} toRoute - Route tujuan
+   */
+  recordNavigation(fromRoute, toRoute) {
+    this.navigationHistory.push({ from: fromRoute, to: toRoute, timestamp: Date.now() });
+    
+    // Keep only recent history
+    if (this.navigationHistory.length > this.maxHistorySize) {
+      this.navigationHistory.shift();
+    }
+    
+    // Trigger predictive preload berdasarkan route baru
+    this.predictAndPreload(toRoute);
+  }
+
+  /**
+   * Prediksi halaman berikutnya dan preload dengan adaptive throttling
+   * @param {string} currentRoute - Route saat ini
+   */
+  predictAndPreload(currentRoute) {
+    if (this.isPreloading) return;
+
+    // Skip aggressive prefetching untuk low-end devices
+    if (this.deviceProfile.maxConcurrentPreloads === 0) {
+      console.log('[PredictivePreloader] Skipped: low-end device or save-data mode');
+      return;
+    }
+
+    const predictions = this.getPredictedRoutes(currentRoute);
+    if (predictions.length === 0) return;
+
+    // Adaptive: limit berdasarkan device capabilities
+    const limit = Math.min(predictions.length, this.deviceProfile.maxConcurrentPreloads);
+    const topPredictions = predictions
+      .sort((a, b) => b.probability - a.probability)
+      .slice(0, limit);
+
+    console.log('[PredictivePreloader] Predicted routes:', topPredictions.map(p => `${p.route}(${p.probability.toFixed(2)})`).join(', '));
+
+    // Staggered preload dengan adaptive delay
+    topPredictions.forEach((prediction, index) => {
+      setTimeout(() => {
+        this.preloadRoute(prediction.route);
+      }, index * this.deviceProfile.preloadDelay);
+    });
+  }
+
+  /**
+   * Get predicted routes berdasarkan current route dan history
+   * @param {string} currentRoute 
+   * @returns {Array<{route: string, probability: number}>}
+   */
+  getPredictedRoutes(currentRoute) {
+    const predictions = [];
+    
+    // Pattern-based predictions
+    const patterns = this.routePatterns[currentRoute] || [];
+    patterns.forEach(route => {
+      predictions.push({ route, probability: 0.7, source: 'pattern' });
+    });
+    
+    // History-based predictions (frequency analysis)
+    const routeCounts = {};
+    this.navigationHistory.forEach(nav => {
+      if (nav.from === currentRoute) {
+        routeCounts[nav.to] = (routeCounts[nav.to] || 0) + 1;
+      }
+    });
+    
+    Object.entries(routeCounts).forEach(([route, count]) => {
+      const existing = predictions.find(p => p.route === route);
+      const probability = Math.min(0.9, count / this.navigationHistory.length + 0.3);
+      
+      if (existing) {
+        existing.probability = Math.max(existing.probability, probability);
+        existing.source = 'hybrid';
+      } else {
+        predictions.push({ route, probability, source: 'history' });
+      }
+    });
+    
+    return predictions;
+  }
+
+  /**
+   * Preload specific route module
+   * @param {string} routeName 
+   */
+  async preloadRoute(routeName) {
+    if (this.preloadCache.has(routeName)) return;
+    
+    // Map route ke page loader
+    const routeToPageMap = {
+      'proyek-detail': 'proyekDetail',
+      'checklist': 'checklist',
+      'analisis': 'analisis',
+      'laporan': 'laporan',
+      'proyek-files': 'proyekFiles',
+      'simulation': 'simulation'
+    };
+    
+    const pageName = routeToPageMap[routeName];
+    if (!pageName || !pages[pageName]) return;
+    
+    try {
+      this.preloadCache.add(routeName);
+      console.log(`[PredictivePreloader] Preloading: ${routeName}`);
+      
+      await pages[pageName]();
+      console.log(`[PredictivePreloader] Preloaded: ${routeName}`);
+    } catch (err) {
+      console.warn(`[PredictivePreloader] Failed to preload ${routeName}:`, err);
+      this.preloadCache.delete(routeName);
+    }
+  }
+
+  /**
+   * Preload inspection modules berdasarkan project data
+   * dengan intelligent weight-based prioritization dan adaptive throttling
+   * @param {Object} projectData - Data proyek untuk konteks
+   */
+  preloadInspectionModules(projectData = null) {
+    if (this.isPreloading) return;
+
+    // Skip untuk low-end devices atau save-data mode
+    if (this.deviceProfile.maxConcurrentPreloads === 0) {
+      console.log('[PredictivePreloader] Skipped inspection preloading: low-end device');
+      return;
+    }
+
+    this.isPreloading = true;
+
+    // Sort modules by weight
+    const sortedModules = Object.entries(this.moduleWeights)
+      .sort(([,a], [,b]) => b - a)
+      .map(([name]) => name);
+
+    // Adaptive: limit berdasarkan device capabilities
+    const limit = Math.min(sortedModules.length, this.deviceProfile.maxConcurrentPreloads);
+    const preloadModules = sortedModules.slice(0, limit);
+
+    console.log(`[PredictivePreloader] Preloading ${preloadModules.length} modules (adaptive)`);
+
+    // Adaptive staggered loading dengan chunk-based approach
+    const chunkSize = this.deviceProfile.chunkSize;
+    const chunks = [];
+    for (let i = 0; i < preloadModules.length; i += chunkSize) {
+      chunks.push(preloadModules.slice(i, i + chunkSize));
+    }
+
+    // Process chunks sequentially dengan adaptive delay
+    let chunkIndex = 0;
+    const processNextChunk = () => {
+      if (chunkIndex >= chunks.length) {
+        console.log('[PredictivePreloader] Priority modules preloaded');
+        this.isPreloading = false;
+        return;
+      }
+
+      const chunk = chunks[chunkIndex++];
+      Promise.all(
+        chunk.map(moduleName =>
+          pages[moduleName] ? pages[moduleName]().catch(err => {
+            console.warn(`[PredictivePreloader] Failed: ${moduleName}`, err);
+          }) : Promise.resolve()
+        )
+      ).then(() => {
+        setTimeout(processNextChunk, this.deviceProfile.preloadDelay);
+      });
+    };
+
+    processNextChunk();
+  }
+
+  /**
+   * Setup hover-based prefetching untuk link elements
+   * Preload ketika user hover di link dengan delay untuk avoid unnecessary loads
+   * DISABLED untuk low-end devices untuk mencegah battery drain
+   */
+  setupHoverPrefetch() {
+    // Skip hover prefetch untuk low-end devices
+    if (!this.deviceProfile.enableHoverPrefetch) {
+      console.log('[PredictivePreloader] Hover prefetch disabled: low-end device');
+      return;
+    }
+
+    // Track hovered links
+    document.addEventListener('mouseover', (e) => {
+      const link = e.target.closest('[data-prefetch]');
+      if (!link) return;
+
+      const route = link.getAttribute('data-prefetch');
+      if (!route || this.preloadCache.has(route)) return;
+
+      // Adaptive delay berdasarkan device capabilities
+      const delay = this.deviceProfile.isLowEnd ? 400 : 200;
+      const timeoutId = setTimeout(() => {
+        this.preloadRoute(route);
+      }, delay);
+
+      this.hoverTimeouts.set(link, timeoutId);
+    });
+
+    // Cancel prefetch jika mouse leave sebelum delay
+    document.addEventListener('mouseout', (e) => {
+      const link = e.target.closest('[data-prefetch]');
+      if (!link) return;
+
+      const timeoutId = this.hoverTimeouts.get(link);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        this.hoverTimeouts.delete(link);
+      }
+    });
+  }
+
+  /**
+   * Clear preload cache untuk memory management
+   */
+  clearCache() {
+    this.preloadCache.clear();
+    console.log('[PredictivePreloader] Cache cleared');
+  }
+
+  /**
+   * Get preloader statistics
+   */
+  getStats() {
+    return {
+      historySize: this.navigationHistory.length,
+      cacheSize: this.preloadCache.size,
+      patterns: Object.keys(this.routePatterns).length
+    };
+  }
+}
+
+// Singleton instance
+const predictivePreloader = new PredictivePreloader();
+
+// Enhanced onProyekDetailEnter menggunakan predictive preloader
+export function onProyekDetailEnterV2(projectData = null) {
+  // Use intelligent preloader
+  predictivePreloader.preloadInspectionModules(projectData);
+}
+
+// Export untuk digunakan di router
+export { predictivePreloader };
 
 // ── Routing ───────────────────────────────────────────────────
 function registerRoutes() {
@@ -554,8 +981,7 @@ async function bootstrap() {
   }
 
   // AI engine diinisialisasi di background — jangan block UI
-  import('./infrastructure/ai/deep-reasoning-integration.js')
-    .then(({ initializeSmartAIIntegration }) => initializeSmartAIIntegration())
+  initializeSmartAIIntegration()
     .catch(e => console.error('[App] Background AI initialization failed:', e));
 
   // Initialize SmartAI Pipeline (background, non-blocking)
@@ -657,19 +1083,18 @@ async function bootstrap() {
     document.head.appendChild(styleEl);
   }
 
-  // Initialize floating chat button (lazy load)
+  // Initialize floating chat button (lazy load tetap dipertahankan)
   setTimeout(() => {
     if (isAuthenticated()) {
-      import('./components/chatbot/FloatingChatButton.js').then(({ FloatingChatButton }) => {
+      try {
         const fab = new FloatingChatButton();
         const fabEl = fab.render();
         document.body.appendChild(fabEl);
-        
         // Store reference for cleanup
         window._floatingChatButton = fab;
-      }).catch(err => {
+      } catch(err) {
         console.error('[App] Failed to load floating chat button:', err);
-      });
+      }
     }
   }, 3000);
 

@@ -11,9 +11,9 @@ import {
   markDirty, 
   doSave 
 } from '../lib/checklist-service.js';
-import { 
-  runVisionAnalysis, 
-  toggleVoiceAudit, 
+import {
+  runVisionAnalysis,
+  toggleVoiceAudit,
   autoFillFromAgents,
   runBatchSmartEngine,
   openLiveViewfinder,
@@ -24,6 +24,18 @@ import {
   autoSyncProjectData,
   fetchItemData
 } from '../lib/checklist-ai-service.js';
+
+// Import Anti-Rate Limit analyzer untuk batch analysis yang aman
+import { AntiRateLimitChecklistAnalyzer, checkAIHealth } from '../lib/ai-anti-rate-limit-integration.js';
+
+// Singleton analyzer instance
+const checklistAnalyzer = new AntiRateLimitChecklistAnalyzer({
+  maxConcurrency: 2,
+  batchSize: 3,
+  enableStructuredOutput: true,
+  enableRuleValidation: true,
+  autoFix: true
+});
 import { 
   renderChecklistShell, 
   renderChecklistSection

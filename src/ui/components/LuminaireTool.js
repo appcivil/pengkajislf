@@ -1,3 +1,5 @@
+import { IESLoader } from '../../engine/lighting/IESLoader.js';
+
 /**
  * LuminaireTool - Light Fixture Management Component
  * Web Component for managing luminaires in the scene
@@ -406,7 +408,6 @@ export class LuminaireTool extends HTMLElement {
 
   async handleIESUpload(file) {
     try {
-      const { IESLoader } = await import('../../engine/lighting/IESLoader.js');
       const iesData = await IESLoader.parse(file);
       
       const luminaire = {
