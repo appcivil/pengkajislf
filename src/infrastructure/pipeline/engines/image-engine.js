@@ -51,21 +51,32 @@ export class ImageEngine extends IImageEngine {
         // Providing workerPath allows offline/air-gapped usage
         const workerOptions = {
           langPath: this.config.langPath || undefined,
-          workerPath: this.workerPath || undefined,
-          logger: this.config.debug ? m => console.log('[Tesseract]', m) : undefined
+          logger: this.config.debug ? m => console.log('[Tesseract]', m) : undefined,
+          errorHandler: (err) => console.warn('[Tesseract] Worker error:', err)
         };
+
+        // Only add workerPath if explicitly provided - Tesseract v7+ handles worker internally
+        if (this.workerPath) {
+          workerOptions.workerPath = this.workerPath;
+        }
 
         // Create worker with error handling and retry logic
         let retries = 2;
         while (retries > 0) {
           try {
-            // Use local worker if available, fallback to CDN
-            this.tesseractWorker = await this.tesseract.createWorker(
-              this.ocrLanguage,
-              1, // OEM_DEFAULT
-              workerOptions
-            );
-            console.log('[ImageEngine] Tesseract initialized');
+            // Use createWorker API - worker path is handled internally by tesseract.js v7+
+            // For v7+, we need to use the new API format
+            if (this.tesseract.createWorker) {
+              this.tesseractWorker = await this.tesseract.createWorker(
+                this.ocrLanguage,
+                1, // OEM_DEFAULT
+                workerOptions
+              );
+            } else if (this.tesseract.createWorkerLegacy) {
+              // Fallback for older versions
+              this.tesseractWorker = await this.tesseract.createWorkerLegacy(workerOptions);
+            }
+            console.log('[ImageEngine] Tesseract initialized successfully');
             break;
           } catch (workerError) {
             retries--;
@@ -77,7 +88,7 @@ export class ImageEngine extends IImageEngine {
           }
         }
       } catch (error) {
-        console.warn('[ImageEngine] Tesseract initialization failed:', error);
+        console.warn('[ImageEngine] Tesseract initialization failed:', error.message);
         console.warn('[ImageEngine] OCR will be disabled. Images will be processed without text extraction.');
         this.enableOCR = false;
         this.tesseract = null;

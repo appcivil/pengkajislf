@@ -11,6 +11,12 @@ import {
     SkillRegistry
 } from './deep-reasoning-engine.js';
 
+// Static imports untuk modul yang juga diimport di deep-reasoning-engine.js
+import { loadRegulatoryRules } from './deep-reasoning-rules.js';
+import { createWorkflows } from './deep-reasoning-workflows.js';
+import { createHooks } from './deep-reasoning-hooks.js';
+import { createSkills } from './deep-reasoning-skills.js';
+
 import {
     analyzeChecklistImage,
     analyzeDocument,
@@ -85,7 +91,7 @@ export class SmartAIIntegration {
      */
     async loadRegulatoryRules() {
         try {
-            const { loadRegulatoryRules } = await import('./deep-reasoning-rules.js');
+            // loadRegulatoryRules sudah diimport secara static
             const regulations = await loadRegulatoryRules();
 
             // Register semua rules ke rule engine
@@ -105,7 +111,7 @@ export class SmartAIIntegration {
      */
     async loadWorkflows() {
         try {
-            const { createWorkflows } = await import('./deep-reasoning-workflows.js');
+            // createWorkflows sudah diimport secara static
             const workflows = createWorkflows();
 
             Object.entries(workflows).forEach(([name, workflow]) => {
@@ -123,7 +129,7 @@ export class SmartAIIntegration {
      */
     async loadHooks() {
         try {
-            const { createHooks } = await import('./deep-reasoning-hooks.js');
+            // createHooks sudah diimport secara static
             const hooks = createHooks();
 
             Object.entries(hooks).forEach(([name, hook]) => {
@@ -141,7 +147,7 @@ export class SmartAIIntegration {
      */
     async loadSkills() {
         try {
-            const { createSkills } = await import('./deep-reasoning-skills.js');
+            // createSkills sudah diimport secara static
             const skills = createSkills();
 
             Object.entries(skills).forEach(([name, skill]) => {

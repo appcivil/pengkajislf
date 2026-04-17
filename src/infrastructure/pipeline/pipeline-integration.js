@@ -110,7 +110,7 @@ export class PipelineIntegration {
     // Image Engine (OCR, preprocessing)
     if (this.config.enableImageEngine) {
       this.engines.image = new ImageEngine({
-        enableOCR: true,
+        enableOCR: false, // Disabled to prevent WorkerGlobalScope error in dev
         enablePreprocessing: true,
         ocrLanguage: 'ind+eng',
         maxFileSize: 20 * 1024 * 1024

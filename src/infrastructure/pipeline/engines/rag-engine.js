@@ -41,35 +41,13 @@ export class RAGEngine extends IRAGEngine {
    * @returns {Promise<boolean>}
    */
   async initialize() {
-    try {
-      // Dynamic import @xenova/transformers (ONNX-based, no CORS issues)
-      const { pipeline, env } = await import('@xenova/transformers');
-      
-      // Configure transformers untuk browser environment
-      env.allowLocalModels = false;
-      env.useBrowserCache = true;
-      
-      // Load feature extraction pipeline dengan model ringan
-      // Xenova/all-MiniLM-L6-v2 adalah alternatif ringan dari sentence-transformers
-      this.embeddingModel = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
-        revision: 'main',
-        quantized: true // Gunakan model quantized untuk ukuran lebih kecil
-      });
-      
-      // Update dimension untuk MiniLM (384 dimensions)
-      this.embeddingDimension = 384;
-      
-      console.log('[RAGEngine] Initialized with Xenova Transformers (MiniLM-L6-v2)');
-      this.isInitialized = true;
-      return true;
-    } catch (error) {
-      console.warn('[RAGEngine] Transformers initialization failed, using fallback:', error);
-      
-      // Fallback: use simple TF-IDF based embeddings
-      this.useFallbackEmbeddings = true;
-      this.isInitialized = true;
-      return true;
-    }
+    // Skip xenova/transformers karena WASM loading issues di browser
+    // Gunakan fallback TF-IDF embeddings yang lebih reliable
+    console.log('[RAGEngine] Using fallback TF-IDF embeddings (WASM issues bypassed)');
+    
+    this.useFallbackEmbeddings = true;
+    this.isInitialized = true;
+    return true;
   }
 
   /**
