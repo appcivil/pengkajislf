@@ -639,24 +639,94 @@ if (env.DEV) {
   });
 }
 
-// ── Retry dengan Exponential Backoff ─────────────────────────
+// ── Retry dengan True Exponential Backoff ─────────────────────────
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
-async function safeCall(fn, retries = 3, attempt = 1) {
+/**
+ * Extract retry-after dari error response header jika tersedia
+ * @param {Error} error - Error object
+ * @returns {number|null} - Milliseconds untuk wait atau null
+ */
+function getRetryAfterMs(error) {
+  if (!error) return null;
+
+  // Check untuk retry-after header dalam error response
+  if (error.response?.headers?.['retry-after']) {
+    const retryAfter = error.response.headers['retry-after'];
+    // Jika angka, itu adalah seconds
+    if (!isNaN(retryAfter)) {
+      return parseInt(retryAfter) * 1000;
+    }
+    // Jika date string, hitung delta
+    const retryDate = new Date(retryAfter);
+    if (!isNaN(retryDate.getTime())) {
+      return Math.max(0, retryDate.getTime() - Date.now());
+    }
+  }
+
+  // Parse dari error message untuk Groq/Gemini specific
+  const msg = error.message || error.toString();
+  const groqMatch = msg.match(/try again in (\d+(?:\.\d+)?)\s*(ms|s|seconds?|minutes?|m)/i);
+  if (groqMatch) {
+    const value = parseFloat(groqMatch[1]);
+    const unit = groqMatch[2].toLowerCase();
+    if (unit.startsWith('m')) return value * 60 * 1000;
+    if (unit.startsWith('s')) return value * 1000;
+    if (unit === 'ms') return value;
+  }
+
+  return null;
+}
+
+/**
+ * Calculate exponential backoff dengan jitter
+ * Base: 2^attempt * 1000ms + random jitter
+ */
+function calculateBackoff(attempt, baseDelay = 1000, maxDelay = 60000) {
+  // Exponential: 2^attempt * baseDelay
+  const exponential = Math.pow(2, attempt) * baseDelay;
+
+  // Jitter: random 0-1000ms untuk menghindari thundering herd
+  const jitter = Math.floor(Math.random() * 1000);
+
+  // Cap at maxDelay
+  return Math.min(exponential + jitter, maxDelay);
+}
+
+async function safeCall(fn, retries = 3, attempt = 1, options = {}) {
   try {
     return await fn();
   } catch (e) {
-    const isRateLimit = e.message.includes('429') || e.message.toLowerCase().includes('quota');
-    if (isRateLimit && attempt <= retries) {
-      const waitTime = attempt * 2000;
-      console.warn(`[AI Router] Rate Limit. Retry ${attempt}/${retries} dalam ${waitTime}ms...`);
+    const isRateLimit = e.message?.includes('429') ||
+                        e.message?.toLowerCase().includes('quota') ||
+                        e.message?.toLowerCase().includes('rate limit') ||
+                        e.message?.toLowerCase().includes('too many requests');
+
+    if (attempt <= retries) {
+      let waitTime;
+
+      if (isRateLimit) {
+        // Prioritaskan retry-after header jika tersedia
+        const retryAfterMs = getRetryAfterMs(e);
+        if (retryAfterMs) {
+          waitTime = Math.max(retryAfterMs, 1000); // Minimum 1 detik
+          console.warn(`[AI Router] Rate Limit dengan Retry-After. Retry ${attempt}/${retries} dalam ${waitTime}ms...`);
+        } else {
+          // Gunakan exponential backoff untuk rate limit
+          waitTime = calculateBackoff(attempt, 2000, 60000);
+          console.warn(`[AI Router] Rate Limit 429. Retry ${attempt}/${retries} dengan exponential backoff: ${waitTime}ms...`);
+        }
+      } else {
+        // Untuk error non-rate-limit, gunakan backoff yang lebih ringan
+        waitTime = calculateBackoff(attempt, 1000, 30000);
+        console.warn(`[AI Router] Retry ${attempt}/${retries}. Error: ${e.message}. Wait: ${waitTime}ms`);
+      }
+
       await delay(waitTime);
-      return safeCall(fn, retries, attempt + 1);
+      return safeCall(fn, retries, attempt + 1, options);
     }
-    if (retries <= 0 || attempt > retries) throw e;
-    console.warn(`[AI Router] Retry ${attempt}/${retries}. Error: ${e.message}`);
-    await delay(1000);
-    return safeCall(fn, retries, attempt + 1);
+
+    throw e;
   }
 }
 
@@ -665,7 +735,7 @@ async function safeCall(fn, retries = 3, attempt = 1) {
  * Kirim request ke AI melalui Supabase Edge Function (production)
  * atau langsung ke API (development).
  */
-async function callAI(model, prompt, options = {}) {
+export async function callAI(model, prompt, options = {}) {
   // Mode 1: Gunakan Edge Function Proxy (production, aman)
   if (USE_PROXY) {
     const session = await supabase.auth.getSession();

@@ -269,11 +269,12 @@ export async function addMeasurement(panelId, measurement) {
     const transaction = database.transaction(['measurements'], 'readwrite');
     const store = transaction.objectStore('measurements');
     
+    // eslint-disable-next-line no-unused-vars
+    const { id, ...measurementWithoutId } = measurement;
     const data = {
-      ...measurement,
+      ...measurementWithoutId,
       panelId,
-      timestamp: measurement.timestamp || new Date().toISOString(),
-      id: undefined
+      timestamp: measurement.timestamp || new Date().toISOString()
     };
     
     const request = store.add(data);

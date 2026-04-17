@@ -1005,12 +1005,12 @@ export function calculateWhatIfScenario(scenarioType, params) {
 /**
  * Get grade from score
  * @param {number} score - Score value (0-100)
- * @returns {string} Grade letter (A, B, C, D, E)
+ * @returns {Object} Grade object with grade letter and color
  */
 export function getGradeFromScore(score) {
-  if (score >= 90) return 'A';
-  if (score >= 80) return 'B';
-  if (score >= 70) return 'C';
-  if (score >= 60) return 'D';
-  return 'E';
+  if (score >= 90) return { grade: 'A', color: 'var(--success-400)' };
+  if (score >= 80) return { grade: 'B', color: 'var(--success-300)' };
+  if (score >= 70) return { grade: 'C', color: 'var(--warning-400)' };
+  if (score >= 60) return { grade: 'D', color: 'var(--orange-400)' };
+  return { grade: 'E', color: 'var(--danger-400)' };
 }

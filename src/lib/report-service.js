@@ -4,8 +4,21 @@ import { supabase } from './supabase.js';
 
 /**
  * ============================================================
- * AUTOMATED SLF REPORT GENERATOR (.DOCX) - V2 (WITH IMAGES)
- * Engine untuk menyusun laporan pengkajian teknis bangunan
+ * ⚠️ DEPRECATED: REPORT-SERVICE.JS (MONOLITH ENGINE)
+ * ============================================================
+ * 
+ * File ini telah di-DEPRECATE dan akan digantikan oleh arsitektur modular
+ * di docx-service.js + outline-*.js yang mengimplementasikan:
+ * 
+ * - Single Source of Truth untuk formatting dokumen
+ * - Promise.all() paralelisasi untuk media extraction
+ * - Dynamic referencing dari DEEP_REASONING_RULES
+ * 
+ * Fungsi generateSLFReport() saat ini tetap berfungsi sebagai wrapper
+ * backward-compatible, namun direkomendasikan migrasi ke generateDocx()
+ * dari docx-service.js untuk fitur lengkap.
+ * 
+ * @deprecated Since 2026-04-17. Gunakan docx-service.js dengan arsitektur modular.
  * ============================================================
  */
 
@@ -95,7 +108,10 @@ export async function generateSLFReport(proyekId, agentResults = []) {
 }
 
 /**
- * MENGUNDUH GAMBAR DARI DRIVE (VIA PROXY)
+ * MENGUNDUH GAMBAR DARI DRIVE (VIA PROXY) - OPTIMIZED PARALLEL BATCH
+ * 
+ * @param {string} url - URL gambar
+ * @returns {Promise<ArrayBuffer|null>} - Image buffer atau null jika gagal
  */
 async function fetchImageBuffer(url) {
   try {
@@ -109,7 +125,32 @@ async function fetchImageBuffer(url) {
 }
 
 /**
- * RENDER ANALISIS AGEN + FOTO BUKTI (ASINKRON)
+ * PARALLEL BATCH FETCH - Optimasi Fase 2 Audit Report
+ * Mengunduh semua gambar secara paralel menggunakan Promise.all()
+ * untuk menghindari bottleneck sinkron yang dapat memblok UI.
+ * 
+ * @param {Array<{url: string, name: string}>} photos - Array foto dengan metadata
+ * @returns {Promise<Array<{buffer: ArrayBuffer|null, name: string}>>}
+ */
+async function fetchImagesParallel(photos) {
+  if (!photos || photos.length === 0) return [];
+  
+  // Buat array promise untuk parallel execution
+  const fetchPromises = photos.map(async (photo) => {
+    const buffer = await fetchImageBuffer(photo.url);
+    return { buffer, name: photo.name, url: photo.url };
+  });
+  
+  // Eksekusi semua promise secara paralel
+  return Promise.all(fetchPromises);
+}
+
+/**
+ * RENDER ANALISIS AGEN + FOTO BUKTI (OPTIMIZED PARALLEL FETCH)
+ * 
+ * Fase 2 Audit Report: Implementasi Promise.all() untuk paralelisasi
+ * pengunduhan gambar dari Google Drive. Mengurangi waktu kompilasi
+ * dari O(n) serial menjadi O(1) parallel.
  */
 async function renderAgentAnalysisSections(results) {
   const paragraphs = [];
@@ -119,6 +160,57 @@ async function renderAgentAnalysisSections(results) {
     return paragraphs;
   }
 
+  // --- BATCH PRE-FETCH SEMUA GAMBAR (PARALLEL) ---
+  // Kumpulkan semua URL gambar dari semua agen untuk parallel fetch
+  const allNspkPhotos = [];
+  const allEvidencePhotos = [];
+  
+  results.forEach((res, agentIndex) => {
+    if (res.nspk_photos) {
+      res.nspk_photos.forEach((photo, idx) => {
+        allNspkPhotos.push({ 
+          url: photo.url, 
+          name: photo.name, 
+          agentIndex, 
+          photoIndex: idx,
+          type: 'nspk'
+        });
+      });
+    }
+    if (res.evidence_photos) {
+      res.evidence_photos.forEach((photo, idx) => {
+        allEvidencePhotos.push({ 
+          url: photo.url, 
+          name: photo.name, 
+          agentIndex, 
+          photoIndex: idx,
+          type: 'evidence'
+        });
+      });
+    }
+  });
+  
+  // Parallel fetch semua gambar sekaligus (optimasi Fase 2)
+  const [nspkBuffers, evidenceBuffers] = await Promise.all([
+    fetchImagesParallel(allNspkPhotos),
+    fetchImagesParallel(allEvidencePhotos)
+  ]);
+  
+  // Buat lookup map untuk akses O(1)
+  const nspkBufferMap = new Map();
+  const evidenceBufferMap = new Map();
+  
+  nspkBuffers.forEach(item => {
+    const key = `${item.agentIndex}-${item.photoIndex}`;
+    nspkBufferMap.set(key, item.buffer);
+  });
+  
+  evidenceBuffers.forEach(item => {
+    const key = `${item.agentIndex}-${item.photoIndex}`;
+    evidenceBufferMap.set(key, item.buffer);
+  });
+
+  // --- RENDER SECTIONS (dengan buffer yang sudah di-fetch) ---
   for (let i = 0; i < results.length; i++) {
     const res = results[i];
     paragraphs.push(new Paragraph({ 
@@ -132,7 +224,7 @@ async function renderAgentAnalysisSections(results) {
       spacing: { after: 100 }
     }));
 
-    // --- DASAR HUKUM / NSPK SECTION (Auto-Generated if Image Missing) ---
+    // --- DASAR HUKUM / NSPK SECTION ---
     const hasNspkPhoto = res.nspk_photos && res.nspk_photos.length > 0;
     
     paragraphs.push(new Paragraph({ 
@@ -141,8 +233,11 @@ async function renderAgentAnalysisSections(results) {
     }));
 
     if (hasNspkPhoto) {
-      for (const nspk of res.nspk_photos) {
-        const nspkBuffer = await fetchImageBuffer(nspk.url);
+      // Render NSPK photos dengan buffer dari parallel fetch
+      res.nspk_photos.forEach((nspk, idx) => {
+        const key = `${i}-${idx}`;
+        const nspkBuffer = nspkBufferMap.get(key);
+        
         if (nspkBuffer) {
           paragraphs.push(new Paragraph({
             children: [
@@ -156,7 +251,7 @@ async function renderAgentAnalysisSections(results) {
             alignment: AlignmentType.CENTER
           }));
         }
-      }
+      });
     } else if (res.legal_citation) {
       // RENDER DIGITAL REFERENCE CARD
       paragraphs.push(new Table({
@@ -197,15 +292,18 @@ async function renderAgentAnalysisSections(results) {
       }));
     }
 
-    // --- FOTO BUKTI LAPANGAN SECTION ---
+    // --- FOTO BUKTI LAPANGAN SECTION (PARALLEL RENDER) ---
     if (res.evidence_photos && res.evidence_photos.length > 0) {
       paragraphs.push(new Paragraph({ 
         children: [new TextRun({ text: "Lampiran Bukti Lapangan:", bold: true, italics: true, color: "444444" })], 
         spacing: { before: 100, after: 100 } 
       }));
       
-      for (const photo of res.evidence_photos) {
-        const imgBuffer = await fetchImageBuffer(photo.url);
+      // Render evidence photos dengan buffer dari parallel fetch
+      res.evidence_photos.forEach((photo, idx) => {
+        const key = `${i}-${idx}`;
+        const imgBuffer = evidenceBufferMap.get(key);
+        
         if (imgBuffer) {
           paragraphs.push(new Paragraph({
             children: [
@@ -219,7 +317,7 @@ async function renderAgentAnalysisSections(results) {
             alignment: AlignmentType.CENTER
           }));
         }
-      }
+      });
     }
 
     paragraphs.push(new Paragraph({ 

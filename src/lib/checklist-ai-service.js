@@ -4,7 +4,7 @@
  */
 import { voiceService } from './voice-service.js';
 import { analyzeChecklistImage, analyzeComparativeAudit } from './gemini.js';
-import { uploadToGoogleDrive } from './drive.js';
+import { uploadToGoogleDrive, fetchDriveFiles } from './drive.js';
 import { store, updateChecklist } from './store.js';
 import { getSettings } from './settings.js';
 import { registerFileMetadata } from './file-service.js';
@@ -549,7 +549,7 @@ export async function fetchItemData(kode, nama) {
 
     // 2. Fetch DISCOVERY from Drive Proyek (SIMBG)
     showInfo(`Mengkoneksikan berkas Drive untuk ${nama}...`);
-    const files = await import('./drive.js').then(m => m.fetchDriveFiles(currentProyekId, currentProyek.drive_proxy_url));
+    const files = await fetchDriveFiles(currentProyekId, currentProyek.drive_proxy_url);
     
     if (files?.length) {
       const matchingFiles = files.filter(f => 
@@ -640,7 +640,7 @@ export async function autoSyncProjectData() {
     showInfo("AI sedang memindai Drive Proyek untuk sinkronisasi otomatis...");
     
     // 1. Fetch ALL project files
-    const files = await import('./drive.js').then(m => m.fetchDriveFiles(currentProyekId, currentProyek.drive_proxy_url));
+    const files = await fetchDriveFiles(currentProyekId, currentProyek.drive_proxy_url);
     
     if (!files?.length) {
       showInfo("Tidak ditemukan berkas di Drive Proyek untuk disinkronisasi.");

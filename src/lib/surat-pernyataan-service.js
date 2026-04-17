@@ -5,7 +5,7 @@ import { saveAs } from 'file-saver';
  * Generate and download professional .docx for Legal Statements (HF Version)
  */
 export async function downloadLegalDocx(p, s, type, html) {
-  const { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, ImageRun, Table, TableRow, TableCell, BorderStyle, WidthType } = docx;
+  const { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, ImageRun, Table, TableRow, TableCell, BorderStyle, WidthType, Break, TableBorders, VerticalAlign, UnderlineType, TabStopType, TextWrappingType } = docx;
 
   const doc = new Document({
     sections: [{
@@ -29,7 +29,7 @@ export async function downloadLegalDocx(p, s, type, html) {
 }
 
 async function buildConsultantDoc(p, s, dx) {
-  const { Paragraph, TextRun, AlignmentType, HeadingLevel, Table, TableRow, TableCell, BorderStyle, WidthType, ImageRun } = dx;
+  const { Paragraph, TextRun, AlignmentType, HeadingLevel, Table, TableRow, TableCell, BorderStyle, WidthType, ImageRun, TableBorders, VerticalAlign, UnderlineType, TabStopType, TextWrappingType } = dx;
   const experts = s.experts || {};
   const dateStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -104,7 +104,7 @@ async function buildConsultantDoc(p, s, dx) {
       alignment: AlignmentType.CENTER,
       children: [
         new TextRun({ text: "SURAT PERNYATAAN KELAIKAN FUNGSI", bold: true, size: 26 }),
-        new dx.Break(),
+        new TextRun({ break: 1 }),
         new TextRun({ text: "BANGUNAN GEDUNG", bold: true, size: 26 }),
       ],
       spacing: { after: 300 }
@@ -132,7 +132,7 @@ async function buildConsultantDoc(p, s, dx) {
     new Table({
       width: { size: 90, type: WidthType.PERCENTAGE },
       indent: { size: 400, type: WidthType.DXA },
-      borders: dx.TableBorders.NONE,
+      borders: TableBorders.NONE,
       rows: [
         createDataRow(dx, "Nama perusahaan/instansi", s.consultant?.name || "-"),
         createDataRow(dx, "Alamat", s.consultant?.address || "-"),
@@ -149,7 +149,7 @@ async function buildConsultantDoc(p, s, dx) {
     new Table({
       width: { size: 95, type: WidthType.PERCENTAGE },
       indent: { size: 400, type: WidthType.DXA },
-      borders: dx.TableBorders.NONE,
+      borders: TableBorders.NONE,
       rows: [
         createExpertRow(dx, "1)", "Bidang Arsitektur / Tata Ruang-Luar:", experts.architecture?.name, experts.architecture?.skk),
         createExpertRow(dx, "2)", "Bidang Struktur:", experts.structure?.name, experts.structure?.skk),
@@ -165,7 +165,7 @@ async function buildConsultantDoc(p, s, dx) {
     new Table({
       width: { size: 95, type: WidthType.PERCENTAGE },
       indent: { size: 400, type: WidthType.DXA },
-      borders: dx.TableBorders.NONE,
+      borders: TableBorders.NONE,
       rows: [
         createProjectDetailRow(dx, "1)", "Nama bangunan", p.nama_bangunan),
         createProjectDetailRow(dx, "2)", "Alamat bangunan", p.alamat || "-"),
@@ -201,7 +201,7 @@ async function buildConsultantDoc(p, s, dx) {
             new TableCell({
               children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "BANGUNAN GEDUNG DINYATAKAN LAIK FUNGSI", bold: true, size: 26 })] })],
               shading: { fill: "F0F0F0" },
-              verticalAlign: dx.VerticalAlign.CENTER,
+              verticalAlign: VerticalAlign.CENTER,
               margins: { top: 200, bottom: 200 }
             })
           ]
@@ -218,7 +218,7 @@ async function buildConsultantDoc(p, s, dx) {
     // Director Signature Block (Standard BSN - Centered Design)
     new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
-      borders: dx.TableBorders.NONE,
+      borders: TableBorders.NONE,
       rows: [
         new TableRow({
           children: [
@@ -230,11 +230,11 @@ async function buildConsultantDoc(p, s, dx) {
                   alignment: AlignmentType.CENTER,
                   children: [
                     new TextRun({ text: "MATERAI", size: 16, bold: true, color: "1e40af" }),
-                    new dx.Break(),
+                    new TextRun({ break: 1 }),
                     new TextRun({ text: "ELEKTRONIK", size: 12, color: "1e40af" }),
-                    new dx.Break(),
+                    new TextRun({ break: 1 }),
                     new TextRun({ text: "10.000", size: 16, bold: true, color: "1d4ed8" }),
-                    new dx.Break(),
+                    new TextRun({ break: 1 }),
                     new TextRun({ text: "TTE TERVERIFIKASI", size: 10, italic: true, color: "3b82f6" }),
                   ],
                   spacing: { before: 400, after: 400 },
@@ -247,7 +247,7 @@ async function buildConsultantDoc(p, s, dx) {
                   }
                 })
               ],
-              verticalAlign: dx.VerticalAlign.CENTER
+              verticalAlign: VerticalAlign.CENTER
             }),
             // Right Cell: TTE & Name Stack (Centered within Right align)
             new TableCell({
@@ -271,7 +271,7 @@ async function buildConsultantDoc(p, s, dx) {
                     new ImageRun({ data: directorSigBuffer, transformation: { width: 100, height: 50 }, floating: {
                         horizontalPosition: { offset: 400000 }, 
                         verticalPosition: { offset: 200000 },
-                        wrap: { type: dx.TextWrappingType.SQUARE },
+                        wrap: { type: TextWrappingType.SQUARE },
                     } })
                   ],
                   spacing: { after: 100 }
@@ -279,16 +279,16 @@ async function buildConsultantDoc(p, s, dx) {
                 new Paragraph({
                   alignment: AlignmentType.CENTER,
                   children: [
-                    new TextRun({ text: (s.consultant?.director_name || "NAMA DIREKTUR").toUpperCase(), bold: true, size: 22, underline: { type: dx.UnderlineType.SINGLE } }),
-                    new dx.Break(),
+                    new TextRun({ text: (s.consultant?.director_name || "NAMA DIREKTUR").toUpperCase(), bold: true, size: 22, underline: { type: UnderlineType.SINGLE } }),
+                    new TextRun({ break: 1 }),
                     new TextRun({ text: s.consultant?.director_job || "Direktur", size: 18 }),
-                    new dx.Break(),
+                    new TextRun({ break: 1 }),
                     new TextRun({ text: "TTE Terverifikasi secara Digital (UU ITE)", size: 10, italic: true, color: "666666" }),
                   ],
                   spacing: { before: 100 }
                 })
               ],
-              verticalAlign: dx.VerticalAlign.CENTER
+              verticalAlign: VerticalAlign.CENTER
             })
           ]
         })
@@ -299,7 +299,7 @@ async function buildConsultantDoc(p, s, dx) {
     // 3 Column Signature Table
     new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
-      borders: dx.TableBorders.NONE,
+      borders: TableBorders.NONE,
       rows: [
         new TableRow({
           children: experts_data.map(ex => createSigCell(dx, ex.role, ex.name, ex.skk, ex.sig, ex.qr))
@@ -322,7 +322,7 @@ async function buildOwnerDoc(p, dx, settings) {
     .not('status', 'eq', 'ada_sesuai')
     .not('status', 'is', null);
 
-  const { Paragraph, TextRun, AlignmentType, HeadingLevel, Table, TableRow, TableCell, BorderStyle, WidthType, ShadingType } = dx;
+  const { Paragraph, TextRun, AlignmentType, HeadingLevel, Table, TableRow, TableCell, BorderStyle, WidthType, ShadingType, TableBorders } = dx;
   const dateStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
   return [
@@ -330,7 +330,7 @@ async function buildOwnerDoc(p, dx, settings) {
       alignment: AlignmentType.CENTER,
       children: [
         new TextRun({ text: "SURAT PERNYATAAN PEMILIK / PENGELOLA", bold: true, size: 26 }),
-        new dx.Break(),
+        new TextRun({ break: 1 }),
         new TextRun({ text: "TENTANG KESEDIAAN MEMELIHARA BANGUNAN GEDUNG", bold: true, size: 22 }),
       ],
       spacing: { after: 600 }
@@ -338,7 +338,7 @@ async function buildOwnerDoc(p, dx, settings) {
     new Paragraph({ text: "Yang bertanda tangan di bawah ini:", spacing: { after: 200 } }),
     new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
-      borders: dx.TableBorders.NONE,
+      borders: TableBorders.NONE,
       rows: [
         createDataRow(dx, "Nama Pemilik", p.pemilik || "____________________"),
         createDataRow(dx, "Nomor Identitas", p.ktp_pemilik || "____________________"),
@@ -348,7 +348,7 @@ async function buildOwnerDoc(p, dx, settings) {
     new Paragraph({ text: "Adalah selaku pemilik/pengelola bangunan gedung yang berlokasi di:", spacing: { before: 200, after: 200 } }),
     new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
-      borders: dx.TableBorders.NONE,
+      borders: TableBorders.NONE,
       rows: [
         createDataRow(dx, "Nama Bangunan", p.nama_bangunan),
         createProjectDetailRow(dx, "", "Alamat Bangunan", p.alamat || "-"),
@@ -409,90 +409,95 @@ async function buildOwnerDoc(p, dx, settings) {
 }
 
 function createMetaRow(dx, label, value) {
-  return new dx.Paragraph({
+  const { Paragraph, TextRun, TabStopType } = dx;
+  return new Paragraph({
     children: [
-      new dx.TextRun({ text: label, size: 23 }),
-      new dx.TextRun({ text: "\t: ", size: 23 }),
-      new dx.TextRun({ text: value, size: 23 }),
+      new TextRun({ text: label, size: 23 }),
+      new TextRun({ text: "\t: ", size: 23 }),
+      new TextRun({ text: value, size: 23 }),
     ],
-    tabStops: [{ type: dx.TabStopType.LEFT, position: 1000 }],
+    tabStops: [{ type: TabStopType.LEFT, position: 1000 }],
   });
 }
 
 function createDataRow(dx, label, value) {
-  return new dx.TableRow({
+  const { Paragraph, TableRow, TableCell, WidthType } = dx;
+  return new TableRow({
     children: [
-      new dx.TableCell({ children: [new dx.Paragraph({ text: label, size: 22 })], width: { size: 35, type: dx.WidthType.PERCENTAGE } }),
-      new dx.TableCell({ children: [new dx.Paragraph({ text: ":" })], width: { size: 2, type: dx.WidthType.PERCENTAGE } }),
-      new dx.TableCell({ children: [new dx.Paragraph({ text: value || "-" })], width: { size: 63, type: dx.WidthType.PERCENTAGE } }),
+      new TableCell({ children: [new Paragraph({ text: label, size: 22 })], width: { size: 35, type: WidthType.PERCENTAGE } }),
+      new TableCell({ children: [new Paragraph({ text: ":" })], width: { size: 2, type: WidthType.PERCENTAGE } }),
+      new TableCell({ children: [new Paragraph({ text: value || "-" })], width: { size: 63, type: WidthType.PERCENTAGE } }),
     ],
   });
 }
 
 function createExpertRow(dx, num, label, name, skk) {
-  return new dx.TableRow({
+  const { Paragraph, TextRun, TableRow, TableCell, WidthType, TabStopType } = dx;
+  return new TableRow({
     children: [
-      new dx.TableCell({ children: [new dx.Paragraph({ text: num })], width: { size: 5, type: dx.WidthType.PERCENTAGE } }),
-      new dx.TableCell({ 
+      new TableCell({ children: [new Paragraph({ text: num })], width: { size: 5, type: WidthType.PERCENTAGE } }),
+      new TableCell({ 
         children: [
-          new dx.Paragraph({ children: [new dx.TextRun({ text: label, bold: true })] }),
-          new dx.Paragraph({ text: `a) Nama\t: ${name || '____________________'}`, tabStops: [{ type: dx.TabStopType.LEFT, position: 1000 }] }),
-          new dx.Paragraph({ text: `b) No. SKK\t: ${skk || '____________________'}`, tabStops: [{ type: dx.TabStopType.LEFT, position: 1000 }] }),
+          new Paragraph({ children: [new TextRun({ text: label, bold: true })] }),
+          new Paragraph({ text: `a) Nama\t: ${name || '____________________'}`, tabStops: [{ type: TabStopType.LEFT, position: 1000 }] }),
+          new Paragraph({ text: `b) No. SKK\t: ${skk || '____________________'}`, tabStops: [{ type: TabStopType.LEFT, position: 1000 }] }),
         ], 
-        width: { size: 95, type: dx.WidthType.PERCENTAGE } 
+        width: { size: 95, type: WidthType.PERCENTAGE } 
       }),
     ],
   });
 }
 
 function createProjectDetailRow(dx, num, label, value) {
-  return new dx.TableRow({
+  const { Paragraph, TableRow, TableCell, WidthType } = dx;
+  return new TableRow({
     children: [
-      new dx.TableCell({ children: [new dx.Paragraph({ text: num })], width: { size: 5, type: dx.WidthType.PERCENTAGE } }),
-      new dx.TableCell({ children: [new dx.Paragraph({ text: label })], width: { size: 30, type: dx.WidthType.PERCENTAGE } }),
-      new dx.TableCell({ children: [new dx.Paragraph({ text: ":" })], width: { size: 2, type: dx.WidthType.PERCENTAGE } }),
-      new dx.TableCell({ children: [new dx.Paragraph({ text: value || "-" })], width: { size: 63, type: dx.WidthType.PERCENTAGE } }),
+      new TableCell({ children: [new Paragraph({ text: num })], width: { size: 5, type: WidthType.PERCENTAGE } }),
+      new TableCell({ children: [new Paragraph({ text: label })], width: { size: 30, type: WidthType.PERCENTAGE } }),
+      new TableCell({ children: [new Paragraph({ text: ":" })], width: { size: 2, type: WidthType.PERCENTAGE } }),
+      new TableCell({ children: [new Paragraph({ text: value || "-" })], width: { size: 63, type: WidthType.PERCENTAGE } }),
     ],
   });
 }
 
 function createSigCell(dx, role, name, skk, sigBuffer, qrBuffer) {
+  const { Paragraph, TextRun, AlignmentType, ImageRun, TableCell, WidthType, VerticalAlign, TextWrappingType } = dx;
   const children = [
-    new dx.Paragraph({ alignment: dx.AlignmentType.CENTER, children: [new dx.TextRun({ text: role, bold: true, size: 18 })] }),
+    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: role, bold: true, size: 18 })] }),
   ];
 
   if (sigBuffer || qrBuffer) {
     const images = [];
     if (qrBuffer) {
-      images.push(new dx.ImageRun({
+      images.push(new ImageRun({
         data: qrBuffer,
         transformation: { width: 60, height: 60 }
       }));
     }
     if (sigBuffer) {
-      images.push(new dx.ImageRun({
+      images.push(new ImageRun({
         data: sigBuffer,
         transformation: { width: 80, height: 40 },
         floating: qrBuffer ? {
             horizontalPosition: { offset: 400000 }, 
             verticalPosition: { offset: 200000 },
-            wrap: { type: dx.TextWrappingType.SQUARE },
+            wrap: { type: TextWrappingType.SQUARE },
         } : undefined
       }));
     }
-    children.push(new dx.Paragraph({ alignment: dx.AlignmentType.CENTER, children: images, spacing: { before: 100, after: 100 } }));
+    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: images, spacing: { before: 100, after: 100 } }));
   } else {
-    children.push(new dx.Paragraph({ alignment: dx.AlignmentType.CENTER, children: [new dx.TextRun({ text: "\n\n\n", size: 20 })] }));
+    children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "\n\n\n", size: 20 })] }));
   }
 
-  children.push(new dx.Paragraph({ alignment: dx.AlignmentType.CENTER, children: [new dx.TextRun({ text: (name || "NAME").toUpperCase(), bold: true, size: 20, underline: {} })] }));
-  children.push(new dx.Paragraph({ alignment: dx.AlignmentType.CENTER, children: [new dx.TextRun({ text: `No. SKK: ${skk || "-"}`, size: 16 })] }));
-  children.push(new dx.Paragraph({ alignment: dx.AlignmentType.CENTER, children: [new dx.TextRun({ text: "TTE Terverifikasi secara Digital (UU ITE)", size: 12, italic: true, color: "666666" })] }));
+  children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: (name || "NAME").toUpperCase(), bold: true, size: 20, underline: {} })] }));
+  children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: `No. SKK: ${skk || "-"}`, size: 16 })] }));
+  children.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "TTE Terverifikasi secara Digital (UU ITE)", size: 12, italic: true, color: "666666" })] }));
 
-  return new dx.TableCell({
-    width: { size: 33, type: dx.WidthType.PERCENTAGE },
+  return new TableCell({
+    width: { size: 33, type: WidthType.PERCENTAGE },
     children: children,
-    verticalAlign: dx.VerticalAlign.CENTER
+    verticalAlign: VerticalAlign.CENTER
   });
 }
 

@@ -4,7 +4,9 @@
 // ============================================================
 import { supabase } from './supabase.js';
 import { runSingleItemAnalysis, MODELS } from './ai-router.js';
-import { getPromptConfig, injectPromptConfig } from './prompt-config-service.js';
+import { getPromptConfig, injectPromptConfig, fetchAgentPrompt, SYSTEM_INSTRUCTIONS_TEMPLATE, DEFAULT_PRINCIPLES } from './prompt-config-service.js';
+import { fetchDriveFiles, fetchFileOCR } from './drive.js';
+import { getSeismicInfoByAddress, getSeismicPromptContext } from './seismic-service.js';
 import { getSettings } from './settings.js';
 
 export const AGENT_CONFIG = [
@@ -97,8 +99,7 @@ export async function runSpecificAgentAnalysis(proyekId, agentId, allResults = {
   if (!agent) throw new Error("Agen tidak ditemukan");
 
   // Load Prompt Config & Services
-  const { fetchAgentPrompt, injectPromptConfig, SYSTEM_INSTRUCTIONS_TEMPLATE, DEFAULT_PRINCIPLES } = await import('./prompt-config-service.js');
-  const { fetchDriveFiles, fetchFileOCR } = await import('./drive.js');
+  // Services sudah diimport secara static di awal file
   
   // 1. Ambil Data Dasar secara Sequential (Fix TDZ)
   const settings = await getSettings();
@@ -165,7 +166,7 @@ export async function runSpecificAgentAnalysis(proyekId, agentId, allResults = {
   // 3. Seismic Intelligence (Hanya untuk Ahli Struktur)
   let seismicContext = '';
   if (agentId === 'struktur') {
-     const { getSeismicInfoByAddress, getSeismicPromptContext } = await import('./seismic-service.js');
+     // Seismic service sudah diimport secara static
      const sInfo = getSeismicInfoByAddress(proyek?.alamat || "");
      seismicContext = getSeismicPromptContext(sInfo);
   }
