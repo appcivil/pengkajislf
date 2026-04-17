@@ -974,25 +974,41 @@ function renderReportTab() {
 // ============================================================
 
 export function initAccessibilityHandlers(projectId) {
-  // Tab switching
+  // Tab switching - Scoped to accessibility-card only
   window._switchAccessibilityTab = (tabName, btn) => {
-    document.querySelectorAll('.accessibility-tab-item').forEach(el => {
+    const card = document.getElementById('accessibility-card');
+    if (!card) {
+      console.error('[Accessibility] Card not found');
+      return;
+    }
+
+    // Update button states - scoped within card
+    card.querySelectorAll('.accessibility-tab-item').forEach(el => {
       el.classList.remove('active');
       el.style.background = '';
       el.style.color = 'var(--text-tertiary)';
+      el.style.boxShadow = 'none';
     });
 
-    document.querySelectorAll('.accessibility-tab-content').forEach(el => {
+    // Show/hide content - scoped within card
+    card.querySelectorAll('.accessibility-tab-content').forEach(el => {
       el.style.display = 'none';
+      el.classList.remove('active');
     });
 
-    btn.classList.add('active');
-    btn.style.background = 'var(--gradient-brand)';
-    btn.style.color = 'white';
+    if (btn) {
+      btn.classList.add('active');
+      btn.style.background = 'var(--gradient-brand)';
+      btn.style.color = 'white';
+      btn.style.boxShadow = 'var(--shadow-sapphire)';
+    }
 
-    const content = document.getElementById(`accessibility-tab-${tabName}`);
+    const content = card.querySelector(`#accessibility-tab-${tabName}`);
     if (content) {
       content.style.display = 'block';
+      content.classList.add('active');
+    } else {
+      console.warn(`[Accessibility] Tab content not found: accessibility-tab-${tabName}`);
     }
   };
 

@@ -930,24 +930,42 @@ function renderSmokeTab() {
 // ============================================================
 
 export function initEgressSystemHandlers(projectId) {
-  // Tab switching
+  // Tab switching - Scoped to egress-system-card only
   window._switchEgressTab = (tabId, btn) => {
-    document.querySelectorAll('.egress-tab-item').forEach(b => {
+    const card = document.getElementById('egress-system-card');
+    if (!card) {
+      console.error('[EgressSystem] Card not found');
+      return;
+    }
+
+    // Update button states - scoped within card
+    card.querySelectorAll('.egress-tab-item').forEach(b => {
       b.classList.remove('active');
       b.style.background = '';
       b.style.color = 'var(--text-tertiary)';
+      b.style.boxShadow = 'none';
     });
+
     if (btn) {
       btn.classList.add('active');
       btn.style.background = 'var(--gradient-brand)';
       btn.style.color = 'white';
+      btn.style.boxShadow = 'var(--shadow-sapphire)';
     }
 
-    document.querySelectorAll('.egress-tab-content').forEach(content => {
+    // Show/hide content - scoped within card
+    card.querySelectorAll('.egress-tab-content').forEach(content => {
       content.style.display = 'none';
+      content.classList.remove('active');
     });
-    const targetContent = document.getElementById(`egress-tab-${tabId}`);
-    if (targetContent) targetContent.style.display = 'block';
+
+    const targetContent = card.querySelector(`#egress-tab-${tabId}`);
+    if (targetContent) {
+      targetContent.style.display = 'block';
+      targetContent.classList.add('active');
+    } else {
+      console.warn(`[EgressSystem] Tab content not found: egress-tab-${tabId}`);
+    }
   };
 
   // Initialize Egress Analysis

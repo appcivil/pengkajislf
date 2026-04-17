@@ -1064,22 +1064,42 @@ function renderDrainaseTab() {
 // ============================================================
 
 export function initEnvironmentalHandlers(projectId) {
-  // Tab switching
+  // Tab switching - Scoped to environmental-card only
   window._switchEnvTab = (tabId, btn) => {
-    document.querySelectorAll('.env-tab-item').forEach(b => {
+    const card = document.getElementById('environmental-card');
+    if (!card) {
+      console.error('[Environmental] Card not found');
+      return;
+    }
+
+    // Update button states - scoped within card
+    card.querySelectorAll('.env-tab-item').forEach(b => {
       b.classList.remove('active');
       b.style.background = '';
       b.style.color = 'var(--text-tertiary)';
+      b.style.boxShadow = 'none';
     });
-    btn.classList.add('active');
-    btn.style.background = 'var(--gradient-brand)';
-    btn.style.color = 'white';
 
-    document.querySelectorAll('.env-tab-content').forEach(content => {
+    if (btn) {
+      btn.classList.add('active');
+      btn.style.background = 'var(--gradient-brand)';
+      btn.style.color = 'white';
+      btn.style.boxShadow = 'var(--shadow-sapphire)';
+    }
+
+    // Show/hide content - scoped within card
+    card.querySelectorAll('.env-tab-content').forEach(content => {
       content.style.display = 'none';
+      content.classList.remove('active');
     });
-    const targetContent = document.getElementById(`env-tab-${tabId}`);
-    if (targetContent) targetContent.style.display = 'block';
+
+    const targetContent = card.querySelector(`#env-tab-${tabId}`);
+    if (targetContent) {
+      targetContent.style.display = 'block';
+      targetContent.classList.add('active');
+    } else {
+      console.warn(`[Environmental] Tab content not found: env-tab-${tabId}`);
+    }
   };
 
   // Initialize Environmental Analysis
