@@ -4,7 +4,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'happy-dom',
-    include: ['src/**/*.test.js'],
+    // `scripts/**` ikut disertakan: skrip pemeriksa (gerbang rahasia, audit)
+    // menentukan apakah build boleh jalan, jadi perilakunya perlu dikunci tes
+    // seperti kode aplikasi.
+    include: ['src/**/*.test.js', 'scripts/**/*.test.js'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json'],

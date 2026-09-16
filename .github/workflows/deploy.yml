@@ -116,9 +116,15 @@ jobs:
           VITE_AI_PROXY_URL: ${{ secrets.VITE_AI_PROXY_URL }}
           # Google Integration (GAS Proxy)
           VITE_GOOGLE_APPS_SCRIPT_URL: ${{ secrets.VITE_GOOGLE_APPS_SCRIPT_URL }}
-          VITE_GOOGLE_DOC_TEMPLATE_ID: ${{ secrets.VITE_GOOGLE_DOC_TEMPLATE_ID }}
-          VITE_GCP_API_KEY: ${{ secrets.VITE_GCP_API_KEY }}
-          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+          #
+          # VITE_GOOGLE_DOC_TEMPLATE_ID, VITE_GCP_API_KEY, dan
+          # VITE_GOOGLE_CLIENT_ID DIHAPUS dari sini: ketiganya tidak dibaca
+          # satu berkas pun di src/ (integrasi Drive klien berjalan lewat
+          # VITE_GOOGLE_APPS_SCRIPT_URL di atas). Selama dikirim, ketiganya
+          # hanya menambah permukaan rahasia dan sempat membuat langkah Build
+          # gagal karena bentuk nilainya disangka kunci.
+          # Bila suatu saat dipakai, tambahkan kembali BERSAMAAN dengan kode
+          # yang membacanya, bukan lebih dulu.
           # ── JANGAN TAMBAHKAN KUNCI AI DI SINI ──────────────────────
           # Sebelumnya blok ini memuat VITE_GEMINI_API_KEY, VITE_OPENAI_API_KEY,
           # VITE_CLAUDE_API_KEY, VITE_OPENROUTER_API_KEY, VITE_GROQ_API_KEY,

@@ -20,6 +20,29 @@
  * seharusnya hanya ada di sisi server (variabel yang namanya berakhiran
  * _API_KEY / _SECRET / _TOKEN / _PRIVATE / _SERVICE_ROLE).
  *
+ * CARA MENDETEKSI — DAN SATU KESALAHAN YANG PERNAH TERJADI
+ * -------------------------------------------------------
+ * Versi pertama skrip ini punya dua pemeriksaan:
+ *   (1) NAMA variabel berakhiran rahasia   → tepat
+ *   (2) NILAI apa pun yang panjang dan "berpola token" pada variabel VITE_
+ *       yang tidak dikenal                 → terlalu luas
+ *
+ * Pemeriksaan (2) pernah MENGGAGALKAN SELURUH DEPLOY. Nilai seperti ID Google
+ * Docs (1AbCdEf…) dan OAuth Client ID (123456-abc.apps.googleusercontent.com)
+ * memang panjang dan tanpa spasi, tetapi KEDUANYA BUKAN RAHASIA — keduanya
+ * memang terbit di peramban; yang melindungi adalah pembatasan referrer dan
+ * daftar origin yang diizinkan di Google Cloud Console. Deploy GitHub Pages
+ * berhenti di langkah Build selama dua kali push karena keduanya dianggap
+ * "rahasia", padahal tidak ada yang bocor.
+ *
+ * Karena itu pemeriksaan (2) diganti: yang dicocokkan adalah BENTUK KUNCI yang
+ * benar-benar dikenali (AIza… untuk Google, sk-… untuk OpenAI/OpenRouter,
+ * ghp_… untuk GitHub, dst), bukan sekadar "panjang dan mencurigakan".
+ * Ditambah pemeriksaan JWT: bila sebuah variabel berisi JWT dengan klaim
+ * `role: "service_role"`, itu selalu pelanggaran — bahkan bila namanya adalah
+ * VITE_SUPABASE_ANON_KEY yang ada di daftar izin, karena isinya kunci master
+ * yang menembus RLS.
+ *
  * Pemakaian:
  *   node scripts/check-client-secrets.mjs            # memeriksa lingkungan
  *   node scripts/check-client-secrets.mjs --allow    # hanya memperingatkan
@@ -91,14 +114,74 @@ for (const [name, value] of Object.entries(env)) {
   }
 }
 
-// Nilai yang kelihatannya token panjang pada variabel VITE_ yang tidak dikenal
-// juga diperiksa: kunci AI biasanya ≥ 30 karakter tanpa spasi.
+/**
+ * Bentuk kunci rahasia yang dikenali dari NILAI-nya.
+ *
+ * Sengaja tidak memakai aturan "panjang dan tanpa spasi" seperti versi pertama
+ * — aturan itu menandai ID dokumen dan Client ID yang bukan rahasia, lalu
+ * menggagalkan deploy. Pola di bawah ini khas milik penyedia masing-masing dan
+ * tidak akan cocok dengan identifier publik biasa.
+ */
+const SECRET_VALUE_PATTERNS = [
+  [/^AIza[0-9A-Za-z_-]{30,}$/,                'kunci Google API (Gemini / Cloud)'],
+  [/^sk-[A-Za-z0-9_-]{16,}$/,                 'kunci OpenAI / OpenRouter'],
+  [/^gh[pousr]_[A-Za-z0-9]{20,}$/,            'token akses GitHub'],
+  [/^github_pat_[A-Za-z0-9_]{20,}$/,          'token GitHub (fine-grained)'],
+  [/^xox[baprs]-[A-Za-z0-9-]{10,}$/,          'token Slack'],
+  [/^sbp_[A-Za-z0-9]{20,}$/,                  'Personal Access Token Supabase'],
+  [/^AKIA[0-9A-Z]{16}$/,                      'kunci AWS'],
+  [/^glpat-[A-Za-z0-9_-]{15,}$/,               'token GitLab'],
+  [/^-----BEGIN [A-Z ]*PRIVATE KEY-----/,     'kunci privat'],
+  [/^sk_live_[A-Za-z0-9]{16,}$/,              'kunci rahasia Stripe'],
+];
+
 for (const [name, value] of Object.entries(env)) {
-  if (!name.startsWith('VITE_') || ALLOWLIST.has(name) || !value) continue;
+  if (!name.startsWith('VITE_') || !value || typeof value !== 'string') continue;
   if (violations.some(v => v.name === name)) continue;
-  if (typeof value === 'string' && value.length >= 30 && !/\s/.test(value) &&
-      /^[A-Za-z0-9_\-.]{30,}$/.test(value)) {
-    violations.push({ name, reason: 'panjang & berpola seperti token pada variabel VITE_ yang tidak dikenal' });
+  // Daftar izin tetap berlaku di sini — tetapi hanya untuk variabel yang
+  // memang sudah ditinjau dan didokumentasikan alasannya (lihat ALLOWLIST).
+  //
+  // Contoh yang penting: VITE_GCP_API_KEY berbentuk seperti kunci Google
+  // (AIza…) dan memang ISINYA kunci Google — hanya saja kunci itu dirancang
+  // untuk terbit di peramban, dengan perlindungan berupa pembatasan referrer.
+  // Karena itu ia ada di daftar izin; bila suatu saat entri itu dihapus, tes
+  // di scripts/check-client-secrets.test.js akan gagal dan memaksa peninjauan
+  // ulang. Untuk JWT service_role di bawah, daftar izin TIDAK berlaku.
+  if (ALLOWLIST.has(name)) continue;
+  for (const [re, reason] of SECRET_VALUE_PATTERNS) {
+    if (re.test(value)) { violations.push({ name, reason }); break; }
+  }
+}
+
+/**
+ * Klaim `role` di dalam JWT, bila nilainya memang JWT.
+ *
+ * Kunci Supabase berbentuk JWT. Kunci `anon` memang untuk peramban; kunci
+ * `service_role` menembus seluruh RLS dan TIDAK BOLEH ada di klien. Keduanya
+ * sulit dibedakan dari bentuk luarnya, jadi klaimnya dibaca langsung.
+ */
+function jwtRole(value) {
+  const m = /^eyJ[A-Za-z0-9_-]+\.([A-Za-z0-9_-]+)\./.exec(value);
+  if (!m) return null;
+  try {
+    const b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = b64.padEnd(Math.ceil(b64.length / 4) * 4, '=');
+    return JSON.parse(Buffer.from(padded, 'base64').toString('utf8')).role ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// JWT service_role selalu pelanggaran — walau namanya ada di daftar izin.
+// Kasus paling berbahaya: kunci master tertempel pada variabel bernama
+// VITE_SUPABASE_ANON_KEY, sehingga tampak aman dari namanya saja.
+for (const [name, value] of Object.entries(env)) {
+  if (!name.startsWith('VITE_') || !value || typeof value !== 'string') continue;
+  if (jwtRole(value) === 'service_role') {
+    violations.push({
+      name,
+      reason: 'berisi JWT dengan klaim role="service_role" — kunci ini menembus RLS dan wajib hanya ada di sisi server',
+    });
   }
 }
 
