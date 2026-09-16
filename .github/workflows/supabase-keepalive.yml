@@ -1,0 +1,161 @@
+# ============================================================
+#  SUPABASE KEEP-ALIVE — ping setiap 2 hari
+#
+#  Tujuan: mencegah proyek Supabase Free di-pause karena
+#  "7 hari tanpa aktivitas database".
+#
+#  Kenapa 2 hari? Jarak 2 hari memberi margin besar terhadap
+#  batas 7 hari — kalau satu eksekusi gagal/ditunda GitHub,
+#  proyek tetap aman.
+#
+#  Yang dibutuhkan (Settings → Secrets and variables → Actions):
+#    SUPABASE_URL       contoh: https://xxxxxxxx.supabase.co
+#    SUPABASE_ANON_KEY  kunci anon/publishable (aman dipublikasikan,
+#                       dilindungi RLS — sama dengan yang ada di klien)
+#
+#  CATATAN PENTING:
+#  GitHub MENONAKTIFKAN workflow terjadwal setelah 60 hari tanpa
+#  commit di repo. Karena itu keepalive ini punya beberapa lapis
+#  cadangan:
+#     1. Workflow ini (setiap 2 hari)
+#     2. Ping dari aplikasi saat dibuka (src/lib/keepalive.js)
+#     3. Edge Function /functions/v1/keepalive (bisa dipanggil
+#        cron eksternal: cron-job.org, n8n, UptimeRobot)
+#  Lihat docs/EGRESS-MITIGATION.md bagian "Lapisan Keepalive".
+#
+#  Egress per ping: < 1 KB. 15 ping/bulan ≈ 15 KB → tidak terukur
+#  dibanding kuota 5 GB.
+# ============================================================
+
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    # Setiap 2 hari pukul 03:00 UTC (10:00 WIB).
+    # Catatan: cron GitHub memakai UTC dan bisa tertunda beberapa menit.
+    - cron: '0 3 */2 * *'
+  workflow_dispatch:        # tombol "Run workflow" untuk uji manual
+    inputs:
+      verbose:
+        description: 'Tampilkan header respons lengkap'
+        required: false
+        default: 'false'
+
+concurrency:
+  group: supabase-keepalive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    name: Ping database Supabase
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Validasi secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::Secret SUPABASE_URL / SUPABASE_ANON_KEY belum diisi."
+            echo "Buka Settings → Secrets and variables → Actions, lalu tambahkan keduanya."
+            exit 1
+          fi
+          echo "Secrets tersedia. Target: ${SUPABASE_URL%%/}"
+
+      - name: Ping REST (keepalive_ping)
+        id: rest
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -uo pipefail
+
+          # Cache-busting: parameter unik agar CDN tidak menyajikan respons
+          # hasil cache (ping yang di-cache tidak menyentuh database!).
+          BUST=$(date +%s)$RANDOM
+          URL="${SUPABASE_URL%/}/rest/v1/keepalive_ping?select=id&limit=1&_cb=${BUST}"
+
+          echo "→ GET ${URL%&_cb=*} (dengan parameter cache-buster)"
+
+          # --fail: HTTP >=400 dianggap gagal; -s -o /dev/null: ringkas;
+          # -w: laporkan status & jumlah byte (untuk memantau egress per ping)
+          HTTP_CODE=$(curl --silent --show-error --location \
+            --max-time 30 --retry 3 --retry-delay 10 --retry-all-errors \
+            --fail \
+            -o /tmp/keepalive.json \
+            -w '%{http_code} %{size_download}' \
+            "$URL" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Accept: application/json" \
+            -H "Cache-Control: no-cache" || true)
+
+          CODE=$(echo "$HTTP_CODE" | awk '{print $1}')
+          BYTES=$(echo "$HTTP_CODE" | awk '{print $2}')
+
+          if [ "$CODE" = "200" ]; then
+            echo "✅ Database aktif. HTTP $CODE, ${BYTES} byte diterima."
+            echo "ping_ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::Ping tabel keepalive_ping gagal (HTTP ${CODE:-none}). Coba jalur cadangan…"
+            echo "ping_ok=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Ping cadangan (head count pada tabel proyek)
+        if: steps.rest.outputs.ping_ok != 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          BUST=$(date +%s)$RANDOM
+          # head=true → server hanya mengirim header, tanpa baris data (0 egress).
+          URL="${SUPABASE_URL%/}/rest/v1/proyek?select=id&limit=1&_cb=${BUST}"
+
+          CODE=$(curl --silent --show-error --location \
+            --max-time 30 --retry 3 --retry-delay 10 --retry-all-errors \
+            -o /dev/null -w '%{http_code}' \
+            -X HEAD "$URL" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Prefer: count=exact" || echo "000")
+
+          if [ "$CODE" = "200" ] || [ "$CODE" = "206" ]; then
+            echo "✅ Ping cadangan berhasil (HTTP $CODE). Database tetap aktif."
+          else
+            echo "::error::Semua jalur ping gagal (HTTP $CODE). Proyek mungkin sedang di-pause."
+            echo "Buka dashboard Supabase → Project Settings → General → Restore project."
+            exit 1
+          fi
+
+      - name: Ping Edge Function keepalive (verifikasi opsional)
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          BUST=$(date +%s)$RANDOM
+          curl --silent --show-error --location --max-time 30 \
+            -o /tmp/edge-keepalive.json -w 'Edge Function → HTTP %{http_code} (%{size_download} byte)\n' \
+            "${SUPABASE_URL%/}/functions/v1/keepalive?cb=${BUST}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            || echo "Edge Function belum di-deploy (tidak fatal)."
+
+          head -c 300 /tmp/edge-keepalive.json 2>/dev/null || true
+          echo
+
+      - name: Ringkasan
+        if: always()
+        run: |
+          {
+            echo "### Supabase Keep-Alive"
+            echo ""
+            echo "- Jadwal: setiap 2 hari (03:00 UTC)"
+            echo "- Waktu jalan: $(date -u '+%Y-%m-%d %H:%M UTC')"
+            echo "- Egress per ping: < 1 KB (1 baris / header saja)"
+            echo "- ⚠️ GitHub menonaktifkan workflow terjadwal setelah 60 hari tanpa commit."
+            echo "  Lapisan cadangan: ping dari aplikasi + Edge Function (cron eksternal)."
+          } >> "$GITHUB_STEP_SUMMARY"

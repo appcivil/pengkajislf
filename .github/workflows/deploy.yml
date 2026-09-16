@@ -59,8 +59,10 @@ jobs:
               PROJECT_ID="${BASH_REMATCH[1]}"
               echo "✅ Extracted PROJECT_ID from VITE_SUPABASE_URL: $PROJECT_ID"
             else
-              PROJECT_ID="hrzplcqeadhvbrfhlfuh"
-              echo "⚠️ Falling back to hardcoded PROJECT_ID: $PROJECT_ID"
+              echo "❌ ERROR: PROJECT_ID tidak dapat ditentukan."
+              echo "   Set secret SUPABASE_PROJECT_ID, atau isi VITE_SUPABASE_URL"
+              echo "   dengan format https://<project-ref>.supabase.co"
+              exit 1
             fi
           fi
 
@@ -83,7 +85,17 @@ jobs:
             supabase secrets set --env-file .temp.env --project-ref "$PROJECT_ID"
           fi
           
-          supabase functions deploy ai-proxy --project-ref "$PROJECT_ID"
+          # Deploy SEMUA Edge Function (sebelumnya hanya ai-proxy, sehingga
+          # auto-fill-simak / photo-checklist-mapper / keepalive tidak pernah
+          # ter-deploy lewat CI dan harus di-deploy manual).
+          for fn in ai-proxy auto-fill-simak photo-checklist-mapper keepalive; do
+            echo "→ Deploy Edge Function: $fn"
+            if supabase functions deploy "$fn" --project-ref "$PROJECT_ID"; then
+              echo "   ✅ $fn ter-deploy"
+            else
+              echo "::warning::Deploy '$fn' gagal — lanjut ke fungsi berikutnya."
+            fi
+          done
           
           # 5. Cleanup
           rm .temp.env
@@ -107,15 +119,30 @@ jobs:
           VITE_GOOGLE_DOC_TEMPLATE_ID: ${{ secrets.VITE_GOOGLE_DOC_TEMPLATE_ID }}
           VITE_GCP_API_KEY: ${{ secrets.VITE_GCP_API_KEY }}
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
-          # Direct AI Access (Optional if using Proxy)
-          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
-          VITE_OPENAI_API_KEY: ${{ secrets.VITE_OPENAI_API_KEY }}
-          VITE_CLAUDE_API_KEY: ${{ secrets.VITE_CLAUDE_API_KEY }}
-          VITE_OPENROUTER_API_KEY: ${{ secrets.VITE_OPENROUTER_API_KEY }}
-          VITE_GROQ_API_KEY: ${{ secrets.VITE_GROQ_API_KEY }}
-          VITE_MISTRAL_API_KEY: ${{ secrets.VITE_MISTRAL_API_KEY }}
-          VITE_HF_SLF_OPUS_URL: ${{ secrets.VITE_HF_SLF_OPUS_URL }}
-          VITE_HF_API_TOKEN: ${{ secrets.VITE_HF_API_TOKEN }}
+          # ── JANGAN TAMBAHKAN KUNCI AI DI SINI ──────────────────────
+          # Sebelumnya blok ini memuat VITE_GEMINI_API_KEY, VITE_OPENAI_API_KEY,
+          # VITE_CLAUDE_API_KEY, VITE_OPENROUTER_API_KEY, VITE_GROQ_API_KEY,
+          # VITE_MISTRAL_API_KEY, dan VITE_HF_API_TOKEN.
+          #
+          # Vite mengganti setiap `import.meta.env.VITE_*` menjadi NILAI TEKS
+          # BIASA di dalam berkas JS hasil build. Jadi setiap kali workflow ini
+          # berjalan, ketujuh kunci tersebut IKUT TERBIT sebagai teks biasa ke
+          # GitHub Pages — dapat dibaca siapa pun lewat DevTools, lalu dipakai
+          # atas biaya pemilik proyek. Kunci itu juga terpakai berkali-kali
+          # lewat `MODELS.*.key` di src/lib/ai-router.js.
+          #
+          # Kunci sebenarnya sudah dikirim sebagai secret Edge Function pada
+          # langkah di atas (supabase secrets set). Aplikasi memanggilnya lewat
+          # `ai-proxy` menggunakan VITE_AI_PROXY_URL — satu-satunya variabel VITE_
+          # yang memang boleh diketahui peramban.
+          #
+          # `npm run build` kini menolak berjalan bila mendeteksi kunci AI pada
+          # environment build (scripts/check-client-secrets.mjs), jadi blok ini
+          # TIDAK boleh dikembalikan.
+          #
+          # VITE_HF_SLF_OPUS_URL tidak dikirim ke sini: URL saja tidak rahasia,
+          # tetapi nilai itu tidak lagi dipakai jalur klien.
+
 
       - name: Setup Pages ⚙️
         uses: actions/configure-pages@v5
