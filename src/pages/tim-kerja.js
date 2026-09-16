@@ -65,8 +65,8 @@ function buildHtml(workload, members) {
         ${[
           { label: 'ACTIVE AGENTS', val: members.length, icon: 'fa-users-gear', color: 'var(--brand-400)' },
           { label: 'DELEGATED ASSETS', val: totalProjects, icon: 'fa-building-shield', color: 'var(--gold-400)' },
-          { label: 'CONSENSUS PROGRESS', val: `${escapeHtml(avgProgress)}%`, icon: 'fa-chart-network', color: 'var(--success-400)' },
-          { label: 'READY FOR DEPLOY', val: workload.filter(w => w.status === 'Active').length, icon: 'fa-shield-check', color: 'var(--brand-300)' }
+          { label: 'CONSENSUS PROGRESS', val: `${escapeHtml(avgProgress)}%`, icon: 'fa-diagram-project', color: 'var(--success-400)' },
+          { label: 'READY FOR DEPLOY', val: workload.filter(w => w.status === 'Active').length, icon: 'fa-shield-halved', color: 'var(--brand-300)' }
         ].map(k => `
           <div class="card-quartz" style="padding:24px; display:flex; align-items:center; gap:20px">
              <div style="width:52px; height:52px; border-radius:14px; background:hsla(220, 20%, 100%, 0.03); display:flex; align-items:center; justify-content:center; color:${escapeHtml(k.color)}; font-size:1.4rem; border:1px solid hsla(220, 20%, 100%, 0.05)">
@@ -286,7 +286,7 @@ function renderMemberModal(member = null) {
           <div style="margin-top:24px; display:flex; gap:16px; justify-content:flex-end">
              <button type="button" onclick="document.getElementById('member-modal-overlay').remove()" class="btn btn-ghost" style="color:var(--text-tertiary)">CANCEL</button>
              <button type="submit" class="btn-presidential gold" id="btn-save-member" style="height:48px; border-radius:12px; padding:0 32px">
-              <i class="fas fa-shield-check" style="margin-right:12px"></i> AUTHORIZE AGENT
+              <i class="fas fa-shield-halved" style="margin-right:12px"></i> AUTHORIZE AGENT
             </button>
           </div>
         </form>
@@ -321,7 +321,7 @@ function renderMemberModal(member = null) {
     } catch (err) {
       showError('Induction failure: ' + err.message);
       btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-shield-check"></i> AUTHORIZE AGENT';
+      btn.innerHTML = '<i class="fas fa-shield-halved"></i> AUTHORIZE AGENT';
     }
   };
 }

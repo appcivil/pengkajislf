@@ -375,7 +375,7 @@ function renderDashboardTab() {
         <div class="card-quartz" style="padding: 24px;">
           <div class="flex-between" style="margin-bottom: 20px;">
             <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: white; margin: 0;">
-              <i class="fas fa-chart-radar" style="margin-right: 8px; color: var(--brand-400);"></i>
+              <i class="fas fa-chart-pie" style="margin-right: 8px; color: var(--brand-400);"></i>
               Comfort Assessment Radar
             </h4>
             <span class="badge" style="background: hsla(220, 95%, 52%, 0.1); color: var(--brand-400); font-size: 9px;">4 ASPEK</span>

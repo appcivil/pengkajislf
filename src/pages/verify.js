@@ -226,7 +226,7 @@ function buildVerifyHtml(p, a, s, expertType, expert, integrity, cert) {
                   </div>
                   
                   ${p.metadata?.is_finalized 
-                    ? `<div style="background:hsla(158, 85%, 45%, 0.1); border:1px solid hsla(158, 85%, 45%, 0.2); padding:12px; border-radius:12px; color:var(--success-400); text-align:center; font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:2px; margin-bottom:24px"><i class="fas fa-shield-check"></i> OFFICIAL SEAL VALID</div>`
+                    ? `<div style="background:hsla(158, 85%, 45%, 0.1); border:1px solid hsla(158, 85%, 45%, 0.2); padding:12px; border-radius:12px; color:var(--success-400); text-align:center; font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:2px; margin-bottom:24px"><i class="fas fa-shield-halved"></i> OFFICIAL SEAL VALID</div>`
                     : `<div style="background:hsla(45, 90%, 60%, 0.1); border:1px solid hsla(45, 90%, 60%, 0.2); padding:12px; border-radius:12px; color:var(--gold-400); text-align:center; font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:2px; margin-bottom:24px"><i class="fas fa-clock"></i> PENDING FINAL SEAL</div>`}
                   
                   <div style="margin-bottom:24px">
@@ -298,7 +298,7 @@ function renderError(msg) {
    return `
       <div style="height:100vh; background:hsl(220, 30%, 98%); display:flex; align-items:center; justify-content:center; padding:20px; color:hsl(224, 30%, 12%); font-family:'Inter', sans-serif">
          <div style="padding:60px 40px; text-align:center; max-width:480px; background:white; border-radius:30px; box-shadow:0 30px 80px rgba(0,0,0,0.1); border:1px solid rgba(220, 53, 69, 0.1)">
-            <i class="fas fa-shield-slash" style="font-size:4rem; color:var(--danger-500); margin-bottom:32px"></i>
+            <i class="fas fa-triangle-exclamation" style="font-size:4rem; color:var(--danger-500); margin-bottom:32px"></i>
             <h2 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.6rem; margin-bottom:12px">Verification Failure</h2>
             <p style="color:var(--text-tertiary); line-height:1.6; margin-bottom:40px">${escapeHtml(msg)}</p>
             <button class="btn btn-outline" style="width:100%; height:48px; border-radius:12px; color:var(--text-primary); border-color:rgba(0,0,0,0.1)" onclick="window.navigate('dashboard')">RE-ENTRY TO SYSTEM</button>

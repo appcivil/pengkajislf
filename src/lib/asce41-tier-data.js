@@ -15,7 +15,7 @@ export const TIER1_CHECKLIST = {
     {
       id: 'seismicity',
       name: 'Seismicity Level',
-      icon: 'fa-earthquake',
+      icon: 'fa-house-crack',
       reference: 'ASCE 41-17 17.2',
       items: [
         {

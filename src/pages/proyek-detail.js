@@ -89,7 +89,7 @@ export async function proyekDetailPage(params = {}) {
 // ── HTML Builder ─────────────────────────────────────────────
 function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSummary = {}, lpsSummary = {}, fireProtectionSummary = {}, buildingIntensitySummary = {}, architecturalSummary = {}, egressSummary = {}, environmentalSummary = {}, sanitationSummary = {}, waterSummary = {}, accessibilitySummary = {}, stormwaterSummary = {}, simulationHubSummary = {}, comfortSummary = {}, kondisiSummary = {}, disasterMitigationSummary = {}, wastewaterSummary = {}) {
   const statusMap = {
-    LAIK_FUNGSI:           { label: 'LAIK FUNGSI',       cls: 'badge-laik',       icon: 'fa-shield-check',   color: 'var(--success-400)' },
+    LAIK_FUNGSI:           { label: 'LAIK FUNGSI',       cls: 'badge-laik',       icon: 'fa-shield-halved',   color: 'var(--success-400)' },
     LAIK_FUNGSI_BERSYARAT: { label: 'LAIK BERSYARAT',    cls: 'badge-bersyarat',  icon: 'fa-triangle-exclamation', color: 'var(--gold-400)' },
     TIDAK_LAIK_FUNGSI:     { label: 'TIDAK LAIK',        cls: 'badge-tidak-laik', icon: 'fa-circle-xmark',   color: 'var(--danger-400)' },
     DALAM_PENGKAJIAN:      { label: 'DALAM PENGKAJIAN',  cls: 'badge-proses',     icon: 'fa-clock',          color: 'var(--brand-400)' },
@@ -100,8 +100,8 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
   const workflowSteps = [
     { label: 'INTEGRITAS DATA', icon: 'fa-database',       key: 'input' },
     { label: 'AUDIT TEKNIS',    icon: 'fa-clipboard-check', key: 'checklist' },
-    { label: 'AI ANALYTICS',    icon: 'fa-brain-circuit',   key: 'analisis' },
-    { label: 'EXECUTIVE RPT',   icon: 'fa-file-seal',       key: 'laporan' },
+    { label: 'AI ANALYTICS',    icon: 'fa-brain',   key: 'analisis' },
+    { label: 'EXECUTIVE RPT',   icon: 'fa-file-circle-check',       key: 'laporan' },
     { label: 'CERTIFICATION',   icon: 'fa-certificate',     key: 'final' },
   ];
 
@@ -176,7 +176,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
             <div class="card-quartz clickable" onclick="window.navigate('checklist',{id:'${escapeHtml(p.id)}'})" style="padding: var(--space-6)">
               <div class="flex-between" style="margin-bottom:20px">
                 <div style="width:48px; height:48px; border-radius:14px; background:hsla(220, 95%, 52%, 0.1); display:flex; align-items:center; justify-content:center; color:var(--brand-400)">
-                  <i class="fas fa-clipboard-list-check" style="font-size:1.4rem"></i>
+                  <i class="fas fa-clipboard-check" style="font-size:1.4rem"></i>
                 </div>
                 <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--brand-400)">PHASE 02</div>
               </div>
@@ -240,7 +240,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
             <div class="card-quartz clickable" onclick="window.navigate('analisis',{id:'${escapeHtml(p.id)}'})" style="padding: var(--space-6)">
               <div class="flex-between" style="margin-bottom:20px">
                 <div style="width:48px; height:48px; border-radius:14px; background:hsla(45, 90%, 60%, 0.1); display:flex; align-items:center; justify-content:center; color:var(--gold-400)">
-                  <i class="fas fa-brain-circuit" style="font-size:1.4rem"></i>
+                  <i class="fas fa-brain" style="font-size:1.4rem"></i>
                 </div>
                 <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--gold-400)">PHASE 03</div>
               </div>
@@ -313,7 +313,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
                 ['SURFACE_AREA',    p.luas_bangunan ? `${Number(p.luas_bangunan).toLocaleString('id-ID')} M²` : '-', 'fa-ruler-combined', 'TOTAL AREA'],
                 ['CHRONO_YEAR',     p.tahun_dibangun || '-', 'fa-calendar', 'TAHUN KONSTRUKSI'],
                 ['CORE_FUNCTION',   p.fungsi_bangunan || '-', 'fa-building-columns', 'FUNGSI UTAMA'],
-                ['GOV_REGISTRY',    p.nomor_pbg || '-', 'fa-file-certificate', 'NOMOR PBG/REG'],
+                ['GOV_REGISTRY',    p.nomor_pbg || '-', 'fa-certificate', 'NOMOR PBG/REG'],
               ].map(([k, v, ic, lbl]) => `
                 <div style="background:hsla(220, 20%, 100%, 0.02); border:1px solid hsla(220, 20%, 100%, 0.05); border-radius:12px; padding:20px; text-align:center">
                   <div style="font-family:var(--font-mono); font-size:8px; font-weight:800; color:var(--text-tertiary); letter-spacing:1px; margin-bottom:8px">${escapeHtml(lbl)}</div>
@@ -368,7 +368,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
                   <span style="font-size:0.85rem; font-weight:700; color:white">${escHtml(p.pemilik || '-')}</span>
                </div>
                <div style="display:flex; align-items:center; gap:12px">
-                  <i class="fas fa-phone-office" style="color:var(--text-tertiary); width:16px"></i>
+                  <i class="fas fa-phone" style="color:var(--text-tertiary); width:16px"></i>
                   <span style="font-size:0.8rem; color:var(--text-secondary)">${escHtml(p.telepon || '-')}</span>
                </div>
                <div style="display:flex; align-items:center; gap:12px">
@@ -396,7 +396,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
                 </button>
              </div>
 
-             ${!p.simbg_email ? `<p style="font-size:9px; color:var(--text-tertiary); text-align:center; margin-top:12px"><i class="fas fa-shield-slash"></i> Credentials missing in manifest.</p>` : ''}
+             ${!p.simbg_email ? `<p style="font-size:9px; color:var(--text-tertiary); text-align:center; margin-top:12px"><i class="fas fa-triangle-exclamation"></i> Credentials missing in manifest.</p>` : ''}
           </div>
 
           <!-- Engineering Simulation Card -->

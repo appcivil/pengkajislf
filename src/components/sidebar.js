@@ -9,7 +9,7 @@ import { confirm } from './modal.js';
 import { showSuccess, showError } from './toast.js';
 
 const GLOBAL_NAV = [
-  { section: 'Utama', icon: 'fa-house-blank' },
+  { section: 'Utama', icon: 'fa-house' },
   { path: 'dashboard',              label: 'Overview',           icon: 'fa-gauge-high' },
   { path: 'proyek',                 label: 'Daftar Proyek SLF',  icon: 'fa-folder-tree' },
   { path: 'surat-pernyataan-list',  label: 'Kumpulan Surat SP',  icon: 'fa-file-signature', badge: 'Global' },
@@ -105,7 +105,7 @@ export function renderSidebar() {
       <div class="sidebar-footer">
         <div class="verified-badge" style="background: hsla(45, 90%, 60%, 0.05); border: 1px solid hsla(45, 90%, 60%, 0.15); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 20px;">
           <div class="badge-icon" style="background: var(--gradient-gold); box-shadow: 0 0 15px hsla(45, 90%, 60%, 0.3);">
-            <i class="fas fa-shield-check"></i>
+            <i class="fas fa-shield-halved"></i>
           </div>
           <div class="badge-text" style="font-family:'Outfit', sans-serif; display: flex; align-items: center; gap: 8px;">
             <i class="fas fa-certificate" style="color: var(--gold-500); font-size: 10px; opacity: 0.8" title="ITE Compliant v2.0"></i>

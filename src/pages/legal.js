@@ -53,7 +53,7 @@ export async function legalPage() {
         <footer class="legal-footer">
           <p>&copy; ${escapeHtml(year)} Smart AI Pengkaji SLF &bullet; Penyelenggara Sistem Elektronik (Sistem Internal)</p>
           <div class="legal-badges">
-            <span class="l-badge"><i class="fas fa-check-shield"></i> ITE Compliant</span>
+            <span class="l-badge"><i class="fas fa-circle-check"></i> ITE Compliant</span>
             <span class="l-badge"><i class="fas fa-lock"></i> SSL Secured</span>
             <span class="l-badge"><i class="fas fa-user-check"></i> PSE Verified</span>
           </div>

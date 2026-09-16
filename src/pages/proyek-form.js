@@ -80,7 +80,7 @@ export async function proyekFormPage(params = {}) {
          <div style="position:relative; margin-bottom:40px">
             <div class="animate-ping" style="position:absolute; inset:0; border:2px solid var(--brand-500); border-radius:50%; opacity:0.1"></div>
             <div style="width:100px; height:100px; background:var(--gradient-brand); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:3rem; color:white; box-shadow:var(--shadow-sapphire)">
-               <i class="fas fa-brain-circuit"></i>
+               <i class="fas fa-brain"></i>
             </div>
          </div>
          <h2 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:2rem; color:white; margin-bottom:12px">NEURAL SCAN IN PROGRESS</h2>

@@ -78,7 +78,7 @@ function buildHtml(proyek, analisis, checklist, settings, gdocStatus, cachedDoc,
             Laporan eksekutif belum dapat disusun sebelum analisis AI selesai. Jalankan pemeriksaan kelaikan terlebih dahulu.
           </p>
           <button class="btn-presidential gold" onclick="window.navigate('analisis',{id:'${escapeHtml(proyek.id)}'})">
-            <i class="fas fa-brain-circuit" style="margin-right:10px"></i> OPEN AI ANALYTICS
+            <i class="fas fa-brain" style="margin-right:10px"></i> OPEN AI ANALYTICS
           </button>
         </div>
       </div>
@@ -103,7 +103,7 @@ function buildHtml(proyek, analisis, checklist, settings, gdocStatus, cachedDoc,
                 Automated Regulatory Compliance Documentation
               </p>
               <div style="background:hsla(158, 85%, 45%, 0.1); color:var(--success-400); border:1px solid hsla(158, 85%, 45%, 0.2); padding:2px 12px; border-radius:100px; font-size:9px; font-weight:800; display:flex; align-items:center; gap:6px; font-family:var(--font-mono)">
-                <i class="fas fa-shield-check"></i> E-SIGNATURE VERIFIED
+                <i class="fas fa-shield-halved"></i> E-SIGNATURE VERIFIED
               </div>
             </div>
           </div>
@@ -332,7 +332,7 @@ function renderGDocsTab(proyek, gdocStatus, cachedDoc) {
     return `
       <div class="card-quartz" style="text-align:center; padding:100px 40px; background:var(--gradient-dark); border-color: hsla(220, 95%, 52%, 0.2)">
         <div style="width:80px; height:80px; background:var(--gradient-brand); border-radius:18px; display:flex; align-items:center; justify-content:center; margin:0 auto 24px; font-size:2rem; color:white; box-shadow:var(--shadow-sapphire); border:1px solid hsla(220, 95%, 52%, 0.3)">
-          <i class="fas fa-file-sparkles"></i>
+          <i class="fas fa-file-circle-plus"></i>
         </div>
         <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.6rem; color:white; margin-bottom:12px">Generate Intelligent Executive Report</h3>
         <p style="color:var(--brand-300); max-width:640px; margin:0 auto 40px; line-height:1.6; font-weight:600">

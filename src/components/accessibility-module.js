@@ -238,7 +238,7 @@ export function renderAccessibilityCard(project, summary = {}) {
                   class="accessibility-tab-item"
                   data-tab="scoring"
                   style="flex: 1; min-width: 140px; height: 44px; border: none; border-radius: 10px; cursor: pointer; font-family: var(--font-mono); font-size: 10px; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s; color: var(--text-tertiary);">
-            <i class="fas fa-chart-radar"></i> SCORING & SIMULASI
+            <i class="fas fa-chart-pie"></i> SCORING & SIMULASI
           </button>
           <button onclick="window._switchAccessibilityTab('report', this)" 
                   class="accessibility-tab-item"
@@ -747,7 +747,7 @@ function renderScoringTab() {
       <div class="card-quartz" style="padding: 20px;">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
           <div style="width: 36px; height: 36px; border-radius: 8px; background: hsla(220, 95%, 52%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--brand-400);">
-            <i class="fas fa-chart-radar"></i>
+            <i class="fas fa-chart-pie"></i>
           </div>
           <div>
             <div style="font-weight: 700; color: white; font-size: 0.9rem;">Accessibility Score Calculator</div>

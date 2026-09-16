@@ -10,11 +10,11 @@ import { showError, showInfo } from '../components/toast.js';
 
 export async function loginPage() {
   const features = [
-    { icon: 'fa-brain-circuit',   text: 'Quantum Neural Synthesis (SNI 9273:2025)' },
-    { icon: 'fa-shield-check',    text: 'Automated Integrity & Compliance Overwatch' },
+    { icon: 'fa-brain',   text: 'Quantum Neural Synthesis (SNI 9273:2025)' },
+    { icon: 'fa-shield-halved',    text: 'Automated Integrity & Compliance Overwatch' },
     { icon: 'fa-file-signature',  text: 'Official GDocs Digital Sealing Orchestrator' },
-    { icon: 'fa-chart-network',   text: 'Strategic Data Visualization & Pulse Maps' },
-    { icon: 'fa-cloud-binary',    text: 'Encrypted Cloud Architecture (256-bit AES)' },
+    { icon: 'fa-diagram-project',   text: 'Strategic Data Visualization & Pulse Maps' },
+    { icon: 'fa-cloud',    text: 'Encrypted Cloud Architecture (256-bit AES)' },
   ];
 
   const year = new Date().getFullYear();
@@ -101,7 +101,7 @@ export async function loginPage() {
                        <div id="pass-error" class="field-error" style="display:none"></div>
                     </div>
                     <button type="submit" class="btn-presidential gold" id="btn-email-signin" style="height:56px; border-radius:14px; font-weight:800; font-size:1rem; margin-top:8px">
-                       <i class="fas fa-shield-keyhole" style="margin-right:12px"></i> AUTHORIZE DIRECT
+                       <i class="fas fa-lock" style="margin-right:12px"></i> AUTHORIZE DIRECT
                     </button>
                     ${!APP_CONFIG.features.isPublished ? `
                       <button type="button" class="btn btn-ghost" id="btn-dev-bypass" style="color:var(--brand-300); font-family:var(--font-mono); font-size:9px; font-weight:800; letter-spacing:2px; margin-top:-8px">
@@ -193,7 +193,7 @@ async function handleFormSubmit(e) {
 
   if (!passField.value || passField.value.length < 6) {
     passField.classList.add('error');
-    passError.innerHTML = `<i class="fas fa-shield-slash"></i> Security key is too short or missing.`;
+    passError.innerHTML = `<i class="fas fa-triangle-exclamation"></i> Security key is too short or missing.`;
     passError.style.display = 'flex';
     hasError = true;
   }
@@ -209,7 +209,7 @@ async function handleFormSubmit(e) {
   } catch (err) {
     showError('Identity Verification Rejected.');
     btn.disabled = false;
-    btn.innerHTML = `<i class="fas fa-shield-keyhole"></i> AUTHORIZE DIRECT`;
+    btn.innerHTML = `<i class="fas fa-lock"></i> AUTHORIZE DIRECT`;
     
     // Highlight both fields as potential cause
     emailField.classList.add('error');

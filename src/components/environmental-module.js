@@ -982,7 +982,7 @@ function renderDrainaseTab() {
       <div class="card-quartz" style="padding: 20px;">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
           <div style="width: 36px; height: 36px; border-radius: 8px; background: hsla(160, 100%, 45%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--success-400);">
-            <i class="fas fa-arrow-down-to-bracket"></i>
+            <i class="fas fa-file-import"></i>
           </div>
           <div>
             <div style="font-weight: 700; color: white; font-size: 0.9rem;">Sumur Resapan</div>

@@ -73,7 +73,7 @@ function getFeaturesByPage(title) {
     'Laporan Kajian SLF': [
       { icon: 'fa-file-pdf',        title: 'Export PDF',             desc: 'Laporan siap cetak' },
       { icon: 'fa-file-word',       title: 'Google Docs',            desc: 'Template profesional' },
-      { icon: 'fa-presentation-screen', title: 'Presentasi',         desc: 'Slide eksekutif' },
+      { icon: 'fa-chalkboard', title: 'Presentasi',         desc: 'Slide eksekutif' },
     ],
     'TODO Board': [
       { icon: 'fa-columns',         title: 'Kanban Board',           desc: 'Drag & drop tasks' },
@@ -90,6 +90,6 @@ function getFeaturesByPage(title) {
   return map[title] || [
     { icon: 'fa-wrench',  title: 'Sedang Dikembangkan', desc: 'Fitur segera hadir' },
     { icon: 'fa-rocket',  title: 'Coming Soon',          desc: 'Stay tuned' },
-    { icon: 'fa-stars',   title: 'Premium Feature',      desc: 'Eksklusif AI engine' },
+    { icon: 'fa-star',   title: 'Premium Feature',      desc: 'Eksklusif AI engine' },
   ];
 }

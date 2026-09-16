@@ -37,7 +37,7 @@ export class FloatingChatButton {
         </div>
         <div class="mini-chat-messages" id="mini-chat-messages">
           <div class="mini-welcome">
-            <i class="fas fa-sparkles"></i>
+            <i class="fas fa-wand-magic-sparkles"></i>
             <p>Halo! Ada yang bisa saya bantu?</p>
           </div>
         </div>

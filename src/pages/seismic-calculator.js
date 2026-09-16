@@ -23,7 +23,7 @@ export async function seismicCalculatorPage(params = {}) {
   root.innerHTML = `
     <div id="seismic-page" style="padding: 24px;">
       <div class="page-header" style="margin-bottom: 24px;">
-        <h1 class="page-title"><i class="fas fa-earthquake text-brand"></i> Seismic Analysis Calculator</h1>
+        <h1 class="page-title"><i class="fas fa-house-crack text-brand"></i> Seismic Analysis Calculator</h1>
         <p class="text-secondary">Kalkulator parameter gempa berdasarkan SNI 1726:2019 & ASCE 41-17</p>
       </div>
 

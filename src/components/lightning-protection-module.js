@@ -607,7 +607,7 @@ function renderExternalLPSTab(proyek, summary) {
       <!-- Protection Angle Section -->
       <div class="card-quartz" style="padding: var(--space-6);">
         <div style="font-weight: 700; color: white; margin-bottom: 20px;">
-          <i class="fas fa-ruler-angle" style="margin-right: 8px; color: var(--success-400);"></i>
+          <i class="fas fa-ruler-combined" style="margin-right: 8px; color: var(--success-400);"></i>
           Protection Angle Method (SNI Pasal 8.2)
         </div>
         

@@ -136,7 +136,7 @@ export async function pengaturanPage() {
           <!-- Tombol Simpan di Atas -->
           <div style="margin-bottom:24px; display:flex; justify-content:flex-end">
             <button type="submit" class="btn-presidential gold" id="btn-save-settings" style="height:48px; padding:0 32px; font-size:0.9rem; border-radius:12px">
-              <i class="fas fa-shield-check" style="margin-right:10px"></i> SIMPAN PENGATURAN
+              <i class="fas fa-shield-halved" style="margin-right:10px"></i> SIMPAN PENGATURAN
             </button>
           </div>
           <div class="grid-main-side">
@@ -627,7 +627,7 @@ window.handleSaveSettings = async function(e) {
     showError('Registry Update Failed: ' + err.message);
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-shield-check" style="margin-right:12px"></i> SEAL GLOBAL CONFIGURATION';
+    btn.innerHTML = '<i class="fas fa-shield-halved" style="margin-right:12px"></i> SEAL GLOBAL CONFIGURATION';
   }
 };
 

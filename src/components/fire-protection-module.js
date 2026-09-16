@@ -228,7 +228,7 @@ function renderAssetsTab(projectId, assets = []) {
     { type: 'APAR', icon: 'fa-fire-extinguisher', color: 'var(--success-400)' },
     { type: 'HYDRANT', icon: 'fa-faucet', color: 'var(--brand-400)' },
     { type: 'SPRINKLER', icon: 'fa-shower', color: 'var(--gold-400)' },
-    { type: 'DETECTOR', icon: 'fa-smoke', color: 'var(--text-secondary)' },
+    { type: 'DETECTOR', icon: 'fa-smog', color: 'var(--text-secondary)' },
     { type: 'MCP', icon: 'fa-hand-point-up', color: 'var(--danger-400)' },
     { type: 'FIRE_PUMP', icon: 'fa-gear', color: 'var(--warning-400)' }
   ];
@@ -331,7 +331,7 @@ function getAssetIcon(type) {
     'APAR': 'fa-fire-extinguisher',
     'HYDRANT': 'fa-faucet',
     'SPRINKLER': 'fa-shower',
-    'DETECTOR': 'fa-smoke',
+    'DETECTOR': 'fa-smog',
     'MCP': 'fa-hand-point-up',
     'FIRE_PUMP': 'fa-gear',
     'TANK': 'fa-database',
@@ -361,7 +361,7 @@ function renderDetectionTab() {
         <!-- Smoke Detector Calculator -->
         <div class="card-quartz" style="padding: var(--space-6)">
           <h4 style="font-family: 'Outfit', sans-serif; font-weight: 800; color: white; margin-bottom: 20px">
-            <i class="fas fa-smoke" style="margin-right: 8px; color: var(--brand-400)"></i>
+            <i class="fas fa-smog" style="margin-right: 8px; color: var(--brand-400)"></i>
             Smoke Detector Coverage
           </h4>
           <div class="form-group" style="margin-bottom: 16px">

@@ -61,17 +61,17 @@ export const AGENT_CONFIG = [
     persona: 'Ahli Mekanikal Bangunan & Lift.'
   },
   { 
-    id: 'akustik', name: 'Ahli Akustik', icon: 'fa-waveform-lines', color: 'hsl(280,60%,55%)',
+    id: 'akustik', name: 'Ahli Akustik', icon: 'fa-wave-square', color: 'hsl(280,60%,55%)',
     focus: ['ITEM-07D'], standard: 'Batas Kebisingan & Vibrasi Gedung',
     persona: 'Ahli Akustika Lingkungan.'
   },
   { 
-    id: 'pencahayaan', name: 'Ahli Pencahayaan', icon: 'fa-sun-bright', color: 'hsl(50,90%,50%)',
+    id: 'pencahayaan', name: 'Ahli Pencahayaan', icon: 'fa-sun', color: 'hsl(50,90%,50%)',
     focus: ['ITEM-06B', 'ITEM-07C'], standard: 'Level Iluminasi & Kenyamanan Visual',
     persona: 'Ahli Teknik Pencahayaan.'
   },
   { 
-    id: 'sd_air', name: 'Ahli Sumber Daya Air', icon: 'fa-water-arrow-up', color: 'hsl(190,80%,45%)',
+    id: 'sd_air', name: 'Ahli Sumber Daya Air', icon: 'fa-water', color: 'hsl(190,80%,45%)',
     focus: ['ITEM-06C4', 'ITEM-02G'], standard: 'Konservasi Air & Drainase Hujan',
     persona: 'Ahli Hidrologi Tapak & Manajemen Air.'
   },

@@ -988,6 +988,80 @@ function auditResponsive(sec, files) {
 }
 
 /** E. Konsistensi visual */
+/**
+ * E4. Ikon yang dipakai kode tetapi TIDAK ADA di set ikon yang dimuat.
+ *
+ * Ini kelas cacat yang paling sulit terlihat: tidak ada galat, tidak ada 404,
+ * tidak ada apa pun di konsol. Ikon yang tidak dikenal hanya tergambar sebagai
+ * kotak kosong — jadi pengguna melihat tombol tanpa lambang, dan pengembang
+ * tidak mendapat petunjuk apa pun.
+ *
+ * Nyata terjadi di repositori ini: 17 nama ikon yang dipakai adalah ikon
+ * Font Awesome **Pro**, sedangkan yang dimuat adalah set **Free** (keduanya
+ * versi 6.5.0 — jadi ini bukan soal versi). Empat di antaranya ada di halaman
+ * login, artinya layar pertama yang dilihat setiap pengguna menampilkan kotak
+ * kosong.
+ *
+ * Cara kerja: kumpulkan seluruh kelas `fa-…` yang dipakai, lalu periksa
+ * keberadaannya di CSS set ikon yang benar-benar dimuat. Nama ikon pada CSS
+ * bisa digabung (`'.fa-a:before,.fa-b:before{…}'`), jadi kecocokan dicari
+ * sebagai `.fa-nama:before` tanpa menuntut tanda `{` tepat sesudahnya.
+ */
+function auditIcons(sec, files) {
+  const berkasCss = ['public/vendor/fontawesome/all.min.css', 'public/vendor/fontawesome/css/all.min.css']
+    .map((p) => path.join(ROOT, p))
+    .find((p) => existsSync(p));
+  if (!berkasCss) return;   // set ikon lokal tidak ada — tidak dapat dinilai
+  const css = readFileSync(berkasCss, 'utf8');
+
+  // Dua bentuk pemakaian, karena keduanya nyata ada di repositori ini:
+  //   1. langsung  : <i class="fas fa-brain">
+  //   2. dari data : { icon: 'fa-brain', text: '…' }  ← lalu disisipkan
+  //                  ke dalam template sebagai ${item.icon}
+  // Bentuk kedua mudah terlewat: nama ikonnya tidak pernah muncul di samping
+  // kelas `fas`, sehingga pencarian yang hanya mengenali bentuk pertama
+  // melaporkan "semua ikon tersedia" padahal tidak. Karena itu bentuk kedua
+  // dicocokkan sebagai string kutip yang ISINYA hanya nama ikon.
+  // Kelas ANIMASI dan UTILITAS Font Awesome BUKAN nama ikon: keduanya tidak
+  // punya aturan `:before` di CSS, sehingga tanpa pengecualian ini aturan
+  // melaporkan "ikon tidak tersedia" untuk hal yang memang bukan ikon.
+  // Contoh nyata: `fa-beat` dipakai untuk membuat ikon berdenyut saat
+  // sinkronisasi berjalan.
+  const BUKAN_IKON = new Set([
+    'fa-beat', 'fa-bounce', 'fa-fade', 'fa-flip', 'fa-shake', 'fa-spin',
+    'fa-spin-pulse', 'fa-spin-reverse', 'fa-pulse', 'fa-fw', 'fa-ul', 'fa-li',
+    'fa-border', 'fa-inverse', 'fa-stack', 'fa-stack-1x', 'fa-stack-2x',
+    'fa-rotate-90', 'fa-rotate-180', 'fa-rotate-270', 'fa-flip-horizontal',
+    'fa-flip-vertical', 'fa-flip-both', 'fa-pull-left', 'fa-pull-right',
+  ]);
+
+  const dipakai = new Map();
+  const catat = (nama, f, index) => {
+    if (BUKAN_IKON.has(nama)) return;
+    if (!dipakai.has(nama)) dipakai.set(nama, []);
+    dipakai.get(nama).push({ rel: f.rel, line: lineAt(f.code, index) });
+  };
+  for (const f of files) {
+    if (f.ext !== 'js') continue;
+    for (const m of f.code.matchAll(/\b(?:fas|far|fab|fal|fad|fa)\s+(fa-[a-z0-9-]+)/g)) {
+      catat(m[1], f, m.index);
+    }
+    for (const m of f.code.matchAll(/(['"`])(fa-[a-z0-9-]+)\1/g)) {
+      catat(m[2], f, m.index);
+    }
+  }
+
+  const hilang = [...dipakai.entries()].filter(([nama]) => !css.includes(`.${nama}:before`));
+  if (!hilang.length) return;
+
+  const daftar = hilang.map(([nama, tempat]) => `${nama} (mis. ${tempat[0].rel}:${tempat[0].line})`);
+  add(sec, 'sedang', `Ikon tidak tersedia di set ikon yang dimuat (${hilang.length} nama)`,
+    `${daftar.slice(0, 12).join(', ')}${hilang.length > 12 ? `, … dan ${hilang.length - 12} lagi` : ''}. ` +
+    'Ikon yang tidak dikenal tidak menghasilkan galat apa pun — ia hanya tergambar sebagai kotak kosong, sehingga pengguna melihat tombol tanpa lambang dan pengembang tidak mendapat petunjuk.',
+    hilang[0][1][0].rel, hilang[0][1][0].line,
+    'Ganti dengan padanan dari set yang dimuat (mis. ikon Pro "fa-brain-circuit" → "fa-brain" yang tersedia di set Free), atau tambahkan CSS ikon yang memuatnya.');
+}
+
 function auditVisual(sec, files) {
   // E1. Warna heksadesimal literal di JS (di luar token)
   const literalByFile = new Map();
@@ -1218,7 +1292,10 @@ async function main() {
   if (shouldRun('keyboard')) auditKeyboard(byName.keyboard, files, globalA11y);
   if (shouldRun('states')) auditStates(byName.states, files, routerLoading);
   if (shouldRun('responsive')) auditResponsive(byName.responsive, files);
-  if (shouldRun('visual')) auditVisual(byName.visual, files);
+  if (shouldRun('visual')) {
+    auditVisual(byName.visual, files);
+    auditIcons(byName.visual, files);
+  }
   if (shouldRun('perf')) auditPerf(byName.perf);
 
   const active = sections.filter(s => s.findings.length || shouldRun(s.name));

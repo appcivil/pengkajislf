@@ -101,7 +101,7 @@ export async function dashboardPage() {
            <div class="card-quartz" style="padding: var(--space-6); background: var(--gradient-dark); border-color: hsla(220, 95%, 52%, 0.2)">
               <div style="display:flex; align-items:center; gap:16px; margin-bottom: 24px">
                 <div style="width:48px; height:48px; border-radius:14px; background:var(--gradient-brand); display:flex; align-items:center; justify-content:center; box-shadow: var(--shadow-sapphire)">
-                  <i class="fas fa-brain-circuit" style="color:white; font-size: 1.4rem"></i>
+                  <i class="fas fa-brain" style="color:white; font-size: 1.4rem"></i>
                 </div>
                 <div>
                   <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 1.1rem; color:white">AI PORTFOLIO PULSE</div>
@@ -187,7 +187,7 @@ export async function dashboardPage() {
 function renderKPICards(kpi) {
   const cards = [
     { label: 'PROTOFOLIO PENGKAJIAN', value: kpi.totalProyek || 0, icon: 'fa-briefcase', color: 'var(--brand-400)', bg: 'hsla(220, 95%, 52%, 0.1)' },
-    { label: 'STRUCTURAL COMPLIANCE', value: kpi.laikFungsi || 0, icon: 'fa-shield-check', color: 'var(--success-400)', bg: 'hsla(158, 85%, 45%, 0.1)' },
+    { label: 'STRUCTURAL COMPLIANCE', value: kpi.laikFungsi || 0, icon: 'fa-shield-halved', color: 'var(--success-400)', bg: 'hsla(158, 85%, 45%, 0.1)' },
     { label: 'ACTIVE FIELD OPS', value: kpi.proyekAktif || 0, icon: 'fa-location-dot', color: 'var(--gold-400)', bg: 'hsla(45, 90%, 60%, 0.1)' },
     { label: 'REMEDIAL ACTIONS', value: kpi.tidakLaik || 0, icon: 'fa-triangle-exclamation', color: 'var(--danger-400)', bg: 'hsla(350, 95%, 52%, 0.1)' },
   ];

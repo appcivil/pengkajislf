@@ -79,7 +79,7 @@ export function renderStrukturBangunanCard(p, tierStats = {}) {
                 class="struktur-tab-item"
                 data-tab="seismic-analysis"
                 style="flex: 1; min-width: 140px; height: 44px; border: none; border-radius: 10px; cursor: pointer; font-family: var(--font-mono); font-size: 10px; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s; color: var(--text-tertiary);">
-          <i class="fas fa-earthquake"></i> SEISMIC
+          <i class="fas fa-house-crack"></i> SEISMIC
         </button>
         <button onclick="window._switchStrukturTab('pushover', this)" 
                 class="struktur-tab-item"

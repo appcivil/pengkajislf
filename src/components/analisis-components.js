@@ -36,7 +36,7 @@ export function renderNoDataPanel(proyekId) {
   return `
     <div class="card-quartz" style="text-align:center; padding:100px 40px; border-color: hsla(0, 85%, 60%, 0.1)">
       <div style="width:100px; height:100px; background:var(--gradient-dark); border:1px solid var(--glass-border); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 32px; font-size:2.5rem; color:var(--text-tertiary)">
-        <i class="fas fa-database-slash"></i>
+        <i class="fas fa-database"></i>
       </div>
       <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.4rem; color:white; margin-bottom:12px">Checklist Manifest Missing</h3>
       <p style="color:var(--text-tertiary); max-width:460px; margin:0 auto 32px; line-height:1.6">
@@ -68,7 +68,7 @@ export function renderReadyPanel(proyekId) {
     <div style="animation: page-fade-in 0.8s ease-out">
       <div class="card-quartz" style="text-align:center; padding: 60px 40px; margin-bottom: 40px; background:var(--gradient-dark); border-color: hsla(220, 95%, 52%, 0.2)">
         <div style="width:80px; height:80px; background:var(--gradient-brand); border-radius:24px; display:flex; align-items:center; justify-content:center; margin:0 auto 24px; font-size:2rem; color:white; box-shadow: var(--shadow-sapphire); border:1px solid hsla(220, 95%, 52%, 0.3)">
-          <i class="fas fa-microchip-ai"></i>
+          <i class="fas fa-microchip"></i>
         </div>
         <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.8rem; color:white; margin-bottom:12px">Strategic AI Engine v7.4</h3>
         <p style="color:var(--brand-300); max-width:600px; margin:0 auto 40px; font-weight:600; font-size:0.9rem">
@@ -112,7 +112,7 @@ export function renderResultPanel(result, proyek, checklistData) {
   ];
 
   const statusInfo = {
-    LAIK_FUNGSI:           { label: 'LAIK FUNGSI',          cls: 'badge-laik',       icon: 'fa-shield-check',   color: 'var(--success-400)' },
+    LAIK_FUNGSI:           { label: 'LAIK FUNGSI',          cls: 'badge-laik',       icon: 'fa-shield-halved',   color: 'var(--success-400)' },
     LAIK_FUNGSI_BERSYARAT: { label: 'LAIK BERSYARAT',       cls: 'badge-bersyarat',  icon: 'fa-triangle-exclamation', color: 'var(--gold-400)' },
     TIDAK_LAIK_FUNGSI:     { label: 'TIDAK LAIK',           cls: 'badge-tidak-laik', icon: 'fa-circle-xmark',   color: 'var(--danger-400)' },
     DALAM_PENGKAJIAN:      { label: 'PENGKAJIAN',           cls: 'badge-proses',     icon: 'fa-hourglass-half', color: 'var(--brand-400)' },
@@ -156,7 +156,7 @@ export function renderResultPanel(result, proyek, checklistData) {
                 <div>
                     <div style="font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px">Primary Engine</div>
                     <div style="font-weight:700; color:var(--brand-400); font-size:0.85rem">
-                      <i class="fas fa-brain-circuit" style="margin-right:8px"></i> NEURAL ROUTER v7
+                      <i class="fas fa-brain" style="margin-right:8px"></i> NEURAL ROUTER v7
                     </div>
                 </div>
               </div>

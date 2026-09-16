@@ -194,7 +194,7 @@ function renderProyekCards(proyek) {
             <i class="fas fa-clipboard-list" style="color:var(--brand-400)"></i>
           </button>
           <button class="btn btn-ghost" title="Analytics" onclick="event.stopPropagation();window.navigate('analisis',{id:'${escapeHtml(p.id)}'})" style="width:38px; height:38px; padding:0; border-radius:10px; border:1px solid hsla(220, 20%, 100%, 0.05)">
-            <i class="fas fa-chart-network" style="color:var(--gold-400)"></i>
+            <i class="fas fa-diagram-project" style="color:var(--gold-400)"></i>
           </button>
           <button class="btn btn-ghost" title="Archive" onclick="event.stopPropagation();deleteProyek('${escapeHtml(p.id)}','${escapeHtml(p.nama_bangunan)}')" style="width:38px; height:38px; padding:0; border-radius:10px; border:1px solid hsla(0, 85%, 60%, 0.1)">
             <i class="fas fa-trash-can" style="color:var(--danger-400)"></i>
