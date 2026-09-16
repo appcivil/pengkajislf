@@ -3,6 +3,7 @@
 // ============================================================
 
 import { BaseInspection } from './BaseInspection.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { InspectionWidgets } from '../../components/inspection/inspection-widgets.js';
 import { showSuccess, showError, showInfo } from '../../components/toast.js';
 
@@ -93,16 +94,16 @@ export class AccessibilityInspection extends BaseInspection {
           content: `
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; font-size: 0.85rem;">
               <div style="padding: 12px; background: hsla(220, 20%, 15%, 0.5); border-radius: 8px;">
-                <strong style="color: white;">Kemiringan Ramp:</strong> Max ${this.STANDARDS.ramp_max_slope}%
+                <strong style="color: white;">Kemiringan Ramp:</strong> Max ${escapeHtml(this.STANDARDS.ramp_max_slope)}%
               </div>
               <div style="padding: 12px; background: hsla(220, 20%, 15%, 0.5); border-radius: 8px;">
-                <strong style="color: white;">Lebar Ramp:</strong> Min ${this.STANDARDS.ramp_min_width}mm
+                <strong style="color: white;">Lebar Ramp:</strong> Min ${escapeHtml(this.STANDARDS.ramp_min_width)}mm
               </div>
               <div style="padding: 12px; background: hsla(220, 20%, 15%, 0.5); border-radius: 8px;">
-                <strong style="color: white;">Lebar Pintu:</strong> Min ${this.STANDARDS.door_min_width}mm
+                <strong style="color: white;">Lebar Pintu:</strong> Min ${escapeHtml(this.STANDARDS.door_min_width)}mm
               </div>
               <div style="padding: 12px; background: hsla(220, 20%, 15%, 0.5); border-radius: 8px;">
-                <strong style="color: white;">Tinggi Pegangan:</strong> ${this.STANDARDS.handrail_height.min}-${this.STANDARDS.handrail_height.max}mm
+                <strong style="color: white;">Tinggi Pegangan:</strong> ${escapeHtml(this.STANDARDS.handrail_height.min)}-${escapeHtml(this.STANDARDS.handrail_height.max)}mm
               </div>
             </div>
           `
@@ -135,7 +136,7 @@ export class AccessibilityInspection extends BaseInspection {
                   r.height || '-',
                   r.slope_percent ? r.slope_percent.toFixed(2) + '%' : '-',
                   r.width || '-',
-                  `<span style="color: ${statusColor}; font-weight: 600;">${status}</span>`
+                  `<span style="color: ${escapeHtml(statusColor)}; font-weight: 600;">${escapeHtml(status)}</span>`
                 ];
               }),
               align: ['left', 'right', 'right', 'right', 'right', 'center']
@@ -174,7 +175,7 @@ export class AccessibilityInspection extends BaseInspection {
                   d.width || '-',
                   d.door_type || '-',
                   d.accessible ? 'Ya' : 'Tidak',
-                  `<span style="color: ${statusColor}; font-weight: 600;">${status}</span>`
+                  `<span style="color: ${escapeHtml(statusColor)}; font-weight: 600;">${escapeHtml(status)}</span>`
                 ];
               }),
               align: ['left', 'right', 'left', 'center', 'center']

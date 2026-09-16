@@ -1,3 +1,4 @@
+import { escapeHtml } from '../../../lib/safe-markdown.js';
 // ============================================================
 //  COMPONENT: ControlBar
 //  Toolbar atas untuk kontrol DOCX Preview
@@ -23,7 +24,7 @@ export function renderControlBar(proyek, data) {
           </div>
           <div class="brand-subtitle">
             Render identik dengan format Microsoft Word A4
-            ${summary.totalSections ? `• ${summary.totalSections} sections loaded` : ''}
+            ${summary.totalSections ? `• ${escapeHtml(summary.totalSections)} sections loaded` : ''}
           </div>
         </div>
       </div>

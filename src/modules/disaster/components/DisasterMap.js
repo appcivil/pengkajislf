@@ -1,5 +1,6 @@
 import { InaRiskConnector } from '../core/InaRiskConnector.js';
 
+import { escapeHtml } from '../../../lib/safe-markdown.js';
 export class DisasterMap extends HTMLElement {
   constructor() {
     super();
@@ -435,8 +436,8 @@ export class DisasterMap extends HTMLElement {
     
     content.innerHTML = (legends[type] || legends.earthquake).map(item => `
       <div class="legend-item">
-        <div class="color-box" style="background: ${item.color}"></div>
-        <span>${item.label}</span>
+        <div class="color-box" style="background: ${escapeHtml(item.color)}"></div>
+        <span>${escapeHtml(item.label)}</span>
       </div>
     `).join('');
   }
@@ -446,9 +447,9 @@ export class DisasterMap extends HTMLElement {
     const units = { earthquake: 'g', tsunami: 'm', flood: 'm', landslide: '' };
     
     tooltip.innerHTML = `
-      <div><strong>Intensitas:</strong> ${cell.intensity.toFixed(3)} ${units[type]}</div>
-      <div><strong>Lat:</strong> ${cell.lat.toFixed(4)}</div>
-      <div><strong>Lon:</strong> ${cell.lon.toFixed(4)}</div>
+      <div><strong>Intensitas:</strong> ${escapeHtml(cell.intensity.toFixed(3))} ${units[type]}</div>
+      <div><strong>Lat:</strong> ${escapeHtml(cell.lat.toFixed(4))}</div>
+      <div><strong>Lon:</strong> ${escapeHtml(cell.lon.toFixed(4))}</div>
       <div><strong>Risk Score:</strong> ${(cell.riskScore * 100).toFixed(1)}%</div>
     `;
     

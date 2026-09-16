@@ -3,6 +3,7 @@
  * Layanan untuk fitur Berpikir, Deep Reasoning, Research, dan Daily
  */
 import { MODELS } from '../../lib/ai-router.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { supabase } from '../../lib/supabase.js';
 import { getAIProviderRegistry } from '../../lib/ai-rate-limit-manager.js';
 
@@ -68,11 +69,11 @@ Gunakan metodologi analisis berikut:
 </answer_structure>
 
 [INPUT DATA]
-Query: ${query}
+Query: ${escapeHtml(query)}
 
 ${context.projectData ? `Project Context:\n${JSON.stringify(context.projectData, null, 2)}` : ''}
-${context.moduleContext ? `Technical Domain: ${context.moduleContext}` : ''}
-${context.historicalData ? `Historical Data:\n${context.historicalData}` : ''}
+${context.moduleContext ? `Technical Domain: ${escapeHtml(context.moduleContext)}` : ''}
+${context.historicalData ? `Historical Data:\n${escapeHtml(context.historicalData)}` : ''}
 
 Execute full reasoning protocol now.`;
 
@@ -218,11 +219,11 @@ PHASE 4: KNOWLEDGE TRANSLATION
 ═══════════════════════════════════════════════════════════════
 INPUT QUERY
 ═══════════════════════════════════════════════════════════════
-${query}
+${escapeHtml(query)}
 
 ${context.projectData ? `PROJECT INTELLIGENCE:\n${JSON.stringify(context.projectData, null, 2)}` : ''}
-${context.historicalData ? `HISTORICAL BASELINE:\n${context.historicalData}` : ''}
-${context.simulationResults ? `SIMULATION DATA:\n${context.simulationResults}` : ''}
+${context.historicalData ? `HISTORICAL BASELINE:\n${escapeHtml(context.historicalData)}` : ''}
+${context.simulationResults ? `SIMULATION DATA:\n${escapeHtml(context.simulationResults)}` : ''}
 
 ═══════════════════════════════════════════════════════════════
 EXECUTE COMPLETE REASONING PROTOCOL
@@ -399,6 +400,16 @@ Tulis dalam gaya profesional namun santai, menggunakan bahasa Indonesia.`;
    * Helper: Call AI via Edge Function dengan Fallback
    */
   async _callAI(prompt, model, options = {}) {
+    // `Authorization` harus access_token sesi pengguna, bukan anon key:
+    // Edge Function ai-proxy memverifikasi token tersebut ke GoTrue dan
+    // menolak token ber-role 'anon' (anon key bersifat publik — ia ikut
+    // ter-bundle ke berkas JS yang dapat dibaca siapa pun).
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      throw new Error('Sesi login tidak ditemukan. Silakan login kembali untuk memakai fitur AI.');
+    }
+    const accessToken = session.access_token;
+
     const callFn = async (currentModel) => {
       const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-proxy`;
       const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -408,7 +419,7 @@ Tulis dalam gaya profesional namun santai, menggunakan bahasa Indonesia.`;
         headers: {
           'Content-Type': 'application/json',
           'apikey': anonKey,
-          'Authorization': `Bearer ${anonKey}`
+          'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify({
           provider: currentModel.proxyProvider || 'groq',

@@ -4,6 +4,7 @@
  * High-End Asset Induction & Intelligence Framework
  */
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { getUserInfo } from '../lib/auth.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
@@ -64,11 +65,11 @@ export async function proyekFormPage(params = {}) {
              { n: 2, label: 'TECHNICAL PARAMETERS' },
              { n: 3, label: 'BENEFICIARY & CONSENSUS' }
            ].map(s => `
-             <div class="step-item ${s.n === 1 ? 'active' : ''}" id="step-dot-${s.n}" style="flex:1; z-index:2; position:relative; text-align:center">
+             <div class="step-item ${s.n === 1 ? 'active' : ''}" id="step-dot-${escapeHtml(s.n)}" style="flex:1; z-index:2; position:relative; text-align:center">
                 <div class="step-circle" style="width:36px; height:36px; background:var(--bg-elevated); border:2px solid hsla(220, 20%, 100%, 0.1); border-radius:50%; margin:0 auto 8px; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--text-tertiary); transition:all 0.3s">
-                   ${s.n}
+                   ${escapeHtml(s.n)}
                 </div>
-                <div class="step-label" style="font-family:var(--font-mono); font-size:8px; font-weight:800; color:var(--text-tertiary); letter-spacing:1px">${s.label}</div>
+                <div class="step-label" style="font-family:var(--font-mono); font-size:8px; font-weight:800; color:var(--text-tertiary); letter-spacing:1px">${escapeHtml(s.label)}</div>
              </div>
            `).join('')}
         </div>
@@ -104,7 +105,7 @@ export async function proyekFormPage(params = {}) {
                  
                  <div class="form-group mb-8">
                     <label class="form-label" style="letter-spacing:1.5px">NAMA BANGUNAN <span style="color:var(--danger-400)">*</span></label>
-                    <input type="text" class="form-input" name="nama_bangunan" value="${data.nama_bangunan || ''}" placeholder="e.g. Quartz Executive Tower" required>
+                    <input type="text" class="form-input" name="nama_bangunan" value="${escapeHtml(data.nama_bangunan || '')}" placeholder="e.g. Quartz Executive Tower" required>
                  </div>
                  
                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px">
@@ -112,20 +113,20 @@ export async function proyekFormPage(params = {}) {
                        <label class="form-label" style="letter-spacing:1.5px">FUNGSI BANGUNAN <span style="color:var(--danger-400)">*</span></label>
                        <select class="form-select" name="jenis_bangunan" required>
                           <option value="">-- SELECT CLASSIFICATION --</option>
-                          ${jenis.map(j => `<option value="${j}" ${data.jenis_bangunan === j ? 'selected' : ''}>${j.toUpperCase()}</option>`).join('')}
+                          ${jenis.map(j => `<option value="${escapeHtml(j)}" ${data.jenis_bangunan === j ? 'selected' : ''}>${escapeHtml(j.toUpperCase())}</option>`).join('')}
                        </select>
                     </div>
                     <div class="form-group mb-8">
                        <label class="form-label" style="letter-spacing:1.5px">CORE CONSTRUCTION</label>
                        <select class="form-select" name="jenis_konstruksi">
-                          ${konstruksi.map(k => `<option value="${k}" ${data.jenis_konstruksi === k ? 'selected' : ''}>${k.toUpperCase()}</option>`).join('')}
+                          ${konstruksi.map(k => `<option value="${escapeHtml(k)}" ${data.jenis_konstruksi === k ? 'selected' : ''}>${escapeHtml(k.toUpperCase())}</option>`).join('')}
                        </select>
                     </div>
                  </div>
 
                  <div class="form-group">
                     <label class="form-label" style="letter-spacing:1.5px">ALAMAT BANGUNAN <span style="color:var(--danger-400)">*</span></label>
-                    <textarea class="form-input" name="alamat" rows="3" placeholder="Full street address, district, and province..." required>${data.alamat || ''}</textarea>
+                    <textarea class="form-input" name="alamat" rows="3" placeholder="Full street address, district, and province..." required>${escapeHtml(data.alamat || '')}</textarea>
                  </div>
               </div>
 
@@ -137,11 +138,11 @@ export async function proyekFormPage(params = {}) {
                  <div class="grid-2-col" style="margin-top:24px">
                     <div class="form-group">
                        <label class="form-label-xs">LATITUDE</label>
-                       <input type="text" id="input-lat" name="latitude" value="${data.latitude || ''}" class="form-input-compact" placeholder="-6.2088" onchange="window._updateMapFromInput()">
+                       <input type="text" id="input-lat" name="latitude" value="${escapeHtml(data.latitude || '')}" class="form-input-compact" placeholder="-6.2088" onchange="window._updateMapFromInput()">
                     </div>
                     <div class="form-group">
                        <label class="form-label-xs">LONGITUDE</label>
-                       <input type="text" id="input-lng" name="longitude" value="${data.longitude || ''}" class="form-input-compact" placeholder="106.8456" onchange="window._updateMapFromInput()">
+                       <input type="text" id="input-lng" name="longitude" value="${escapeHtml(data.longitude || '')}" class="form-input-compact" placeholder="106.8456" onchange="window._updateMapFromInput()">
                     </div>
                  </div>
                  <p style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); margin-top:16px; line-height:1.5"><i class="fas fa-info-circle"></i> Drag pin di peta atau ketik koordinat manual. Latitude: -90 sampai 90, Longitude: -180 sampai 180.</p>
@@ -162,26 +163,26 @@ export async function proyekFormPage(params = {}) {
                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px">
                     <div class="form-group mb-8">
                        <label class="form-label" style="letter-spacing:1.5px">TOTAL AREA (M²)</label>
-                       <input type="number" class="form-input" name="luas_bangunan" value="${data.luas_bangunan || ''}" placeholder="0.00">
+                       <input type="number" class="form-input" name="luas_bangunan" value="${escapeHtml(data.luas_bangunan || '')}" placeholder="0.00">
                     </div>
                     <div class="form-group mb-8">
                        <label class="form-label" style="letter-spacing:1.5px">VERTICAL FLOORS</label>
-                       <input type="number" class="form-input" name="jumlah_lantai" value="${data.jumlah_lantai || ''}" placeholder="1">
+                       <input type="number" class="form-input" name="jumlah_lantai" value="${escapeHtml(data.jumlah_lantai || '')}" placeholder="1">
                     </div>
                  </div>
 
                  <div class="form-group mb-8">
                     <label class="form-label" style="letter-spacing:1.5px">PBG / IMB REGISTRY NUMBER</label>
-                    <input type="text" class="form-input font-mono" name="nomor_pbg" value="${data.nomor_pbg || ''}" placeholder="PBG-XXXXXXXXX">
+                    <input type="text" class="form-input font-mono" name="nomor_pbg" value="${escapeHtml(data.nomor_pbg || '')}" placeholder="PBG-XXXXXXXXX">
                  </div>
 
                  <div class="card-quartz" style="background:hsla(220, 95%, 52%, 0.03); border-color: hsla(220, 95%, 52%, 0.1); padding:24px; margin-top:24px">
                     <label class="form-label" style="color:var(--brand-400); margin-bottom:16px"><i class="fas fa-chart-line"></i> BUILDING INTENSITY LIMITS (GSB/KDB)</label>
                     <div class="grid-4-col" style="gap:12px">
-                       <div class="form-group"><label class="form-label-xs">GSB</label><input type="number" step="0.1" class="form-input-compact" name="gsb" value="${data.gsb || ''}"></div>
-                       <div class="form-group"><label class="form-label-xs">KDB</label><input type="number" step="0.1" class="form-input-compact" name="kdb" value="${data.kdb || ''}"></div>
-                       <div class="form-group"><label class="form-label-xs">KLB</label><input type="number" step="0.1" class="form-input-compact" name="klb" value="${data.klb || ''}"></div>
-                       <div class="form-group"><label class="form-label-xs">KDH</label><input type="number" step="0.1" class="form-input-compact" name="kdh" value="${data.kdh || ''}"></div>
+                       <div class="form-group"><label class="form-label-xs">GSB</label><input type="number" step="0.1" class="form-input-compact" name="gsb" value="${escapeHtml(data.gsb || '')}"></div>
+                       <div class="form-group"><label class="form-label-xs">KDB</label><input type="number" step="0.1" class="form-input-compact" name="kdb" value="${escapeHtml(data.kdb || '')}"></div>
+                       <div class="form-group"><label class="form-label-xs">KLB</label><input type="number" step="0.1" class="form-input-compact" name="klb" value="${escapeHtml(data.klb || '')}"></div>
+                       <div class="form-group"><label class="form-label-xs">KDH</label><input type="number" step="0.1" class="form-input-compact" name="kdh" value="${escapeHtml(data.kdh || '')}"></div>
                     </div>
                  </div>
               </div>
@@ -192,11 +193,11 @@ export async function proyekFormPage(params = {}) {
                  </div>
                  <div class="form-group mb-6">
                     <label class="form-label">LAND TITLE / CERTIFICATE NO.</label>
-                    <input type="text" class="form-input" name="no_dokumen_tanah" value="${data.no_dokumen_tanah || ''}">
+                    <input type="text" class="form-input" name="no_dokumen_tanah" value="${escapeHtml(data.no_dokumen_tanah || '')}">
                  </div>
                  <div class="form-group mb-8">
                     <label class="form-label">LEGAL LAND OWNER</label>
-                    <input type="text" class="form-input" name="nama_pemilik_tanah" value="${data.nama_pemilik_tanah || ''}">
+                    <input type="text" class="form-input" name="nama_pemilik_tanah" value="${escapeHtml(data.nama_pemilik_tanah || '')}">
                  </div>
                  <div class="card-quartz" style="padding:16px; background:hsla(220, 20%, 100%, 0.02)">
                     <label style="display:flex; align-items:center; gap:16px; cursor:pointer">
@@ -211,7 +212,7 @@ export async function proyekFormPage(params = {}) {
                      </div>
                      <div class="form-group mb-6">
                         <label class="form-label">SIMBG APPLICATION ID (ID PERMOHONAN)</label>
-                        <input type="text" class="form-input font-mono" name="simbg_id" value="${data.simbg_id || ''}" placeholder="SIMBG-XXXXXXXXX">
+                        <input type="text" class="form-input font-mono" name="simbg_id" value="${escapeHtml(data.simbg_id || '')}" placeholder="SIMBG-XXXXXXXXX">
                      </div>
                      <div class="form-group mb-6">
                         <label class="form-label">GOOGLE DRIVE PROXY URL</label>
@@ -220,14 +221,14 @@ export async function proyekFormPage(params = {}) {
                      <div class="grid-2-col">
                         <div class="form-group">
                            <label class="form-label">PORTAL EMAIL</label>
-                           <input type="email" class="form-input text-xs" name="simbg_email" value="${data.simbg_email || ''}" placeholder="email@pendaftar.go.id">
+                           <input type="email" class="form-input text-xs" name="simbg_email" value="${escapeHtml(data.simbg_email || '')}" placeholder="email@pendaftar.go.id">
                         </div>
                         <div class="form-group">
                            <label class="form-label">PORTAL PASSWORD</label>
-                           <input type="password" class="form-input text-xs" name="simbg_password" value="${data.simbg_password || ''}" placeholder="••••••••">
+                           <input type="password" class="form-input text-xs" name="simbg_password" value="${escapeHtml(data.simbg_password || '')}" placeholder="••••••••">
                         </div>
                      </div>
-                     <p style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); margin-top:16px; line-height:1.5"><i class="fas fa-shield-alt"></i> Credentials are used for automated synchronization with the national SIMBG database. Proxy URL is auto-filled from global app config.</p>
+                     <p style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); margin-top:16px; line-height:1.5"><i class="fas fa-shield-alt"></i> Kredensial dipakai untuk sinkronisasi otomatis dengan basis data SIMBG nasional. URL proksi terisi otomatis dari konfigurasi aplikasi.</p>
                   </div>
               </div>
 
@@ -244,21 +245,21 @@ export async function proyekFormPage(params = {}) {
                  </div>
                  <div class="form-group mb-8">
                     <label class="form-label">PRIMARY OWNER / INSTITUTION <span style="color:var(--danger-400)">*</span></label>
-                    <input type="text" class="form-input" name="pemilik" value="${data.pemilik || ''}" placeholder="e.g. PT Artha Graha / John Doe" required>
+                    <input type="text" class="form-input" name="pemilik" value="${escapeHtml(data.pemilik || '')}" placeholder="e.g. PT Artha Graha / John Doe" required>
                  </div>
                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px">
                     <div class="form-group mb-8">
                        <label class="form-label">AUTHORIZED PIC</label>
-                       <input type="text" class="form-input" name="penanggung_jawab" value="${data.penanggung_jawab || ''}">
+                       <input type="text" class="form-input" name="penanggung_jawab" value="${escapeHtml(data.penanggung_jawab || '')}">
                     </div>
                     <div class="form-group mb-8">
                        <label class="form-label">SECURE LINE (PHONE)</label>
-                       <input type="tel" class="form-input" name="telepon" value="${data.telepon || ''}">
+                       <input type="tel" class="form-input" name="telepon" value="${escapeHtml(data.telepon || '')}">
                     </div>
                  </div>
                  <div class="form-group">
                     <label class="form-label">ENCRYPTED EMAIL ALIAS</label>
-                    <input type="email" class="form-input" name="email_pemilik" value="${data.email_pemilik || ''}">
+                    <input type="email" class="form-input" name="email_pemilik" value="${escapeHtml(data.email_pemilik || '')}">
                  </div>
               </div>
 
@@ -270,17 +271,17 @@ export async function proyekFormPage(params = {}) {
                     <label class="form-label">DELEGATE TO (TEAM PIC)</label>
                     <select class="form-select" name="assigned_to" style="border-color:hsla(45, 90%, 60%, 0.3)">
                        <option value="">-- SELECT AUTHORIZED AGENT --</option>
-                       ${teamMembers.map(m => `<option value="${m.id}" ${data.assigned_to === m.id ? 'selected' : ''}>${m.full_name.toUpperCase()}</option>`).join('')}
+                       ${teamMembers.map(m => `<option value="${escapeHtml(m.id)}" ${data.assigned_to === m.id ? 'selected' : ''}>${escapeHtml(m.full_name.toUpperCase())}</option>`).join('')}
                     </select>
                  </div>
                  <div class="grid-2-col">
                     <div class="form-group">
                        <label class="form-label">COMMENCEMENT DATE</label>
-                       <input type="date" class="form-input" name="tanggal_mulai" value="${data.tanggal_mulai || ''}">
+                       <input type="date" class="form-input" name="tanggal_mulai" value="${escapeHtml(data.tanggal_mulai || '')}">
                     </div>
                     <div class="form-group">
                        <label class="form-label">TARGET SEALING DATE</label>
-                       <input type="date" class="form-input" name="tanggal_target" value="${data.tanggal_target || ''}">
+                       <input type="date" class="form-input" name="tanggal_target" value="${escapeHtml(data.tanggal_target || '')}">
                     </div>
                  </div>
                  

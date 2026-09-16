@@ -1,4 +1,5 @@
 import { HazardEngine } from '../core/HazardEngine.js';
+import { escapeHtml } from '../../../lib/safe-markdown.js';
 import { VulnerabilityCalculator } from '../core/VulnerabilityCalculator.js';
 import { RiskMatrix } from '../core/RiskMatrix.js';
 import * as THREE from 'three';
@@ -374,7 +375,7 @@ export class DisasterSimulator extends HTMLElement {
     recs.push('Pelatihan evakuasi berkala');
     
     this.shadowRoot.getElementById('mitigation-list').innerHTML = 
-      recs.map(r => `<li>${r}</li>`).join('');
+      recs.map(r => `<li>${escapeHtml(r)}</li>`).join('');
 
     // Save to appState
     if (window.appState) {

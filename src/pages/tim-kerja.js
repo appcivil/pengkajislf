@@ -4,6 +4,8 @@
  * Authorized Personnel Directory & Tactical Workload Monitoring
  */
 import { fetchTeamMembers, fetchTeamWorkload, createProfile, updateProfile, deleteProfile } from '../lib/team-service.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
+import { getSupabaseDashboardUrl } from '../lib/config.js';
 import { supabase } from '../lib/supabase.js';
 import { navigate } from '../lib/router.js';
 import { isAdmin } from '../lib/auth.js';
@@ -46,11 +48,11 @@ function buildHtml(workload, members) {
             </p>
           </div>
           <div class="flex gap-4">
-             <button class="btn btn-outline" style="height:44px; padding:0 20px; border-radius:12px" onclick="window.location.reload()">
+             <button type="button" aria-label="Muat ulang" class="btn btn-outline" style="height:44px; padding:0 20px; border-radius:12px" onclick="window.location.reload()">
                 <i class="fas fa-rotate"></i>
              </button>
              ${isAdmin() ? `
-               <button class="btn-presidential gold" style="height:44px; padding:0 24px; border-radius:12px" onclick="window.open('https://supabase.com/dashboard/project/hrzplcqeadhvbrfhlfuh/auth/users', '_blank')">
+               <button class="btn-presidential gold" style="height:44px; padding:0 24px; border-radius:12px" onclick="window.open('${getSupabaseDashboardUrl('auth/users') || ''}', '_blank')">
                  <i class="fas fa-user-plus" style="margin-right:12px"></i> ADD AGENT
                </button>
              ` : ''}
@@ -63,16 +65,16 @@ function buildHtml(workload, members) {
         ${[
           { label: 'ACTIVE AGENTS', val: members.length, icon: 'fa-users-gear', color: 'var(--brand-400)' },
           { label: 'DELEGATED ASSETS', val: totalProjects, icon: 'fa-building-shield', color: 'var(--gold-400)' },
-          { label: 'CONSENSUS PROGRESS', val: `${avgProgress}%`, icon: 'fa-chart-network', color: 'var(--success-400)' },
+          { label: 'CONSENSUS PROGRESS', val: `${escapeHtml(avgProgress)}%`, icon: 'fa-chart-network', color: 'var(--success-400)' },
           { label: 'READY FOR DEPLOY', val: workload.filter(w => w.status === 'Active').length, icon: 'fa-shield-check', color: 'var(--brand-300)' }
         ].map(k => `
           <div class="card-quartz" style="padding:24px; display:flex; align-items:center; gap:20px">
-             <div style="width:52px; height:52px; border-radius:14px; background:hsla(220, 20%, 100%, 0.03); display:flex; align-items:center; justify-content:center; color:${k.color}; font-size:1.4rem; border:1px solid hsla(220, 20%, 100%, 0.05)">
+             <div style="width:52px; height:52px; border-radius:14px; background:hsla(220, 20%, 100%, 0.03); display:flex; align-items:center; justify-content:center; color:${escapeHtml(k.color)}; font-size:1.4rem; border:1px solid hsla(220, 20%, 100%, 0.05)">
                 <i class="fas ${k.icon}"></i>
              </div>
              <div>
-                <div style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--text-tertiary); letter-spacing:1px">${k.label}</div>
-                <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.6rem; color:white; line-height:1">${k.val}</div>
+                <div style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--text-tertiary); letter-spacing:1px">${escapeHtml(k.label)}</div>
+                <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.6rem; color:white; line-height:1">${escapeHtml(k.val)}</div>
              </div>
           </div>
         `).join('')}
@@ -86,7 +88,7 @@ function buildHtml(workload, members) {
          </div>
          
          <div style="overflow-x:auto">
-            <table style="width:100%; border-collapse:collapse">
+            <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width:100%; border-collapse:collapse">
                <thead style="background:hsla(220, 20%, 100%, 0.02)">
                   <tr>
                      <th style="padding:20px 32px; text-align:left; font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">AUTHORIZED AGENT</th>
@@ -101,7 +103,7 @@ function buildHtml(workload, members) {
                   ${workload.length === 0 ? `<tr><td colspan="6" style="padding:100px; text-align:center; color:var(--text-tertiary)">NO REGISTERED PERSONNEL IN LOCAL NODE.</td></tr>` : ''}
                   ${workload.map(m => renderMemberRow(m)).join('')}
                </tbody>
-            </table>
+            </table></div>
          </div>
       </div>
 
@@ -114,7 +116,7 @@ function buildHtml(workload, members) {
                ${workload.map(m => `
                   <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:20px">
                      <div style="width:40px; border-radius:8px 8px 4px 4px; background:var(--gradient-brand); height:${Math.max(5, (m.activeProjects / (totalProjects || 1)) * 250)}px; transition:height 1s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow:var(--shadow-sapphire); position:relative">
-                        <div style="position:absolute; top:-30px; left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--brand-300)">${m.activeProjects || 0}</div>
+                        <div style="position:absolute; top:-30px; left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--brand-300)">${escapeHtml(m.activeProjects || 0)}</div>
                      </div>
                      <div style="font-family:var(--font-mono); font-size:8px; font-weight:800; color:var(--text-tertiary); text-align:center; text-transform:uppercase; letter-spacing:1px">${m.full_name?.split(' ')[0]}</div>
                   </div>
@@ -129,9 +131,9 @@ function buildHtml(workload, members) {
                   <div style="display:flex; align-items:center; justify-content:space-between; padding:16px; background:hsla(220, 20%, 100%, 0.02); border-radius:12px; border:1px solid hsla(220, 20%, 100%, 0.05)">
                      <div style="display:flex; align-items:center; gap:12px">
                         <div class="animate-pulse" style="width:8px; height:8px; border-radius:50%; background:${m.status === 'Active' ? 'var(--success-500)' : 'var(--gold-500)'}"></div>
-                        <span style="font-family:'Outfit', sans-serif; font-weight:700; font-size:0.9rem; color:white">${m.full_name}</span>
+                        <span style="font-family:'Outfit', sans-serif; font-weight:700; font-size:0.9rem; color:white">${escapeHtml(m.full_name)}</span>
                      </div>
-                     <span style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); letter-spacing:1px">${m.role?.toUpperCase()}</span>
+                     <span style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); letter-spacing:1px">${escapeHtml(m.role?.toUpperCase())}</span>
                   </div>
                `).join('')}
             </div>
@@ -149,46 +151,46 @@ function renderMemberRow(m) {
       <td style="padding:20px 32px">
          <div style="display:flex; align-items:center; gap:16px">
             <div style="width:40px; height:40px; border-radius:12px; background:var(--gradient-dark); border:1px solid hsla(220, 20%, 100%, 0.1); display:flex; align-items:center; justify-content:center; color:white; font-size:1.1rem; font-weight:800">
-               ${m.avatar_url ? `<img src="${m.avatar_url}" style="width:100%; height:100%; border-radius:12px">` : m.full_name?.charAt(0) || 'U'}
+               ${m.avatar_url ? `<img alt="Foto profil pengguna" src="${escapeHtml(m.avatar_url)}" style="width:100%; height:100%; border-radius:12px">` : m.full_name?.charAt(0) || 'U'}
             </div>
             <div>
-               <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1rem; color:white">${m.full_name}</div>
-               <div style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); letter-spacing:1px">UID: ${m.id?.substring(0,8).toUpperCase()}</div>
+               <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1rem; color:white">${escapeHtml(m.full_name)}</div>
+               <div style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); letter-spacing:1px">UID: ${escapeHtml(m.id?.substring(0,8).toUpperCase())}</div>
             </div>
          </div>
       </td>
       <td style="padding:20px 32px">
-         <span class="badge" style="background:hsla(45, 90%, 60%, 0.1); color:var(--gold-400); border:1px solid hsla(45, 90%, 60%, 0.2); font-size:9px; font-weight:800; letter-spacing:1px">${m.role?.toUpperCase() || 'PENGKAJI'}</span>
+         <span class="badge" style="background:hsla(45, 90%, 60%, 0.1); color:var(--gold-400); border:1px solid hsla(45, 90%, 60%, 0.2); font-size:9px; font-weight:800; letter-spacing:1px">${escapeHtml(m.role?.toUpperCase() || 'PENGKAJI')}</span>
       </td>
       <td style="padding:20px 32px">
-         <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--brand-400)">${m.activeProjects || 0} <span style="font-size:0.7rem; color:var(--text-tertiary); font-weight:500; font-family:var(--font-mono)">ACTIVE</span></div>
+         <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--brand-400)">${escapeHtml(m.activeProjects || 0)} <span style="font-size:0.7rem; color:var(--text-tertiary); font-weight:500; font-family:var(--font-mono)">ACTIVE</span></div>
       </td>
       <td style="padding:20px 32px">
          <div style="width:140px">
             <div style="display:flex; justify-content:space-between; margin-bottom:8px">
-               <span style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:white">${m.avgProgress || 0}%</span>
+               <span style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:white">${escapeHtml(m.avgProgress || 0)}%</span>
             </div>
             <div style="height:4px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px; overflow:hidden">
-               <div style="width:${m.avgProgress || 0}%; height:100%; background:var(--gradient-brand); border-radius:10px"></div>
+               <div style="width:${escapeHtml(m.avgProgress || 0)}%; height:100%; background:var(--gradient-brand); border-radius:10px"></div>
             </div>
          </div>
       </td>
       <td style="padding:20px 32px">
          <div style="display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:9px; font-weight:800; color:${m.status === 'Active' ? 'var(--success-400)' : 'var(--gold-400)'}">
             <div style="width:6px; height:6px; border-radius:50%; background:currentColor"></div>
-            ${m.status?.toUpperCase() || 'ACTIVE'}
+            ${escapeHtml(m.status?.toUpperCase() || 'ACTIVE')}
          </div>
       </td>
       <td style="padding:20px 32px; text-align:right">
          <div style="display:flex; gap:8px; justify-content:flex-end">
-            <button class="btn btn-icon" onclick="window.navigate('proyek', {PIC: '${m.id}'})" style="width:36px; height:36px; border-radius:10px; color:var(--brand-300); border-color:hsla(220, 20%, 100%, 0.05)">
+            <button type="button" aria-label="Buka" class="btn btn-icon" onclick="window.navigate('proyek', {PIC: '${escapeHtml(m.id)}'})" style="width:36px; height:36px; border-radius:10px; color:var(--brand-300); border-color:hsla(220, 20%, 100%, 0.05)">
                <i class="fas fa-folder-tree"></i>
             </button>
             ${isAdmin() ? `
-               <button class="btn btn-icon" onclick="window._showEditMemberModal('${m.id}')" style="width:36px; height:36px; border-radius:10px; color:white; border-color:hsla(220, 20%, 100%, 0.05)">
+               <button type="button" aria-label="Ubah" class="btn btn-icon" onclick="window._showEditMemberModal('${escapeHtml(m.id)}')" style="width:36px; height:36px; border-radius:10px; color:white; border-color:hsla(220, 20%, 100%, 0.05)">
                   <i class="fas fa-user-pen"></i>
                </button>
-               <button class="btn btn-icon" onclick="window._deleteMember('${m.id}', '${m.full_name}')" style="width:36px; height:36px; border-radius:10px; color:var(--danger-400); border-color:hsla(0, 85%, 60%, 0.1)">
+               <button type="button" aria-label="Hapus" class="btn btn-icon" onclick="window._deleteMember('${escapeHtml(m.id)}', '${escapeHtml(m.full_name)}')" style="width:36px; height:36px; border-radius:10px; color:var(--danger-400); border-color:hsla(0, 85%, 60%, 0.1)">
                   <i class="fas fa-trash-can"></i>
                </button>
             ` : ''}
@@ -213,7 +215,7 @@ function initEvents() {
   window._deleteMember = async (id, name) => {
     const ok = await confirm({
       title: 'Remove Authorized Personnel',
-      message: `De-authorize <strong>${name}</strong>? This action will revoke all registry access and re-route active delegations.`,
+      message: `De-authorize <strong>${escapeHtml(name)}</strong>? This action will revoke all registry access and re-route active delegations.`,
       confirmText: 'DE-AUTHORIZE',
       danger: true
     });
@@ -240,7 +242,7 @@ function renderMemberModal(member = null) {
           <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.4rem; color:white; margin:0">
             ${isEdit ? 'Update Personnel Registry' : 'New Agent Induction'}
           </h3>
-          <button onclick="document.getElementById('member-modal-overlay').remove()" style="background:transparent; border:none; color:var(--text-tertiary); cursor:pointer; font-size:1.2rem">
+          <button type="button" aria-label="Tutup" onclick="document.getElementById('member-modal-overlay').remove()" style="background:transparent; border:none; color:var(--text-tertiary); cursor:pointer; font-size:1.2rem">
             <i class="fas fa-times"></i>
           </button>
         </div>
@@ -268,7 +270,7 @@ function renderMemberModal(member = null) {
             <div class="form-group">
               <label class="form-label">ASSIGNED ROLE</label>
               <select name="role" class="form-select" required>
-                ${roles.map(([val, label]) => `<option value="${label}" ${member?.role === label ? 'selected' : ''}>${label.toUpperCase()}</option>`).join('')}
+                ${roles.map(([val, label]) => `<option value="${escapeHtml(label)}" ${member?.role === label ? 'selected' : ''}>${escapeHtml(label.toUpperCase())}</option>`).join('')}
               </select>
             </div>
             <div class="form-group">
@@ -312,7 +314,7 @@ function renderMemberModal(member = null) {
         showSuccess('New agent inducted. Opening Supabase Auth setup...');
         
         // Buka dashboard Supabase SEGERA di tab baru
-        window.open('https://supabase.com/dashboard/project/hrzplcqeadhvbrfhlfuh/auth/users', '_blank');
+        window.open(getSupabaseDashboardUrl('auth/users') || '', '_blank');
       }
       document.getElementById('member-modal-overlay').remove();
       timKerjaPage();

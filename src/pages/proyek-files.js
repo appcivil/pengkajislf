@@ -3,6 +3,7 @@
  * Modular architecture for Project Files & SIMBG Integration.
  */
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { store, updateFiles } from '../lib/store.js';
@@ -18,6 +19,7 @@ import {
   renderFileGrid 
 } from '../components/file-manager-components.js';
 import { APP_CONFIG } from '../lib/config.js';
+import { confirm } from '../components/modal.js';
 
 const CATEGORIES = [
   { id: 'umum', label: 'Data Umum', icon: 'fa-folder-open', items: ['Data Siteplan', 'Data Penyedia Jasa', 'Laporan Pemeriksaan SLF', 'Surat Pernyataan Kelaikan', 'Persetujuan Lingkungan', 'Data Intensitas (KKPR)', 'Identitas Pemilik (KTP)'] },
@@ -78,7 +80,7 @@ function render(root) {
 
          <div class="flex-between flex-stack" style="position:relative; z-index:2; gap: 24px">
             <div style="text-align: left">
-               <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek-detail',{id:'${currentProyek.id}'})" style="margin-bottom:12px; color:var(--brand-300); padding:0; font-weight:700; letter-spacing:1px">
+               <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek-detail',{id:'${escapeHtml(currentProyek.id)}'})" style="margin-bottom:12px; color:var(--brand-300); padding:0; font-weight:700; letter-spacing:1px">
                  <i class="fas fa-arrow-left" style="margin-right:8px"></i> KEMBALI KE DASHBOARD
                </button>
                <h1 style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 1.8rem; color:white; letter-spacing:-0.03em; margin:0; line-height:1.2">
@@ -177,15 +179,18 @@ window._openUploadModal = () => {
   const modal = document.createElement('div');
   modal.id = 'upload-modal-overlay';
   modal.className = 'modal-overlay open';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('aria-labelledby', 'upload-modal-title');
   modal.innerHTML = `
     <div class="modal-card" style="max-width:400px">
-      <h3 class="modal-title">Unggah Berkas SIMBG</h3>
+      <h3 class="modal-title" id="upload-modal-title">Unggah Berkas SIMBG</h3>
       <div class="form-group">
          <label class="form-label">Jenis Dokumen</label>
          <select id="modal-subcat-select" class="form-select">
-           ${availableItems.map(i => `<option value="${i}">${i}</option>`).join('')}
+           ${availableItems.map(i => `<option value="${escapeHtml(i)}">${escapeHtml(i)}</option>`).join('')}
            ${existingSubs.length > 0 ? `<option disabled>── Terdaftar (Timpa) ──</option>` : ''}
-           ${existingSubs.map(i => `<option value="${i}">${i} (Update)</option>`).join('')}
+           ${existingSubs.map(i => `<option value="${escapeHtml(i)}">${escapeHtml(i)} (Update)</option>`).join('')}
          </select>
       </div>
       <div class="form-group" style="margin-top:16px">
@@ -219,7 +224,13 @@ window._openUploadModal = () => {
 };
 
 window._deletePageFile = async (fileId) => {
-    if (!confirm('Hapus rujukan berkas? Tindakan ini permanen dan akan menghapus rujukan di seluruh hasil pemeriksaan.')) return;
+    const lanjut = await confirm({
+      title: 'Hapus Rujukan Berkas',
+      message: 'Hapus rujukan berkas ini? Rujukan di seluruh hasil pemeriksaan juga akan hilang. Tindakan ini permanen.',
+      confirmText: 'Hapus Permanen',
+      danger: true,
+    });
+    if (!lanjut) return;
     
     const { currentProyekId } = store.get();
     try {
@@ -323,7 +334,7 @@ function renderWizardUI(p) {
                     <label style="display:block; margin-bottom:10px; font-size:0.75rem; font-weight:800; color:var(--text-secondary); font-family:var(--font-mono); letter-spacing:1px">GOOGLE DRIVE PROXY (WEB APP URL)</label>
                     ${!p.drive_proxy_url && APP_CONFIG.gasApiUrl ? `<span style="font-size:10px; color:var(--brand-400); font-weight:700; margin-bottom:10px; letter-spacing:1px; background:hsla(220, 95%, 52%, 0.1); padding:2px 8px; border-radius:4px">✓ DEFAULT AKTIF</span>` : ''}
                  </div>
-                 <input type="text" id="input-drive-proxy" class="form-input" style="background:hsla(220, 20%, 100%, 0.05); border-color:hsla(220, 20%, 100%, 0.1); color:white; height:48px; border-radius:12px; font-family:var(--font-mono); font-size:0.8rem" value="${p.drive_proxy_url || ''}" placeholder="${APP_CONFIG.gasApiUrl || 'https://script.google.com/...' }">
+                 <input type="text" id="input-drive-proxy" class="form-input" style="background:hsla(220, 20%, 100%, 0.05); border-color:hsla(220, 20%, 100%, 0.1); color:white; height:48px; border-radius:12px; font-family:var(--font-mono); font-size:0.8rem" value="${escapeHtml(p.drive_proxy_url || '')}" placeholder="${escapeHtml(APP_CONFIG.gasApiUrl || 'https://script.google.com/...')}">
                  <p style="font-size:11px; color:var(--text-tertiary); margin-top:8px">Kosongkan kolom ini jika ingin menggunakan pengaturan global aplikasi.</p>
               </div>
               <div class="form-group" style="margin-bottom:24px">
@@ -333,7 +344,7 @@ function renderWizardUI(p) {
                         <i class="fas fa-user-plus" style="margin-right:6px"></i> DAFTAR AKUN BARU
                      </button>
                   </div>
-                 <input type="email" id="input-simbg-email" class="form-input" style="background:hsla(220, 20%, 100%, 0.05); border-color:hsla(220, 20%, 100%, 0.1); color:white; height:48px; border-radius:12px" value="${p.simbg_email || ''}">
+                 <input type="email" id="input-simbg-email" class="form-input" style="background:hsla(220, 20%, 100%, 0.05); border-color:hsla(220, 20%, 100%, 0.1); color:white; height:48px; border-radius:12px" value="${escapeHtml(p.simbg_email || '')}">
               </div>
               <div class="flex items-center gap-3" style="background:hsla(158, 85%, 45%, 0.05); padding:16px; border-radius:12px; border:1px solid hsla(158, 85%, 45%, 0.1)">
                  <input type="checkbox" id="check-simbg-verified" ${p.simbg_email_verified ? 'checked' : ''} style="width:18px; height:18px; accent-color:var(--success-500)">
@@ -378,7 +389,7 @@ window._quickLookFile = async (fileId) => {
           </div>
        </div>
        <div class="flex gap-3">
-          <button class="btn btn-outline" style="border-radius:10px; border-color:hsla(220, 20%, 100%, 0.1); color:white" onclick="window.open('${file.file_url}', '_blank')">
+          <button class="btn btn-outline" style="border-radius:10px; border-color:hsla(220, 20%, 100%, 0.1); color:white" onclick="window.open('${escapeHtml(file.file_url)}', '_blank')">
             <i class="fas fa-external-link-alt" style="margin-right:8px"></i> Buka Original
           </button>
           <div style="width:1px; height:32px; background:hsla(220, 20%, 100%, 0.1); margin:0 8px"></div>
@@ -387,9 +398,9 @@ window._quickLookFile = async (fileId) => {
     </div>
     <div class="ql-body" style="flex:1; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px">
        <div class="ql-viewport" id="ql-viewport" style="position:relative; max-width:98%; max-height:100%; border-radius:16px; overflow:hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.6); background:hsla(220, 20%, 100%, 0.02); border:1px solid hsla(220, 20%, 100%, 0.05)">
-          ${isImage ? `<img src="${file.file_url}" id="ql-img" style="max-width:100%; max-height:calc(100vh - 250px); display:block;">` : ''}
+          ${isImage ? `<img alt="Pratinjau berkas gambar" src="${escapeHtml(file.file_url)}" id="ql-img" style="max-width:100%; max-height:calc(100vh - 250px); display:block;">` : ''}
           ${isPdf ? `<iframe src="https://docs.google.com/viewer?url=${encodeURIComponent(file.file_url)}&embedded=true" style="width:85vw; height:calc(100vh - 200px); border:none"></iframe>` : ''}
-          ${!isImage && !isPdf ? `<div style="color:white; text-align:center; padding:60px"><i class="fas fa-file-circle-exclamation" style="font-size:4rem; color:var(--text-tertiary); margin-bottom:24px"></i><br><h3 style="margin-bottom:12px">No Preview Available</h3><p style="color:var(--text-tertiary); margin-bottom:32px">Format file ini tidak mendukung peninjauan langsung.</p><a href="${file.file_url}" target="_blank" class="btn btn-primary" style="border-radius:12px; padding:0 32px">Download Berkas</a></div>` : ''}
+          ${!isImage && !isPdf ? `<div style="color:white; text-align:center; padding:60px"><i class="fas fa-file-circle-exclamation" style="font-size:4rem; color:var(--text-tertiary); margin-bottom:24px"></i><br><h3 style="margin-bottom:12px">No Preview Available</h3><p style="color:var(--text-tertiary); margin-bottom:32px">Format file ini tidak mendukung peninjauan langsung.</p><a rel="noopener noreferrer" href="${escapeHtml(file.file_url)}" target="_blank" class="btn btn-primary" style="border-radius:12px; padding:0 32px">Download Berkas</a></div>` : ''}
           <canvas id="ql-canvas" style="position:absolute; inset:0; display:none; pointer-events:none"></canvas>
        </div>
 
@@ -399,7 +410,7 @@ window._quickLookFile = async (fileId) => {
             <button class="ql-tool-btn" id="tool-draw" title="Mode Anotasi" style="width:40px; height:40px; border-radius:50%; border:none; background:transparent; color:var(--text-tertiary); cursor:pointer; transition:all 0.3s"><i class="fas fa-highlighter"></i></button>
             <div style="width:1px; height:24px; background:hsla(220,20%,100%,0.15)"></div>
             <button class="ql-tool-btn" onclick="window._resetAnnotation()" title="Bersihkan Layar" style="width:40px; height:40px; border-radius:50%; border:none; background:transparent; color:var(--danger-400); cursor:pointer; transition:all 0.3s"><i class="fas fa-eraser"></i></button>
-            <button class="btn-presidential gold" style="height:38px; border-radius:19px; font-size:11px; padding:0 24px; font-weight:800" onclick="window._saveQuickEvidence('${file.id}')">
+            <button class="btn-presidential gold" style="height:38px; border-radius:19px; font-size:11px; padding:0 24px; font-weight:800" onclick="window._saveQuickEvidence('${escapeHtml(file.id)}')">
                <i class="fas fa-save" style="margin-right:8px"></i> SIMPAN RECORD AUDIT
             </button>
          </div>
@@ -536,7 +547,7 @@ window._openSIMBGRegistration = () => {
     modal.className = 'ai-overlay';
     modal.style.display = 'flex';
     modal.innerHTML = `
-        <div class="card-quartz" style="width:500px; padding:40px; text-align:left; border-radius:32px; position:relative; overflow:hidden">
+        <div class="card-quartz" style="width:100%; max-width:500px; padding:40px; box-sizing:border-box; text-align:left; border-radius:32px; position:relative; overflow:hidden">
             <!-- Header Decor -->
             <div style="position:absolute; top:0; left:0; width:100%; height:80px; background:var(--gradient-brand); opacity:0.1; filter:blur(40px)"></div>
             
@@ -545,7 +556,7 @@ window._openSIMBGRegistration = () => {
                    <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.4rem; color:white; margin:0">SIMBG <span class="text-gradient-gold">Assistant</span></h3>
                    <p style="font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px; margin-top:4px">KEMENTERIAN PUPR REGISTRATION PROTOCOL</p>
                 </div>
-                <button class="btn btn-ghost" onclick="document.getElementById('simbg-reg-modal').remove()" style="color:var(--text-tertiary)">
+                <button type="button" aria-label="Tutup" class="btn btn-ghost" onclick="document.getElementById('simbg-reg-modal').remove()" style="color:var(--text-tertiary)">
                    <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -558,7 +569,7 @@ window._openSIMBGRegistration = () => {
                 </div>
                 <div class="form-group mb-8">
                     <label class="form-label">NAMA LENGKAP (SESUAI KTP)</label>
-                    <input type="text" id="reg-nama" class="form-input" placeholder="e.g. Ir. Ahmad Subagja" value="${currentProyek.pemilik || ''}">
+                    <input type="text" id="reg-nama" class="form-input" placeholder="e.g. Ir. Ahmad Subagja" value="${escapeHtml(currentProyek.pemilik || '')}">
                 </div>
                 <button class="btn-presidential gold" style="width:100%; height:52px; border-radius:14px" onclick="window._nextRegStep(2)">
                     LANJUTKAN <i class="fas fa-arrow-right" style="margin-left:12px"></i>
@@ -569,7 +580,7 @@ window._openSIMBGRegistration = () => {
                 <div style="font-family:var(--font-mono); font-size:10px; color:var(--brand-400); margin-bottom:24px; font-weight:800">STEP 02/03: KREDENSIAL PORTAL</div>
                 <div class="form-group mb-6">
                     <label class="form-label">EMAIL UNTUK PENDAFTARAN</label>
-                    <input type="email" id="reg-email" class="form-input" placeholder="user@provider.com" value="${currentProyek.email_pemilik || ''}">
+                    <input type="email" id="reg-email" class="form-input" placeholder="user@provider.com" value="${escapeHtml(currentProyek.email_pemilik || '')}">
                 </div>
                 <div class="form-group mb-8">
                     <label class="form-label">PASSWORD YANG DIINGINKAN</label>

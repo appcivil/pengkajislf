@@ -5,6 +5,7 @@
 // ============================================================
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 
@@ -155,7 +156,7 @@ function renderHeaderCard() {
           <span class="badge" style="background: hsla(45, 90%, 60%, 0.1); color: var(--gold-400); border: 1px solid hsla(45, 90%, 60%, 0.2); font-size: 10px;">
             <i class="fas fa-book" style="margin-right: 6px;"></i>SNI 03-7015-2014
           </span>
-          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${currentProjectId}'})" style="color: var(--text-tertiary);">
+          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${escapeHtml(currentProjectId)}'})" style="color: var(--text-tertiary);">
             <i class="fas fa-arrow-left" style="margin-right: 6px;"></i> Kembali
           </button>
         </div>
@@ -350,7 +351,7 @@ function renderRiskResult(risk) {
     <div style="padding: 20px; background: ${isProtected ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 12px; border: 1px solid ${isProtected ? 'var(--success-400)' : 'var(--danger-400)'}44;">
       <div style="text-align: center; margin-bottom: 16px;">
         <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 8px;">STATUS PROTEKSI</div>
-        <div style="font-size: 1.5rem; font-weight: 800; color: ${levelColor};">${protectionLevel}</div>
+        <div style="font-size: 1.5rem; font-weight: 800; color: ${escapeHtml(levelColor)};">${escapeHtml(protectionLevel)}</div>
       </div>
       
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
@@ -360,11 +361,11 @@ function renderRiskResult(risk) {
         </div>
         <div style="text-align: center; padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px;">
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Ae (Area)</div>
-          <div style="font-size: 1.2rem; font-weight: 700; color: white;">${risk.ae?.toFixed(2) || 'N/A'} m²</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(risk.ae?.toFixed(2) || 'N/A')} m²</div>
         </div>
         <div style="text-align: center; padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px;">
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Level Proteksi</div>
-          <div style="font-size: 1.2rem; font-weight: 700; color: white;">${risk.required_lpl || 'TBD'}</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(risk.required_lpl || 'TBD')}</div>
         </div>
       </div>
     </div>
@@ -485,16 +486,16 @@ function renderAirTerminalTab() {
             ${lpsData.airTerminals.map(at => `
               <div class="card-quartz" style="padding: 16px; display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                  <div style="font-weight: 700; color: white; margin-bottom: 4px;">${at.name || 'Air Terminal'}</div>
+                  <div style="font-weight: 700; color: white; margin-bottom: 4px;">${escapeHtml(at.name || 'Air Terminal')}</div>
                   <div style="font-size: 0.7rem; color: var(--text-tertiary);">
-                    ${at.type || 'Franklin Rod'} | ${at.height || 0}m | ${at.location || 'Atap'}
+                    ${escapeHtml(at.type || 'Franklin Rod')} | ${escapeHtml(at.height || 0)}m | ${escapeHtml(at.location || 'Atap')}
                   </div>
                 </div>
                 <div style="display: flex; gap: 8px;">
                   <span class="badge" style="background: hsla(220, 95%, 52%, 0.1); color: var(--brand-400); font-size: 9px;">
-                    ${at.lpl_level || 'LPL II'}
+                    ${escapeHtml(at.lpl_level || 'LPL II')}
                   </span>
-                  <button class="btn-ghost btn-xs" onclick="editAirTerminal('${at.id}')">
+                  <button type="button" aria-label="Ubah" class="btn-ghost btn-xs" onclick="editAirTerminal('${escapeHtml(at.id)}')">
                     <i class="fas fa-edit"></i>
                   </button>
                 </div>
@@ -601,7 +602,7 @@ function renderGroundingTab() {
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                       <div>
                         <div style="font-weight: 700; color: white;">${new Date(test.test_date).toLocaleDateString('id-ID')}</div>
-                        <div style="font-size: 0.7rem; color: var(--text-tertiary);">${test.tester_name || 'Inspector'}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(test.tester_name || 'Inspector')}</div>
                       </div>
                       <span class="badge" style="background: ${isPass ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; color: ${isPass ? 'var(--success-400)' : 'var(--danger-400)'}; font-size: 9px;">
                         ${isPass ? 'PASS ≤5Ω' : 'FAIL >5Ω'}
@@ -609,13 +610,13 @@ function renderGroundingTab() {
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 0.75rem;">
                       <div>
-                        <span style="color: var(--text-tertiary);">R1:</span> <span style="color: white; font-weight: 600;">${test.resistance_ohm?.toFixed(2) || 'N/A'} Ω</span>
+                        <span style="color: var(--text-tertiary);">R1:</span> <span style="color: white; font-weight: 600;">${escapeHtml(test.resistance_ohm?.toFixed(2) || 'N/A')} Ω</span>
                       </div>
                       <div>
-                        <span style="color: var(--text-tertiary);">Metode:</span> <span style="color: white;">${test.method || 'Fall-of-Potential'}</span>
+                        <span style="color: var(--text-tertiary);">Metode:</span> <span style="color: white;">${escapeHtml(test.method || 'Fall-of-Potential')}</span>
                       </div>
                       <div>
-                        <span style="color: var(--text-tertiary);">Cuaca:</span> <span style="color: white;">${test.weather || 'Cerah'}</span>
+                        <span style="color: var(--text-tertiary);">Cuaca:</span> <span style="color: white;">${escapeHtml(test.weather || 'Cerah')}</span>
                       </div>
                     </div>
                   </div>
@@ -811,7 +812,7 @@ function renderTestingTab() {
           
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; text-align: center;">
             <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px;">
-              <div style="font-size: 2rem; font-weight: 800; color: var(--success-400);">${lpsData.testResults.length}</div>
+              <div style="font-size: 2rem; font-weight: 800; color: var(--success-400);">${escapeHtml(lpsData.testResults.length)}</div>
               <div style="font-size: 0.7rem; color: var(--text-tertiary);">Total Test</div>
             </div>
             <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px;">

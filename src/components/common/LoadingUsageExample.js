@@ -172,6 +172,11 @@ function contohLoadingDots() {
 // ============================================================================
 
 function contohPageTransition() {
+  // Guard: fungsi contoh ini bisa dipanggil lebih dari sekali; tanpa guard,
+  // listener 'beforeunload' menumpuk dan transisi dibuat berkali-kali.
+  if (contohPageTransition._bound) return;
+  contohPageTransition._bound = true;
+
   // Saat navigasi antar halaman
   window.addEventListener('beforeunload', () => {
     const transition = PageTransitionLoader();
@@ -371,6 +376,11 @@ export function initLoadingSystem() {
   };
   
   // Show loading saat window load
+  // Guard: initLoadingSystem bisa dipanggil ulang (mis. setelah login).
+  // Tanpa ini, listener 'load' menumpuk dan loader awal dimasukkan berkali-kali.
+  if (initLoadingSystem._bound) return;
+  initLoadingSystem._bound = true;
+
   window.addEventListener('load', () => {
     const initialLoader = LoadingScreen({
       message: 'Memuat SMART AI Pengkaji SLF'

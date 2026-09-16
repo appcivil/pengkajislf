@@ -1,3 +1,4 @@
+import { escapeHtml } from '../../lib/safe-markdown.js';
 // ============================================================
 // MODULE CARD SKELETON - Premium Loading Experience
 // Skeleton screen yang halus untuk modul summary cards
@@ -31,19 +32,19 @@ export function renderModuleCardSkeleton({ variant = 'default', delay = 0 } = {}
 
   const descSkeleton = size.descLines > 0 
     ? Array(size.descLines).fill(0).map((_, i) => `
-        <div class="skeleton-line" style="${shimmerStyle} height: 12px; border-radius: 4px; width: ${90 - i * 20}%; margin-top: 8px;"></div>
+        <div class="skeleton-line" style="${escapeHtml(shimmerStyle)} height: 12px; border-radius: 4px; width: ${90 - i * 20}%; margin-top: 8px;"></div>
       `).join('')
     : '';
 
   return `
-    <div class="module-card-skeleton card-quartz" style="padding: ${size.padding}; opacity: 0.8;">
+    <div class="module-card-skeleton card-quartz" style="padding: ${escapeHtml(size.padding)}; opacity: 0.8;">
       <div class="flex-between" style="margin-bottom: 20px;">
-        <div class="skeleton-icon" style="${shimmerStyle} width: ${size.iconSize}; height: ${size.iconSize}; border-radius: 14px;"></div>
-        <div class="skeleton-badge" style="${shimmerStyle} width: 60px; height: 16px; border-radius: 4px;"></div>
+        <div class="skeleton-icon" style="${escapeHtml(shimmerStyle)} width: ${escapeHtml(size.iconSize)}; height: ${escapeHtml(size.iconSize)}; border-radius: 14px;"></div>
+        <div class="skeleton-badge" style="${escapeHtml(shimmerStyle)} width: 60px; height: 16px; border-radius: 4px;"></div>
       </div>
-      <div class="skeleton-title" style="${shimmerStyle} height: 20px; border-radius: 4px; width: ${size.titleWidth}; margin-bottom: 8px;"></div>
-      ${descSkeleton}
-      <div class="skeleton-footer" style="${shimmerStyle} height: 8px; border-radius: 10px; width: 100%; margin-top: 20px;"></div>
+      <div class="skeleton-title" style="${escapeHtml(shimmerStyle)} height: 20px; border-radius: 4px; width: ${escapeHtml(size.titleWidth)}; margin-bottom: 8px;"></div>
+      ${escapeHtml(descSkeleton)}
+      <div class="skeleton-footer" style="${escapeHtml(shimmerStyle)} height: 8px; border-radius: 10px; width: 100%; margin-top: 20px;"></div>
     </div>
     <style>
       @keyframes shimmer {
@@ -67,7 +68,7 @@ export function renderModuleCardGridSkeleton(count = 6, variant = 'default') {
 
   return `
     <div class="module-skeleton-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-6);">
-      ${cards}
+      ${escapeHtml(cards)}
     </div>
   `;
 }
@@ -92,12 +93,12 @@ export function renderHeroSkeleton() {
       <div class="skeleton-bg" style="position: absolute; right: -100px; top: -100px; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, hsla(220, 95%, 52%, 0.05) 0%, transparent 70%); pointer-events: none;"></div>
       
       <div style="position: relative; z-index: 2;">
-        <div class="skeleton-back" style="${shimmerStyle} width: 150px; height: 16px; border-radius: 4px; margin-bottom: 20px;"></div>
-        <div class="skeleton-title" style="${shimmerStyle} height: 40px; border-radius: 8px; width: 60%; margin-bottom: 20px;"></div>
+        <div class="skeleton-back" style="${escapeHtml(shimmerStyle)} width: 150px; height: 16px; border-radius: 4px; margin-bottom: 20px;"></div>
+        <div class="skeleton-title" style="${escapeHtml(shimmerStyle)} height: 40px; border-radius: 8px; width: 60%; margin-bottom: 20px;"></div>
         <div class="flex" style="gap: 12px; margin-top: 20px;">
-          <div style="${shimmerStyle} width: 100px; height: 28px; border-radius: 14px;"></div>
-          <div style="${shimmerStyle} width: 120px; height: 28px; border-radius: 14px;"></div>
-          <div style="${shimmerStyle} width: 150px; height: 28px; border-radius: 14px;"></div>
+          <div style="${escapeHtml(shimmerStyle)} width: 100px; height: 28px; border-radius: 14px;"></div>
+          <div style="${escapeHtml(shimmerStyle)} width: 120px; height: 28px; border-radius: 14px;"></div>
+          <div style="${escapeHtml(shimmerStyle)} width: 150px; height: 28px; border-radius: 14px;"></div>
         </div>
       </div>
 
@@ -105,8 +106,8 @@ export function renderHeroSkeleton() {
         <div class="flex-between" style="margin-bottom: 12px;">
           ${Array(5).fill(0).map((_, i) => `
             <div style="flex: 1; text-align: center;">
-              <div style="${shimmerStyle} width: 36px; height: 36px; border-radius: 50%; margin: 0 auto 12px;"></div>
-              <div style="${shimmerStyle} width: 80px; height: 12px; border-radius: 4px; margin: 0 auto;"></div>
+              <div style="${escapeHtml(shimmerStyle)} width: 36px; height: 36px; border-radius: 50%; margin: 0 auto 12px;"></div>
+              <div style="${escapeHtml(shimmerStyle)} width: 80px; height: 12px; border-radius: 4px; margin: 0 auto;"></div>
             </div>
           `).join('')}
         </div>
@@ -134,18 +135,18 @@ export function renderSidebarSkeleton() {
     <div class="sidebar-skeleton" style="display: flex; flex-direction: column; gap: var(--space-6);">
       <!-- Risk Pulse Skeleton -->
       <div class="card-quartz" style="padding: var(--space-6); background: var(--gradient-dark); border-color: hsla(220, 95%, 52%, 0.2);">
-        <div style="${shimmerStyle} width: 120px; height: 12px; border-radius: 4px; margin: 0 auto 24px;"></div>
-        <div style="${shimmerStyle} height: 280px; border-radius: 50%; margin: 0 auto; width: 280px;"></div>
+        <div style="${escapeHtml(shimmerStyle)} width: 120px; height: 12px; border-radius: 4px; margin: 0 auto 24px;"></div>
+        <div style="${escapeHtml(shimmerStyle)} height: 280px; border-radius: 50%; margin: 0 auto; width: 280px;"></div>
       </div>
 
       <!-- PIC Card Skeleton -->
       <div class="card-quartz" style="padding: var(--space-6); border-left: 4px solid transparent;">
-        <div style="${shimmerStyle} width: 100px; height: 12px; border-radius: 4px; margin-bottom: 16px;"></div>
+        <div style="${escapeHtml(shimmerStyle)} width: 100px; height: 12px; border-radius: 4px; margin-bottom: 16px;"></div>
         <div class="flex" style="gap: 16px; align-items: center;">
-          <div style="${shimmerStyle} width: 56px; height: 56px; border-radius: 50%;"></div>
+          <div style="${escapeHtml(shimmerStyle)} width: 56px; height: 56px; border-radius: 50%;"></div>
           <div style="flex: 1;">
-            <div style="${shimmerStyle} width: 150px; height: 20px; border-radius: 4px; margin-bottom: 8px;"></div>
-            <div style="${shimmerStyle} width: 100px; height: 12px; border-radius: 4px;"></div>
+            <div style="${escapeHtml(shimmerStyle)} width: 150px; height: 20px; border-radius: 4px; margin-bottom: 8px;"></div>
+            <div style="${escapeHtml(shimmerStyle)} width: 100px; height: 12px; border-radius: 4px;"></div>
           </div>
         </div>
       </div>
@@ -153,12 +154,12 @@ export function renderSidebarSkeleton() {
       <!-- SIMBG Skeleton -->
       <div class="card-quartz" style="padding: var(--space-6);">
         <div class="flex-between" style="margin-bottom: 20px;">
-          <div style="${shimmerStyle} width: 120px; height: 16px; border-radius: 4px;"></div>
-          <div style="${shimmerStyle} width: 80px; height: 12px; border-radius: 4px;"></div>
+          <div style="${escapeHtml(shimmerStyle)} width: 120px; height: 16px; border-radius: 4px;"></div>
+          <div style="${escapeHtml(shimmerStyle)} width: 80px; height: 12px; border-radius: 4px;"></div>
         </div>
         <div class="grid-2-col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <div style="${shimmerStyle} height: 44px; border-radius: 12px;"></div>
-          <div style="${shimmerStyle} height: 44px; border-radius: 12px;"></div>
+          <div style="${escapeHtml(shimmerStyle)} height: 44px; border-radius: 12px;"></div>
+          <div style="${escapeHtml(shimmerStyle)} height: 44px; border-radius: 12px;"></div>
         </div>
       </div>
     </div>

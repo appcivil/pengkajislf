@@ -680,9 +680,55 @@ export async function chatbotPage(params = {}) {
 /**
  * Setup chat event listeners
  */
+/**
+ * Guard agar listener tidak dipasang berulang.
+ *
+ * BUG YANG DIPERBAIKI: fungsi ini dipanggil dari `chatbotPage()`, yang
+ * dijalankan ULANG setiap kali pengguna membuka halaman chatbot. Karena
+ * listener dipasang pada `document` (bukan pada elemen halaman yang ikut
+ * dihancurkan), setiap kunjungan menambah satu set listener baru:
+ *
+ *   kunjungan ke-5 → satu pesan memicu handler 5x
+ *                 → 5 permintaan AI, 5 penulisan DB, pesan tampil 5x
+ *
+ * Referensi handler disimpan supaya bisa dibersihkan saat pindah halaman
+ * (dipanggil dari hook 'route-changed').
+ */
+let _chatListenersBound = false;
+let _boundPath = '';
+const _boundChatListeners = [];
+
+function _bindChatListener(target, type, handler) {
+  target.addEventListener(type, handler);
+  _boundChatListeners.push({ target, type, handler });
+}
+
+/** Lepas semua listener chatbot — dipanggil saat meninggalkan halaman. */
+export function teardownChatEventListeners() {
+  while (_boundChatListeners.length) {
+    const { target, type, handler } = _boundChatListeners.pop();
+    target.removeEventListener(type, handler);
+  }
+  _chatListenersBound = false;
+}
+
 function setupChatEventListeners(chatContainer) {
+  // Idempoten: cukup sekali per siklus hidup halaman.
+  if (_chatListenersBound) return;
+  _chatListenersBound = true;
+
+  // Handler di bawah menutup (closure) `chatContainer` halaman INI.
+  // Kalau pengguna pindah halaman lalu kembali, chatContainer sudah usang
+  // dan tidak boleh dipakai lagi — karena itu begitu rute berubah,
+  // seluruh listener dilepas dan akan dipasang ulang pada kunjungan berikutnya.
+  _boundPath = window.location.hash.slice(2).split('?')[0] || 'chatbot';
+  _bindChatListener(window, 'route-changed', (e) => {
+    const next = (e.detail && e.detail.path) || '';
+    if (next && next !== _boundPath) teardownChatEventListeners();
+  });
+
   // Send message
-  document.addEventListener('chat-send-message', async (e) => {
+  _bindChatListener(document, 'chat-send-message', async (e) => {
     const { sessionId, content, attachments, projectId, moduleContext, model, reasoningMode } = e.detail;
 
     try {
@@ -726,7 +772,7 @@ function setupChatEventListeners(chatContainer) {
   });
 
   // Create session
-  document.addEventListener('chat-create-session', async (e) => {
+  _bindChatListener(document, 'chat-create-session', async (e) => {
     try {
       const { projectId, moduleContext, title } = e.detail;
       const request = {
@@ -757,7 +803,7 @@ function setupChatEventListeners(chatContainer) {
   });
 
   // Load session
-  document.addEventListener('chat-load-session', async (e) => {
+  _bindChatListener(document, 'chat-load-session', async (e) => {
     try {
       const { sessionId } = e.detail;
       
@@ -773,7 +819,7 @@ function setupChatEventListeners(chatContainer) {
   });
 
   // Delete session
-  document.addEventListener('chat-delete-session', async (e) => {
+  _bindChatListener(document, 'chat-delete-session', async (e) => {
     try {
       const { sessionId } = e.detail;
       await chatRepository.deleteSession(sessionId);
@@ -792,7 +838,7 @@ function setupChatEventListeners(chatContainer) {
   });
 
   // Generate content
-  document.addEventListener('chat-generate-content', async (e) => {
+  _bindChatListener(document, 'chat-generate-content', async (e) => {
     try {
       const { sessionId, type, prompt } = e.detail;
       

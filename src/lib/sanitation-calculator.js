@@ -1,3 +1,4 @@
+import { escapeHtml } from './safe-markdown.js';
 /**
  * SANITATION CALCULATOR LIBRARY
  * Perhitungan Sistem Pembuangan Kotoran dan Sampah
@@ -1253,8 +1254,8 @@ export function getStatusBadge(status) {
   
   const style = styles[status] || styles['NC'];
   
-  return `<span class="badge" style="background: ${style.bg}; color: ${style.color}; border: 1px solid ${style.color}44; font-size: 10px;">
-    <i class="fas ${style.icon}" style="margin-right: 4px;"></i>${style.text}
+  return `<span class="badge" style="background: ${escapeHtml(style.bg)}; color: ${escapeHtml(style.color)}; border: 1px solid ${escapeHtml(style.color)}44; font-size: 10px;">
+    <i class="fas ${style.icon}" style="margin-right: 4px;"></i>${escapeHtml(style.text)}
   </span>`;
 }
 

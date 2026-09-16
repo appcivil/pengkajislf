@@ -7,7 +7,7 @@ const CACHE_NAME = 'smart-ai-slf-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/favicon.svg',
+  '/favicon-32.png',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',

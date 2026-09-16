@@ -3,6 +3,7 @@
 //  KPI overview, charts, AI insight, todo monitoring
 // ============================================================
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { getUserInfo } from '../lib/auth.js';
 import { navigate } from '../lib/router.js';
 import { APP_CONFIG } from '../lib/config.js';
@@ -41,7 +42,7 @@ export async function dashboardPage() {
         <div class="flex-between" style="align-items: flex-end">
           <div>
             <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.5rem; letter-spacing:-0.03em; margin-bottom:8px">
-              ${greeting}, <span class="text-gradient-gold">${userName.split(' ')[0]}</span>!
+              ${escapeHtml(greeting)}, <span class="text-gradient-gold">${userName.split(' ')[0]}</span>!
             </h1>
             <div style="display:flex; align-items:center; gap:12px">
                <p class="page-subtitle" style="font-family:var(--font-mono); font-size: 0.7rem; letter-spacing:1.5px; opacity:0.6; text-transform:uppercase; display:flex; align-items:center; gap:6px">
@@ -148,8 +149,8 @@ export async function dashboardPage() {
                ${workload.slice(0, 5).map(w => `
                  <div>
                     <div class="flex-between mb-2">
-                       <span style="font-size: 0.75rem; font-weight:600; color:var(--text-secondary)">${w.full_name}</span>
-                       <span style="font-size: 0.7rem; font-weight:700; color:var(--brand-400); font-family:var(--font-mono)">${w.activeProjects} PROJECTS</span>
+                       <span style="font-size: 0.75rem; font-weight:600; color:var(--text-secondary)">${escapeHtml(w.full_name)}</span>
+                       <span style="font-size: 0.7rem; font-weight:700; color:var(--brand-400); font-family:var(--font-mono)">${escapeHtml(w.activeProjects)} PROJECTS</span>
                     </div>
                     <div class="progress-wrap" style="height:6px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px">
                        <div class="progress-fill" style="width:${Math.min((w.activeProjects / 5) * 100, 100)}%; background:var(--gradient-brand); border-radius:10px; box-shadow: var(--shadow-sapphire)"></div>
@@ -167,12 +168,12 @@ export async function dashboardPage() {
            </div>
            <div style="display:flex; flex-direction:column; gap:12px">
               ${projects.slice(0, 5).map(p => `
-                <div class="flex-between clickable" onclick="window.navigate('proyek-detail', {id:'${p.id}'})" style="padding:8px; border-radius:8px; background:hsla(220, 20%, 100%, 0.02); border:1px solid transparent; transition:all 0.2s">
+                <div class="flex-between clickable" onclick="window.navigate('proyek-detail', {id:'${escapeHtml(p.id)}'})" style="padding:8px; border-radius:8px; background:hsla(220, 20%, 100%, 0.02); border:1px solid transparent; transition:all 0.2s">
                    <div style="overflow:hidden">
-                      <div style="font-size: 0.8rem; font-weight:700; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${p.nama_bangunan}</div>
-                      <div style="font-size: 0.65rem; color:var(--text-tertiary); text-transform:uppercase">${p.kota}</div>
+                      <div style="font-size: 0.8rem; font-weight:700; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${escapeHtml(p.nama_bangunan)}</div>
+                      <div style="font-size: 0.65rem; color:var(--text-tertiary); text-transform:uppercase">${escapeHtml(p.kota)}</div>
                    </div>
-                   <div style="font-size: 0.75rem; font-weight:800; color:var(--brand-400)">${p.progress}%</div>
+                   <div style="font-size: 0.75rem; font-weight:800; color:var(--brand-400)">${escapeHtml(p.progress)}%</div>
                 </div>
               `).join('')}
            </div>
@@ -194,17 +195,17 @@ function renderKPICards(kpi) {
   return cards.map(c => `
     <div class="card-quartz" style="display:flex; flex-direction:column; gap:16px; cursor:pointer;" onclick="window.navigate('proyek')">
       <div class="flex-between">
-        <div style="width:40px; height:40px; border-radius:10px; background:${c.bg}; display:flex; align-items:center; justify-content:center; border:1px solid ${c.color}33">
-          <i class="fas ${c.icon}" style="color:${c.color}; font-size:1.1rem"></i>
+        <div style="width:40px; height:40px; border-radius:10px; background:${escapeHtml(c.bg)}; display:flex; align-items:center; justify-content:center; border:1px solid ${escapeHtml(c.color)}33">
+          <i class="fas ${c.icon}" style="color:${escapeHtml(c.color)}; font-size:1.1rem"></i>
         </div>
         <div style="font-family:var(--font-mono); font-size:9px; font-weight:700; color:var(--text-tertiary); letter-spacing:1px">DATA LIVE</div>
       </div>
       <div>
-        <div style="font-size: 2.2rem; font-weight:800; color:var(--text-primary); font-family:'Outfit', sans-serif; line-height:1">${c.value}</div>
-        <div style="font-size: 0.65rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px; margin-top:8px">${c.label}</div>
+        <div style="font-size: 2.2rem; font-weight:800; color:var(--text-primary); font-family:'Outfit', sans-serif; line-height:1">${escapeHtml(c.value)}</div>
+        <div style="font-size: 0.65rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px; margin-top:8px">${escapeHtml(c.label)}</div>
       </div>
       <div style="height:2px; width:100%; background:hsla(220, 20%, 100%, 0.03); border-radius:2px; margin-top:4px">
-        <div style="height:100%; width:70%; background:${c.color}; box-shadow:0 0 10px ${c.color}66; border-radius:2px"></div>
+        <div style="height:100%; width:70%; background:${escapeHtml(c.color)}; box-shadow:0 0 10px ${escapeHtml(c.color)}66; border-radius:2px"></div>
       </div>
     </div>
   `).join('');
@@ -234,9 +235,9 @@ function renderAIInsights(kpi) {
   }
 
   return insights.slice(0, 4).map(i => `
-    <div class="ai-finding ${i.type}" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:10px; margin-bottom:8px">
+    <div class="ai-finding ${escapeHtml(i.type)}" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:10px; margin-bottom:8px">
       <i class="fas ${i.type === 'critical' ? 'fa-triangle-exclamation' : i.type === 'warning' ? 'fa-exclamation' : i.type === 'success' ? 'fa-circle-check' : 'fa-circle-info'}" style="margin-right:8px; color:var(--text-tertiary)"></i>
-      <span style="font-size:0.75rem; color:var(--text-secondary)">${i.text}</span>
+      <span style="font-size:0.75rem; color:var(--text-secondary)">${escapeHtml(i.text)}</span>
     </div>
   `).join('');
 }
@@ -255,11 +256,11 @@ function renderSLFStatus(kpi) {
     ${items.map(i => `
       <div>
         <div class="flex-between mb-1">
-          <span class="text-sm text-secondary">${i.label}</span>
-          <span class="text-sm font-semibold text-primary">${i.value}</span>
+          <span class="text-sm text-secondary">${escapeHtml(i.label)}</span>
+          <span class="text-sm font-semibold text-primary">${escapeHtml(i.value)}</span>
         </div>
         <div class="progress-wrap">
-          <div class="progress-fill ${i.bar}" style="width:${Math.round((i.value/total)*100)}%"></div>
+          <div class="progress-fill ${escapeHtml(i.bar)}" style="width:${Math.round((i.value/total)*100)}%"></div>
         </div>
       </div>
     `).join('')}
@@ -299,14 +300,14 @@ function renderProjectTable(projects) {
                 </td>
                 <td class="text-secondary truncate" style="max-width:120px">${esc(p.pemilik) || '-'}</td>
                 <td style="min-width:100px">
-                  <div class="flex-between mb-1"><span class="text-xs text-tertiary">${prog}%</span></div>
+                  <div class="flex-between mb-1"><span class="text-xs text-tertiary">${escapeHtml(prog)}%</span></div>
                   <div class="progress-wrap">
-                    <div class="progress-fill ${prog >= 80 ? 'green' : prog >= 40 ? 'blue' : 'yellow'}" style="width:${prog}%"></div>
+                    <div class="progress-fill ${prog >= 80 ? 'green' : prog >= 40 ? 'blue' : 'yellow'}" style="width:${escapeHtml(prog)}%"></div>
                   </div>
                 </td>
                 <td><span class="badge ${esc(s.cls)}">${esc(s.label)}</span></td>
                 <td>
-                  <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.navigate('proyek-detail', {id:'${escAttr(p.id)}'})">
+                  <button type="button" aria-label="Buka" class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.navigate('proyek-detail', {id:'${escAttr(p.id)}'})">
                     <i class="fas fa-arrow-right"></i>
                   </button>
                 </td>
@@ -476,7 +477,13 @@ async function initMap(projects) {
   if (!mapEl) return;
 
   if (window._dashMap) {
-    try { window._dashMap.remove(); } catch(e) {}
+    try {
+      window._dashMap.remove();
+    } catch (e) {
+      // Leaflet kadang melempar bila peta sudah dilepas duluan. Tidak fatal,
+      // tetapi dicatat agar kebocoran peta tidak tersembunyi.
+      console.warn('[dashboard] gagal melepas peta sebelumnya:', e?.message || e);
+    }
     window._dashMap = null;
   }
 
@@ -527,7 +534,7 @@ async function initMap(projects) {
       html: `
         <div style="position:relative; width:32px; height:40px; display:flex; align-items:center; justify-content:center;">
            <svg width="32" height="40" viewBox="0 0 24 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 0C5.37 0 0 5.37 0 12C0 21 12 30 12 30C12 30 24 21 24 12C24 5.37 18.63 0 12 0Z" fill="${cfg.color}" stroke="white" stroke-width="1.5"/>
+              <path d="M12 0C5.37 0 0 5.37 0 12C0 21 12 30 12 30C12 30 24 21 24 12C24 5.37 18.63 0 12 0Z" fill="${escapeHtml(cfg.color)}" stroke="white" stroke-width="1.5"/>
               <circle cx="12" cy="12" r="8" fill="white" fill-opacity="0.2"/>
               <text x="12" y="16" font-family="'Font Awesome 6 Free'" font-weight="900" font-size="10px" fill="white" text-anchor="middle">${cfg.icon}</text>
            </svg>
@@ -542,11 +549,11 @@ async function initMap(projects) {
     
     mk.bindPopup(`
       <div style="font-family:'Outfit',sans-serif; min-width:200px; padding:4px">
-        <div style="font-weight:800; color:#1e293b; margin-bottom:4px; font-size:14px">${p.nama_bangunan}</div>
-        <div style="font-size:11px; color:#64748b; margin-bottom:10px"><i class="fas fa-location-dot"></i> ${p.alamat || p.kota || 'Lokasi tidak spesifik'}</div>
+        <div style="font-weight:800; color:#1e293b; margin-bottom:4px; font-size:14px">${escapeHtml(p.nama_bangunan)}</div>
+        <div style="font-size:11px; color:#64748b; margin-bottom:10px"><i class="fas fa-location-dot"></i> ${escapeHtml(p.alamat || p.kota || 'Lokasi tidak spesifik')}</div>
         <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f1f5f9; padding-top:8px; margin-top:8px">
-           <span style="font-size:9px; font-weight:700; text-transform:uppercase; color:${cfg.color}">${p.status_slf?.replace(/_/g, ' ')}</span>
-           <button class="btn btn-primary btn-xs" onclick="window.navigate('proyek-detail', {id:'${p.id}'})" style="padding:4px 10px; font-size:10px;">Detail &rarr;</button>
+           <span style="font-size:9px; font-weight:700; text-transform:uppercase; color:${escapeHtml(cfg.color)}">${escapeHtml(p.status_slf?.replace(/_/g, ' '))}</span>
+           <button class="btn btn-primary btn-xs" onclick="window.navigate('proyek-detail', {id:'${escapeHtml(p.id)}'})" style="padding:4px 10px; font-size:10px;">Detail &rarr;</button>
         </div>
       </div>
     `);
@@ -686,18 +693,18 @@ function renderFieldFeed(logs) {
         const cfg     = actionMap[log.action] || { icon: 'fa-clock', label: esc(log.action), color: 'var(--text-tertiary)' };
         const diff    = new Date() - new Date(log.created_at);
         const mins    = Math.floor(diff / 60000);
-        const timeStr = mins < 1 ? 'Just now' : mins < 60 ? `${mins}m ago` : `${Math.floor(mins/60)}h ago`;
+        const timeStr = mins < 1 ? 'Just now' : mins < 60 ? `${escapeHtml(mins)}m ago` : `${Math.floor(mins/60)}h ago`;
         // SECURITY: escaping nama_bangunan dari database
         const proyekNama = esc(log.proyek?.nama_bangunan) || 'Ops System';
 
         return `
           <div class="feed-item" style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-             <div class="feed-item-icon" style="width:32px; height:32px; border-radius:8px; background:hsla(220, 20%, 100%, 0.03); display:flex; align-items:center; justify-content:center; color:${cfg.color}; border:1px solid hsla(220, 20%, 100%, 0.05)"><i class="fas ${cfg.icon}" style="font-size:0.8rem"></i></div>
+             <div class="feed-item-icon" style="width:32px; height:32px; border-radius:8px; background:hsla(220, 20%, 100%, 0.03); display:flex; align-items:center; justify-content:center; color:${escapeHtml(cfg.color)}; border:1px solid hsla(220, 20%, 100%, 0.05)"><i class="fas ${cfg.icon}" style="font-size:0.8rem"></i></div>
              <div style="flex:1; overflow:hidden">
-                <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-primary)">${cfg.label}</div>
-                <div style="font-size: 0.65rem; color: var(--text-tertiary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${proyekNama}</div>
+                <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-primary)">${escapeHtml(cfg.label)}</div>
+                <div style="font-size: 0.65rem; color: var(--text-tertiary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${escapeHtml(proyekNama)}</div>
              </div>
-             <div style="font-size: 9px; color: var(--text-tertiary); opacity:0.5; font-family:var(--font-mono)">${timeStr}</div>
+             <div style="font-size: 9px; color: var(--text-tertiary); opacity:0.5; font-family:var(--font-mono)">${escapeHtml(timeStr)}</div>
           </div>
         `;
      }).join('')}

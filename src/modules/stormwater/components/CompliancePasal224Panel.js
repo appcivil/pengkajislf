@@ -5,6 +5,7 @@
 
 import { RainwaterManagementEvaluator } from '../evaluation/RainwaterManagementEvaluator.js';
 
+import { escapeHtml } from '../../../lib/safe-markdown.js';
 export class CompliancePasal224Panel extends HTMLElement {
   constructor() {
     super();
@@ -430,17 +431,17 @@ export class CompliancePasal224Panel extends HTMLElement {
       </div>
       <div class="system-card">
         <div class="system-header">
-          <span>${currentSystem.category}</span>
-          <span class="system-score" style="background: ${this.getScoreColor(score)};">${score}%</span>
+          <span>${escapeHtml(currentSystem.category)}</span>
+          <span class="system-score" style="background: ${this.getScoreColor(score)};">${escapeHtml(score)}%</span>
         </div>
         ${currentSystem.items.map(item => `
           <div class="check-item">
             <div class="check-desc">
-              <div class="check-title">${item.description}</div>
-              <div class="check-detail">Standar: ${item.standard}${item.note ? ' • ' + item.note : ''}</div>
+              <div class="check-title">${escapeHtml(item.description)}</div>
+              <div class="check-detail">Standar: ${escapeHtml(item.standard)}${item.note ? ' • ' + item.note : ''}</div>
             </div>
-            <div class="check-value">${item.actual}<br><small style="color: #64748b">${item.value || ''}</small></div>
-            <div class="status ${item.status}">${item.status}</div>
+            <div class="check-value">${escapeHtml(item.actual)}<br><small style="color: #64748b">${escapeHtml(item.value || '')}</small></div>
+            <div class="status ${escapeHtml(item.status)}">${escapeHtml(item.status)}</div>
           </div>
         `).join('')}
       </div>
@@ -454,7 +455,7 @@ export class CompliancePasal224Panel extends HTMLElement {
       </div>
       <div class="input-group">
         <label>Luas Atap Tangkap (m²)</label>
-        <input type="number" id="roof-area" value="${this.data.roof.area}">
+        <input type="number" id="roof-area" value="${escapeHtml(this.data.roof.area)}">
       </div>
       <div class="input-group">
         <label>Material Atap</label>
@@ -468,15 +469,15 @@ export class CompliancePasal224Panel extends HTMLElement {
       </div>
       <div class="input-group">
         <label>Lebar Talang (mm)</label>
-        <input type="number" id="gutter-width" value="${this.data.roof.gutter.width}">
+        <input type="number" id="gutter-width" value="${escapeHtml(this.data.roof.gutter.width)}">
       </div>
       <div class="input-group">
         <label>Tinggi Talang (mm)</label>
-        <input type="number" id="gutter-height" value="${this.data.roof.gutter.height}">
+        <input type="number" id="gutter-height" value="${escapeHtml(this.data.roof.gutter.height)}">
       </div>
       <div class="input-group">
         <label>Volume First Flush (m³)</label>
-        <input type="number" id="first-flush" value="${this.data.roof.firstFlushVolume}" step="0.1">
+        <input type="number" id="first-flush" value="${escapeHtml(this.data.roof.firstFlushVolume)}" step="0.1">
       </div>
       <div class="input-group">
         <label class="checkbox-label">
@@ -519,17 +520,17 @@ export class CompliancePasal224Panel extends HTMLElement {
         ${this.data.pipes.map((p, i) => `
           <div style="background: #334155; padding: 12px; border-radius: 6px; margin-bottom: 8px;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px;">
-              <span>Pipa Lantai ${p.floor}</span>
-              <span style="color: #60a5fa;">Ø${p.diameter}mm</span>
+              <span>Pipa Lantai ${escapeHtml(p.floor)}</span>
+              <span style="color: #60a5fa;">Ø${escapeHtml(p.diameter)}mm</span>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
               <div class="input-group" style="margin: 0;">
                 <label style="font-size: 10px;">Diameter (mm)</label>
-                <input type="number" class="pipe-diam" data-idx="${i}" value="${p.diameter}" style="padding: 6px;">
+                <input type="number" class="pipe-diam" data-idx="${escapeHtml(i)}" value="${escapeHtml(p.diameter)}" style="padding: 6px;">
               </div>
               <div class="input-group" style="margin: 0;">
                 <label style="font-size: 10px;">Slope (%)</label>
-                <input type="number" class="pipe-slope" data-idx="${i}" value="${(p.slope * 100).toFixed(1)}" step="0.1" style="padding: 6px;">
+                <input type="number" class="pipe-slope" data-idx="${escapeHtml(i)}" value="${(p.slope * 100).toFixed(1)}" step="0.1" style="padding: 6px;">
               </div>
             </div>
           </div>
@@ -558,7 +559,7 @@ export class CompliancePasal224Panel extends HTMLElement {
       </div>
       <div class="input-group">
         <label>Volume Tangki Penampung (m³)</label>
-        <input type="number" id="tank-vol" value="${this.data.storage.volume}">
+        <input type="number" id="tank-vol" value="${escapeHtml(this.data.storage.volume)}">
       </div>
       <div class="input-group">
         <label>Tingkat Peresapan Tanah (m/hari)</label>
@@ -602,15 +603,15 @@ export class CompliancePasal224Panel extends HTMLElement {
       </div>
       <div class="input-group">
         <label>Kebutuhan Toilet (L/hari)</label>
-        <input type="number" id="demand-toilet" value="${this.data.demand.toilet || 0}">
+        <input type="number" id="demand-toilet" value="${escapeHtml(this.data.demand.toilet || 0)}">
       </div>
       <div class="input-group">
         <label>Kebutuhan Irigasi (L/hari)</label>
-        <input type="number" id="demand-irrigation" value="${this.data.demand.irrigation || 0}">
+        <input type="number" id="demand-irrigation" value="${escapeHtml(this.data.demand.irrigation || 0)}">
       </div>
       <div class="input-group">
         <label>Produksi Air Hujan (L/hari)</label>
-        <input type="number" id="supply-yield" value="${this.data.supply.catchmentYield || 0}">
+        <input type="number" id="supply-yield" value="${escapeHtml(this.data.supply.catchmentYield || 0)}">
       </div>
       <div class="input-group">
         <label>Tahap Pengolahan</label>

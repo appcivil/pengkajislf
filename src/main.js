@@ -8,8 +8,9 @@ if (typeof exports === 'undefined') { window.exports = {}; }
 if (typeof module === 'undefined') { window.module = { exports: window.exports }; }
 
 import './styles/main.css';
+import { escapeHtml } from './lib/safe-markdown.js';
 import { initAuth, onAuthChange, isAuthenticated, getUserInfo } from './lib/auth.js';
-import { route, startRouter, navigate } from './lib/router.js';
+import { route, startRouter, navigate, getRouteHandler } from './lib/router.js';
 import { renderAppShell, getPageRoot, onRouteChange, destroyAppShell } from './components/layout.js';
 import { initNotifications, destroyNotifications } from './components/notification.js';
 
@@ -28,6 +29,9 @@ import { startBackgroundSync } from './lib/sync.js';
 import { supabase, isSupabaseConfigured } from './lib/supabase.js';
 import { uploadToGoogleDrive } from './lib/drive.js';
 import { initSyncIndicator } from './components/sync-ui.js';
+import { initKeepalive } from './lib/keepalive.js';
+import { installA11y, announce } from './lib/a11y.js';
+import { installToast } from './components/toast.js';
 import { floatingChatStyles, FloatingChatButton } from './components/chatbot/index.js';
 
 // SmartAI Pipeline Integration
@@ -80,7 +84,7 @@ export const AIOverlayController = {
       overlay.innerHTML = `
         <div class="ai-processing-card">
           <div class="ai-spinner-wrap"><i class="fas fa-brain ai-spinner-icon"></i></div>
-          <div class="ai-status-title">${title}</div>
+          <div class="ai-status-title">${escapeHtml(title)}</div>
           <div class="ai-status-text" id="ai-status-text">Menghubungkan ke Neural Engine...</div>
         </div>
       `;
@@ -860,6 +864,15 @@ function registerRoutes() {
     return h;
   });
 
+  // Rute nyata yang belum pernah terdaftar, padahal halaman ini sudah ada
+  // di registry `pages` dan dipanggil oleh komponen comfort-module.js.
+  route('comfort-inspection', async (p) => {
+    const { comfortInspectionPage, afterComfortInspectionRender } = await pages.comfortInspection();
+    const h = await comfortInspectionPage(p);
+    setTimeout(() => afterComfortInspectionRender(p), 50);
+    return h;
+  });
+
   route('lighting-simulation', async (p) => {
     const { lightingSimulationPage, afterLightingSimulationRender, cleanup } = await pages.lightingSimulation();
     const h = await lightingSimulationPage(p);
@@ -945,6 +958,25 @@ function registerRoutes() {
   };
   route('task', taskRoute);
   route('todo-detail', taskRoute);
+
+  // ── ALIAS RUTE ──────────────────────────────────────────────
+  // Komponen tab di halaman detail proyek (accessibility-module.js,
+  // fire-protection-module.js, architectural-requirements-module.js,
+  // building-intensity-module.js) masih memanggil nama rute lama.
+  // Tanpa alias ini, tombolnya mendarat di halaman 404.
+  // Alias memakai handler yang sama persis → tidak ada logika ganda.
+  const ROUTE_ALIASES = {
+    'accessibility-inspection':     'accessibility',
+    'fire-inspection':              'fire-protection',
+    'architectural-new-assessment': 'architectural',
+    'intensity-new-assessment':     'building-intensity',
+  };
+  for (const [alias, target] of Object.entries(ROUTE_ALIASES)) {
+    const handler = getRouteHandler(target);
+    if (handler) route(alias, handler);
+    else console.warn(`[Router] Alias '${alias}' dilewati — rute '${target}' belum terdaftar.`);
+  }
+
   route('404', async () => {
     const { placeholderPage } = await pages.placeholder();
     return placeholderPage({ title: '404', icon: 'fa-map-signs' });
@@ -953,6 +985,20 @@ function registerRoutes() {
 
 // ── Initialization ─────────────────────────────────────────────
 async function bootstrap() {
+  // Lapisan aksesibilitas dipasang paling awal supaya seluruh markah yang
+  // dirakit setelah ini (termasuk halaman login) sudah tertangani:
+  //   - wilayah pengumuman untuk pembaca layar
+  //   - operabilitas keyboard untuk elemen ber-onclick yang bukan tombol
+  //   - Escape untuk menutup dialog
+  try {
+    installA11y();
+    installToast();
+  } catch (err) {
+    // Jangan sampai kegagalan lapisan aksesibilitas menghalangi aplikasi
+    // dijalankan — aplikasi tetap berguna walau tanpa perbaikan ini.
+    console.warn('[a11y] Pemasangan lapisan aksesibilitas gagal:', err);
+  }
+
   // BOOTSTRAP FIX: Cek konfigurasi Supabase sebelum melanjutkan
   if (!isSupabaseConfigured()) {
     updateProgress(10, 'Konfigurasi server tidak lengkap...');
@@ -1075,6 +1121,15 @@ async function bootstrap() {
     if (isAuthenticated()) startBackgroundSync(supabase, uploadToGoogleDrive);
   }, 2000);
 
+  // KEEPALIVE: cegah proyek Supabase Free di-pause karena 7 hari tanpa
+  // aktivitas database. Maksimal 1 ping / 48 jam / perangkat.
+  // Detail: docs/EGRESS-MITIGATION.md
+  try {
+    initKeepalive();   // throttle internal: 48 jam
+  } catch (e) {
+    console.warn('[KeepAlive] Init dilewati:', e?.message);
+  }
+
   // Inject floating chat styles
   if (!document.getElementById('floating-chat-styles')) {
     const styleEl = document.createElement('style');
@@ -1127,7 +1182,7 @@ async function updateSyncUI() {
   } else if (pendingCount > 0) {
     bannerContainer.innerHTML = `
       <div class="sync-banner pending">
-        <span>Ada <b>${pendingCount}</b> data belum tersinkronisasi.</span>
+        <span>Ada <b>${escapeHtml(pendingCount)}</b> data belum tersinkronisasi.</span>
         <button class="btn btn-sm" onclick="window.doGlobalSync()" id="btn-global-sync">Sinkronkan</button>
       </div>`;
   } else {

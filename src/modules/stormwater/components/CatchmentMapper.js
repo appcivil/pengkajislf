@@ -1,3 +1,5 @@
+import { escapeHtml } from '../../../lib/safe-markdown.js';
+import { confirm } from '../../../components/modal.js';
 /**
  * CatchmentMapper - Interactive Catchment Delineation Component
  * Komponen untuk menggambar dan mengelola catchment area dengan visualisasi Konva.js
@@ -349,11 +351,20 @@ export class CatchmentMapper extends HTMLElement {
     this.stage.add(this.uiLayer);
 
     // Handle window resize
-    window.addEventListener('resize', () => {
+    // Simpan referensi agar bisa dilepas di disconnectedCallback() —
+    // listener `window` tidak hilang sendiri saat komponen dilepas.
+    this._onResize = () => {
       this.stage.width(container.clientWidth);
       this.stage.height(container.clientHeight);
       this.drawGrid();
-    });
+    };
+    window.addEventListener('resize', this._onResize);
+  }
+
+  /** Lepas listener `window` saat komponen dilepas dari DOM. */
+  disconnectedCallback() {
+    if (this._onResize) window.removeEventListener('resize', this._onResize);
+    this._onResize = null;
   }
 
   drawGrid() {
@@ -701,15 +712,15 @@ export class CatchmentMapper extends HTMLElement {
     container.innerHTML = `
       <div class="input-group">
         <label>Name</label>
-        <input type="text" id="prop-name" value="${catchment.name}">
+        <input type="text" id="prop-name" value="${escapeHtml(catchment.name)}">
       </div>
       <div class="input-group">
         <label>Area (m²)</label>
-        <input type="number" id="prop-area" value="${catchment.area}">
+        <input type="number" id="prop-area" value="${escapeHtml(catchment.area)}">
       </div>
       <div class="input-group">
         <label>Curve Number</label>
-        <input type="number" id="prop-cn" value="${catchment.cn}" min="30" max="100">
+        <input type="number" id="prop-cn" value="${escapeHtml(catchment.cn)}" min="30" max="100">
       </div>
       <div class="input-group">
         <label>Type</label>
@@ -776,9 +787,29 @@ export class CatchmentMapper extends HTMLElement {
     this.layer.batchDraw();
   }
 
-  deleteCatchment(id) {
+  /**
+   * Hapus daerah tangkapan.
+   *
+   * Sebelumnya fungsi ini berjalan langsung dari satu klik tanpa konfirmasi
+   * apa pun. Daerah tangkapan membawa hasil perhitungan debit dan geometri
+   * yang digambar pengguna — pekerjaan yang tidak dapat dibatalkan. Sekarang
+   * pengguna diminta menegaskan lebih dulu, dan pesannya menyebut nama daerah
+   * tangkapan yang akan hilang supaya tidak salah pilih.
+   */
+  async deleteCatchment(id) {
     const idx = this.catchments.findIndex(c => c.id === id);
-    if (idx >= 0) {
+    if (idx < 0) return;
+
+    const nama = this.catchments[idx]?.name || 'ini';
+    const lanjut = await confirm({
+      title: 'Hapus Daerah Tangkapan',
+      message: `Hapus daerah tangkapan "${nama}"? Seluruh geometri dan hasil perhitungannya akan hilang, dan tindakan ini tidak dapat dibatalkan.`,
+      confirmText: 'Hapus',
+      danger: true,
+    });
+    if (!lanjut) return;
+
+    {
       const catchment = this.catchments[idx];
       if (catchment.konvaGroup) {
         catchment.konvaGroup.destroy();
@@ -812,12 +843,12 @@ export class CatchmentMapper extends HTMLElement {
     }
 
     listContainer.innerHTML = this.catchments.map(c => `
-      <div class="catchment-item ${c.selected ? 'selected' : ''}" data-id="${c.id}">
+      <div class="catchment-item ${c.selected ? 'selected' : ''}" data-id="${escapeHtml(c.id)}">
         <div>
-          <div style="font-weight: 500;">${c.name}</div>
-          <div style="font-size: 10px; color: #64748b;">${c.area.toFixed(0)} m² • CN ${c.cn}</div>
+          <div style="font-weight: 500;">${escapeHtml(c.name)}</div>
+          <div style="font-size: 10px; color: #64748b;">${escapeHtml(c.area.toFixed(0))} m² • CN ${escapeHtml(c.cn)}</div>
         </div>
-        <span class="delete-btn" data-delete="${c.id}"><i class="fas fa-trash"></i></span>
+        <span class="delete-btn" data-delete="${escapeHtml(c.id)}"><i class="fas fa-trash"></i></span>
       </div>
     `).join('');
 
@@ -927,19 +958,19 @@ export class CatchmentMapper extends HTMLElement {
     container.innerHTML = `
       <svg width="100%" height="100%" style="overflow:visible;">
         <!-- Grid lines -->
-        <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.1)" />
-        <line x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.1)" />
+        <line x1="${escapeHtml(padding)}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.1)" />
+        <line x1="${escapeHtml(padding)}" y1="${escapeHtml(padding)}" x2="${escapeHtml(padding)}" y2="${height - padding}" stroke="rgba(255,255,255,0.1)" />
         
         <!-- Hydrograph line -->
-        <polyline points="${points}" fill="none" stroke="#3b82f6" stroke-width="2" />
+        <polyline points="${escapeHtml(points)}" fill="none" stroke="#3b82f6" stroke-width="2" />
         
         <!-- Area fill -->
-        <polygon points="${padding},${height - padding} ${points} ${width - padding},${height - padding}" 
+        <polygon points="${escapeHtml(padding)},${height - padding} ${escapeHtml(points)} ${width - padding},${height - padding}" 
           fill="rgba(59, 130, 246, 0.2)" />
         
         <!-- Labels -->
         <text x="${width - padding}" y="${height - 5}" fill="#64748b" font-size="10" text-anchor="end">Time</text>
-        <text x="10" y="${padding}" fill="#64748b" font-size="10">Qmax: ${maxFlow.toFixed(3)}</text>
+        <text x="10" y="${escapeHtml(padding)}" fill="#64748b" font-size="10">Qmax: ${escapeHtml(maxFlow.toFixed(3))}</text>
       </svg>
     `;
   }

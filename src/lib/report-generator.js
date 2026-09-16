@@ -5,6 +5,7 @@
  */
 
 import { jsPDF } from 'jspdf';
+import { escapeHtml } from './safe-markdown.js';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
@@ -355,8 +356,8 @@ export function generateReportSummary(proyek, analysisData) {
     <div style="padding: 24px; background: hsla(220, 20%, 100%, 0.05); border-radius: 12px; border: 1px solid hsla(220, 20%, 100%, 0.1);">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <div>
-          <h3 style="margin: 0; color: white; font-size: 1.2rem;">${proyek.nama_bangunan || 'Nama Bangunan'}</h3>
-          <p style="margin: 4px 0 0; color: var(--text-tertiary); font-size: 0.9rem;">${proyek.lokasi || '-'}</p>
+          <h3 style="margin: 0; color: white; font-size: 1.2rem;">${escapeHtml(proyek.nama_bangunan || 'Nama Bangunan')}</h3>
+          <p style="margin: 4px 0 0; color: var(--text-tertiary); font-size: 0.9rem;">${escapeHtml(proyek.lokasi || '-')}</p>
         </div>
         <div style="padding: 12px 24px; background: ${statusColors[status]}22; border: 2px solid ${statusColors[status]}; border-radius: 8px;">
           <span style="color: ${statusColors[status]}; font-weight: 700; font-size: 1rem;">${statusLabels[status]}</span>

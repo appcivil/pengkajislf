@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 
@@ -86,7 +87,7 @@ function renderPage() {
       <div class="card-quartz" style="padding: var(--space-6); margin-bottom: var(--space-4); flex-shrink: 0;">
         <div class="flex-between flex-stack" style="align-items: flex-start; gap: var(--space-4);">
           <div>
-            <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id:'${currentProjectId}'})" 
+            <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id:'${escapeHtml(currentProjectId)}'})" 
               style="margin-bottom: 12px; color: var(--brand-300); padding: 0; font-weight: 700; letter-spacing: 1px;">
               <i class="fas fa-arrow-left" style="margin-right: 8px;"></i> KEMBALI KE PROYEK
             </button>
@@ -94,7 +95,7 @@ function renderPage() {
               🌋 Mitigasi Bencana & INARisk
             </h1>
             <p style="color: var(--text-secondary); margin-top: 8px; font-size: 14px;">
-              ${currentProjectName} • Analisis Risiko Bencana per PP 24/2020
+              ${escapeHtml(currentProjectName)} • Analisis Risiko Bencana per PP 24/2020
             </p>
           </div>
           

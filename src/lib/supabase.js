@@ -3,6 +3,9 @@
 //  Inisialisasi koneksi Supabase
 // ============================================================
 import { createClient } from '@supabase/supabase-js';
+// EGRESS GUARD: cache + dedup + revalidasi 304 untuk SEMUA request REST.
+// Lihat docs/EGRESS-MITIGATION.md. Matikan dengan VITE_EGRESS_GUARD=off.
+import { guardedFetch, exposeEgressControls } from './egress/index.js';
 
 const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL  || '';
 const SUPABASE_ANON = import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -24,6 +27,10 @@ export const supabase = createClient(
   SUPABASE_URL || 'https://placeholder.supabase.co',
   SUPABASE_ANON || 'placeholder',
   {
+    // EGRESS GUARD: semua request REST lewat fetch yang di-cache & di-dedup.
+    global: {
+      fetch: guardedFetch,
+    },
     auth: {
       autoRefreshToken: true,
       persistSession: true,
@@ -33,6 +40,9 @@ export const supabase = createClient(
     },
   }
 );
+
+// Ekspos kontrol egress ke console: window.__slfEgress.report()
+exposeEgressControls();
 
 // Helper: cek apakah Supabase sudah dikonfigurasi dengan benar
 export function isSupabaseConfigured() {

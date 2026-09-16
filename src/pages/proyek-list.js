@@ -3,6 +3,7 @@
 //  PRESIDENTIAL CLASS (QUARTZ PREMIUM)
 // ============================================================
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { confirm } from '../components/modal.js';
 import { showSuccess, showError } from '../components/toast.js';
@@ -145,10 +146,10 @@ function renderProyekCards(proyek) {
 
     return `
       <div class="card-quartz" style="padding: var(--space-6); display:flex; gap:24px; align-items:center; cursor:pointer; position:relative; overflow:hidden; flex-wrap:wrap"
-           onclick="window.navigate('proyek-detail', {id:'${p.id}'})">
+           onclick="window.navigate('proyek-detail', {id:'${escapeHtml(p.id)}'})">
         
         <!-- Status Indicator line -->
-        <div style="position:absolute; left:0; top:0; bottom:0; width:4px; background:${s.color}"></div>
+        <div style="position:absolute; left:0; top:0; bottom:0; width:4px; background:${escapeHtml(s.color)}"></div>
 
         <!-- Project Icon -->
         <div class="hide-mobile" style="width:64px; height:64px; border-radius:18px; background:var(--gradient-brand); display:flex; align-items:center; justify-content:center; color:white; font-size:1.6rem; flex-shrink:0; box-shadow: var(--shadow-sapphire); border:1px solid hsla(220, 95%, 52%, 0.3)">
@@ -158,44 +159,44 @@ function renderProyekCards(proyek) {
         <!-- Info Section -->
         <div style="flex:1; min-width:200px; overflow:hidden">
           <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px; flex-wrap:wrap">
-            <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.15rem; color:var(--text-primary); margin:0">${p.nama_bangunan || 'UNTITLED ASSET'}</h3>
-            <span class="badge ${s.cls}" style="font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:1px; border:1px solid ${s.color}66; background:${s.color}1a; color:${s.color}">
-              <i class="fas ${s.icon}"></i> ${s.label}
+            <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.15rem; color:var(--text-primary); margin:0">${escapeHtml(p.nama_bangunan || 'UNTITLED ASSET')}</h3>
+            <span class="badge ${escapeHtml(s.cls)}" style="font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:1px; border:1px solid ${escapeHtml(s.color)}66; background:${escapeHtml(s.color)}1a; color:${escapeHtml(s.color)}">
+              <i class="fas ${s.icon}"></i> ${escapeHtml(s.label)}
             </span>
           </div>
           
           <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px; flex-wrap:wrap">
             <div style="font-size: 0.75rem; color:var(--text-tertiary); display:flex; align-items:center; gap:6px">
-              <i class="fas fa-location-dot" style="color:var(--brand-400)"></i> ${p.alamat || p.kota || 'Location Pending'}
+              <i class="fas fa-location-dot" style="color:var(--brand-400)"></i> ${escapeHtml(p.alamat || p.kota || 'Location Pending')}
             </div>
             <div style="font-size: 0.75rem; color:var(--text-tertiary); display:flex; align-items:center; gap:6px">
-              <i class="fas fa-user-tie" style="color:var(--gold-400)"></i> ${p.pemilik || 'Private Ownership'}
+              <i class="fas fa-user-tie" style="color:var(--gold-400)"></i> ${escapeHtml(p.pemilik || 'Private Ownership')}
             </div>
           </div>
 
           <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap">
             <div class="progress-wrap" style="flex:1; min-width:140px; max-width:240px; height:6px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px">
-              <div class="progress-fill" style="width:${prog}%; height:100%; border-radius:10px; background:${prog >= 80 ? 'var(--gradient-brand)' : prog >= 40 ? 'var(--gradient-gold)' : 'var(--gradient-danger)'}; box-shadow: 0 0 10px ${prog >= 80 ? 'var(--brand-500)66' : 'var(--gold-500)66'}"></div>
+              <div class="progress-fill" style="width:${escapeHtml(prog)}%; height:100%; border-radius:10px; background:${prog >= 80 ? 'var(--gradient-brand)' : prog >= 40 ? 'var(--gradient-gold)' : 'var(--gradient-danger)'}; box-shadow: 0 0 10px ${prog >= 80 ? 'var(--brand-500)66' : 'var(--gold-500)66'}"></div>
             </div>
-            <span style="font-family:var(--font-mono); font-weight:800; font-size:11px; color:var(--brand-400)">${prog}% INTEGRITY</span>
+            <span style="font-family:var(--font-mono); font-weight:800; font-size:11px; color:var(--brand-400)">${escapeHtml(prog)}% INTEGRITY</span>
           </div>
         </div>
 
         <!-- Meta Section (Visible on some tablets, hidden on tiny mobile) -->
         <div style="text-align:right; flex-shrink:0; min-width:100px" class="hide-mobile">
           <div style="font-family:var(--font-mono); font-size:10px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px">Last Synced</div>
-          <div style="font-weight:700; color:var(--text-primary); font-size:0.85rem">${date}</div>
+          <div style="font-weight:700; color:var(--text-primary); font-size:0.85rem">${escapeHtml(date)}</div>
         </div>
 
         <!-- Action Pills -->
         <div class="flex gap-2" style="margin-left: auto" onclick="event.stopPropagation()">
-          <button class="btn btn-ghost" title="Checklist" onclick="event.stopPropagation();window.navigate('checklist',{id:'${p.id}'})" style="width:38px; height:38px; padding:0; border-radius:10px; border:1px solid hsla(220, 20%, 100%, 0.05)">
+          <button class="btn btn-ghost" title="Checklist" onclick="event.stopPropagation();window.navigate('checklist',{id:'${escapeHtml(p.id)}'})" style="width:38px; height:38px; padding:0; border-radius:10px; border:1px solid hsla(220, 20%, 100%, 0.05)">
             <i class="fas fa-clipboard-list" style="color:var(--brand-400)"></i>
           </button>
-          <button class="btn btn-ghost" title="Analytics" onclick="event.stopPropagation();window.navigate('analisis',{id:'${p.id}'})" style="width:38px; height:38px; padding:0; border-radius:10px; border:1px solid hsla(220, 20%, 100%, 0.05)">
+          <button class="btn btn-ghost" title="Analytics" onclick="event.stopPropagation();window.navigate('analisis',{id:'${escapeHtml(p.id)}'})" style="width:38px; height:38px; padding:0; border-radius:10px; border:1px solid hsla(220, 20%, 100%, 0.05)">
             <i class="fas fa-chart-network" style="color:var(--gold-400)"></i>
           </button>
-          <button class="btn btn-ghost" title="Archive" onclick="event.stopPropagation();deleteProyek('${p.id}','${p.nama_bangunan}')" style="width:38px; height:38px; padding:0; border-radius:10px; border:1px solid hsla(0, 85%, 60%, 0.1)">
+          <button class="btn btn-ghost" title="Archive" onclick="event.stopPropagation();deleteProyek('${escapeHtml(p.id)}','${escapeHtml(p.nama_bangunan)}')" style="width:38px; height:38px; padding:0; border-radius:10px; border:1px solid hsla(0, 85%, 60%, 0.1)">
             <i class="fas fa-trash-can" style="color:var(--danger-400)"></i>
           </button>
         </div>
@@ -230,7 +231,7 @@ window.sortProyek = function(field) {
 window.deleteProyek = async function(id, name) {
   const ok = await confirm({
     title: 'Archive Project',
-    message: `Are you sure you want to archive <strong>${name}</strong>? This action will remove the asset from the current portfolio.`,
+    message: `Are you sure you want to archive <strong>${escapeHtml(name)}</strong>? This action will remove the asset from the current portfolio.`,
     confirmText: 'Confirm Archive',
     danger: true,
   });

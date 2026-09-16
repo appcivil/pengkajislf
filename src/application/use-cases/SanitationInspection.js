@@ -3,6 +3,7 @@
 // ============================================================
 
 import { BaseInspection } from './BaseInspection.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { InspectionWidgets } from '../../components/inspection/inspection-widgets.js';
 import { showSuccess, showError, showInfo } from '../../components/toast.js';
 
@@ -90,9 +91,9 @@ export class SanitationInspection extends BaseInspection {
               <p style="margin-bottom: 8px;"><strong>Permenkes No. 3/2014:</strong> Persyaratan kesehatan lingkungan</p>
               <p style="margin-bottom: 8px;"><strong>Perbandingan Toilet:</strong></p>
               <ul style="margin-left: 20px; margin-bottom: 12px;">
-                <li>Pria: 1 per ${this.TOILET_STANDARDS.male_ratio} orang</li>
-                <li>Wanita: 1 per ${this.TOILET_STANDARDS.female_ratio} orang</li>
-                <li>Difabel: 1 per ${this.TOILET_STANDARDS.special_ratio} orang</li>
+                <li>Pria: 1 per ${escapeHtml(this.TOILET_STANDARDS.male_ratio)} orang</li>
+                <li>Wanita: 1 per ${escapeHtml(this.TOILET_STANDARDS.female_ratio)} orang</li>
+                <li>Difabel: 1 per ${escapeHtml(this.TOILET_STANDARDS.special_ratio)} orang</li>
               </ul>
             </div>
           `
@@ -157,11 +158,11 @@ export class SanitationInspection extends BaseInspection {
                   </div>
                   <div>
                     <label style="font-size: 0.7rem; color: var(--text-tertiary);">Dimensi</label>
-                    <div style="font-size: 1.2rem; font-weight: 600; color: white;">${septic.dimensions || '-'}</div>
+                    <div style="font-size: 1.2rem; font-weight: 600; color: white;">${escapeHtml(septic.dimensions || '-')}</div>
                   </div>
                   <div>
                     <label style="font-size: 0.7rem; color: var(--text-tertiary);">Material</label>
-                    <div style="font-size: 1.2rem; font-weight: 600; color: white;">${septic.material || '-'}</div>
+                    <div style="font-size: 1.2rem; font-weight: 600; color: white;">${escapeHtml(septic.material || '-')}</div>
                   </div>
                   <div>
                     <label style="font-size: 0.7rem; color: var(--text-tertiary);">Terakhir Sedot</label>

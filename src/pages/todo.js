@@ -3,6 +3,8 @@
 //  Manajemen task temuan/rekomendasi SLF
 // ============================================================
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml as escHtml } from '../lib/safe-markdown.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError } from '../components/toast.js';
 
@@ -54,15 +56,15 @@ function buildHtml(tasks, proyek) {
         ${cols.map(col => {
           const colTasks = tasks.filter(t => (t.status || 'todo') === col.id);
           return `
-            <div class="kanban-col" data-status="${col.id}">
-              <div class="kanban-col-header" style="border-top: 3px solid ${col.color}">
+            <div class="kanban-col" data-status="${escapeHtml(col.id)}">
+              <div class="kanban-col-header" style="border-top: 3px solid ${escapeHtml(col.color)}">
                 <div class="kch-title">
-                  <div style="width:10px;height:10px;border-radius:50%;background:${col.color}"></div>
-                  ${col.label}
+                  <div style="width:10px;height:10px;border-radius:50%;background:${escapeHtml(col.color)}"></div>
+                  ${escapeHtml(col.label)}
                 </div>
-                <div class="kch-count" id="count-${col.id}">${colTasks.length}</div>
+                <div class="kch-count" id="count-${escapeHtml(col.id)}">${escapeHtml(colTasks.length)}</div>
               </div>
-              <div class="kanban-col-body" id="col-${col.id}">
+              <div class="kanban-col-body" id="col-${escapeHtml(col.id)}">
                 ${colTasks.map(t => renderTaskCard(t)).join('')}
               </div>
             </div>
@@ -75,7 +77,7 @@ function buildHtml(tasks, proyek) {
         <div class="modal">
           <div class="modal-header">
             <div class="modal-title">Tambah Task Baru</div>
-            <button class="modal-close" onclick="document.getElementById('modal-task').classList.remove('open')">
+            <button type="button" aria-label="Tutup" class="modal-close" onclick="document.getElementById('modal-task').classList.remove('open')">
               <i class="fas fa-times"></i>
             </button>
           </div>
@@ -115,12 +117,12 @@ function buildHtml(tasks, proyek) {
 function renderTaskCard(t) {
   const prioLabels = { low: 'Low', medium: 'Medium', high: 'High', critical: 'Critical' };
   return `
-    <div class="task-card" draggable="true" data-id="${t.id}">
+    <div class="task-card" draggable="true" data-id="${escapeHtml(t.id)}">
       <div class="tc-header">
-        <div class="tc-prio ${t.priority || 'medium'}">${prioLabels[t.priority] || 'Medium'}</div>
+        <div class="tc-prio ${escapeHtml(t.priority || 'medium')}">${prioLabels[t.priority] || 'Medium'}</div>
         <div class="tc-proyek"><i class="fas fa-building"></i> ${escHtml(t.proyek_nama || 'General')}</div>
       </div>
-      <div class="tc-title" onclick="window.navigate('todo-detail',{id:'${t.id}'})" style="cursor:pointer; font-weight:600; color:var(--text-primary); margin-bottom:8px">
+      <div class="tc-title" onclick="window.navigate('todo-detail',{id:'${escapeHtml(t.id)}'})" style="cursor:pointer; font-weight:600; color:var(--text-primary); margin-bottom:8px">
         ${escHtml(t.judul || t.title || 'Untitled Task')}
       </div>
       <div class="tc-footer">
@@ -261,6 +263,3 @@ function renderSkeleton() {
   `;
 }
 
-function escHtml(s) { 
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); 
-}

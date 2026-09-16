@@ -3,6 +3,7 @@
 // ============================================================
 
 import { supabase } from '../../lib/supabase.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { navigate } from '../../lib/router.js';
 import { showSuccess, showError, showInfo } from '../../components/toast.js';
 import { fetchAllOutlineData } from './services/laporanService.js';
@@ -33,7 +34,7 @@ function ErrorState(message) {
     <div style="padding: 40px; text-align: center;">
       <i class="fas fa-triangle-exclamation" style="font-size: 3rem; color: var(--warning-400); margin-bottom: 16px;"></i>
       <h3 style="color: white; margin-bottom: 8px;">Gagal Memuat Laporan</h3>
-      <p style="color: var(--text-tertiary);">${message}</p>
+      <p style="color: var(--text-tertiary);">${escapeHtml(message)}</p>
       <button onclick="navigate('proyek')" class="btn-primary" style="margin-top: 20px;">
         Kembali ke Daftar Proyek
       </button>
@@ -61,7 +62,7 @@ function ControlBar(proyek, data) {
           </div>
           <div class="brand-subtitle">
             Render identik dengan format Microsoft Word A4
-            ${summary.totalSections ? `• ${summary.totalSections} sections loaded` : ''}
+            ${summary.totalSections ? `• ${escapeHtml(summary.totalSections)} sections loaded` : ''}
           </div>
         </div>
       </div>
@@ -147,11 +148,11 @@ function PreviewContainer() {
         
         <!-- Zoom Controls -->
         <div class="zoom-controls">
-          <button onclick="window._docxZoomOut()" class="zoom-btn">
+          <button type="button" aria-label="Perkecil tampilan" onclick="window._docxZoomOut()" class="zoom-btn">
             <i class="fas fa-minus"></i>
           </button>
           <span id="docx-zoom-level" class="zoom-level">100%</span>
-          <button onclick="window._docxZoomIn()" class="zoom-btn">
+          <button type="button" aria-label="Perbesar tampilan" onclick="window._docxZoomIn()" class="zoom-btn">
             <i class="fas fa-plus"></i>
           </button>
         </div>

@@ -49,7 +49,12 @@ export function renderBab6(analisis, proyek) {
     rekomendasi = typeof analisis?.rekomendasi === 'string'
       ? JSON.parse(analisis.rekomendasi)
       : (analisis?.rekomendasi || []);
-  } catch (e) { }
+  } catch (e) {
+    // `rekomendasi` disimpan sebagai JSON string, tetapi bisa juga sudah
+    // berupa array. Kalau JSON.parse gagal, pakai nilai apa adanya.
+    console.warn('[outline-bab6] rekomendasi bukan JSON valid, memakai nilai mentah:', e?.message || e);
+    rekomendasi = analisis?.rekomendasi || [];
+  }
 
   // =========================
   // AI SORTING (PENTING!)

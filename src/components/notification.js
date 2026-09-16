@@ -2,6 +2,7 @@
 //  NOTIFICATION SYSTEM (REAL-TIME)
 // ============================================================
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { getUserInfo } from '../lib/auth.js';
 import { showInfo } from './toast.js';
 
@@ -13,6 +14,14 @@ let _notifChannel = null;
  * Memasang UI Dropdown dan membuka jalur koneksi sinkronisasi Real-Time ke Supabase.
  */
 export async function initNotifications() {
+  // Guard idempoten: fungsi ini dipanggil dari render yang bisa berjalan
+  // berkali-kali (setiap kunjungan halaman / render ulang). Listener pada
+  // `window`/`document` TIDAK ikut terhapus saat DOM halaman diganti,
+  // sehingga tanpa guard setiap kunjungan menambah satu set listener baru —
+  // handler berjalan berkali-kali dan memori terus tumbuh.
+  if (initNotifications._bound) return;
+  initNotifications._bound = true;
+
   const btnNotif = document.getElementById('btn-notif');
   if (!btnNotif) return;
 
@@ -186,7 +195,12 @@ async function markAllAsRead() {
       .update({ is_read: true })
       .eq('user_id', user.id)
       .eq('is_read', false);
-  } catch(e) { } // Abaikan kalau error
+  } catch (e) {
+    // Sebelumnya blok catch ini dibiarkan kosong — kegagalan hilang tanpa jejak.
+    // (penandaan "sudah dibaca" boleh gagal), tetapi sekarang tercatat
+    // supaya bisa dilacak saat produksi.
+    console.warn('[notifications] gagal menandai notifikasi sebagai terbaca:', e?.message || e);
+  }
 }
 
 /**
@@ -214,13 +228,13 @@ function renderNotifications(items = []) {
   updateRedDot(sumUnread > 0);
 
   listEl.innerHTML = items.map(item => `
-    <div class="notif-item ${item.is_read ? '' : 'unread'}" data-id="${item.id || ''}">
+    <div class="notif-item ${item.is_read ? '' : 'unread'}" data-id="${escapeHtml(item.id || '')}">
       <div class="ni-icon ${getIconClassForType(item.type)}">
         <i class="fas ${getIconNameForType(item.type)}"></i>
       </div>
       <div class="ni-content">
-        <div class="ni-title">${item.title}</div>
-        <div class="ni-desc">${item.message}</div>
+        <div class="ni-title">${escapeHtml(item.title)}</div>
+        <div class="ni-desc">${escapeHtml(item.message)}</div>
         <div class="ni-time">${formatWaktuMundur(item.created_at)}</div>
       </div>
     </div>

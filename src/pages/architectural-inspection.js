@@ -5,6 +5,7 @@
 // ============================================================
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 
@@ -156,7 +157,7 @@ function renderHeaderCard() {
           <span class="badge" style="background: hsla(45, 90%, 60%, 0.1); color: var(--gold-400); border: 1px solid hsla(45, 90%, 60%, 0.2); font-size: 10px;">
             <i class="fas fa-book" style="margin-right: 6px;"></i>SNI & ASHRAE
           </span>
-          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${currentProjectId}'})" style="color: var(--text-tertiary);">
+          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${escapeHtml(currentProjectId)}'})" style="color: var(--text-tertiary);">
             <i class="fas fa-arrow-left" style="margin-right: 6px;"></i> Kembali
           </button>
         </div>
@@ -248,25 +249,25 @@ function renderDashboardTab() {
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(45, 90%, 60%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--gold-400); margin: 0 auto 12px;">
             <i class="fas fa-sun" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${dfAvg}%</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(dfAvg)}%</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Avg Daylight Factor</div>
-          <div style="font-size: 0.65rem; color: var(--text-tertiary); margin-top: 4px;">${archData.daylightMeasurements.length} measurement points</div>
+          <div style="font-size: 0.65rem; color: var(--text-tertiary); margin-top: 4px;">${escapeHtml(archData.daylightMeasurements.length)} measurement points</div>
         </div>
         
         <div class="card-quartz" style="padding: 20px; text-align: center;">
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(220, 95%, 52%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--brand-400); margin: 0 auto 12px;">
             <i class="fas fa-wind" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${achAvg}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(achAvg)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Avg ACH (Air Changes)</div>
-          <div style="font-size: 0.65rem; color: var(--text-tertiary); margin-top: 4px;">${archData.ventilationSystems.length} zones</div>
+          <div style="font-size: 0.65rem; color: var(--text-tertiary); margin-top: 4px;">${escapeHtml(archData.ventilationSystems.length)} zones</div>
         </div>
         
         <div class="card-quartz" style="padding: 20px; text-align: center;">
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(158, 85%, 45%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--success-400); margin: 0 auto 12px;">
             <i class="fas fa-volume-up" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${archData.noiseMeasurements.length}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(archData.noiseMeasurements.length)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Noise Measurements</div>
           <div style="font-size: 0.65rem; color: var(--text-tertiary); margin-top: 4px;">dB readings</div>
         </div>
@@ -275,7 +276,7 @@ function renderDashboardTab() {
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(0, 85%, 60%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--danger-400); margin: 0 auto 12px;">
             <i class="fas fa-wave-square" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${archData.vibrationMeasurements.length}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(archData.vibrationMeasurements.length)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Vibration Tests</div>
           <div style="font-size: 0.65rem; color: var(--text-tertiary); margin-top: 4px;">mm/s</div>
         </div>
@@ -434,17 +435,17 @@ function renderDaylightTab() {
                   <div class="card-quartz" style="padding: 12px; border-left: 3px solid ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}; background: hsla(220, 20%, 100%, 0.03);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                       <div>
-                        <div style="font-weight: 700; color: white;">${m.room_name || 'Ruangan'}</div>
+                        <div style="font-weight: 700; color: white;">${escapeHtml(m.room_name || 'Ruangan')}</div>
                         <div style="font-size: 0.7rem; color: var(--text-tertiary);">
-                          Int: ${m.internal_lux || 0} lux | Ext: ${m.external_lux || 0} lux
+                          Int: ${escapeHtml(m.internal_lux || 0)} lux | Ext: ${escapeHtml(m.external_lux || 0)} lux
                         </div>
                       </div>
                       <div style="text-align: right;">
                         <div style="font-weight: 800; color: ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}; font-size: 1.1rem;">
-                          ${m.df_percent || 0}%
+                          ${escapeHtml(m.df_percent || 0)}%
                         </div>
                         <div style="font-size: 0.65rem; color: var(--text-tertiary);">
-                          Min: ${m.required_df || 1.0}%
+                          Min: ${escapeHtml(m.required_df || 1.0)}%
                         </div>
                       </div>
                     </div>
@@ -542,15 +543,15 @@ function renderVentilationTab() {
                   <div class="card-quartz" style="padding: 12px; border-left: 3px solid ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}; background: hsla(220, 20%, 100%, 0.03);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                       <div>
-                        <div style="font-weight: 700; color: white;">${v.zone_name || 'Zone'}</div>
-                        <div style="font-size: 0.7rem; color: var(--text-tertiary);">${v.system_type || 'Mechanical'}</div>
+                        <div style="font-weight: 700; color: white;">${escapeHtml(v.zone_name || 'Zone')}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(v.system_type || 'Mechanical')}</div>
                       </div>
                       <div style="text-align: right;">
                         <div style="font-weight: 800; color: ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}; font-size: 1.1rem;">
-                          ${v.ach || 0} ACH
+                          ${escapeHtml(v.ach || 0)} ACH
                         </div>
                         <div style="font-size: 0.65rem; color: var(--text-tertiary);">
-                          Min: ${v.required_ach || 4} ACH
+                          Min: ${escapeHtml(v.required_ach || 4)} ACH
                         </div>
                       </div>
                     </div>
@@ -679,15 +680,15 @@ function renderNoiseTab() {
                   <div class="card-quartz" style="padding: 12px; border-left: 3px solid ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}; background: hsla(220, 20%, 100%, 0.03);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                       <div>
-                        <div style="font-weight: 700; color: white;">${m.room_name || 'Ruangan'}</div>
-                        <div style="font-size: 0.7rem; color: var(--text-tertiary);">${m.db_level || 0} dB @ ${m.frequency || 1000}Hz</div>
+                        <div style="font-weight: 700; color: white;">${escapeHtml(m.room_name || 'Ruangan')}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(m.db_level || 0)} dB @ ${escapeHtml(m.frequency || 1000)}Hz</div>
                       </div>
                       <div style="text-align: right;">
                         <div style="font-weight: 800; color: ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}; font-size: 1.1rem;">
-                          NC ${m.nc_rating || 'N/A'}
+                          NC ${escapeHtml(m.nc_rating || 'N/A')}
                         </div>
                         <div style="font-size: 0.65rem; color: var(--text-tertiary);">
-                          Target: NC ${m.target_nc || 35}
+                          Target: NC ${escapeHtml(m.target_nc || 35)}
                         </div>
                       </div>
                     </div>
@@ -706,7 +707,7 @@ function renderNoiseTab() {
           Noise Criteria Reference (SNI 8421:2017)
         </h5>
         <div style="overflow-x: auto;">
-          <table style="width: 100%; font-size: 0.75rem;">
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width: 100%; font-size: 0.75rem;">
             <thead>
               <tr style="border-bottom: 1px solid hsla(220, 20%, 100%, 0.1);">
                 <th style="text-align: left; padding: 8px; color: var(--text-tertiary);">Room Type</th>
@@ -746,7 +747,7 @@ function renderNoiseTab() {
                 <td style="padding: 8px; color: white; text-align: center;">55-70</td>
               </tr>
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
     </div>
@@ -833,15 +834,15 @@ function renderVibrationTab() {
                   <div class="card-quartz" style="padding: 12px; border-left: 3px solid ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}; background: hsla(220, 20%, 100%, 0.03);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                       <div>
-                        <div style="font-weight: 700; color: white;">${m.location || 'Lokasi'}</div>
-                        <div style="font-size: 0.7rem; color: var(--text-tertiary);">${m.category || 'Office'}</div>
+                        <div style="font-weight: 700; color: white;">${escapeHtml(m.location || 'Lokasi')}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(m.category || 'Office')}</div>
                       </div>
                       <div style="text-align: right;">
                         <div style="font-weight: 800; color: ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}; font-size: 1.1rem;">
-                          ${m.velocity_mm_s || 0} mm/s
+                          ${escapeHtml(m.velocity_mm_s || 0)} mm/s
                         </div>
                         <div style="font-size: 0.65rem; color: var(--text-tertiary);">
-                          Limit: ${limit} mm/s
+                          Limit: ${escapeHtml(limit)} mm/s
                         </div>
                       </div>
                     </div>
@@ -1357,13 +1358,13 @@ function calculateDaylightFactor(e) {
   resultDiv.innerHTML = `
     <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; border: 1px solid ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}">
       <div style="text-align: center; margin-bottom: 12px;">
-        <div style="font-size: 0.75rem; color: var(--text-tertiary);">${room}</div>
-        <div style="font-size: 2rem; font-weight: 800; color: ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}">${df.toFixed(2)}%</div>
+        <div style="font-size: 0.75rem; color: var(--text-tertiary);">${escapeHtml(room)}</div>
+        <div style="font-size: 2rem; font-weight: 800; color: ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(df.toFixed(2))}%</div>
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.7rem; text-align: center;">
         <div>
           <div style="color: var(--text-tertiary);">Required</div>
-          <div style="color: white; font-weight: 600;">${required}%</div>
+          <div style="color: white; font-weight: 600;">${escapeHtml(required)}%</div>
         </div>
         <div>
           <div style="color: var(--text-tertiary);">Status</div>
@@ -1392,13 +1393,13 @@ function calculateACH(e) {
   resultDiv.innerHTML = `
     <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; border: 1px solid ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}">
       <div style="text-align: center; margin-bottom: 12px;">
-        <div style="font-size: 0.75rem; color: var(--text-tertiary);">${room}</div>
-        <div style="font-size: 2rem; font-weight: 800; color: ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}">${ach.toFixed(1)} ACH</div>
+        <div style="font-size: 0.75rem; color: var(--text-tertiary);">${escapeHtml(room)}</div>
+        <div style="font-size: 2rem; font-weight: 800; color: ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(ach.toFixed(1))} ACH</div>
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.7rem; text-align: center;">
         <div>
           <div style="color: var(--text-tertiary);">Required</div>
-          <div style="color: white; font-weight: 600;">${required} ACH</div>
+          <div style="color: white; font-weight: 600;">${escapeHtml(required)} ACH</div>
         </div>
         <div>
           <div style="color: var(--text-tertiary);">Status</div>
@@ -1427,14 +1428,14 @@ function calculateNC(e) {
   resultDiv.innerHTML = `
     <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; border: 1px solid ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}">
       <div style="text-align: center; margin-bottom: 12px;">
-        <div style="font-size: 0.75rem; color: var(--text-tertiary);">${room}</div>
-        <div style="font-size: 2rem; font-weight: 800; color: ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}">NC ${nc}</div>
-        <div style="font-size: 0.9rem; color: var(--text-secondary);">${dba} dBA measured</div>
+        <div style="font-size: 0.75rem; color: var(--text-tertiary);">${escapeHtml(room)}</div>
+        <div style="font-size: 2rem; font-weight: 800; color: ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}">NC ${escapeHtml(nc)}</div>
+        <div style="font-size: 0.9rem; color: var(--text-secondary);">${escapeHtml(dba)} dBA measured</div>
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.7rem; text-align: center;">
         <div>
           <div style="color: var(--text-tertiary);">Target NC</div>
-          <div style="color: white; font-weight: 600;">${target}</div>
+          <div style="color: white; font-weight: 600;">${escapeHtml(target)}</div>
         </div>
         <div>
           <div style="color: var(--text-tertiary);">Status</div>
@@ -1470,21 +1471,21 @@ function calculateVibration(e) {
   resultDiv.innerHTML = `
     <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; border: 1px solid ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}">
       <div style="text-align: center; margin-bottom: 12px;">
-        <div style="font-size: 0.75rem; color: var(--text-tertiary);">${location}</div>
-        <div style="font-size: 2rem; font-weight: 800; color: ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}">${velocity.toFixed(2)} mm/s</div>
+        <div style="font-size: 0.75rem; color: var(--text-tertiary);">${escapeHtml(location)}</div>
+        <div style="font-size: 2rem; font-weight: 800; color: ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(velocity.toFixed(2))} mm/s</div>
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 0.7rem; text-align: center;">
         <div>
           <div style="color: var(--text-tertiary);">Category</div>
-          <div style="color: white; font-weight: 600;">${category}</div>
+          <div style="color: white; font-weight: 600;">${escapeHtml(category)}</div>
         </div>
         <div>
           <div style="color: var(--text-tertiary);">Limit</div>
-          <div style="color: white; font-weight: 600;">${limit} mm/s</div>
+          <div style="color: white; font-weight: 600;">${escapeHtml(limit)} mm/s</div>
         </div>
         <div>
           <div style="color: var(--text-tertiary);">Margin</div>
-          <div style="color: ${margin >= 0 ? 'var(--success-400)' : 'var(--warning-400)'}; font-weight: 600;">${margin.toFixed(2)} mm/s</div>
+          <div style="color: ${margin >= 0 ? 'var(--success-400)' : 'var(--warning-400)'}; font-weight: 600;">${escapeHtml(margin.toFixed(2))} mm/s</div>
         </div>
       </div>
     </div>

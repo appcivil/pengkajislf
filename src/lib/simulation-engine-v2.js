@@ -15,6 +15,7 @@
 
 import { supabase } from './supabase.js';
 
+import { escapeHtml } from './safe-markdown.js';
 // ============================================================
 // WEB WORKER MANAGEMENT
 // ============================================================
@@ -649,20 +650,20 @@ export function createSimulationPanel(type, onRun) {
   
   container.innerHTML = `
     <div class="card" style="padding:20px">
-      <h3 style="margin-bottom:16px"><i class="fas ${config.icon}"></i> ${config.title}</h3>
+      <h3 style="margin-bottom:16px"><i class="fas ${config.icon}"></i> ${escapeHtml(config.title)}</h3>
       <div class="simulation-form" style="display:grid;gap:12px">
         ${config.fields.map(f => `
           <div>
-            <label style="display:block;font-size:12px;color:var(--text-tertiary);margin-bottom:4px">${f.label}</label>
+            <label style="display:block;font-size:12px;color:var(--text-tertiary);margin-bottom:4px">${escapeHtml(f.label)}</label>
             ${f.type === 'select' ? `
-              <select id="sim-${f.id}" class="input" style="width:100%">
-                ${f.options.map(o => `<option value="${o}" ${f.value === o ? 'selected' : ''}>${o}</option>`).join('')}
+              <select id="sim-${escapeHtml(f.id)}" class="input" style="width:100%">
+                ${f.options.map(o => `<option value="${escapeHtml(o)}" ${f.value === o ? 'selected' : ''}>${escapeHtml(o)}</option>`).join('')}
               </select>
             ` : `
-              <input type="${f.type}" id="sim-${f.id}" class="input" value="${f.value}" 
-                ${f.min ? `min="${f.min}"` : ''} 
-                ${f.max ? `max="${f.max}"` : ''} 
-                ${f.step ? `step="${f.step}"` : ''}
+              <input type="${escapeHtml(f.type)}" id="sim-${escapeHtml(f.id)}" class="input" value="${escapeHtml(f.value)}" 
+                ${f.min ? `min="${escapeHtml(f.min)}"` : ''} 
+                ${f.max ? `max="${escapeHtml(f.max)}"` : ''} 
+                ${f.step ? `step="${escapeHtml(f.step)}"` : ''}
                 style="width:100%">
             `}
           </div>
@@ -698,7 +699,7 @@ export function createSimulationPanel(type, onRun) {
       resultDiv.innerHTML = renderSimulationResult(result);
     } catch (err) {
       resultDiv.innerHTML = `<div style="color:var(--danger);padding:12px;background:var(--bg-subtle);border-radius:8px">
-        <i class="fas fa-exclamation-triangle"></i> Error: ${err.message}
+        <i class="fas fa-exclamation-triangle"></i> Error: ${escapeHtml(err.message)}
       </div>`;
       console.error('[Simulation Error]', err);
     } finally {
@@ -717,17 +718,17 @@ function renderSimulationResult(result) {
   return `
     <div style="background:var(--bg-subtle);padding:16px;border-radius:8px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-        <span style="padding:4px 12px;border-radius:4px;font-size:12px;font-weight:600;background:var(--${complianceClass});color:white">
-          ${complianceText}
+        <span style="padding:4px 12px;border-radius:4px;font-size:12px;font-weight:600;background:var(--${escapeHtml(complianceClass)});color:white">
+          ${escapeHtml(complianceText)}
         </span>
-        <span style="font-size:12px;color:var(--text-tertiary)">${result.sni_reference || ''}</span>
+        <span style="font-size:12px;color:var(--text-tertiary)">${escapeHtml(result.sni_reference || '')}</span>
       </div>
       
       ${result.recommendations ? `
         <div style="margin-bottom:12px">
           <h4 style="font-size:14px;margin-bottom:8px"><i class="fas fa-lightbulb"></i> Rekomendasi</h4>
           <ul style="font-size:12px;margin:0;padding-left:16px">
-            ${result.recommendations.map(r => `<li style="margin-bottom:4px">${r}</li>`).join('')}
+            ${result.recommendations.map(r => `<li style="margin-bottom:4px">${escapeHtml(r)}</li>`).join('')}
           </ul>
         </div>
       ` : ''}

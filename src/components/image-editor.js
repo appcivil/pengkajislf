@@ -4,6 +4,7 @@
  */
 import { openModal, closeModal } from './modal.js';
 
+import { escapeHtml } from '../lib/safe-markdown.js';
 /**
  * Opens the image editor for a given image file or data URL.
  * @param {File|string} source - The image file or data URL to edit.
@@ -44,7 +45,7 @@ function startEditor(imgSrc, resolve, reject) {
       </div>
       
       <div id="canvas-wrapper" style="position:relative; width:100%; height:450px; background:#000; border-radius:var(--radius-md); overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:crosshair;">
-        <canvas id="${canvasId}" style="max-width:100%; max-height:100%; object-fit:contain;"></canvas>
+        <canvas id="${escapeHtml(canvasId)}" style="max-width:100%; max-height:100%; object-fit:contain;"></canvas>
       </div>
       
       <div class="editor-hint" style="font-size:0.7rem; color:var(--text-tertiary); text-align:center;">
@@ -141,11 +142,15 @@ function startEditor(imgSrc, resolve, reject) {
 
   canvas.addEventListener('mousedown', startDrawing);
   canvas.addEventListener('mousemove', draw);
-  window.addEventListener('mouseup', stopDrawing);
+  // Listener `window` disimpan sebagai referensi agar bisa dilepas saat
+  // editor ditutup; tanpa itu, setiap kali editor dibuka meninggalkan
+  // dua listener di `window` yang memegang DOM editor lama.
+  const ac = new AbortController();
+  window.addEventListener('mouseup', stopDrawing, { signal: ac.signal });
   
   canvas.addEventListener('touchstart', startDrawing);
   canvas.addEventListener('touchmove', draw);
-  window.addEventListener('touchend', stopDrawing);
+  window.addEventListener('touchend', stopDrawing, { signal: ac.signal });
 
   // Toolbar events
   document.getElementById('tool-undo').onclick = undo;

@@ -1,3 +1,4 @@
+import { escapeHtml } from './safe-markdown.js';
 // ============================================================
 //  SIMULATION VISUALIZATION SERVICE
 //  Generate gambar teknis dari hasil simulasi untuk laporan
@@ -39,10 +40,10 @@ export function generateEvacuationVisualization(result) {
   };
   
   // Generate SVG
-  let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">`;
+  let svg = `<svg width="${escapeHtml(width)}" height="${escapeHtml(height)}" xmlns="http://www.w3.org/2000/svg">`;
   
   // Background
-  svg += `<rect width="${width}" height="${height}" fill="#f8fafc"/>`;
+  svg += `<rect width="${escapeHtml(width)}" height="${escapeHtml(height)}" fill="#f8fafc"/>`;
   
   // Title
   svg += `<text x="${width/2}" y="30" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold" fill="#1e293b">DIAGRAM JALUR EVAKUASI</text>`;
@@ -71,8 +72,8 @@ export function generateEvacuationVisualization(result) {
       const strokeWidth = isBottleneck ? 4 : 2;
       const dashArray = isBottleneck ? '5,5' : '0';
       
-      svg += `<line x1="${fromPos.x}" y1="${fromPos.y}" x2="${toPos.x}" y2="${toPos.y}" 
-        stroke="${strokeColor}" stroke-width="${strokeWidth}" stroke-dasharray="${dashArray}"/>`;
+      svg += `<line x1="${escapeHtml(fromPos.x)}" y1="${escapeHtml(fromPos.y)}" x2="${escapeHtml(toPos.x)}" y2="${escapeHtml(toPos.y)}" 
+        stroke="${escapeHtml(strokeColor)}" stroke-width="${escapeHtml(strokeWidth)}" stroke-dasharray="${escapeHtml(dashArray)}"/>`;
     }
   });
   
@@ -84,25 +85,25 @@ export function generateEvacuationVisualization(result) {
     
     // Node circle
     const radius = isExit ? 30 : 25;
-    svg += `<circle cx="${pos.x}" cy="${pos.y}" r="${radius}" fill="${color}" stroke="white" stroke-width="3"/>`;
+    svg += `<circle cx="${escapeHtml(pos.x)}" cy="${escapeHtml(pos.y)}" r="${escapeHtml(radius)}" fill="${escapeHtml(color)}" stroke="white" stroke-width="3"/>`;
     
     // Label
-    svg += `<text x="${pos.x}" y="${pos.y - radius - 10}" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#475968">${pos.label}</text>`;
+    svg += `<text x="${escapeHtml(pos.x)}" y="${pos.y - radius - 10}" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#475968">${escapeHtml(pos.label)}</text>`;
     
     // Time label (if available)
     if (detail) {
-      svg += `<text x="${pos.x}" y="${pos.y + 5}" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="white">${Math.round(detail.evacuation_time)}s</text>`;
+      svg += `<text x="${escapeHtml(pos.x)}" y="${pos.y + 5}" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="white">${Math.round(detail.evacuation_time)}s</text>`;
     }
     
     // Exit icon
     if (isExit) {
-      svg += `<text x="${pos.x}" y="${pos.y + radius + 15}" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#10b981" font-weight="bold">EXIT</text>`;
+      svg += `<text x="${escapeHtml(pos.x)}" y="${pos.y + radius + 15}" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#10b981" font-weight="bold">EXIT</text>`;
     }
   });
   
   // Legend
   const legendY = height - 80;
-  svg += `<rect x="30" y="${legendY}" width="200" height="70" fill="white" stroke="#e2e8f0" stroke-width="1" rx="8"/>`;
+  svg += `<rect x="30" y="${escapeHtml(legendY)}" width="200" height="70" fill="white" stroke="#e2e8f0" stroke-width="1" rx="8"/>`;
   svg += `<text x="40" y="${legendY + 20}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#1e293b">LEGENDA:</text>`;
   
   // Legend items
@@ -114,8 +115,8 @@ export function generateEvacuationVisualization(result) {
   
   legendItems.forEach((item, i) => {
     const y = legendY + 35 + (i * 15);
-    svg += `<circle cx="50" cy="${y}" r="6" fill="${item.color}"/>`;
-    svg += `<text x="65" y="${y + 4}" font-family="sans-serif" font-size="10" fill="#475968">${item.label}</text>`;
+    svg += `<circle cx="50" cy="${escapeHtml(y)}" r="6" fill="${escapeHtml(item.color)}"/>`;
+    svg += `<text x="65" y="${y + 4}" font-family="sans-serif" font-size="10" fill="#475968">${escapeHtml(item.label)}</text>`;
   });
   
   // Bottleneck indicator
@@ -125,10 +126,10 @@ export function generateEvacuationVisualization(result) {
   }
   
   // Stats box
-  svg += `<rect x="${width - 220}" y="${legendY}" width="190" height="70" fill="white" stroke="#e2e8f0" stroke-width="1" rx="8"/>`;
+  svg += `<rect x="${width - 220}" y="${escapeHtml(legendY)}" width="190" height="70" fill="white" stroke="#e2e8f0" stroke-width="1" rx="8"/>`;
   svg += `<text x="${width - 210}" y="${legendY + 20}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#1e293b">STATISTIK:</text>`;
-  svg += `<text x="${width - 210}" y="${legendY + 38}" font-family="sans-serif" font-size="10" fill="#475968">Waktu rata-rata: ${result.average_evacuation_time}s</text>`;
-  svg += `<text x="${width - 210}" y="${legendY + 55}" font-family="sans-serif" font-size="10" fill="#475968">Waktu maksimum: ${result.maximum_evacuation_time}s</text>`;
+  svg += `<text x="${width - 210}" y="${legendY + 38}" font-family="sans-serif" font-size="10" fill="#475968">Waktu rata-rata: ${escapeHtml(result.average_evacuation_time)}s</text>`;
+  svg += `<text x="${width - 210}" y="${legendY + 55}" font-family="sans-serif" font-size="10" fill="#475968">Waktu maksimum: ${escapeHtml(result.maximum_evacuation_time)}s</text>`;
   
   svg += `</svg>`;
   
@@ -156,14 +157,14 @@ export function generateLightingHeatmap(result) {
     return '#ef4444'; // Poor - red
   };
   
-  let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">`;
+  let svg = `<svg width="${escapeHtml(width)}" height="${escapeHtml(height)}" xmlns="http://www.w3.org/2000/svg">`;
   
   // Background
-  svg += `<rect width="${width}" height="${height}" fill="#f8fafc"/>`;
+  svg += `<rect width="${escapeHtml(width)}" height="${escapeHtml(height)}" fill="#f8fafc"/>`;
   
   // Title
   svg += `<text x="${width/2}" y="30" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold" fill="#1e293b">DISTRIBUSI PENCAYAAN ALAMI</text>`;
-  svg += `<text x="${width/2}" y="50" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#64748b">Daylight Factor per Zona | Rata-rata: ${daylight_factor_avg}%</text>`;
+  svg += `<text x="${width/2}" y="50" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#64748b">Daylight Factor per Zona | Rata-rata: ${escapeHtml(daylight_factor_avg)}%</text>`;
   
   // Grid layout (2x2)
   const gridLayout = [
@@ -185,14 +186,14 @@ export function generateLightingHeatmap(result) {
     const color = getDFColor(df);
     
     // Cell rectangle
-    svg += `<rect x="${cell.x}" y="${cell.y}" width="${cellWidth}" height="${cellHeight}" 
-      fill="${color}" opacity="0.3" stroke="${color}" stroke-width="2" rx="8"/>`;
+    svg += `<rect x="${escapeHtml(cell.x)}" y="${escapeHtml(cell.y)}" width="${escapeHtml(cellWidth)}" height="${escapeHtml(cellHeight)}" 
+      fill="${escapeHtml(color)}" opacity="0.3" stroke="${escapeHtml(color)}" stroke-width="2" rx="8"/>`;
     
     // Zone label
-    svg += `<text x="${cell.x + cellWidth/2}" y="${cell.y + 25}" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#1e293b">${cell.label}</text>`;
+    svg += `<text x="${cell.x + cellWidth/2}" y="${cell.y + 25}" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#1e293b">${escapeHtml(cell.label)}</text>`;
     
     // Daylight factor value
-    svg += `<text x="${cell.x + cellWidth/2}" y="${cell.y + 55}" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="bold" fill="${color}">${df}%</text>`;
+    svg += `<text x="${cell.x + cellWidth/2}" y="${cell.y + 55}" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="bold" fill="${escapeHtml(color)}">${escapeHtml(df)}%</text>`;
     
     // Illuminance
     const lux = cell.zone?.illuminance || 0;
@@ -201,7 +202,7 @@ export function generateLightingHeatmap(result) {
   
   // Legend
   const legendY = height - 50;
-  svg += `<text x="40" y="${legendY}" font-family="sans-serif" font-size="11" font-weight="bold" fill="#1e293b">Daylight Factor (SNI 03-2396-2001):</text>`;
+  svg += `<text x="40" y="${escapeHtml(legendY)}" font-family="sans-serif" font-size="11" font-weight="bold" fill="#1e293b">Daylight Factor (SNI 03-2396-2001):</text>`;
   
   const legendItems = [
     { color: '#22c55e', label: 'Baik (≥2%)', min: 2 },
@@ -212,8 +213,8 @@ export function generateLightingHeatmap(result) {
   
   legendItems.forEach((item, i) => {
     const x = 40 + (i * 130);
-    svg += `<rect x="${x}" y="${legendY + 10}" width="15" height="15" fill="${item.color}" rx="3"/>`;
-    svg += `<text x="${x + 20}" y="${legendY + 22}" font-family="sans-serif" font-size="9" fill="#475968">${item.label}</text>`;
+    svg += `<rect x="${escapeHtml(x)}" y="${legendY + 10}" width="15" height="15" fill="${escapeHtml(item.color)}" rx="3"/>`;
+    svg += `<text x="${x + 20}" y="${legendY + 22}" font-family="sans-serif" font-size="9" fill="#475968">${escapeHtml(item.label)}</text>`;
   });
   
   svg += `</svg>`;
@@ -237,18 +238,18 @@ export function generateNDTChart(result) {
   const chartWidth = width - chartPadding.left - chartPadding.right;
   const chartHeight = height - chartPadding.top - chartPadding.bottom;
   
-  let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">`;
+  let svg = `<svg width="${escapeHtml(width)}" height="${escapeHtml(height)}" xmlns="http://www.w3.org/2000/svg">`;
   
   // Background
-  svg += `<rect width="${width}" height="${height}" fill="#f8fafc"/>`;
+  svg += `<rect width="${escapeHtml(width)}" height="${escapeHtml(height)}" fill="#f8fafc"/>`;
   
   // Title
   const title = isRebound ? 'HASIL UJI REBOUND HAMMER' : 'HASIL UJI UPV';
-  svg += `<text x="${width/2}" y="30" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold" fill="#1e293b">${title}</text>`;
-  svg += `<text x="${width/2}" y="50" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#64748b">${testPoints} Titik Pengujian</text>`;
+  svg += `<text x="${width/2}" y="30" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold" fill="#1e293b">${escapeHtml(title)}</text>`;
+  svg += `<text x="${width/2}" y="50" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#64748b">${escapeHtml(testPoints)} Titik Pengujian</text>`;
   
   // Chart area background
-  svg += `<rect x="${chartPadding.left}" y="${chartPadding.top}" width="${chartWidth}" height="${chartHeight}" fill="white" stroke="#e2e8f0" stroke-width="1"/>`;
+  svg += `<rect x="${escapeHtml(chartPadding.left)}" y="${escapeHtml(chartPadding.top)}" width="${escapeHtml(chartWidth)}" height="${escapeHtml(chartHeight)}" fill="white" stroke="#e2e8f0" stroke-width="1"/>`;
   
   // Y-axis grid lines
   const yMax = isRebound ? 60 : 5;
@@ -257,13 +258,13 @@ export function generateNDTChart(result) {
     const y = chartPadding.top + chartHeight - (i * chartHeight / ySteps);
     const value = Math.round(i * yMax / ySteps);
     
-    svg += `<line x1="${chartPadding.left}" y1="${y}" x2="${width - chartPadding.right}" y2="${y}" stroke="#e2e8f0" stroke-width="1"/>`;
-    svg += `<text x="${chartPadding.left - 10}" y="${y + 4}" text-anchor="end" font-family="sans-serif" font-size="10" fill="#64748b">${value}</text>`;
+    svg += `<line x1="${escapeHtml(chartPadding.left)}" y1="${escapeHtml(y)}" x2="${width - chartPadding.right}" y2="${escapeHtml(y)}" stroke="#e2e8f0" stroke-width="1"/>`;
+    svg += `<text x="${chartPadding.left - 10}" y="${y + 4}" text-anchor="end" font-family="sans-serif" font-size="10" fill="#64748b">${escapeHtml(value)}</text>`;
   }
   
   // Y-axis label
   const yLabel = isRebound ? 'Nilai Rebound (R)' : 'Pulse Velocity (km/s)';
-  svg += `<text x="20" y="${height/2}" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b" transform="rotate(-90, 20, ${height/2})">${yLabel}</text>`;
+  svg += `<text x="20" y="${height/2}" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b" transform="rotate(-90, 20, ${height/2})">${escapeHtml(yLabel)}</text>`;
   
   // Bars
   const barWidth = Math.min(40, chartWidth / testPoints - 5);
@@ -287,10 +288,10 @@ export function generateNDTChart(result) {
       else color = '#22c55e';
     }
     
-    svg += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" fill="${color}" opacity="0.8" rx="4"/>`;
+    svg += `<rect x="${escapeHtml(x)}" y="${escapeHtml(y)}" width="${escapeHtml(barWidth)}" height="${escapeHtml(barHeight)}" fill="${escapeHtml(color)}" opacity="0.8" rx="4"/>`;
     
     // Value label on top
-    svg += `<text x="${x + barWidth/2}" y="${y - 5}" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1e293b">${val}</text>`;
+    svg += `<text x="${x + barWidth/2}" y="${y - 5}" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1e293b">${escapeHtml(val)}</text>`;
     
     // X-axis label
     svg += `<text x="${x + barWidth/2}" y="${chartPadding.top + chartHeight + 20}" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#64748b">T${i+1}</text>`;
@@ -299,20 +300,20 @@ export function generateNDTChart(result) {
   // Mean line
   const meanValue = isRebound ? result.rebound_mean : result.velocity_mean;
   const meanY = chartPadding.top + chartHeight - ((meanValue / maxValue) * chartHeight);
-  svg += `<line x1="${chartPadding.left}" y1="${meanY}" x2="${width - chartPadding.right}" y2="${meanY}" stroke="#dc2626" stroke-width="2" stroke-dasharray="5,5"/>`;
-  svg += `<text x="${width - chartPadding.right + 5}" y="${meanY + 4}" font-family="sans-serif" font-size="10" fill="#dc2626" font-weight="bold">Mean: ${meanValue}</text>`;
+  svg += `<line x1="${escapeHtml(chartPadding.left)}" y1="${escapeHtml(meanY)}" x2="${width - chartPadding.right}" y2="${escapeHtml(meanY)}" stroke="#dc2626" stroke-width="2" stroke-dasharray="5,5"/>`;
+  svg += `<text x="${width - chartPadding.right + 5}" y="${meanY + 4}" font-family="sans-serif" font-size="10" fill="#dc2626" font-weight="bold">Mean: ${escapeHtml(meanValue)}</text>`;
   
   // Stats box
   const statsY = height - 40;
-  svg += `<rect x="${width - 200}" y="${statsY}" width="180" height="35" fill="white" stroke="#e2e8f0" stroke-width="1" rx="6"/>`;
+  svg += `<rect x="${width - 200}" y="${escapeHtml(statsY)}" width="180" height="35" fill="white" stroke="#e2e8f0" stroke-width="1" rx="6"/>`;
   
   const meanLabel = isRebound ? `fc = ${result.fc_mean} MPa` : `VP = ${result.velocity_mean} km/s`;
   const category = result.compliance?.category || result.quality_rating || '-';
   const categoryColor = category === 'Good' || category === 'Excellent' ? '#22c55e' : 
                         category === 'Fair' ? '#84cc16' : '#ef4444';
   
-  svg += `<text x="${width - 190}" y="${statsY + 15}" font-family="sans-serif" font-size="10" font-weight="bold" fill="#1e293b">${meanLabel}</text>`;
-  svg += `<text x="${width - 190}" y="${statsY + 28}" font-family="sans-serif" font-size="9" fill="${categoryColor}" font-weight="bold">Kategori: ${category}</text>`;
+  svg += `<text x="${width - 190}" y="${statsY + 15}" font-family="sans-serif" font-size="10" font-weight="bold" fill="#1e293b">${escapeHtml(meanLabel)}</text>`;
+  svg += `<text x="${width - 190}" y="${statsY + 28}" font-family="sans-serif" font-size="9" fill="${escapeHtml(categoryColor)}" font-weight="bold">Kategori: ${escapeHtml(category)}</text>`;
   
   svg += `</svg>`;
   
@@ -330,10 +331,10 @@ export function generateVentilationVisualization(result) {
   const width = 600;
   const height = 400;
   
-  let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">`;
+  let svg = `<svg width="${escapeHtml(width)}" height="${escapeHtml(height)}" xmlns="http://www.w3.org/2000/svg">`;
   
   // Background
-  svg += `<rect width="${width}" height="${height}" fill="#f8fafc"/>`;
+  svg += `<rect width="${escapeHtml(width)}" height="${escapeHtml(height)}" fill="#f8fafc"/>`;
   
   // Title
   svg += `<text x="${width/2}" y="30" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold" fill="#1e293b">ANALISIS VENTILASI ALAMI</text>`;
@@ -356,28 +357,28 @@ export function generateVentilationVisualization(result) {
   const achAngle = startAngle + (air_changes_per_hour / maxAch) * (endAngle - startAngle + 360);
   const achColor = air_changes_per_hour >= 5 ? '#22c55e' : air_changes_per_hour >= 3 ? '#f59e0b' : '#ef4444';
   
-  svg += `<path d="${describeArc(centerX, centerY, radius, startAngle, achAngle)}" fill="none" stroke="${achColor}" stroke-width="20" stroke-linecap="round"/>`;
+  svg += `<path d="${describeArc(centerX, centerY, radius, startAngle, achAngle)}" fill="none" stroke="${escapeHtml(achColor)}" stroke-width="20" stroke-linecap="round"/>`;
   
   // Center text
-  svg += `<text x="${centerX}" y="${centerY - 10}" text-anchor="middle" font-family="sans-serif" font-size="36" font-weight="bold" fill="#1e293b">${air_changes_per_hour.toFixed(1)}</text>`;
-  svg += `<text x="${centerX}" y="${centerY + 15}" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#64748b">ACH</text>`;
-  svg += `<text x="${centerX}" y="${centerY + 35}" text-anchor="middle" font-family="sans-serif" font-size="10" fill="${achColor}" font-weight="bold">${compliance?.category || 'Unknown'}</text>`;
+  svg += `<text x="${escapeHtml(centerX)}" y="${centerY - 10}" text-anchor="middle" font-family="sans-serif" font-size="36" font-weight="bold" fill="#1e293b">${escapeHtml(air_changes_per_hour.toFixed(1))}</text>`;
+  svg += `<text x="${escapeHtml(centerX)}" y="${centerY + 15}" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#64748b">ACH</text>`;
+  svg += `<text x="${escapeHtml(centerX)}" y="${centerY + 35}" text-anchor="middle" font-family="sans-serif" font-size="10" fill="${escapeHtml(achColor)}" font-weight="bold">${compliance?.category || 'Unknown'}</text>`;
   
   // Airflow info
-  svg += `<text x="${centerX}" y="${centerY + 70}" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">Airflow: ${airflow_rate.toFixed(3)} m³/s</text>`;
+  svg += `<text x="${escapeHtml(centerX)}" y="${centerY + 70}" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">Airflow: ${escapeHtml(airflow_rate.toFixed(3))} m³/s</text>`;
   
   // Zone temperatures
   const zoneY = 320;
-  svg += `<text x="40" y="${zoneY}" font-family="sans-serif" font-size="11" font-weight="bold" fill="#1e293b">Distribusi Suhu per Zona:</text>`;
+  svg += `<text x="40" y="${escapeHtml(zoneY)}" font-family="sans-serif" font-size="11" font-weight="bold" fill="#1e293b">Distribusi Suhu per Zona:</text>`;
   
   zones?.forEach((zone, i) => {
     const x = 40 + (i * 180);
     const tempColor = zone.temperature < 28 ? '#22c55e' : zone.temperature < 30 ? '#f59e0b' : '#ef4444';
     
-    svg += `<rect x="${x}" y="${zoneY + 10}" width="160" height="50" fill="white" stroke="#e2e8f0" stroke-width="1" rx="6"/>`;
-    svg += `<text x="${x + 10}" y="${zoneY + 28}" font-family="sans-serif" font-size="10" font-weight="bold" fill="#1e293b">${zone.zone}</text>`;
-    svg += `<text x="${x + 10}" y="${zoneY + 45}" font-family="sans-serif" font-size="14" font-weight="bold" fill="${tempColor}">${zone.temperature}°C</text>`;
-    svg += `<text x="${x + 80}" y="${zoneY + 45}" font-family="sans-serif" font-size="9" fill="#64748b">${zone.comfort}</text>`;
+    svg += `<rect x="${escapeHtml(x)}" y="${zoneY + 10}" width="160" height="50" fill="white" stroke="#e2e8f0" stroke-width="1" rx="6"/>`;
+    svg += `<text x="${x + 10}" y="${zoneY + 28}" font-family="sans-serif" font-size="10" font-weight="bold" fill="#1e293b">${escapeHtml(zone.zone)}</text>`;
+    svg += `<text x="${x + 10}" y="${zoneY + 45}" font-family="sans-serif" font-size="14" font-weight="bold" fill="${escapeHtml(tempColor)}">${escapeHtml(zone.temperature)}°C</text>`;
+    svg += `<text x="${x + 80}" y="${zoneY + 45}" font-family="sans-serif" font-size="9" fill="#64748b">${escapeHtml(zone.comfort)}</text>`;
   });
   
   svg += `</svg>`;

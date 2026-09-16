@@ -159,6 +159,12 @@ export async function signOut() {
   try {
     await supabase.auth.signOut();
   } catch(e) { /* ignore error on signout */ }
+  // EGRESS GUARD: buang cache data user agar tidak tertinggal di perangkat
+  // (penting untuk perangkat yang dipakai bergantian di lapangan).
+  try {
+    const { guardedFetch } = await import('./egress/index.js');
+    await guardedFetch.__reset?.();
+  } catch(e) { /* ignore */ }
   localStorage.removeItem(DEV_USER_KEY);
   _currentUser = null;
   notifyListeners(null);

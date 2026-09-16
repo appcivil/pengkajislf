@@ -3,6 +3,7 @@
 // ============================================================
 
 import { BaseInspection } from './BaseInspection.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { InspectionWidgets } from '../../components/inspection/inspection-widgets.js';
 import { showSuccess, showError, showInfo } from '../../components/toast.js';
 
@@ -90,7 +91,7 @@ export class WaterInspection extends BaseInspection {
               ${['PDAM', 'Sumur Bor', 'Air Hujan'].map(source => `
                 <div class="card-quartz" style="padding: 16px; text-align: center; ${assessment.water_source === source ? 'border: 2px solid var(--brand-400);' : ''}">
                   <i class="fas fa-${source === 'PDAM' ? 'faucet' : source === 'Sumur Bor' ? 'arrow-down' : 'cloud-rain'}" style="font-size: 1.5rem; color: var(--brand-400); margin-bottom: 8px;"></i>
-                  <div style="font-size: 0.9rem; font-weight: 600; color: white;">${source}</div>
+                  <div style="font-size: 0.9rem; font-weight: 600; color: white;">${escapeHtml(source)}</div>
                   ${assessment.water_source === source ? '<div style="font-size: 0.75rem; color: var(--success-400);">✓ Digunakan</div>' : ''}
                 </div>
               `).join('')}
@@ -115,8 +116,8 @@ export class WaterInspection extends BaseInspection {
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 20px;">
           <div class="card-quartz" style="padding: 20px;">
             <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-bottom: 8px;">Standar Kebutuhan</div>
-            <div style="font-size: 1.8rem; font-weight: 800; color: var(--brand-400);">${requirement}</div>
-            <div style="font-size: 0.75rem; color: var(--text-tertiary);">Liter/orang/hari (${buildingType})</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: var(--brand-400);">${escapeHtml(requirement)}</div>
+            <div style="font-size: 0.75rem; color: var(--text-tertiary);">Liter/orang/hari (${escapeHtml(buildingType)})</div>
           </div>
           <div class="card-quartz" style="padding: 20px;">
             <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-bottom: 8px;">Total Kebutuhan/Hari</div>

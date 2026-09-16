@@ -4,6 +4,7 @@
  */
 import { store, updateWorkspace, updateUI } from '../../lib/store.js';
 
+import { escapeHtml } from '../../lib/safe-markdown.js';
 export function renderToolbar() {
   const { workspace, ui } = store.get();
   
@@ -12,7 +13,7 @@ export function renderToolbar() {
       <div class="drive-breadcrumb" id="workspace-crumbs">
          <span class="crumb active">AI File Nexus</span>
          <i class="fas fa-chevron-right" style="font-size:0.6rem; opacity:0.3" aria-hidden="true"></i>
-         <span class="crumb">${workspace.activeView}</span>
+         <span class="crumb">${escapeHtml(workspace.activeView)}</span>
       </div>
       
       <div style="display:flex; gap:16px; align-items:center; flex:1; justify-content:flex-end">
@@ -45,7 +46,7 @@ export function renderToolbar() {
                    id="workspace-search-input"
                    aria-label="Search documents"
                    oninput="window._handleWorkspaceSearch(this.value)" 
-                   value="${workspace.searchQuery || ''}">
+                   value="${escapeHtml(workspace.searchQuery || '')}">
          </div>
 
          <!-- Actions -->

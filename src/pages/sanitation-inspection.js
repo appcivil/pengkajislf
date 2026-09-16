@@ -1,3 +1,6 @@
+import { escapeHtml } from '../lib/safe-markdown.js';
+import { confirm } from '../components/modal.js';
+import { askInput } from '../components/modal.js';
 // ============================================================
 // SANITATION INSPECTION - PART 2 (TAB RENDERERS CONTINUED)
 // This file contains the remaining tab renderers and event handlers
@@ -15,7 +18,7 @@ function renderIPALTab() {
     <div style="display: grid; gap: var(--space-6);">
       <div class="flex-between" style="margin-bottom: 8px;">
         <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: white;">
-          <i class="fas fa-filter" style="margin-right: 8px; color: ${COLORS.green.main};"></i>
+          <i class="fas fa-filter" style="margin-right: 8px; color: ${escapeHtml(COLORS.green.main)};"></i>
           Instalasi Pengolahan Air Limbah (IPAL)
         </h4>
         <button class="btn btn-primary btn-sm" onclick="window._showAddIPALModal()">
@@ -45,7 +48,7 @@ function renderIPALTab() {
             <label style="display: block; font-size: 11px; color: var(--text-tertiary); margin-bottom: 6px;">IPAL</label>
             <select id="effluent-ipal-id" class="form-control">
               <option value="">Pilih IPAL</option>
-              ${ipals.map(ipal => `<option value="${ipal.id}">${ipal.name}</option>`).join('')}
+              ${ipals.map(ipal => `<option value="${escapeHtml(ipal.id)}">${escapeHtml(ipal.name)}</option>`).join('')}
             </select>
           </div>
           <div class="form-group">
@@ -123,7 +126,7 @@ function renderIPALCard(ipal, tests) {
   return `
     <div class="card-quartz" style="padding: var(--space-5);">
       <div class="flex-between" style="margin-bottom: 16px;">
-        <h5 style="font-weight: 700; color: white; margin: 0;">${ipal.name || 'IPAL'}</h5>
+        <h5 style="font-weight: 700; color: white; margin: 0;">${escapeHtml(ipal.name || 'IPAL')}</h5>
         ${latestTest ? getStatusBadge(efficiency.status) : '<span class="badge" style="background: hsla(220, 20%, 100%, 0.1); color: var(--text-tertiary); font-size: 10px;">NO DATA</span>'}
       </div>
       
@@ -139,19 +142,19 @@ function renderIPALCard(ipal, tests) {
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
         <div>
           <div style="font-size: 10px; color: var(--text-tertiary);">Volume Total</div>
-          <div style="font-size: 16px; color: white; font-weight: 700; font-family: var(--font-mono);">${ipal.totalVolume || '-'} m³</div>
+          <div style="font-size: 16px; color: white; font-weight: 700; font-family: var(--font-mono);">${escapeHtml(ipal.totalVolume || '-')} m³</div>
         </div>
         <div>
           <div style="font-size: 10px; color: var(--text-tertiary);">Tipe</div>
-          <div style="font-size: 14px; color: white; font-weight: 600;">${ipal.type || 'Biofilter'}</div>
+          <div style="font-size: 14px; color: white; font-weight: 600;">${escapeHtml(ipal.type || 'Biofilter')}</div>
         </div>
         <div>
           <div style="font-size: 10px; color: var(--text-tertiary);">BOD Removal</div>
-          <div style="font-size: 14px; color: ${efficiency.bodRemovalValue >= 80 ? COLORS.success : COLORS.warning}; font-weight: 600;">${efficiency.bodRemoval}</div>
+          <div style="font-size: 14px; color: ${efficiency.bodRemovalValue >= 80 ? COLORS.success : COLORS.warning}; font-weight: 600;">${escapeHtml(efficiency.bodRemoval)}</div>
         </div>
         <div>
           <div style="font-size: 10px; color: var(--text-tertiary);">TSS Removal</div>
-          <div style="font-size: 14px; color: ${efficiency.tssRemovalValue >= 80 ? COLORS.success : COLORS.warning}; font-weight: 600;">${efficiency.tssRemoval}</div>
+          <div style="font-size: 14px; color: ${efficiency.tssRemovalValue >= 80 ? COLORS.success : COLORS.warning}; font-weight: 600;">${escapeHtml(efficiency.tssRemoval)}</div>
         </div>
       </div>
       
@@ -159,16 +162,16 @@ function renderIPALCard(ipal, tests) {
         <div style="background: hsla(0, 85%, 60%, 0.1); border: 1px solid hsla(0, 85%, 60%, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
           <div style="font-size: 11px; color: var(--danger-400);">
             <i class="fas fa-triangle-exclamation" style="margin-right: 6px;"></i>
-            ${efficiency.recommendations[0]}
+            ${escapeHtml(efficiency.recommendations[0])}
           </div>
         </div>
       ` : ''}
       
       <div style="display: flex; gap: 8px;">
-        <button class="btn btn-sm btn-ghost" onclick="window._editIPAL('${ipal.id}')">
+        <button type="button" aria-label="Ubah" class="btn btn-sm btn-ghost" onclick="window._editIPAL('${escapeHtml(ipal.id)}')">
           <i class="fas fa-pen"></i>
         </button>
-        <button class="btn btn-sm btn-ghost" style="color: var(--danger-400);" onclick="window._deleteIPAL('${ipal.id}')">
+        <button type="button" aria-label="Hapus" class="btn btn-sm btn-ghost" style="color: var(--danger-400);" onclick="window._deleteIPAL('${escapeHtml(ipal.id)}')">
           <i class="fas fa-trash"></i>
         </button>
       </div>
@@ -195,27 +198,27 @@ function renderDistanceTab() {
       ` : tanks.map(tank => `
         <div class="card-quartz" style="padding: var(--space-6);">
           <div class="flex-between" style="margin-bottom: 20px;">
-            <h5 style="font-weight: 700; color: white; margin: 0;">${tank.name || 'Septic Tank'}</h5>
+            <h5 style="font-weight: 700; color: white; margin: 0;">${escapeHtml(tank.name || 'Septic Tank')}</h5>
           </div>
           
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6);">
             <div>
               <div class="form-group" style="margin-bottom: 16px;">
                 <label style="display: block; font-size: 11px; color: var(--text-tertiary); margin-bottom: 6px;">Jarak ke Sumur Gali (m)</label>
-                <input type="number" id="dist-well-${tank.id}" class="form-control" value="${tank.distances?.toWell || ''}" placeholder="10">
+                <input type="number" id="dist-well-${escapeHtml(tank.id)}" class="form-control" value="${tank.distances?.toWell || ''}" placeholder="10">
                 <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">Minimum: 10m (PP 16/2021)</div>
               </div>
               <div class="form-group" style="margin-bottom: 16px;">
                 <label style="display: block; font-size: 11px; color: var(--text-tertiary); margin-bottom: 6px;">Jarak ke Bangunan (m)</label>
-                <input type="number" id="dist-building-${tank.id}" class="form-control" value="${tank.distances?.toBuilding || ''}" placeholder="2">
+                <input type="number" id="dist-building-${escapeHtml(tank.id)}" class="form-control" value="${tank.distances?.toBuilding || ''}" placeholder="2">
                 <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">Minimum: 2m</div>
               </div>
               <div class="form-group" style="margin-bottom: 16px;">
                 <label style="display: block; font-size: 11px; color: var(--text-tertiary); margin-bottom: 6px;">Jarak ke Sumber Air Lain (m)</label>
-                <input type="number" id="dist-water-${tank.id}" class="form-control" value="${tank.distances?.toWaterSource || ''}" placeholder="10">
+                <input type="number" id="dist-water-${escapeHtml(tank.id)}" class="form-control" value="${tank.distances?.toWaterSource || ''}" placeholder="10">
                 <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">Minimum: 10m</div>
               </div>
-              <button class="btn btn-primary" onclick="window._validateDistance('${tank.id}')">
+              <button class="btn btn-primary" onclick="window._validateDistance('${escapeHtml(tank.id)}')">
                 <i class="fas fa-check" style="margin-right: 6px;"></i> Validasi
               </button>
             </div>
@@ -225,7 +228,7 @@ function renderDistanceTab() {
                 toBuilding: tank.distances?.toBuilding || 0,
                 toWaterSource: tank.distances?.toWaterSource || 0
               })}
-              <div id="distance-result-${tank.id}" style="margin-top: 16px;"></div>
+              <div id="distance-result-${escapeHtml(tank.id)}" style="margin-top: 16px;"></div>
             </div>
           </div>
         </div>
@@ -280,13 +283,13 @@ function renderComplianceTab() {
             <div style="font-size: 11px; color: var(--text-tertiary);">COMPLIANCE RATE</div>
           </div>
           <div style="text-align: center;">
-            <div style="font-size: 36px; font-weight: 800; color: ${COLORS.success}; font-family: var(--font-mono);">
+            <div style="font-size: 36px; font-weight: 800; color: ${escapeHtml(COLORS.success)}; font-family: var(--font-mono);">
               ${compliance.summary?.compliantItems || 0}
             </div>
             <div style="font-size: 11px; color: var(--text-tertiary);">COMPLIANT</div>
           </div>
           <div style="text-align: center;">
-            <div style="font-size: 36px; font-weight: 800; color: ${COLORS.danger}; font-family: var(--font-mono);">
+            <div style="font-size: 36px; font-weight: 800; color: ${escapeHtml(COLORS.danger)}; font-family: var(--font-mono);">
               ${compliance.summary?.nonCompliantItems || 0}
             </div>
             <div style="font-size: 11px; color: var(--text-tertiary);">NON-COMPLIANT</div>
@@ -297,7 +300,7 @@ function renderComplianceTab() {
       <!-- Detailed Check -->
       ${Object.entries(compliance.pasal224?.ayat || {}).map(([ayatKey, ayat]) => `
         <div class="card-quartz" style="padding: var(--space-5);">
-          <h5 style="font-weight: 700; color: white; margin-bottom: 16px;">${ayat.title}</h5>
+          <h5 style="font-weight: 700; color: white; margin-bottom: 16px;">${escapeHtml(ayat.title)}</h5>
           ${generateInspectionTable(ayat.items.map(item => ({
             component: item.description,
             location: '-',
@@ -318,10 +321,10 @@ function renderComplianceTab() {
         <div style="display: grid; gap: 12px;">
           ${Object.entries(LEGAL_REFERENCES).map(([key, ref]) => `
             <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 8px; padding: 16px;">
-              <div style="font-weight: 700; color: var(--brand-400); margin-bottom: 4px;">${ref.title}</div>
-              <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">${ref.description}</div>
+              <div style="font-weight: 700; color: var(--brand-400); margin-bottom: 4px;">${escapeHtml(ref.title)}</div>
+              <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">${escapeHtml(ref.description)}</div>
               <div style="font-size: 11px; color: var(--text-tertiary);">
-                ${ref.details.map(d => `<div style="margin-left: 12px; margin-bottom: 2px;">• ${d}</div>`).join('')}
+                ${ref.details.map(d => `<div style="margin-left: 12px; margin-bottom: 2px;">• ${escapeHtml(d)}</div>`).join('')}
               </div>
             </div>
           `).join('')}
@@ -357,7 +360,7 @@ function renderVisualizationTab() {
         const latestRecord = records.sort((a, b) => new Date(b.recordDate) - new Date(a.recordDate))[0];
         return `
           <div class="card-quartz" style="padding: var(--space-6);">
-            <h5 style="font-weight: 700; color: white; margin-bottom: 20px;">Potongan Melintang - ${tank.name}</h5>
+            <h5 style="font-weight: 700; color: white; margin-bottom: 20px;">Potongan Melintang - ${escapeHtml(tank.name)}</h5>
             ${generateSepticTankCrossSection(tank.dimensions, latestRecord?.level || 0)}
           </div>
         `;
@@ -366,7 +369,7 @@ function renderVisualizationTab() {
       <!-- IPAL Cross Sections -->
       ${sanitationData.ipals.map(ipal => `
         <div class="card-quartz" style="padding: var(--space-6);">
-          <h5 style="font-weight: 700; color: white; margin-bottom: 20px;">Potongan IPAL - ${ipal.name}</h5>
+          <h5 style="font-weight: 700; color: white; margin-bottom: 20px;">Potongan IPAL - ${escapeHtml(ipal.name)}</h5>
           ${generateIPALCrossSection({
             totalVolume: ipal.totalVolume || 5,
             anaerobPercent: 30,
@@ -463,7 +466,7 @@ function renderModals() {
       <div class="modal-content card-quartz" style="max-width: 500px;">
         <div class="flex-between" style="margin-bottom: 20px;">
           <h4 style="font-weight: 700; color: white;">Tambah Septic Tank</h4>
-          <button onclick="window._closeModal('modal-add-septic')" class="btn btn-ghost btn-sm"><i class="fas fa-xmark"></i></button>
+          <button type="button" aria-label="Tutup" onclick="window._closeModal('modal-add-septic')" class="btn btn-ghost btn-sm"><i class="fas fa-xmark"></i></button>
         </div>
         <div class="form-group">
           <label>Nama</label>
@@ -503,7 +506,7 @@ function renderModals() {
       <div class="modal-content card-quartz" style="max-width: 500px;">
         <div class="flex-between" style="margin-bottom: 20px;">
           <h4 style="font-weight: 700; color: white;">Tambah IPAL</h4>
-          <button onclick="window._closeModal('modal-add-ipal')" class="btn btn-ghost btn-sm"><i class="fas fa-xmark"></i></button>
+          <button type="button" aria-label="Tutup" onclick="window._closeModal('modal-add-ipal')" class="btn btn-ghost btn-sm"><i class="fas fa-xmark"></i></button>
         </div>
         <div class="form-group">
           <label>Nama</label>
@@ -547,7 +550,7 @@ function renderModals() {
       <div class="modal-content card-quartz" style="max-width: 500px;">
         <div class="flex-between" style="margin-bottom: 20px;">
           <h4 style="font-weight: 700; color: white;">Tambah Chute</h4>
-          <button onclick="window._closeModal('modal-add-chute')" class="btn btn-ghost btn-sm"><i class="fas fa-xmark"></i></button>
+          <button type="button" aria-label="Tutup" onclick="window._closeModal('modal-add-chute')" class="btn btn-ghost btn-sm"><i class="fas fa-xmark"></i></button>
         </div>
         <div class="form-group">
           <label>Nama</label>
@@ -639,21 +642,21 @@ function initEventListeners() {
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
             <div style="background: hsla(220, 20%, 100%, 0.05); border-radius: 8px; padding: 12px;">
               <div style="font-size: 10px; color: var(--text-tertiary);">Dimensi Minimum</div>
-              <div style="font-size: 18px; color: white; font-weight: 700;">${result.minDimension}m</div>
+              <div style="font-size: 18px; color: white; font-weight: 700;">${escapeHtml(result.minDimension)}m</div>
             </div>
             <div style="background: hsla(220, 20%, 100%, 0.05); border-radius: 8px; padding: 12px;">
               <div style="font-size: 10px; color: var(--text-tertiary);">Area Required</div>
-              <div style="font-size: 18px; color: white; font-weight: 700;">${result.requiredArea}m²</div>
+              <div style="font-size: 18px; color: white; font-weight: 700;">${escapeHtml(result.requiredArea)}m²</div>
             </div>
           </div>
           <div style="background: ${result.status === 'C' ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border: 1px solid ${result.status === 'C' ? 'hsla(158, 85%, 45%, 0.3)' : 'hsla(0, 85%, 60%, 0.3)'}; border-radius: 8px; padding: 12px;">
             <div style="font-size: 11px; color: ${result.status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'};">
               <i class="fas ${result.status === 'C' ? 'fa-check' : 'fa-triangle-exclamation'}" style="margin-right: 6px;"></i>
-              ${result.recommendation}
+              ${escapeHtml(result.recommendation)}
             </div>
           </div>
           <div style="font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono);">
-            ${result.formula}
+            ${escapeHtml(result.formula)}
           </div>
         </div>
       `;
@@ -674,15 +677,15 @@ function initEventListeners() {
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
             <div style="background: hsla(220, 20%, 100%, 0.05); border-radius: 8px; padding: 16px; text-align: center;">
               <div style="font-size: 10px; color: var(--text-tertiary);">Volume Minimum</div>
-              <div style="font-size: 24px; color: ${result.status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}; font-weight: 800; font-family: var(--font-mono);">${result.minVolume}m³</div>
+              <div style="font-size: 24px; color: ${result.status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}; font-weight: 800; font-family: var(--font-mono);">${escapeHtml(result.minVolume)}m³</div>
             </div>
             <div style="background: hsla(220, 20%, 100%, 0.05); border-radius: 8px; padding: 16px; text-align: center;">
               <div style="font-size: 10px; color: var(--text-tertiary);">Kompartemen 1</div>
-              <div style="font-size: 20px; color: white; font-weight: 700; font-family: var(--font-mono);">${result.compartment1}m³</div>
+              <div style="font-size: 20px; color: white; font-weight: 700; font-family: var(--font-mono);">${escapeHtml(result.compartment1)}m³</div>
             </div>
             <div style="background: hsla(220, 20%, 100%, 0.05); border-radius: 8px; padding: 16px; text-align: center;">
               <div style="font-size: 10px; color: var(--text-tertiary);">Kompartemen 2</div>
-              <div style="font-size: 20px; color: white; font-weight: 700; font-family: var(--font-mono);">${result.compartment2}m³</div>
+              <div style="font-size: 20px; color: white; font-weight: 700; font-family: var(--font-mono);">${escapeHtml(result.compartment2)}m³</div>
             </div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.05); border-radius: 8px; padding: 16px;">
@@ -690,22 +693,22 @@ function initEventListeners() {
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
               <div>
                 <div style="font-size: 11px; color: var(--text-secondary);">Produksi Harian</div>
-                <div style="font-size: 16px; color: white; font-weight: 600;">${result.sludgeAccumulation} L/hari</div>
+                <div style="font-size: 16px; color: white; font-weight: 600;">${escapeHtml(result.sludgeAccumulation)} L/hari</div>
               </div>
               <div>
                 <div style="font-size: 11px; color: var(--text-secondary);">Pengurasan Berikutnya</div>
-                <div style="font-size: 16px; color: ${COLORS.warning}; font-weight: 600;">${result.nextDesludging}</div>
+                <div style="font-size: 16px; color: ${escapeHtml(COLORS.warning)}; font-weight: 600;">${escapeHtml(result.nextDesludging)}</div>
               </div>
             </div>
           </div>
           <div style="background: ${result.status === 'C' ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border: 1px solid ${result.status === 'C' ? 'hsla(158, 85%, 45%, 0.3)' : 'hsla(0, 85%, 60%, 0.3)'}; border-radius: 8px; padding: 12px;">
             <div style="font-size: 11px; color: ${result.status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'};">
               <i class="fas ${result.status === 'C' ? 'fa-check' : 'fa-triangle-exclamation'}" style="margin-right: 6px;"></i>
-              ${result.complianceMessage}
+              ${escapeHtml(result.complianceMessage)}
             </div>
           </div>
           <div style="font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono);">
-            ${result.formula}
+            ${escapeHtml(result.formula)}
           </div>
         </div>
       `;
@@ -724,24 +727,24 @@ function initEventListeners() {
         <div style="display: grid; gap: 16px;">
           <div style="background: hsla(220, 20%, 100%, 0.05); border-radius: 8px; padding: 16px; text-align: center;">
             <div style="font-size: 10px; color: var(--text-tertiary);">Volume Total IPAL</div>
-            <div style="font-size: 28px; color: white; font-weight: 800; font-family: var(--font-mono);">${result.totalVolume}m³</div>
+            <div style="font-size: 28px; color: white; font-weight: 800; font-family: var(--font-mono);">${escapeHtml(result.totalVolume)}m³</div>
           </div>
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
             <div style="background: hsla(158, 85%, 45%, 0.1); border-radius: 8px; padding: 12px; text-align: center;">
               <div style="font-size: 10px; color: var(--text-tertiary);">Anaerob (30%)</div>
-              <div style="font-size: 18px; color: white; font-weight: 700; font-family: var(--font-mono);">${result.compartments.anaerob.volume}m³</div>
+              <div style="font-size: 18px; color: white; font-weight: 700; font-family: var(--font-mono);">${escapeHtml(result.compartments.anaerob.volume)}m³</div>
             </div>
             <div style="background: hsla(158, 85%, 45%, 0.15); border-radius: 8px; padding: 12px; text-align: center;">
               <div style="font-size: 10px; color: var(--text-tertiary);">Aerob (50%)</div>
-              <div style="font-size: 18px; color: white; font-weight: 700; font-family: var(--font-mono);">${result.compartments.aerob.volume}m³</div>
+              <div style="font-size: 18px; color: white; font-weight: 700; font-family: var(--font-mono);">${escapeHtml(result.compartments.aerob.volume)}m³</div>
             </div>
             <div style="background: hsla(220, 95%, 52%, 0.1); border-radius: 8px; padding: 12px; text-align: center;">
               <div style="font-size: 10px; color: var(--text-tertiary);">Pengendap (20%)</div>
-              <div style="font-size: 18px; color: white; font-weight: 700; font-family: var(--font-mono);">${result.compartments.settling.volume}m³</div>
+              <div style="font-size: 18px; color: white; font-weight: 700; font-family: var(--font-mono);">${escapeHtml(result.compartments.settling.volume)}m³</div>
             </div>
           </div>
           <div style="font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono);">
-            Berdasarkan beban BOD: ${result.totalBOD} kg/hari
+            Berdasarkan beban BOD: ${escapeHtml(result.totalBOD)} kg/hari
           </div>
         </div>
       `;
@@ -844,7 +847,7 @@ function initEventListeners() {
           </div>
           ${result.violations.length > 0 ? `
             <div style="margin-top: 8px; font-size: 10px; color: var(--danger-400);">
-              ${result.violations.map(v => `<div>• ${v}</div>`).join('')}
+              ${result.violations.map(v => `<div>• ${escapeHtml(v)}</div>`).join('')}
             </div>
           ` : ''}
         </div>
@@ -954,7 +957,13 @@ window._editChute = (id) => {
 };
 
 window._deleteChute = async (id) => {
-  if (confirm('Hapus chute ini?')) {
+  const lanjut = await confirm({
+    title: 'Hapus Chute',
+    message: 'Hapus chute sampah ini beserta datanya? Tindakan ini tidak dapat dibatalkan.',
+    confirmText: 'Hapus',
+    danger: true,
+  });
+  if (lanjut) {
     try {
       // Implement delete
       showSuccess('Chute dihapus');
@@ -975,7 +984,13 @@ window._editSepticTank = (id) => {
 };
 
 window._addSludgeRecord = async (tankId) => {
-  const level = prompt('Masukkan tingkat lumpur (%):', '30');
+  const level = await askInput({
+    title: 'Catat Tingkat Lumpur',
+    label: 'Tingkat lumpur (%)',
+    defaultValue: '30',
+    type: 'number',
+    confirmText: 'Simpan',
+  });
   if (level !== null) {
     try {
       await addSludgeRecord(currentProjectId, tankId, {
@@ -1000,7 +1015,13 @@ window._editIPAL = (id) => {
 };
 
 window._deleteIPAL = async (id) => {
-  if (confirm('Hapus IPAL ini?')) {
+  const lanjut = await confirm({
+    title: 'Hapus IPAL',
+    message: 'Hapus instalasi IPAL ini beserta seluruh hasil pemeriksaannya? Tindakan ini tidak dapat dibatalkan.',
+    confirmText: 'Hapus',
+    danger: true,
+  });
+  if (lanjut) {
     try {
       showSuccess('IPAL dihapus');
       await loadSanitationData();

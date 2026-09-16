@@ -14,6 +14,7 @@ import {
 } from '../lib/asce41-tier-data.js';
 
 import { analyzeSchmidtHammer, analyzeUPV, analyzeCoreDrill } from '../lib/ndt-calculators.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { calculateSeismicParameters, generateResponseSpectrum, PUSGEN_DATA } from '../lib/seismic-calculator.js';
 import { parsePushoverCSV, generatePushoverSVG, calculatePushoverMetrics } from '../lib/pushover-visualizer.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
@@ -156,10 +157,10 @@ export function renderStrukturBangunanCard(p, tierStats = {}) {
       <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">
         <div class="flex-between" style="margin-bottom: 8px;">
           <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-tertiary);">OVERALL STRUCTURAL PROGRESS</span>
-          <span style="font-size: 0.7rem; font-weight: 800; color: var(--success-400);">${overallProgress}%</span>
+          <span style="font-size: 0.7rem; font-weight: 800; color: var(--success-400);">${escapeHtml(overallProgress)}%</span>
         </div>
         <div style="height: 6px; background: hsla(220, 20%, 100%, 0.05); border-radius: 10px;">
-          <div style="width: ${overallProgress}%; height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--success-500), var(--brand-500)); box-shadow: 0 0 10px var(--success-500);"></div>
+          <div style="width: ${escapeHtml(overallProgress)}%; height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--success-500), var(--brand-500)); box-shadow: 0 0 10px var(--success-500);"></div>
         </div>
       </div>
     </div>
@@ -203,10 +204,10 @@ function renderTierEvaluationTab(stats) {
         <div style="margin-bottom: 16px;">
           <div class="flex-between" style="margin-bottom: 4px;">
             <span style="font-size: 0.7rem; color: var(--text-tertiary);">Progress</span>
-            <span style="font-size: 0.7rem; font-weight: 700; color: var(--brand-400);">${stats.tier1 || 0}%</span>
+            <span style="font-size: 0.7rem; font-weight: 700; color: var(--brand-400);">${escapeHtml(stats.tier1 || 0)}%</span>
           </div>
           <div style="height: 4px; background: hsla(220, 20%, 100%, 0.1); border-radius: 4px;">
-            <div style="width: ${stats.tier1 || 0}%; height: 100%; border-radius: 4px; background: var(--brand-500);"></div>
+            <div style="width: ${escapeHtml(stats.tier1 || 0)}%; height: 100%; border-radius: 4px; background: var(--brand-500);"></div>
           </div>
         </div>
         
@@ -229,10 +230,10 @@ function renderTierEvaluationTab(stats) {
         <div style="margin-bottom: 16px;">
           <div class="flex-between" style="margin-bottom: 4px;">
             <span style="font-size: 0.7rem; color: var(--text-tertiary);">Progress</span>
-            <span style="font-size: 0.7rem; font-weight: 700; color: hsla(258, 70%, 65%, 1);">${stats.tier2 || 0}%</span>
+            <span style="font-size: 0.7rem; font-weight: 700; color: hsla(258, 70%, 65%, 1);">${escapeHtml(stats.tier2 || 0)}%</span>
           </div>
           <div style="height: 4px; background: hsla(220, 20%, 100%, 0.1); border-radius: 4px;">
-            <div style="width: ${stats.tier2 || 0}%; height: 100%; border-radius: 4px; background: hsla(258, 70%, 65%, 1);"></div>
+            <div style="width: ${escapeHtml(stats.tier2 || 0)}%; height: 100%; border-radius: 4px; background: hsla(258, 70%, 65%, 1);"></div>
           </div>
         </div>
         
@@ -255,10 +256,10 @@ function renderTierEvaluationTab(stats) {
         <div style="margin-bottom: 16px;">
           <div class="flex-between" style="margin-bottom: 4px;">
             <span style="font-size: 0.7rem; color: var(--text-tertiary);">Progress</span>
-            <span style="font-size: 0.7rem; font-weight: 700; color: var(--danger-400);">${stats.tier3 || 0}%</span>
+            <span style="font-size: 0.7rem; font-weight: 700; color: var(--danger-400);">${escapeHtml(stats.tier3 || 0)}%</span>
           </div>
           <div style="height: 4px; background: hsla(220, 20%, 100%, 0.1); border-radius: 4px;">
-            <div style="width: ${stats.tier3 || 0}%; height: 100%; border-radius: 4px; background: var(--danger-500);"></div>
+            <div style="width: ${escapeHtml(stats.tier3 || 0)}%; height: 100%; border-radius: 4px; background: var(--danger-500);"></div>
           </div>
         </div>
         
@@ -271,19 +272,19 @@ function renderTierEvaluationTab(stats) {
     <!-- Quick Stats -->
     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 20px;">
       <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 10px; text-align: center;">
-        <div style="font-size: 1.5rem; font-weight: 700; color: var(--brand-400);">${stats.totalNC || 0}</div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: var(--brand-400);">${escapeHtml(stats.totalNC || 0)}</div>
         <div style="font-size: 0.7rem; color: var(--text-tertiary);">Item NC</div>
       </div>
       <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 10px; text-align: center;">
-        <div style="font-size: 1.5rem; font-weight: 700; color: hsla(258, 70%, 65%, 1);">${stats.dcrCount || 0}</div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: hsla(258, 70%, 65%, 1);">${escapeHtml(stats.dcrCount || 0)}</div>
         <div style="font-size: 0.7rem; color: var(--text-tertiary);">DCR Checks</div>
       </div>
       <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 10px; text-align: center;">
-        <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger-400);">${stats.ncTier2 || 0}</div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger-400);">${escapeHtml(stats.ncTier2 || 0)}</div>
         <div style="font-size: 0.7rem; color: var(--text-tertiary);">Perlu Tier 2</div>
       </div>
       <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 10px; text-align: center;">
-        <div style="font-size: 1.5rem; font-weight: 700; color: var(--success-400);">${stats.seismicLevel || '-'}</div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: var(--success-400);">${escapeHtml(stats.seismicLevel || '-')}</div>
         <div style="font-size: 0.7rem; color: var(--text-tertiary);">Seismic Level</div>
       </div>
     </div>
@@ -394,7 +395,7 @@ function renderSeismicTab() {
           <select id="seismic-region" class="form-select" style="width: 100%; background: hsla(220, 20%, 100%, 0.03); border-color: hsla(220, 20%, 100%, 0.1); color: white;">
             <option value="">-- Pilih Wilayah --</option>
             ${Object.entries(PUSGEN_DATA).map(([key, data]) => `
-              <option value="${key}">${data.region} (Ss=${data.Ss}, S1=${data.S1})</option>
+              <option value="${escapeHtml(key)}">${escapeHtml(data.region)} (Ss=${escapeHtml(data.Ss)}, S1=${escapeHtml(data.S1)})</option>
             `).join('')}
           </select>
         </div>
@@ -792,7 +793,7 @@ function renderFEMA356Tab() {
             <i class="fas fa-circle-nodes" style="margin-right: 8px; color: var(--brand-400);"></i>Hinge Formation Status
           </div>
           <div style="font-size: 0.75rem; color: var(--text-tertiary);">
-            Hinge states will appear after analysis
+            Status sendi plastis akan muncul setelah analisis dijalankan
           </div>
         </div>
       </div>
@@ -825,16 +826,16 @@ function generateTimeHistoryPlot(result) {
   }
   
   return `
-    <svg width="${width}" height="${height}" style="background: hsla(220, 20%, 100%, 0.03); border-radius: 8px;">
+    <svg width="${escapeHtml(width)}" height="${escapeHtml(height)}" style="background: hsla(220, 20%, 100%, 0.03); border-radius: 8px;">
       <!-- Grid lines -->
-      <line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${height - margin.bottom}" stroke="#333" stroke-width="1"/>
-      <line x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}" stroke="#333" stroke-width="1"/>
+      <line x1="${escapeHtml(margin.left)}" y1="${escapeHtml(margin.top)}" x2="${escapeHtml(margin.left)}" y2="${height - margin.bottom}" stroke="#333" stroke-width="1"/>
+      <line x1="${escapeHtml(margin.left)}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}" stroke="#333" stroke-width="1"/>
       
       <!-- Zero line -->
-      <line x1="${margin.left}" y1="${scaleY(0)}" x2="${width - margin.right}" y2="${scaleY(0)}" stroke="#555" stroke-width="1" stroke-dasharray="4"/>
+      <line x1="${escapeHtml(margin.left)}" y1="${scaleY(0)}" x2="${width - margin.right}" y2="${scaleY(0)}" stroke="#555" stroke-width="1" stroke-dasharray="4"/>
       
       <!-- Displacement curve -->
-      <path d="${path}" fill="none" stroke="#3b82f6" stroke-width="1.5"/>
+      <path d="${escapeHtml(path)}" fill="none" stroke="#3b82f6" stroke-width="1.5"/>
       
       <!-- Labels -->
       <text x="${width / 2}" y="${height - 10}" fill="#888" font-size="12" text-anchor="middle">Time (s)</text>
@@ -884,7 +885,7 @@ function renderImportedModel3D(model) {
   
   // Generate SVG for 2D preview
   let svgContent = `
-    <svg width="100%" height="100%" viewBox="0 0 ${canvasWidth} ${canvasHeight}" style="background: hsla(220, 20%, 100%, 0.03);">
+    <svg width="100%" height="100%" viewBox="0 0 ${escapeHtml(canvasWidth)} ${escapeHtml(canvasHeight)}" style="background: hsla(220, 20%, 100%, 0.03);">
       <!-- Grid -->
       <defs>
         <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -896,7 +897,7 @@ function renderImportedModel3D(model) {
       <!-- Story lines -->
       ${uniqueZ.map(z => {
         const y = offsetY + z * scale;
-        return `<line x1="0" y1="${y}" x2="${canvasWidth}" y2="${y}" stroke="hsla(220, 20%, 100%, 0.1)" stroke-width="1" stroke-dasharray="4"/>`;
+        return `<line x1="0" y1="${escapeHtml(y)}" x2="${escapeHtml(canvasWidth)}" y2="${escapeHtml(y)}" stroke="hsla(220, 20%, 100%, 0.1)" stroke-width="1" stroke-dasharray="4"/>`;
       }).join('')}
       
       <!-- Elements (lines) -->
@@ -908,7 +909,7 @@ function renderImportedModel3D(model) {
         const y1 = offsetY + n1.z * scale;
         const x2 = offsetX + n2.x * scale;
         const y2 = offsetY + n2.z * scale;
-        return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#10b981" stroke-width="2"/>`;
+        return `<line x1="${escapeHtml(x1)}" y1="${escapeHtml(y1)}" x2="${escapeHtml(x2)}" y2="${escapeHtml(y2)}" stroke="#10b981" stroke-width="2"/>`;
       }).join('')}
       
       <!-- Nodes (dots) -->
@@ -916,7 +917,7 @@ function renderImportedModel3D(model) {
         const x = offsetX + node.x * scale;
         const y = offsetY + node.z * scale;
         const isFixed = node.restraints?.every(r => r === 1);
-        return `<circle cx="${x}" cy="${y}" r="${isFixed ? 6 : 4}" fill="${isFixed ? '#ef4444' : '#3b82f6'}"/>`;
+        return `<circle cx="${escapeHtml(x)}" cy="${escapeHtml(y)}" r="${isFixed ? 6 : 4}" fill="${isFixed ? '#ef4444' : '#3b82f6'}"/>`;
       }).join('')}
     </svg>
   `;
@@ -1032,13 +1033,13 @@ export function initStrukturBangunanHandlers(proyekId) {
       resultCard.style.display = 'block';
       resultContent.innerHTML = `
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-          <div>SDS: <strong>${result.design.SDS}</strong> g</div>
-          <div>SD1: <strong>${result.design.SD1}</strong> g</div>
-          <div>Fa: <strong>${result.site.Fa}</strong></div>
-          <div>Fv: <strong>${result.site.Fv}</strong></div>
+          <div>SDS: <strong>${escapeHtml(result.design.SDS)}</strong> g</div>
+          <div>SD1: <strong>${escapeHtml(result.design.SD1)}</strong> g</div>
+          <div>Fa: <strong>${escapeHtml(result.site.Fa)}</strong></div>
+          <div>Fv: <strong>${escapeHtml(result.site.Fv)}</strong></div>
           <div colspan="2" style="grid-column: 1 / -1;">
-            <span style="color: ${result.category.description.color};">
-              Level: <strong>${result.category.seismicity}</strong> (SDC ${result.category.sdc})
+            <span style="color: ${escapeHtml(result.category.description.color)};">
+              Level: <strong>${escapeHtml(result.category.seismicity)}</strong> (SDC ${escapeHtml(result.category.sdc)})
             </span>
           </div>
         </div>
@@ -1136,11 +1137,11 @@ export function initStrukturBangunanHandlers(proyekId) {
             </div>
             <div style="background: hsla(220, 20%, 100%, 0.05); padding: 8px; border-radius: 6px;">
               <div style="color: var(--text-tertiary);">Materials</div>
-              <div style="font-weight: bold; color: white;">${model.materials.length}</div>
+              <div style="font-weight: bold; color: white;">${escapeHtml(model.materials.length)}</div>
             </div>
             <div style="background: hsla(220, 20%, 100%, 0.05); padding: 8px; border-radius: 6px;">
               <div style="color: var(--text-tertiary);">Warnings</div>
-              <div style="font-weight: bold; color: ${model.warnings.length > 0 ? '#f59e0b' : '#10b981'};">${model.warnings.length}</div>
+              <div style="font-weight: bold; color: ${model.warnings.length > 0 ? '#f59e0b' : '#10b981'};">${escapeHtml(model.warnings.length)}</div>
             </div>
           </div>
           ${model.warnings.length > 0 ? `
@@ -1220,7 +1221,7 @@ export function initStrukturBangunanHandlers(proyekId) {
         summaryDiv.innerHTML = `
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
             <div style="text-align: center; padding: 12px; background: hsla(220, 95%, 52%, 0.1); border-radius: 8px;">
-              <div style="font-size: 1.2rem; font-weight: bold; color: #3b82f6;">${summary.maxDisplacement.toFixed(2)}m</div>
+              <div style="font-size: 1.2rem; font-weight: bold; color: #3b82f6;">${escapeHtml(summary.maxDisplacement.toFixed(2))}m</div>
               <div style="font-size: 0.7rem; color: var(--text-tertiary);">Max Displacement</div>
             </div>
             <div style="text-align: center; padding: 12px; background: hsla(160, 100%, 45%, 0.1); border-radius: 8px;">
@@ -1228,13 +1229,13 @@ export function initStrukturBangunanHandlers(proyekId) {
               <div style="font-size: 0.7rem; color: var(--text-tertiary);">Max Base Shear</div>
             </div>
             <div style="text-align: center; padding: 12px; background: hsla(0, 85%, 60%, 0.1); border-radius: 8px;">
-              <div style="font-size: 1.2rem; font-weight: bold; color: #ef4444;">${summary.governingLevel}</div>
+              <div style="font-size: 1.2rem; font-weight: bold; color: #ef4444;">${escapeHtml(summary.governingLevel)}</div>
               <div style="font-size: 0.7rem; color: var(--text-tertiary);">Performance</div>
             </div>
           </div>
           <div style="margin-top: 12px; padding: 12px; background: hsla(220, 20%, 100%, 0.05); border-radius: 8px;">
             <div style="font-size: 0.8rem; color: var(--text-secondary);">
-              Hinges: IO=${summary.hingeCounts.IO}, LS=${summary.hingeCounts.LS}, CP=${summary.hingeCounts.CP}
+              Hinges: IO=${escapeHtml(summary.hingeCounts.IO)}, LS=${escapeHtml(summary.hingeCounts.LS)}, CP=${escapeHtml(summary.hingeCounts.CP)}
             </div>
           </div>
         `;
@@ -1528,7 +1529,7 @@ async function generateEtabsReport(proyekId, proyekData) {
         });
         
         if (reportResult.success) {
-          showSuccess('Report generated and saved to Drive');
+          showSuccess('Laporan berhasil dibuat dan disimpan ke Drive');
         }
       }
       

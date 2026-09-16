@@ -4,6 +4,7 @@
  * PRESIDENTIAL CLASS (QUARTZ DIGITAL SIDEBAR)
  */
 import { escHtml, getFileNameFromUrl } from '../lib/utils.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { CHECKLIST_SECTIONS, SCALE_OPTIONS } from '../lib/checklist-data.js';
 
 /**
@@ -24,11 +25,11 @@ export function renderChecklistShell(proyek, checklist) {
          <div class="card-quartz" style="padding: 24px; background: var(--gradient-dark); border-color: hsla(220, 95%, 52%, 0.2)">
             <div style="font-family: var(--font-mono); font-size: 9px; font-weight: 800; color: var(--text-tertiary); letter-spacing: 1px; margin-bottom: 12px">OVERALL AUDIT PROGRESS</div>
             <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 16px">
-               <span style="font-size: 2.2rem; font-weight: 900; color: white; line-height: 1">${progressPct}%</span>
+               <span style="font-size: 2.2rem; font-weight: 900; color: white; line-height: 1">${escapeHtml(progressPct)}%</span>
                <span style="font-size: 0.8rem; color: var(--text-tertiary)">COMPLETED</span>
             </div>
             <div class="progress-wrap" style="height: 6px; background: hsla(220, 20%, 100%, 0.05)">
-               <div class="progress-fill" style="width: ${progressPct}%; background: var(--gradient-brand); box-shadow: 0 0 15px var(--brand-500)"></div>
+               <div class="progress-fill" style="width: ${escapeHtml(progressPct)}%; background: var(--gradient-brand); box-shadow: 0 0 15px var(--brand-500)"></div>
             </div>
          </div>
 
@@ -40,7 +41,7 @@ export function renderChecklistShell(proyek, checklist) {
               const secDone = secItems.filter(i => checklist.dataMap[i.kode]?.status || checklist.dataMap[i.kode]?.nilai).length;
               
               return `
-              <button onclick="window._switchTab('${sec.id}')" 
+              <button onclick="window._switchTab('${escapeHtml(sec.id)}')" 
                       class="nav-item-quartz ${isActive ? 'active' : ''}"
                       style="display: flex; align-items: center; gap: 16px; padding: 16px 20px; border-radius: 16px; border: 1px solid ${isActive ? 'hsla(220, 95%, 52%, 0.3)' : 'transparent'}; 
                              background: ${isActive ? 'hsla(220, 95%, 52%, 0.1)' : 'transparent'}; 
@@ -50,8 +51,8 @@ export function renderChecklistShell(proyek, checklist) {
                     <i class="fas ${sec.icon}"></i>
                  </div>
                  <div style="flex: 1">
-                    <div style="font-weight: 800; font-size: 0.85rem; color: ${isActive ? 'white' : 'var(--text-secondary)'}; text-transform: uppercase; letter-spacing: 0.5px">${sec.label}</div>
-                    <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 2px">${secDone} / ${secItems.length} Sub-items</div>
+                    <div style="font-weight: 800; font-size: 0.85rem; color: ${isActive ? 'white' : 'var(--text-secondary)'}; text-transform: uppercase; letter-spacing: 0.5px">${escapeHtml(sec.label)}</div>
+                    <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 2px">${escapeHtml(secDone)} / ${escapeHtml(secItems.length)} Sub-items</div>
                  </div>
                  ${secDone === secItems.length && secItems.length > 0 ? `<i class="fas fa-check-circle text-success-400" style="font-size: 0.8rem"></i>` : ''}
               </button>
@@ -60,7 +61,7 @@ export function renderChecklistShell(proyek, checklist) {
          </div>
 
          <div style="margin-top: auto; padding: 20px">
-            <button class="btn btn-ghost" onclick="window.navigate('proyek-detail',{id:'${proyek.id}'})" style="width:100%; border-radius:12px; font-size:0.8rem; color: var(--text-tertiary)">
+            <button class="btn btn-ghost" onclick="window.navigate('proyek-detail',{id:'${escapeHtml(proyek.id)}'})" style="width:100%; border-radius:12px; font-size:0.8rem; color: var(--text-tertiary)">
                <i class="fas fa-sign-out-alt" style="margin-right:8px"></i> BACK TO OVERVIEW
             </button>
          </div>
@@ -81,7 +82,7 @@ export function renderChecklistShell(proyek, checklist) {
                  <div class="animate-pulse" style="width:8px; height:8px; border-radius:50%; background:var(--danger-500)"></div>
                  LIVE FIELD INSPEKSI RECON
               </div>
-              <button class="btn btn-ghost" onclick="window._closeCamera()" style="width:44px; height:44px; border-radius:50%; background:hsla(220, 20%, 100%, 0.1); color:white; padding:0">
+              <button type="button" aria-label="Tutup" class="btn btn-ghost" onclick="window._closeCamera()" style="width:44px; height:44px; border-radius:50%; background:hsla(220, 20%, 100%, 0.1); color:white; padding:0">
                  <i class="fas fa-times"></i>
               </button>
            </div>
@@ -89,7 +90,7 @@ export function renderChecklistShell(proyek, checklist) {
            <div class="camera-controls" style="display:flex; flex-direction:column; align-items:center; gap:32px; pointer-events:auto">
               <div id="camera-wm-preview" style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.2rem; color:white; text-shadow:0 2px 10px rgba(0,0,0,0.8); text-align:center"></div>
               <div class="flex gap-8" style="align-items:center">
-                 <button class="btn" onclick="window._flipCamera()" style="width:56px; height:56px; border-radius:50%; background:hsla(220, 20%, 100%, 0.1); color:white; border:1px solid hsla(220, 20%, 100%, 0.2)">
+                 <button type="button" aria-label="Ambil foto" class="btn" onclick="window._flipCamera()" style="width:56px; height:56px; border-radius:50%; background:hsla(220, 20%, 100%, 0.1); color:white; border:1px solid hsla(220, 20%, 100%, 0.2)">
                     <i class="fas fa-camera-rotate"></i>
                  </button>
                  <button onclick="window._takePhoto()" style="width:88px; height:88px; border-radius:50%; background:white; border:6px solid hsla(220, 20%, 100%, 0.3); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 0 30px rgba(255,255,255,0.4)">
@@ -116,7 +117,7 @@ export function renderChecklistSection(sectionId, items, dataMap) {
     <div style="animation: slide-up 0.4s ease-out">
        <div class="flex-between flex-stack" style="margin-bottom: 32px">
           <div>
-             <h1 style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.2rem; margin:0; color:white">${section.label}</h1>
+             <h1 style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.2rem; margin:0; color:white">${escapeHtml(section.label)}</h1>
              <p style="font-size:0.8rem; color:var(--text-tertiary); margin-top:8px">Pemeriksaan teknis kelaikan fungsi bangunan berdasarkan standar Kementerian PUPR.</p>
           </div>
           <div class="flex gap-3">
@@ -135,7 +136,7 @@ export function renderChecklistSection(sectionId, items, dataMap) {
             const isSubHeader = item.sub && (!items[idx-1] || items[idx-1].sub !== item.sub);
             
             return `
-               ${isSubHeader ? `<div style="font-family:var(--font-mono); font-size:10px; font-weight:800; color:var(--brand-400); letter-spacing:2px; margin-top:16px; text-transform:uppercase">${item.sub}</div>` : ''}
+               ${isSubHeader ? `<div style="font-family:var(--font-mono); font-size:10px; font-weight:800; color:var(--brand-400); letter-spacing:2px; margin-top:16px; text-transform:uppercase">${escapeHtml(item.sub)}</div>` : ''}
                
                <div class="card-quartz" style="padding: 24px; border-color: hsla(220, 20%, 100%, 0.05); transition: all 0.3s">
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start">
@@ -143,20 +144,20 @@ export function renderChecklistSection(sectionId, items, dataMap) {
                      <!-- Left: Item Info & Evidence -->
                      <div>
                         <div style="display: flex; gap: 16px; align-items: flex-start; margin-bottom: 16px">
-                           <div style="font-family: var(--font-mono); font-weight: 800; font-size: 11px; color: var(--brand-400); background: hsla(220, 95%, 52%, 0.1); padding: 4px 8px; border-radius: 6px">${item.kode}</div>
+                           <div style="font-family: var(--font-mono); font-weight: 800; font-size: 11px; color: var(--brand-400); background: hsla(220, 95%, 52%, 0.1); padding: 4px 8px; border-radius: 6px">${escapeHtml(item.kode)}</div>
                            <div style="font-weight: 800; font-size: 1.05rem; color: white">${escHtml(item.nama)}</div>
                         </div>
                         
-                        <div id="evidence-container-${item.kode}" style="display: flex; flex-wrap: wrap; gap: 12px">
+                        <div id="evidence-container-${escapeHtml(item.kode)}" style="display: flex; flex-wrap: wrap; gap: 12px">
                            ${(entry.foto_urls || []).map(url => `
                               <div style="position: relative; width: 64px; height: 64px; border-radius: 12px; overflow: hidden; border: 1px solid hsla(220, 20%, 100%, 0.1)">
-                                 <img src="${url}" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer" onclick="window._showLightbox('${url}')">
-                                 <button onclick="window._removeFile('${item.kode}', '${url}')" style="position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: var(--danger-500); color: white; border: none; font-size: 8px; cursor: pointer"><i class="fas fa-times"></i></button>
+                                 <img alt="Foto dokumentasi pemeriksaan" src="${escapeHtml(url)}" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer" onclick="window._showLightbox('${escapeHtml(url)}')">
+                                 <button type="button" aria-label="Hapus" onclick="window._removeFile('${escapeHtml(item.kode)}', '${escapeHtml(url)}')" style="position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: var(--danger-500); color: white; border: none; font-size: 8px; cursor: pointer"><i class="fas fa-times"></i></button>
                               </div>
                            `).join('')}
                            <button class="btn-presidential gold" 
                                    style="width: 64px; height: 64px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 0.6rem"
-                                   onclick="window._openLiveCamera('${item.kode}', '${item.nama}', '${sectionId}')">
+                                   onclick="window._openLiveCamera('${escapeHtml(item.kode)}', '${escapeHtml(item.nama)}', '${escapeHtml(sectionId)}')">
                               <i class="fas fa-camera" style="font-size: 1.1rem"></i>
                               FOTO
                            </button>
@@ -166,7 +167,7 @@ export function renderChecklistSection(sectionId, items, dataMap) {
                               DOKUMEN
                               <input type="file" multiple accept="image/*,application/pdf,.doc,.docx" 
                                      style="display: none" 
-                                     onchange="window._handleMultiFileSelect(event, '${item.kode}', '${item.nama}', '${sectionId}')">
+                                     onchange="window._handleMultiFileSelect(event, '${escapeHtml(item.kode)}', '${escapeHtml(item.nama)}', '${escapeHtml(sectionId)}')">
                            </label>
                         </div>
                      </div>
@@ -177,11 +178,11 @@ export function renderChecklistSection(sectionId, items, dataMap) {
                         
                         <div style="position: relative">
                            <textarea class="form-input" rows="2" placeholder="Catatan pemeriksaan / Temuan lapangan..."
-                                     onchange="window._onFieldChange('${item.kode}', 'catatan', this.value)"
+                                     onchange="window._onFieldChange('${escapeHtml(item.kode)}', 'catatan', this.value)"
                                      style="background: hsla(220, 20%, 100%, 0.03); border-color: hsla(220, 20%, 100%, 0.05); border-radius: 12px; color: white; font-size: 0.85rem">${escHtml(entry.catatan || '')}</textarea>
-                           <button class="btn btn-ghost" 
+                           <button type="button" aria-label="Tampilkan atau sembunyikan" class="btn btn-ghost" 
                                    style="position: absolute; bottom: 8px; right: 8px; width: 32px; height: 32px; padding: 0; border-radius: 8px; color: var(--text-tertiary)"
-                                   onclick="window._toggleVoiceNote('${item.kode}')">
+                                   onclick="window._toggleVoiceNote('${escapeHtml(item.kode)}')">
                               <i class="fas fa-microphone"></i>
                            </button>
                         </div>
@@ -209,11 +210,11 @@ function renderItemInput(item, entry) {
       return `
         <div style="font-family: var(--font-mono); font-size: 9px; font-weight: 800; color: var(--text-tertiary); letter-spacing: 1px; margin-bottom: 8px">KESESUAIAN STANDAR</div>
         <div style="display: flex; gap: 12px">
-           <button class="btn btn-sm" onclick="window._onFieldChange('${item.kode}', 'status', 'sesuai')"
+           <button class="btn btn-sm" onclick="window._onFieldChange('${escapeHtml(item.kode)}', 'status', 'sesuai')"
                    style="flex: 1; height: 42px; border-radius: 12px; background: ${isSesuai ? 'var(--success-500)' : 'hsla(220, 20%, 100%, 0.03)'}; border-color: ${isSesuai ? 'transparent' : 'hsla(220, 20%, 100%, 0.05)'}; color: ${isSesuai ? 'white' : 'var(--text-tertiary)'}; font-weight: 800; font-size: 0.8rem">
               <i class="fas fa-check" style="margin-right: 8px"></i> SESUAI
            </button>
-           <button class="btn btn-sm" onclick="window._onFieldChange('${item.kode}', 'status', 'tidak_sesuai')"
+           <button class="btn btn-sm" onclick="window._onFieldChange('${escapeHtml(item.kode)}', 'status', 'tidak_sesuai')"
                    style="flex: 1; height: 42px; border-radius: 12px; background: ${isTidak ? 'var(--danger-500)' : 'hsla(220, 20%, 100%, 0.03)'}; border-color: ${isTidak ? 'transparent' : 'hsla(220, 20%, 100%, 0.05)'}; color: ${isTidak ? 'white' : 'var(--text-tertiary)'}; font-weight: 800; font-size: 0.8rem">
               <i class="fas fa-times" style="margin-right: 8px"></i> TIDAK
            </button>
@@ -223,10 +224,10 @@ function renderItemInput(item, entry) {
     case 'scale':
       return `
         <div style="font-family: var(--font-mono); font-size: 9px; font-weight: 800; color: var(--text-tertiary); letter-spacing: 1px; margin-bottom: 8px">KONDISI FISIK</div>
-        <select class="form-select" onchange="window._onFieldChange('${item.kode}', 'status', this.value)"
+        <select class="form-select" onchange="window._onFieldChange('${escapeHtml(item.kode)}', 'status', this.value)"
                 style="height: 42px; border-radius: 12px; background: rgba(255,255,255,0.9); color: #0f172a; font-weight: 800; font-size: 0.85rem">
            <option value="">-- PILIH KONDISI --</option>
-           ${SCALE_OPTIONS.map(o => `<option value="${o.value}" ${val === o.value ? 'selected' : ''} style="color:#0f172a">${o.label.toUpperCase()}</option>`).join('')}
+           ${SCALE_OPTIONS.map(o => `<option value="${escapeHtml(o.value)}" ${val === o.value ? 'selected' : ''} style="color:#0f172a">${escapeHtml(o.label.toUpperCase())}</option>`).join('')}
         </select>
       `;
 
@@ -234,10 +235,10 @@ function renderItemInput(item, entry) {
       return `
         <div style="font-family: var(--font-mono); font-size: 9px; font-weight: 800; color: var(--text-tertiary); letter-spacing: 1px; margin-bottom: 8px">PENGUKURAN TEKNIS</div>
         <div style="position: relative">
-          <input type="number" step="0.1" value="${val}" class="form-input" placeholder="0.0"
-                 onchange="window._onFieldChange('${item.kode}', 'nilai', this.value)"
+          <input type="number" step="0.1" value="${escapeHtml(val)}" class="form-input" placeholder="0.0"
+                 onchange="window._onFieldChange('${escapeHtml(item.kode)}', 'nilai', this.value)"
                  style="background: hsla(220, 20%, 100%, 0.03); border-color: hsla(220, 20%, 100%, 0.05); border-radius: 12px; color: white; font-weight: 900; font-size: 1.1rem; padding-right: 60px">
-          <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-weight: 800; color: var(--brand-400); font-size: 0.8rem">${item.unit || ''}</span>
+          <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-weight: 800; color: var(--brand-400); font-size: 0.8rem">${escapeHtml(item.unit || '')}</span>
         </div>
       `;
 
@@ -245,18 +246,18 @@ function renderItemInput(item, entry) {
       const options = item.options || [];
       return `
         <div style="font-family: var(--font-mono); font-size: 9px; font-weight: 800; color: var(--text-tertiary); letter-spacing: 1px; margin-bottom: 8px">KATEGORI</div>
-        <select class="form-select" onchange="window._onFieldChange('${item.kode}', 'status', this.value)"
+        <select class="form-select" onchange="window._onFieldChange('${escapeHtml(item.kode)}', 'status', this.value)"
                 style="height: 42px; border-radius: 12px; background: rgba(255,255,255,0.9); color: #0f172a; font-weight: 800; font-size: 0.85rem">
            <option value="">-- PILIH --</option>
-           ${options.map(o => `<option value="${o}" ${val === o ? 'selected' : ''} style="color:#0f172a">${o.toUpperCase()}</option>`).join('')}
+           ${options.map(o => `<option value="${escapeHtml(o)}" ${val === o ? 'selected' : ''} style="color:#0f172a">${escapeHtml(o.toUpperCase())}</option>`).join('')}
         </select>
       `;
 
     default:
       return `
         <div style="font-family: var(--font-mono); font-size: 9px; font-weight: 800; color: var(--text-tertiary); letter-spacing: 1px; margin-bottom: 8px">DATA TEKNIS</div>
-        <input type="text" value="${val}" class="form-input" placeholder="Ketik keterangan..."
-               onchange="window._onFieldChange('${item.kode}', 'status', this.value)"
+        <input type="text" value="${escapeHtml(val)}" class="form-input" placeholder="Ketik keterangan..."
+               onchange="window._onFieldChange('${escapeHtml(item.kode)}', 'status', this.value)"
                style="background: hsla(220, 20%, 100%, 0.03); border-color: hsla(220, 20%, 100%, 0.05); border-radius: 12px; color: white; font-size: 0.85rem">
       `;
   }

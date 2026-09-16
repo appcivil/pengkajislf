@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 
 // ============================================================
@@ -79,12 +80,12 @@ export function renderDisasterMitigationCard(project, summary = {}) {
   
   return `
     <div class="card-quartz clickable" id="disaster-mitigation-card" 
-         onclick="window.navigate('disaster-mitigation', {id:'${project.id}'})">
+         onclick="window.navigate('disaster-mitigation', {id:'${escapeHtml(project.id)}'})">
       <div class="card-header">
-        <div class="card-icon" style="background: ${st.bg}; color: ${st.text}; border-color: ${st.border}44">
+        <div class="card-icon" style="background: ${escapeHtml(st.bg)}; color: ${escapeHtml(st.text)}; border-color: ${escapeHtml(st.border)}44">
           <i class="fas fa-house-tsunami" style="font-size: 1.4rem"></i>
         </div>
-        <div class="card-phase" style="color: ${st.text}">PHASE 02E</div>
+        <div class="card-phase" style="color: ${escapeHtml(st.text)}">PHASE 02E</div>
       </div>
       
       <h3 class="card-title">Mitigasi Bencana</h3>
@@ -95,12 +96,12 @@ export function renderDisasterMitigationCard(project, summary = {}) {
       ${hasError ? `
         <div class="card-error-state">
           <i class="fas fa-exclamation-triangle"></i>
-          <span>${summary.error_message || 'Terjadi kesalahan saat memuat data'}</span>
+          <span>${escapeHtml(summary.error_message || 'Terjadi kesalahan saat memuat data')}</span>
         </div>
       ` : hasData ? `
         <div class="card-metrics-grid">
           <div class="metric-item">
-            <div class="metric-value" style="color: ${st.text}">${summary.mitigation_count}</div>
+            <div class="metric-value" style="color: ${escapeHtml(st.text)}">${escapeHtml(summary.mitigation_count)}</div>
             <div class="metric-label">Mitigasi</div>
           </div>
           <div class="metric-item">
@@ -109,7 +110,7 @@ export function renderDisasterMitigationCard(project, summary = {}) {
           </div>
         </div>
         
-        <div class="card-status-badge" style="background: ${st.bg}; color: ${st.text}; border-color: ${st.border}44">
+        <div class="card-status-badge" style="background: ${escapeHtml(st.bg)}; color: ${escapeHtml(st.text)}; border-color: ${escapeHtml(st.border)}44">
           <i class="fas fa-shield-alt"></i>
           ${riskLabels[summary.risk_level] || 'Belum Dianalisis'}
         </div>

@@ -407,14 +407,15 @@ export class FireDesigner extends HTMLElement {
       this.integrateWithEvacuation();
     });
 
-    // Listen for ASET reached
-    window.addEventListener('fire:asetReached', (e) => {
-      this.onASETReached(e.detail);
-    });
-
-    window.addEventListener('fire:tick', (e) => {
-      this.onSimulationTick(e.detail);
-    });
+    // Listener pada `window` TIDAK ikut hilang saat komponen dilepas dari DOM.
+    // Referensinya disimpan supaya bisa dilepas di disconnectedCallback();
+    // tanpa itu, setiap kali designer dibuka kembali listener menumpuk dan
+    // simulasi berjalan berkali-kali untuk satu event yang sama.
+    this._winListeners = [
+      ['fire:asetReached', (e) => this.onASETReached(e.detail)],
+      ['fire:tick', (e) => this.onSimulationTick(e.detail)],
+    ];
+    for (const [type, fn] of this._winListeners) window.addEventListener(type, fn);
   }
 
   loadArchitectureData() {
@@ -722,6 +723,10 @@ export class FireDesigner extends HTMLElement {
   }
 
   disconnectedCallback() {
+    // Lepas listener `window` agar tidak menumpuk saat komponen dibuat ulang.
+    for (const [type, fn] of this._winListeners || []) window.removeEventListener(type, fn);
+    this._winListeners = [];
+
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
     }

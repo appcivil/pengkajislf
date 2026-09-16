@@ -1,19 +1,10 @@
+import { escapeHtml } from './safe-markdown.js';
 /**
  * SHARED UTILITIES
  * Generic helper functions used across the application.
  */
 
 // Escape HTML to prevent XSS
-export function escHtml(s) {
-  return String(s || '').replace(/[&<>"']/g, m => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
-  })[m]);
-}
-
 // Format date to Indonesian locale
 export function formatTanggal(s) {
   try {
@@ -86,3 +77,6 @@ export function getFileNameFromUrl(url) {
     return 'Berkas Lampiran';
   }
 }
+
+/** Diteruskan ke implementasi kanonik di lib/safe-markdown.js. */
+export const escHtml = escapeHtml;

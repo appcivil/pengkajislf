@@ -1,6 +1,9 @@
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml as esc } from '../lib/safe-markdown.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError } from '../components/toast.js';
+import { confirm } from '../components/modal.js';
 
 /**
  * Task Detail Page - Display comprehensive info for a specific todo_task
@@ -106,26 +109,26 @@ function renderTaskHero(t) {
          <div style="display:flex; flex-direction:column; gap:24px; position:sticky; top:24px">
             
             <!-- Status Card -->
-            <div class="card-quartz" style="padding:32px; border-left: 4px solid ${c}">
+            <div class="card-quartz" style="padding:32px; border-left: 4px solid ${escapeHtml(c)}">
                <div style="font-size:0.7rem; font-weight:800; color:var(--text-tertiary); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:20px">Current Operational Status</div>
                
                <div style="display:flex; flex-direction:column; gap:12px">
-                  <div style="padding:16px; border-radius:12px; background:${c}11; border:1px solid ${c}33; display:flex; align-items:center; gap:12px">
-                     <div style="width:8px; height:8px; border-radius:50%; background:${c}; box-shadow: 0 0 10px ${c}"></div>
-                     <span style="font-family:var(--font-mono); font-size:0.85rem; font-weight:800; color:${c}">${statusLabels[t.status] || 'UNKNOWN'}</span>
+                  <div style="padding:16px; border-radius:12px; background:${escapeHtml(c)}11; border:1px solid ${escapeHtml(c)}33; display:flex; align-items:center; gap:12px">
+                     <div style="width:8px; height:8px; border-radius:50%; background:${escapeHtml(c)}; box-shadow: 0 0 10px ${escapeHtml(c)}"></div>
+                     <span style="font-family:var(--font-mono); font-size:0.85rem; font-weight:800; color:${escapeHtml(c)}">${statusLabels[t.status] || 'UNKNOWN'}</span>
                   </div>
                   
                   <div style="padding:16px; border-radius:12px; background:hsla(0,0%,100%,0.03); border:1px solid var(--glass-border); display:flex; flex-direction:column; gap:6px">
                      <div style="font-size:0.65rem; color:var(--text-tertiary)">PRIORITY LEVEL</div>
-                     <div style="font-size:0.9rem; font-weight:800; text-transform:uppercase; color:var(--text-primary)">${t.priority}</div>
+                     <div style="font-size:0.9rem; font-weight:800; text-transform:uppercase; color:var(--text-primary)">${escapeHtml(t.priority)}</div>
                   </div>
                </div>
 
                <div style="margin-top:24px; border-top:1px solid hsla(0,0%,100%,0.05); padding-top:24px; display:flex; flex-direction:column; gap:12px">
-                  <button class="btn btn-secondary w-full" onclick="window._changeTaskStatus('${t.id}')">
+                  <button class="btn btn-secondary w-full" onclick="window._changeTaskStatus('${escapeHtml(t.id)}')">
                     <i class="fas fa-rotate" style="margin-right:8px"></i> Ganti Status
                   </button>
-                  <button class="btn btn-ghost w-full" style="color:var(--danger-400)" onclick="window._deleteTask('${t.id}')">
+                  <button class="btn btn-ghost w-full" style="color:var(--danger-400)" onclick="window._deleteTask('${escapeHtml(t.id)}')">
                     <i class="fas fa-trash-can" style="margin-right:8px"></i> Hapus Tugas
                   </button>
                </div>
@@ -151,7 +154,12 @@ window._changeTaskStatus = async (id) => {
   const current = (await supabase.from('todo_tasks').select('status').eq('id', id).single()).data?.status;
   const nextIdx = (statuses.indexOf(current) + 1) % statuses.length;
   
-  if (confirm(`Ubah status menjadi "${labels[nextIdx]}"?`)) {
+  const lanjutStatus = await confirm({
+    title: 'Ubah Status Tugas',
+    message: `Ubah status tugas ini menjadi "${labels[nextIdx]}"?`,
+    confirmText: 'Ubah Status',
+  });
+  if (lanjutStatus) {
     const { error } = await supabase.from('todo_tasks').update({ status: statuses[nextIdx] }).eq('id', id);
     if (!error) {
       showSuccess(`Status diperbarui ke ${labels[nextIdx]}`);
@@ -163,7 +171,13 @@ window._changeTaskStatus = async (id) => {
 };
 
 window._deleteTask = async (id) => {
-  if (confirm('Anda yakin ingin menghapus tugas ini secara permanen?')) {
+  const lanjutHapus = await confirm({
+    title: 'Hapus Tugas',
+    message: 'Hapus tugas ini secara permanen? Tugas dan seluruh catatannya tidak dapat dikembalikan.',
+    confirmText: 'Hapus Permanen',
+    danger: true,
+  });
+  if (lanjutHapus) {
     const { error } = await supabase.from('todo_tasks').delete().eq('id', id);
     if (!error) {
       showSuccess('Tugas berhasil dihapus.');
@@ -174,6 +188,3 @@ window._deleteTask = async (id) => {
   }
 };
 
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}

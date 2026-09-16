@@ -6,6 +6,8 @@
 
 import { getPipelineIntegration } from '../infrastructure/pipeline/pipeline-integration.js';
 
+import { escapeHtml } from '../lib/safe-markdown.js';
+import { toast } from '../components/toast.js';
 /**
  * Render SmartAI Dashboard
  * @returns {string} HTML string
@@ -188,7 +190,7 @@ export function initSmartAIDashboard() {
         monitorJob(job.id);
       } catch (error) {
         console.error('Error processing file:', error);
-        alert(`Error: ${error.message}`);
+        toast(`Error: ${error.message}`, 'error');
       }
     }
   }
@@ -223,8 +225,8 @@ export function initSmartAIDashboard() {
     jobEl.id = `job-${job.id}`;
     jobEl.innerHTML = `
       <div class="job-info">
-        <span class="job-filename">${fileName}</span>
-        <span class="job-type">${job.type}</span>
+        <span class="job-filename">${escapeHtml(fileName)}</span>
+        <span class="job-type">${escapeHtml(job.type)}</span>
       </div>
       <div class="job-status">
         <span class="status-badge pending">pending</span>
@@ -311,28 +313,28 @@ export function initSmartAIDashboard() {
       resultsContent.innerHTML = `
         <div class="rag-result">
           <div class="query-section">
-            <strong>Query:</strong> ${query}
+            <strong>Query:</strong> ${escapeHtml(query)}
           </div>
           <div class="chunks-section">
-            <strong>Relevant Chunks (${result.chunkCount}):</strong>
+            <strong>Relevant Chunks (${escapeHtml(result.chunkCount)}):</strong>
             ${result.chunks?.map((chunk, i) => `
               <div class="chunk-item">
                 <div class="chunk-header">[${i + 1}] Similarity: ${(chunk.similarity * 100).toFixed(1)}%</div>
-                <div class="chunk-text">${chunk.text?.substring(0, 200)}...</div>
+                <div class="chunk-text">${escapeHtml(chunk.text?.substring(0, 200))}...</div>
               </div>
             `).join('') || '<p>No relevant chunks found</p>'}
           </div>
           ${result.response ? `
             <div class="response-section">
               <strong>AI Response:</strong>
-              <div class="ai-response">${result.response}</div>
+              <div class="ai-response">${escapeHtml(result.response)}</div>
             </div>
           ` : ''}
         </div>
       `;
     } catch (error) {
       console.error('Query error:', error);
-      alert(`Query failed: ${error.message}`);
+      toast(`Query failed: ${error.message}`, 'error');
     } finally {
       queryBtn.disabled = false;
       queryBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Query';

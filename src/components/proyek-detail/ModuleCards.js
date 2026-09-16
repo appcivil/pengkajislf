@@ -5,6 +5,7 @@
 
 import { renderModuleCardSkeleton } from './ModuleCardSkeleton.js';
 
+import { escapeHtml } from '../../lib/safe-markdown.js';
 // ============================================================
 // BASE CARD RENDERER
 // ============================================================
@@ -41,42 +42,42 @@ function renderBaseCard({
   }
 
   const phaseBadge = phase ? `
-    <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: ${accentColor};">
-      ${phase}
+    <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: ${escapeHtml(accentColor)};">
+      ${escapeHtml(phase)}
     </div>
   ` : '';
 
   const statsHtml = stats ? `
     <div style="margin-top: 20px;">
       <div class="flex-between" style="margin-bottom: 8px;">
-        <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-tertiary);">${stats.label}</span>
-        <span style="font-size: 0.7rem; font-weight: 800; color: ${accentColor};">${stats.value}</span>
+        <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-tertiary);">${escapeHtml(stats.label)}</span>
+        <span style="font-size: 0.7rem; font-weight: 800; color: ${escapeHtml(accentColor)};">${escapeHtml(stats.value)}</span>
       </div>
       <div style="height: 6px; background: hsla(220, 20%, 100%, 0.05); border-radius: 10px;">
-        <div style="width: ${stats.progress || 0}%; height: 100%; border-radius: 10px; background: var(--gradient-brand); box-shadow: var(--shadow-sapphire);"></div>
+        <div style="width: ${escapeHtml(stats.progress || 0)}%; height: 100%; border-radius: 10px; background: var(--gradient-brand); box-shadow: var(--shadow-sapphire);"></div>
       </div>
-      ${stats.sublabel ? `<div style="font-size: 0.65rem; color: var(--text-tertiary); margin-top: 4px;">${stats.sublabel}</div>` : ''}
+      ${stats.sublabel ? `<div style="font-size: 0.65rem; color: var(--text-tertiary); margin-top: 4px;">${escapeHtml(stats.sublabel)}</div>` : ''}
     </div>
   ` : '';
 
   return `
-    <div class="card-quartz ${onClick ? 'clickable' : ''}" ${onClick ? `onclick="${onClick}"` : ''} style="padding: var(--space-6);">
+    <div class="card-quartz ${onClick ? 'clickable' : ''}" ${onClick ? `onclick="${escapeHtml(onClick)}"` : ''} style="padding: var(--space-6);">
       <div class="flex-between" style="margin-bottom: 20px;">
-        <div style="width: 48px; height: 48px; border-radius: 14px; background: ${accentColor}1a; display: flex; align-items: center; justify-content: center; color: ${accentColor};">
+        <div style="width: 48px; height: 48px; border-radius: 14px; background: ${escapeHtml(accentColor)}1a; display: flex; align-items: center; justify-content: center; color: ${escapeHtml(accentColor)};">
           <i class="fas fa-${icon}" style="font-size: 1.4rem;"></i>
         </div>
         ${phaseBadge}
       </div>
       
       <h3 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--text-primary); margin-bottom: 4px;">
-        ${title}
+        ${escapeHtml(title)}
       </h3>
       
-      ${description ? `<p style="font-size: 0.75rem; color: var(--text-tertiary); line-height: 1.5;">${description}</p>` : ''}
+      ${description ? `<p style="font-size: 0.75rem; color: var(--text-tertiary); line-height: 1.5;">${escapeHtml(description)}</p>` : ''}
       
-      ${content}
+      ${escapeHtml(content)}
       ${statsHtml}
-      ${footer}
+      ${escapeHtml(footer)}
     </div>
   `;
 }
@@ -123,7 +124,7 @@ export function renderProteksiPetirCard(proyek, summary, loading = false) {
     content: hasData ? `
       <div style="margin-top: 16px;">
         <span class="badge" style="background: hsla(45, 90%, 60%, 0.1); color: var(--gold-400); border: 1px solid hsla(45, 90%, 60%, 0.2); font-size: 10px;">
-          ${summary.lps_class || 'Class IV'} LPS
+          ${escapeHtml(summary.lps_class || 'Class IV')} LPS
         </span>
       </div>
     ` : ''

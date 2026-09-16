@@ -5,6 +5,7 @@
  */
 
 import { ICADEngine } from '../../../core/smart-ai/engine-interface.js';
+import { escapeHtml } from '../../../lib/safe-markdown.js';
 import { FileType, PipelineType } from '../../../core/smart-ai/types.js';
 
 /**
@@ -684,7 +685,7 @@ export class CADEngine extends ICADEngine {
     const width = bounds.width;
     const height = bounds.height;
     
-    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${bounds.minX} ${-bounds.maxY} ${width} ${height}" width="${width}" height="${height}">`;
+    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${escapeHtml(bounds.minX)} ${-bounds.maxY} ${escapeHtml(width)} ${escapeHtml(height)}" width="${escapeHtml(width)}" height="${escapeHtml(height)}">`;
     svg += `<g transform="scale(1,-1)">`; // Flip Y axis
     
     const entities = model.entities || [];
@@ -710,19 +711,19 @@ export class CADEngine extends ICADEngine {
         const y1 = entity.start?.y || entity.startY;
         const x2 = entity.end?.x || entity.endX;
         const y2 = entity.end?.y || entity.endY;
-        return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" />`;
+        return `<line x1="${escapeHtml(x1)}" y1="${escapeHtml(y1)}" x2="${escapeHtml(x2)}" y2="${escapeHtml(y2)}" stroke="${escapeHtml(color)}" />`;
       
       case 'CIRCLE':
         const cx = entity.center?.x || entity.centerX;
         const cy = entity.center?.y || entity.centerY;
-        return `<circle cx="${cx}" cy="${cy}" r="${entity.radius}" stroke="${color}" fill="none" />`;
+        return `<circle cx="${escapeHtml(cx)}" cy="${escapeHtml(cy)}" r="${escapeHtml(entity.radius)}" stroke="${escapeHtml(color)}" fill="none" />`;
       
       case 'POLYLINE':
       case 'LWPOLYLINE':
         const points = (entity.vertices || [])
           .map(v => `${v.x},${v.y}`)
           .join(' ');
-        return `<polyline points="${points}" stroke="${color}" fill="none" />`;
+        return `<polyline points="${escapeHtml(points)}" stroke="${escapeHtml(color)}" fill="none" />`;
       
       default:
         return '';

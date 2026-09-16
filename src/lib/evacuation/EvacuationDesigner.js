@@ -436,14 +436,16 @@ export class EvacuationDesigner extends HTMLElement {
       this.generateReport();
     });
 
-    // Listen engine events
-    window.addEventListener('pathfinder:tick', (e) => {
-      this.updateStats(e.detail);
-    });
-
-    window.addEventListener('pathfinder:simulationComplete', (e) => {
-      this.showResults(e.detail);
-    });
+    // Listen engine events.
+    // Referensi disimpan supaya bisa dilepas di disconnectedCallback():
+    // listener `window` tidak hilang sendiri saat komponen dilepas, sehingga
+    // membuka designer berulang kali akan menumpuk handler dan kalkulasi
+    // jalan berkali-kali untuk satu event yang sama.
+    this._winListeners = [
+      ['pathfinder:tick', (e) => this.updateStats(e.detail)],
+      ['pathfinder:simulationComplete', (e) => this.showResults(e.detail)],
+    ];
+    for (const [type, fn] of this._winListeners) window.addEventListener(type, fn);
   }
 
   loadArchitectureData() {
@@ -822,6 +824,10 @@ export class EvacuationDesigner extends HTMLElement {
   }
 
   disconnectedCallback() {
+    // Lepas listener `window` agar tidak menumpuk saat designer dibuka ulang.
+    for (const [type, fn] of this._winListeners || []) window.removeEventListener(type, fn);
+    this._winListeners = [];
+
     // Cleanup
     if (this.engine) {
       this.engine.stop();

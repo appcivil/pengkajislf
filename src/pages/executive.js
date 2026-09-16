@@ -4,6 +4,7 @@
 //  Fitur: KPI, Charts, Benchmarking, Trend Analysis, Export
 // ============================================================
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml, escapeHtml as escHtml } from '../lib/safe-markdown.js';
 import { BOBOT_ASPEK } from '../lib/scoring-engine.js';
 
 export async function executivePage() {
@@ -72,19 +73,19 @@ function buildHtml(proyekData, analisisData, checklistData) {
       <!-- KPI Ribbon (Responsive 4-to-2-to-1) -->
       <div class="grid-4" style="margin-bottom:var(--space-5)">
         ${[
-           { lbl: 'Total Bangunan', count: total, icon: 'fa-city', c: 'kpi-blue', sub: `${sProses} dalam proses` },
+           { lbl: 'Total Bangunan', count: total, icon: 'fa-city', c: 'kpi-blue', sub: `${escapeHtml(sProses)} dalam proses` },
            { lbl: 'SLF Terbit (Laik)', count: sLaik, icon: 'fa-check-circle', c: 'kpi-green', sub: `${Math.round(sLaik/total*100)}% dari total` },
-           { lbl: 'Risiko Tinggi/Kritis', count: riskTinggi + riskKritis, icon: 'fa-triangle-exclamation', c: 'kpi-red', sub: `${riskKritis} kritis` },
+           { lbl: 'Risiko Tinggi/Kritis', count: riskTinggi + riskKritis, icon: 'fa-triangle-exclamation', c: 'kpi-red', sub: `${escapeHtml(riskKritis)} kritis` },
            { lbl: 'Rata-Rata Skor AI', count: avgSkor+'/100', icon: 'fa-brain', c: 'kpi-purple', sub: 'Nasional avg: 72' },
         ].map(k => `
            <div class="card" style="display:flex;align-items:center;gap:16px">
-             <div class="kpi-icon-wrap ${k.c}" style="width:48px;height:48px;font-size:1.2rem;margin:0">
+             <div class="kpi-icon-wrap ${escapeHtml(k.c)}" style="width:48px;height:48px;font-size:1.2rem;margin:0">
                <i class="fas ${k.icon}"></i>
              </div>
              <div>
-               <div class="text-xs text-tertiary font-bold" style="text-transform:uppercase">${k.lbl}</div>
-               <div style="font-size:1.8rem;font-weight:800;letter-spacing:-1px;line-height:1.2">${k.count}</div>
-               <div class="text-xs text-tertiary">${k.sub}</div>
+               <div class="text-xs text-tertiary font-bold" style="text-transform:uppercase">${escapeHtml(k.lbl)}</div>
+               <div style="font-size:1.8rem;font-weight:800;letter-spacing:-1px;line-height:1.2">${escapeHtml(k.count)}</div>
+               <div class="text-xs text-tertiary">${escapeHtml(k.sub)}</div>
              </div>
            </div>
         `).join('')}
@@ -99,15 +100,15 @@ function buildHtml(proyekData, analisisData, checklistData) {
           ${Object.entries(aspekStats).map(([aspek, stat]) => `
             <div style="background:var(--bg-subtle);padding:16px;border-radius:8px">
               <div class="flex-between" style="margin-bottom:8px">
-                <span class="text-sm font-bold capitalize">${aspek}</span>
+                <span class="text-sm font-bold capitalize">${escapeHtml(aspek)}</span>
                 <span class="text-xs text-tertiary">Bobot: ${BOBOT_ASPEK[aspek] || 10}%</span>
               </div>
               <div style="font-size:1.5rem;font-weight:700;color:${stat.avg >= 80 ? 'var(--success)' : stat.avg >= 60 ? 'var(--warning)' : 'var(--danger)'}">
-                ${stat.avg}
+                ${escapeHtml(stat.avg)}
               </div>
-              <div class="text-xs text-tertiary">${stat.count} item dinilai</div>
+              <div class="text-xs text-tertiary">${escapeHtml(stat.count)} item dinilai</div>
               <div style="margin-top:8px;height:4px;background:var(--bg-elevated);border-radius:2px;overflow:hidden">
-                <div style="height:100%;width:${stat.avg}%;background:${stat.avg >= 80 ? 'var(--success)' : stat.avg >= 60 ? 'var(--warning)' : 'var(--danger)'};border-radius:2px"></div>
+                <div style="height:100%;width:${escapeHtml(stat.avg)}%;background:${stat.avg >= 80 ? 'var(--success)' : stat.avg >= 60 ? 'var(--warning)' : 'var(--danger)'};border-radius:2px"></div>
               </div>
             </div>
           `).join('')}
@@ -136,7 +137,7 @@ function buildHtml(proyekData, analisisData, checklistData) {
           <i class="fas fa-ranking-star text-brand"></i> Benchmark Perbandingan Proyek
         </div>
         <div style="overflow-x:auto">
-          <table class="checklist-table" id="benchmark-table">
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table class="checklist-table" id="benchmark-table">
             <thead>
               <tr>
                 <th>Ranking</th>
@@ -153,7 +154,7 @@ function buildHtml(proyekData, analisisData, checklistData) {
             <tbody id="benchmark-tbody">
               <!-- Populated by JS -->
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
 
@@ -162,7 +163,7 @@ function buildHtml(proyekData, analisisData, checklistData) {
         <div class="card-title" style="margin-bottom:var(--space-4)">
           <i class="fas fa-exclamation-circle text-danger"></i> Top 5 Bangunan Kritis (Area Prioritas Perbaikan)
         </div>
-        <table class="checklist-table">
+        <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table class="checklist-table">
           <thead>
             <tr>
               <th>Bangunan</th>
@@ -182,7 +183,7 @@ function buildHtml(proyekData, analisisData, checklistData) {
             `).join('')}
             ${proyekData.filter(p => p.status_slf === 'TIDAK_LAIK_FUNGSI').length === 0 ? `<tr><td colspan="4" class="text-center text-tertiary">Tidak ada bangunan berstatus Tidak Laik Fungsi dalam sistem.</td></tr>` : ''}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
   `;
@@ -259,14 +260,14 @@ function initBenchmarkFeatures(proyekData, analisisData) {
       </td>
       <td>${renderStatusBadge(p.status_slf)}</td>
       <td>
-        <span class="font-bold" style="color:${getScoreColor(p.skor_total)}">${p.skor_total}</span>
+        <span class="font-bold" style="color:${getScoreColor(p.skor_total)}">${escapeHtml(p.skor_total)}</span>
       </td>
-      <td><span style="color:${getScoreColor(p.skor_struktur)}">${p.skor_struktur}</span></td>
-      <td><span style="color:${getScoreColor(p.skor_mekanikal)}">${p.skor_mekanikal}</span></td>
-      <td><span style="color:${getScoreColor(p.skor_admin)}">${p.skor_admin}</span></td>
+      <td><span style="color:${getScoreColor(p.skor_struktur)}">${escapeHtml(p.skor_struktur)}</span></td>
+      <td><span style="color:${getScoreColor(p.skor_mekanikal)}">${escapeHtml(p.skor_mekanikal)}</span></td>
+      <td><span style="color:${getScoreColor(p.skor_admin)}">${escapeHtml(p.skor_admin)}</span></td>
       <td>${renderRiskBadge(p.risk_level)}</td>
       <td>
-        <button class="btn btn-ghost btn-sm" onclick="window.navigate('proyek-detail', {id:'${p.id}'})">
+        <button type="button" aria-label="Buka" class="btn btn-ghost btn-sm" onclick="window.navigate('proyek-detail', {id:'${escapeHtml(p.id)}'})">
           <i class="fas fa-eye"></i>
         </button>
       </td>
@@ -470,4 +471,3 @@ function renderSkeleton() {
           </div>`;
 }
 
-function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

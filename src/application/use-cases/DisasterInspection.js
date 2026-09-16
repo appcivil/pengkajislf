@@ -3,6 +3,7 @@
 // ============================================================
 
 import { BaseInspection } from './BaseInspection.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { InspectionWidgets } from '../../components/inspection/inspection-widgets.js';
 import { showSuccess, showError, showInfo } from '../../components/toast.js';
 
@@ -96,8 +97,8 @@ export class DisasterInspection extends BaseInspection {
                   { name: 'Kebakaran', level: assessment.fire_risk || 'MEDIUM' }
                 ].map(risk => `
                   <div style="padding: 16px; background: hsla(220, 20%, 15%, 0.5); border-radius: 10px; text-align: center;">
-                    <div style="font-size: 0.85rem; color: var(--text-tertiary); margin-bottom: 4px;">${risk.name}</div>
-                    <div style="font-size: 1.2rem; font-weight: 700; color: ${risk.level === 'LOW' ? 'var(--success-400)' : risk.level === 'MEDIUM' ? 'var(--warning-400)' : 'var(--danger-400)'};">${risk.level}</div>
+                    <div style="font-size: 0.85rem; color: var(--text-tertiary); margin-bottom: 4px;">${escapeHtml(risk.name)}</div>
+                    <div style="font-size: 1.2rem; font-weight: 700; color: ${risk.level === 'LOW' ? 'var(--success-400)' : risk.level === 'MEDIUM' ? 'var(--warning-400)' : 'var(--danger-400)'};">${escapeHtml(risk.level)}</div>
                   </div>
                 `).join('')}
               </div>
@@ -138,10 +139,10 @@ export class DisasterInspection extends BaseInspection {
       icon: 'globe-asia',
       accentColor: zone.color,
       content: `
-        <div style="text-align: center; margin-bottom: 24px; padding: 30px; background: ${zone.color}15; border-radius: 16px;">
-          <div style="font-size: 6rem; font-weight: 800; color: ${zone.color};">${assessment.seismic_zone || '-'}</div>
+        <div style="text-align: center; margin-bottom: 24px; padding: 30px; background: ${escapeHtml(zone.color)}15; border-radius: 16px;">
+          <div style="font-size: 6rem; font-weight: 800; color: ${escapeHtml(zone.color)};">${escapeHtml(assessment.seismic_zone || '-')}</div>
           <div style="font-size: 1.2rem; color: var(--text-secondary); margin-top: 8px;">Zona Gempa</div>
-          <div style="font-size: 1rem; color: ${zone.color}; margin-top: 4px;">${zone.description}</div>
+          <div style="font-size: 1rem; color: ${escapeHtml(zone.color)}; margin-top: 4px;">${escapeHtml(zone.description)}</div>
         </div>
         
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px;">
@@ -159,7 +160,7 @@ export class DisasterInspection extends BaseInspection {
           </div>
           <div class="card-quartz" style="padding: 20px;">
             <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-bottom: 4px;">Faktor Keutamaan (Ie)</div>
-            <div style="font-size: 2rem; font-weight: 700; color: white;">${assessment.importance_factor || '-'}</div>
+            <div style="font-size: 2rem; font-weight: 700; color: white;">${escapeHtml(assessment.importance_factor || '-')}</div>
           </div>
         </div>
         
@@ -187,15 +188,15 @@ export class DisasterInspection extends BaseInspection {
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
           <div class="card-quartz" style="padding: 20px;">
             <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-bottom: 4px;">Sistem Struktur</div>
-            <div style="font-size: 1.2rem; font-weight: 600; color: white;">${structural.system_type || '-'}</div>
+            <div style="font-size: 1.2rem; font-weight: 600; color: white;">${escapeHtml(structural.system_type || '-')}</div>
           </div>
           <div class="card-quartz" style="padding: 20px;">
             <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-bottom: 4px;">Material Utama</div>
-            <div style="font-size: 1.2rem; font-weight: 600; color: white;">${structural.material || '-'}</div>
+            <div style="font-size: 1.2rem; font-weight: 600; color: white;">${escapeHtml(structural.material || '-')}</div>
           </div>
           <div class="card-quartz" style="padding: 20px;">
             <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-bottom: 4px;">Faktor Reduksi (R)</div>
-            <div style="font-size: 1.2rem; font-weight: 600; color: white;">${structural.r_factor || '-'}</div>
+            <div style="font-size: 1.2rem; font-weight: 600; color: white;">${escapeHtml(structural.r_factor || '-')}</div>
           </div>
           <div class="card-quartz" style="padding: 20px;">
             <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-bottom: 4px;">Perioda Struktur (T)</div>
@@ -320,9 +321,9 @@ export class DisasterInspection extends BaseInspection {
                       <i class="fas fa-${check.passed ? 'check' : 'times'}"></i>
                     </div>
                     <div style="flex: 1;">
-                      <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">${check.name}</div>
+                      <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">${escapeHtml(check.name)}</div>
                     </div>
-                    <div style="font-size: 1rem; font-weight: 700; color: ${check.passed ? 'var(--success-400)' : 'var(--danger-400)'};">${check.value}</div>
+                    <div style="font-size: 1rem; font-weight: 700; color: ${check.passed ? 'var(--success-400)' : 'var(--danger-400)'};">${escapeHtml(check.value)}</div>
                   </div>
                 `).join('')}
               </div>

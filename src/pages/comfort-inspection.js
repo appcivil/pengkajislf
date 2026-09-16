@@ -6,6 +6,7 @@
 // ============================================================
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { uploadToGoogleDrive } from '../lib/drive.js';
@@ -226,7 +227,7 @@ function renderHeaderCard() {
           <span class="badge" style="background: hsla(160, 100%, 45%, 0.1); color: var(--success-400); border: 1px solid hsla(160, 100%, 45%, 0.2); font-size: 10px;">
             <i class="fas fa-book" style="margin-right: 6px;"></i>PP 16/2021
           </span>
-          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${currentProjectId}'})" style="color: var(--text-tertiary);">
+          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${escapeHtml(currentProjectId)}'})" style="color: var(--text-tertiary);">
             <i class="fas fa-arrow-left" style="margin-right: 6px;"></i> Kembali
           </button>
         </div>
@@ -333,16 +334,16 @@ function renderDashboardTab() {
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(220, 95%, 52%, 0.15); display: flex; align-items: center; justify-content: center; color: var(--brand-400); margin: 0 auto 12px;">
             <i class="fas fa-door-open" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 2rem; font-weight: 800; color: white; margin-bottom: 4px;">${roomCount}</div>
+          <div style="font-size: 2rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(roomCount)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Total Ruang</div>
-          <div style="font-size: 0.65rem; color: var(--success-400); margin-top: 4px;">${compliantRooms} Lengkap</div>
+          <div style="font-size: 0.65rem; color: var(--success-400); margin-top: 4px;">${escapeHtml(compliantRooms)} Lengkap</div>
         </div>
         
         <div class="card-quartz" style="padding: 20px; text-align: center; background: linear-gradient(135deg, hsla(160, 100%, 45%, 0.1), hsla(160, 100%, 45%, 0.05));">
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(160, 100%, 45%, 0.15); display: flex; align-items: center; justify-content: center; color: var(--success-400); margin: 0 auto 12px;">
             <i class="fas fa-thermometer-half" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 2rem; font-weight: 800; color: white; margin-bottom: 4px;">${climateCount}</div>
+          <div style="font-size: 2rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(climateCount)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Data Iklim</div>
           <div style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 4px;">PMV/PPD</div>
         </div>
@@ -351,7 +352,7 @@ function renderDashboardTab() {
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(45, 90%, 60%, 0.15); display: flex; align-items: center; justify-content: center; color: var(--warning-400); margin: 0 auto 12px;">
             <i class="fas fa-volume-up" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 2rem; font-weight: 800; color: white; margin-bottom: 4px;">${noiseCount}</div>
+          <div style="font-size: 2rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(noiseCount)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Data Kebisingan</div>
           <div style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 4px;">dB(A) / NR</div>
         </div>
@@ -360,7 +361,7 @@ function renderDashboardTab() {
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(280, 95%, 52%, 0.15); display: flex; align-items: center; justify-content: center; color: #a855f7; margin: 0 auto 12px;">
             <i class="fas fa-chart-line" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 2rem; font-weight: 800; color: ${comfortScore >= 80 ? 'var(--success-400)' : comfortScore >= 60 ? 'var(--warning-400)' : 'var(--danger-400)'}; margin-bottom: 4px;">${comfortScore}%</div>
+          <div style="font-size: 2rem; font-weight: 800; color: ${comfortScore >= 80 ? 'var(--success-400)' : comfortScore >= 60 ? 'var(--warning-400)' : 'var(--danger-400)'}; margin-bottom: 4px;">${escapeHtml(comfortScore)}%</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Comfort Score</div>
           <div style="font-size: 0.65rem; color: ${comfortScore >= 80 ? 'var(--success-400)' : comfortScore >= 60 ? 'var(--warning-400)' : 'var(--danger-400)'}; margin-top: 4px;">
             ${comfortScore >= 80 ? 'Excellent' : comfortScore >= 60 ? 'Good' : 'Needs Improvement'}
@@ -619,7 +620,7 @@ function renderOccupancyTab() {
           </div>
           
           <div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
-            <table class="data-table" style="width: 100%; font-size: 0.75rem;">
+            <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table class="data-table" style="width: 100%; font-size: 0.75rem;">
               <thead>
                 <tr>
                   <th style="text-align: left; padding: 10px; color: var(--text-tertiary); border-bottom: 1px solid hsla(220, 20%, 100%, 0.1);">Fungsi Ruang</th>
@@ -629,16 +630,16 @@ function renderOccupancyTab() {
               </thead>
               <tbody>
                 ${Object.entries(OCCUPANCY_STANDARDS).map(([key, value]) => `
-                  <tr style="border-bottom: 1px solid hsla(220, 20%, 100%, 0.05);" data-function="${key}">
+                  <tr style="border-bottom: 1px solid hsla(220, 20%, 100%, 0.05);" data-function="${escapeHtml(key)}">
                     <td style="padding: 10px; color: var(--text-secondary);">${formatRoomFunction(key)}</td>
-                    <td style="padding: 10px; color: white; text-align: right; font-weight: 600;">${value}</td>
+                    <td style="padding: 10px; color: white; text-align: right; font-weight: 600;">${escapeHtml(value)}</td>
                     <td style="padding: 10px; text-align: center;">
                       <span class="badge" style="background: hsla(160, 100%, 45%, 0.1); color: var(--success-400); font-size: 8px;">Aktif</span>
                     </td>
                   </tr>
                 `).join('')}
               </tbody>
-            </table>
+            </table></div>
           </div>
           
           <!-- Formula Box -->
@@ -762,7 +763,7 @@ function renderClimateTab() {
               <label class="form-label">Nama Ruang</label>
               <select id="pmv-room" class="form-input-dark">
                 <option value="">Pilih ruang...</option>
-                ${comfortData.rooms.map(r => `<option value="${r.id}">${r.room_name}</option>`).join('')}
+                ${comfortData.rooms.map(r => `<option value="${escapeHtml(r.id)}">${escapeHtml(r.room_name)}</option>`).join('')}
               </select>
             </div>
             
@@ -783,7 +784,7 @@ function renderClimateTab() {
             <i class="fas fa-chart-bar" style="margin-right: 8px; color: var(--success-400);"></i>
             Standar Kondisi Udara
           </h4>
-          <table class="data-table" style="width: 100%; font-size: 0.75rem; margin-bottom: 16px;">
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table class="data-table" style="width: 100%; font-size: 0.75rem; margin-bottom: 16px;">
             <thead>
               <tr>
                 <th style="text-align: left; padding: 10px; color: var(--text-tertiary);">Parameter</th>
@@ -798,7 +799,7 @@ function renderClimateTab() {
               <tr><td style="padding: 10px;">PMV Index</td><td style="padding: 10px; text-align: center;">-0.5 s/d +0.5</td></tr>
               <tr><td style="padding: 10px;">ACH (Ventilasi)</td><td style="padding: 10px; text-align: center;">0.5-1.0 /jam</td></tr>
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
       
@@ -876,7 +877,7 @@ function renderViewTab() {
               <label class="form-label">Ruang</label>
               <select name="room_id" class="form-input-dark" required>
                 <option value="">Pilih ruang...</option>
-                ${comfortData.rooms.map(r => `<option value="${r.id}">${r.room_name}</option>`).join('')}
+                ${comfortData.rooms.map(r => `<option value="${escapeHtml(r.id)}">${escapeHtml(r.room_name)}</option>`).join('')}
               </select>
             </div>
             
@@ -934,7 +935,7 @@ function renderViewTab() {
             <i class="fas fa-info-circle" style="margin-right: 8px; color: var(--success-400);"></i>
             Standar Pandangan
           </h4>
-          <table class="data-table" style="width: 100%; font-size: 0.75rem;">
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table class="data-table" style="width: 100%; font-size: 0.75rem;">
             <thead>
               <tr>
                 <th style="text-align: left; padding: 10px; color: var(--text-tertiary);">Parameter</th>
@@ -948,7 +949,7 @@ function renderViewTab() {
               <tr><td style="padding: 10px;">Tinggi Sill (Privasi)</td><td style="padding: 10px; text-align: center;">≥1.1m</td></tr>
               <tr><td style="padding: 10px;">Sky View Factor</td><td style="padding: 10px; text-align: center;">≥0.2</td></tr>
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
       
@@ -1003,7 +1004,7 @@ function renderAcousticTab() {
               <label class="form-label">Ruang</label>
               <select name="room_id" class="form-input-dark">
                 <option value="">Pilih ruang...</option>
-                ${comfortData.rooms.map(r => `<option value="${r.id}">${r.room_name}</option>`).join('')}
+                ${comfortData.rooms.map(r => `<option value="${escapeHtml(r.id)}">${escapeHtml(r.room_name)}</option>`).join('')}
               </select>
             </div>
             
@@ -1141,7 +1142,7 @@ function renderReportTab() {
           <div style="margin-bottom: 20px;">
             <label class="form-label">Pilih Ruang untuk Laporan</label>
             <select id="report-room" class="form-input-dark" multiple style="min-height: 120px;">
-              ${comfortData.rooms.map(r => `<option value="${r.id}" selected>${r.room_name}</option>`).join('')}
+              ${comfortData.rooms.map(r => `<option value="${escapeHtml(r.id)}" selected>${escapeHtml(r.room_name)}</option>`).join('')}
             </select>
             <p style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 8px;">Hold Ctrl untuk memilih multiple ruang</p>
           </div>
@@ -1195,7 +1196,7 @@ function renderReportTab() {
           
           <div style="margin-bottom: 16px;">
             <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 8px;">TOTAL RUANG</div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: white;">${comfortData.rooms.length}</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: white;">${escapeHtml(comfortData.rooms.length)}</div>
           </div>
           
           <div style="margin-bottom: 16px;">
@@ -1217,19 +1218,19 @@ function renderReportTab() {
             <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--text-secondary);">
               <div style="display: flex; justify-content: space-between;">
                 <span>Data Iklim:</span>
-                <span style="color: white; font-weight: 600;">${comfortData.climateData.length} pengukuran</span>
+                <span style="color: white; font-weight: 600;">${escapeHtml(comfortData.climateData.length)} pengukuran</span>
               </div>
               <div style="display: flex; justify-content: space-between;">
                 <span>Data Kebisingan:</span>
-                <span style="color: white; font-weight: 600;">${comfortData.noiseData.length} pengukuran</span>
+                <span style="color: white; font-weight: 600;">${escapeHtml(comfortData.noiseData.length)} pengukuran</span>
               </div>
               <div style="display: flex; justify-content: space-between;">
                 <span>Data Getaran:</span>
-                <span style="color: white; font-weight: 600;">${comfortData.vibrationData.length} pengukuran</span>
+                <span style="color: white; font-weight: 600;">${escapeHtml(comfortData.vibrationData.length)} pengukuran</span>
               </div>
               <div style="display: flex; justify-content: space-between;">
                 <span>Analisis Pandangan:</span>
-                <span style="color: white; font-weight: 600;">${comfortData.viewData.length} ruang</span>
+                <span style="color: white; font-weight: 600;">${escapeHtml(comfortData.viewData.length)} ruang</span>
               </div>
             </div>
           </div>
@@ -1463,10 +1464,10 @@ function generateRadarChartPlaceholder() {
         fill="hsla(220, 95%, 52%, 0.2)" stroke="var(--brand-400)" stroke-width="2"/>
       
       <!-- Labels -->
-      <text x="150" y="15" text-anchor="middle" fill="var(--text-secondary)" font-size="10">${labels[0]} ${scores[0]}%</text>
-      <text x="270" y="200" text-anchor="middle" fill="var(--text-secondary)" font-size="10">${labels[1]} ${scores[1]}%</text>
-      <text x="30" y="200" text-anchor="middle" fill="var(--text-secondary)" font-size="10">${labels[2]} ${scores[2]}%</text>
-      <text x="30" y="50" text-anchor="middle" fill="var(--text-secondary)" font-size="10">${labels[3]} ${scores[3]}%</text>
+      <text x="150" y="15" text-anchor="middle" fill="var(--text-secondary)" font-size="10">${escapeHtml(labels[0])} ${escapeHtml(scores[0])}%</text>
+      <text x="270" y="200" text-anchor="middle" fill="var(--text-secondary)" font-size="10">${escapeHtml(labels[1])} ${escapeHtml(scores[1])}%</text>
+      <text x="30" y="200" text-anchor="middle" fill="var(--text-secondary)" font-size="10">${escapeHtml(labels[2])} ${escapeHtml(scores[2])}%</text>
+      <text x="30" y="50" text-anchor="middle" fill="var(--text-secondary)" font-size="10">${escapeHtml(labels[3])} ${escapeHtml(scores[3])}%</text>
     </svg>
   `;
 }
@@ -1484,7 +1485,7 @@ function renderRoomSummaryTable() {
   }
   
   return `
-    <table class="data-table" style="width: 100%; font-size: 0.75rem;">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table class="data-table" style="width: 100%; font-size: 0.75rem;">
       <thead>
         <tr>
           <th style="padding: 12px; text-align: left; border-bottom: 1px solid hsla(220, 20%, 100%, 0.1);">Kode</th>
@@ -1505,26 +1506,26 @@ function renderRoomSummaryTable() {
           );
           return `
             <tr style="border-bottom: 1px solid hsla(220, 20%, 100%, 0.05);">
-              <td style="padding: 12px; color: white; font-weight: 600;">${room.room_code}</td>
-              <td style="padding: 12px; color: var(--text-secondary);">${room.room_name}</td>
-              <td style="padding: 12px; text-align: center; color: white;">${room.floor_area}</td>
+              <td style="padding: 12px; color: white; font-weight: 600;">${escapeHtml(room.room_code)}</td>
+              <td style="padding: 12px; color: var(--text-secondary);">${escapeHtml(room.room_name)}</td>
+              <td style="padding: 12px; text-align: center; color: white;">${escapeHtml(room.floor_area)}</td>
               <td style="padding: 12px; text-align: center; color: ${analysis.occupancyStatus === 'Optimal' ? 'var(--success-400)' : analysis.occupancyStatus === 'Underloaded' ? 'var(--brand-400)' : 'var(--warning-400)'}">
-                ${room.actual_occupants || 0}/${analysis.maxOccupancy}
+                ${escapeHtml(room.actual_occupants || 0)}/${escapeHtml(analysis.maxOccupancy)}
               </td>
               <td style="padding: 12px; text-align: center; color: ${parseFloat(analysis.freeMovementPercent) >= 40 ? 'var(--success-400)' : 'var(--warning-400)'}">
-                ${analysis.freeMovementPercent}%
+                ${escapeHtml(analysis.freeMovementPercent)}%
               </td>
               <td style="padding: 12px; text-align: center;">
                 <span class="badge" style="background: ${analysis.compliance === 'C' ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; 
                   color: ${analysis.compliance === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}; font-size: 10px;">
-                  ${analysis.compliance}
+                  ${escapeHtml(analysis.compliance)}
                 </span>
               </td>
             </tr>
           `;
         }).join('')}
       </tbody>
-    </table>
+    </table></div>
   `;
 }
 
@@ -1534,7 +1535,7 @@ function renderDetailedRoomTable() {
   }
   
   return `
-    <table class="data-table" style="width: 100%; font-size: 0.75rem;">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table class="data-table" style="width: 100%; font-size: 0.75rem;">
       <thead>
         <tr>
           <th style="padding: 12px; text-align: left;">Ruang</th>
@@ -1555,22 +1556,22 @@ function renderDetailedRoomTable() {
           );
           return `
             <tr>
-              <td style="padding: 12px;"><strong>${room.room_name}</strong><br><span style="color: var(--text-tertiary);">${room.room_code}</span></td>
+              <td style="padding: 12px;"><strong>${escapeHtml(room.room_name)}</strong><br><span style="color: var(--text-tertiary);">${escapeHtml(room.room_code)}</span></td>
               <td style="padding: 12px; text-align: center;">${formatRoomFunction(room.room_function)}</td>
-              <td style="padding: 12px; text-align: center;">${room.floor_area} m²</td>
-              <td style="padding: 12px; text-align: center;">${analysis.maxOccupancy} orang</td>
-              <td style="padding: 12px; text-align: center;">${analysis.density}</td>
+              <td style="padding: 12px; text-align: center;">${escapeHtml(room.floor_area)} m²</td>
+              <td style="padding: 12px; text-align: center;">${escapeHtml(analysis.maxOccupancy)} orang</td>
+              <td style="padding: 12px; text-align: center;">${escapeHtml(analysis.density)}</td>
               <td style="padding: 12px; text-align: center;">
                 <span class="badge" style="background: ${analysis.occupancyStatus === 'Optimal' ? 'hsla(160, 100%, 45%, 0.1)' : analysis.occupancyStatus === 'Overcrowded' ? 'hsla(0, 85%, 60%, 0.1)' : 'hsla(220, 95%, 52%, 0.1)'};
                   color: ${analysis.occupancyStatus === 'Optimal' ? 'var(--success-400)' : analysis.occupancyStatus === 'Overcrowded' ? 'var(--danger-400)' : 'var(--brand-400)'}">
-                  ${analysis.occupancyStatus}
+                  ${escapeHtml(analysis.occupancyStatus)}
                 </span>
               </td>
             </tr>
           `;
         }).join('')}
       </tbody>
-    </table>
+    </table></div>
   `;
 }
 
@@ -1580,7 +1581,7 @@ function renderClimateDataTable() {
   }
   
   return `
-    <table class="data-table" style="width: 100%; font-size: 0.75rem;">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table class="data-table" style="width: 100%; font-size: 0.75rem;">
       <thead>
         <tr>
           <th style="padding: 12px;">Waktu</th>
@@ -1595,10 +1596,10 @@ function renderClimateDataTable() {
         ${comfortData.climateData.slice(0, 10).map(data => `
           <tr>
             <td style="padding: 12px;">${new Date(data.measured_at).toLocaleString('id-ID')}</td>
-            <td style="padding: 12px; text-align: center;">${data.temperature}</td>
-            <td style="padding: 12px; text-align: center;">${data.humidity}</td>
-            <td style="padding: 12px; text-align: center;">${data.pmv || '-'}</td>
-            <td style="padding: 12px; text-align: center;">${data.ppd || '-'}</td>
+            <td style="padding: 12px; text-align: center;">${escapeHtml(data.temperature)}</td>
+            <td style="padding: 12px; text-align: center;">${escapeHtml(data.humidity)}</td>
+            <td style="padding: 12px; text-align: center;">${escapeHtml(data.pmv || '-')}</td>
+            <td style="padding: 12px; text-align: center;">${escapeHtml(data.ppd || '-')}</td>
             <td style="padding: 12px; text-align: center;">
               <span class="badge" style="background: ${data.compliance === 'C' ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'};
                 color: ${data.compliance === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">
@@ -1608,7 +1609,7 @@ function renderClimateDataTable() {
           </tr>
         `).join('')}
       </tbody>
-    </table>
+    </table></div>
   `;
 }
 
@@ -1618,7 +1619,7 @@ function renderViewDataTable() {
   }
   
   return `
-    <table class="data-table" style="width: 100%; font-size: 0.75rem;">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table class="data-table" style="width: 100%; font-size: 0.75rem;">
       <thead>
         <tr>
           <th style="padding: 12px;">Ruang</th>
@@ -1632,9 +1633,9 @@ function renderViewDataTable() {
         ${comfortData.viewData.map(data => `
           <tr>
             <td style="padding: 12px;">${data.room_name || getRoomName(data.room_id)}</td>
-            <td style="padding: 12px; text-align: center;">${data.wfr_percent || '-'}%</td>
-            <td style="padding: 12px; text-align: center;">${data.vertical_angle || '-'}°</td>
-            <td style="padding: 12px; text-align: center;">${data.privacy_level || '-'}</td>
+            <td style="padding: 12px; text-align: center;">${escapeHtml(data.wfr_percent || '-')}%</td>
+            <td style="padding: 12px; text-align: center;">${escapeHtml(data.vertical_angle || '-')}°</td>
+            <td style="padding: 12px; text-align: center;">${escapeHtml(data.privacy_level || '-')}</td>
             <td style="padding: 12px; text-align: center;">
               <span class="badge" style="background: ${data.compliance === 'C' ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'};
                 color: ${data.compliance === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">
@@ -1644,7 +1645,7 @@ function renderViewDataTable() {
           </tr>
         `).join('')}
       </tbody>
-    </table>
+    </table></div>
   `;
 }
 
@@ -1654,7 +1655,7 @@ function renderNoiseDataTable() {
   }
   
   return `
-    <table class="data-table" style="width: 100%; font-size: 0.75rem;">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table class="data-table" style="width: 100%; font-size: 0.75rem;">
       <thead>
         <tr>
           <th style="padding: 12px;">Ruang</th>
@@ -1668,9 +1669,9 @@ function renderNoiseDataTable() {
         ${comfortData.noiseData.slice(0, 10).map(data => `
           <tr>
             <td style="padding: 12px;">${getRoomName(data.room_id)}</td>
-            <td style="padding: 12px; text-align: center;">${data.laeq || data.db_level}</td>
-            <td style="padding: 12px; text-align: center;">${data.nr_rating || '-'}</td>
-            <td style="padding: 12px; text-align: center;">${data.rt60 || '-'}</td>
+            <td style="padding: 12px; text-align: center;">${escapeHtml(data.laeq || data.db_level)}</td>
+            <td style="padding: 12px; text-align: center;">${escapeHtml(data.nr_rating || '-')}</td>
+            <td style="padding: 12px; text-align: center;">${escapeHtml(data.rt60 || '-')}</td>
             <td style="padding: 12px; text-align: center;">
               <span class="badge" style="background: ${data.compliance === 'C' ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'};
                 color: ${data.compliance === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">
@@ -1680,7 +1681,7 @@ function renderNoiseDataTable() {
           </tr>
         `).join('')}
       </tbody>
-    </table>
+    </table></div>
   `;
 }
 
@@ -1690,7 +1691,7 @@ function renderVibrationDataTable() {
   }
   
   return `
-    <table class="data-table" style="width: 100%; font-size: 0.75rem;">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table class="data-table" style="width: 100%; font-size: 0.75rem;">
       <thead>
         <tr>
           <th style="padding: 12px;">Lokasi</th>
@@ -1705,10 +1706,10 @@ function renderVibrationDataTable() {
           const vibAnalysis = calculateVibrationComfort(data.ppv, data.frequency);
           return `
             <tr>
-              <td style="padding: 12px;">${data.location}</td>
-              <td style="padding: 12px; text-align: center;">${data.ppv}</td>
-              <td style="padding: 12px; text-align: center;">${data.frequency}</td>
-              <td style="padding: 12px; text-align: center;">${vibAnalysis.perception}</td>
+              <td style="padding: 12px;">${escapeHtml(data.location)}</td>
+              <td style="padding: 12px; text-align: center;">${escapeHtml(data.ppv)}</td>
+              <td style="padding: 12px; text-align: center;">${escapeHtml(data.frequency)}</td>
+              <td style="padding: 12px; text-align: center;">${escapeHtml(vibAnalysis.perception)}</td>
               <td style="padding: 12px; text-align: center;">
                 <span class="badge" style="background: ${data.compliance === 'C' ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'};
                   color: ${data.compliance === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">
@@ -1719,7 +1720,7 @@ function renderVibrationDataTable() {
           `;
         }).join('')}
       </tbody>
-    </table>
+    </table></div>
   `;
 }
 
@@ -1766,7 +1767,7 @@ function renderModals() {
               <label class="form-label">Ruang</label>
               <select name="room_id" class="form-input-dark" required>
                 <option value="">Pilih ruang...</option>
-                ${comfortData.rooms.map(r => `<option value="${r.id}">${r.room_name}</option>`).join('')}
+                ${comfortData.rooms.map(r => `<option value="${escapeHtml(r.id)}">${escapeHtml(r.room_name)}</option>`).join('')}
               </select>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
@@ -1810,7 +1811,7 @@ function renderModals() {
             <label class="form-label">Ruang Target</label>
             <select id="import-room-id" class="form-input-dark">
               <option value="">Pilih ruang...</option>
-              ${comfortData.rooms.map(r => `<option value="${r.id}">${r.room_name}</option>`).join('')}
+              ${comfortData.rooms.map(r => `<option value="${escapeHtml(r.id)}">${escapeHtml(r.room_name)}</option>`).join('')}
             </select>
           </div>
           <div style="border: 2px dashed hsla(220, 20%, 100%, 0.2); border-radius: 10px; padding: 40px; text-align: center;">
@@ -2173,19 +2174,19 @@ function calculateOccupancyPreview() {
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
         <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.05); border-radius: 8px;">
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Max Occupancy</div>
-          <div style="font-size: 1.2rem; font-weight: 700; color: white;">${analysis.maxOccupancy} org</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(analysis.maxOccupancy)} org</div>
         </div>
         <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.05); border-radius: 8px;">
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Density</div>
-          <div style="font-size: 1.2rem; font-weight: 700; color: white;">${analysis.density}</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(analysis.density)}</div>
         </div>
         <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.05); border-radius: 8px;">
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Ruang Gerak Bebas</div>
-          <div style="font-size: 1.2rem; font-weight: 700; color: ${parseFloat(analysis.freeMovementPercent) >= 40 ? 'var(--success-400)' : 'var(--warning-400)'}">${analysis.freeMovementPercent}%</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: ${parseFloat(analysis.freeMovementPercent) >= 40 ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(analysis.freeMovementPercent)}%</div>
         </div>
         <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.05); border-radius: 8px;">
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Status</div>
-          <div style="font-size: 1.2rem; font-weight: 700; color: ${analysis.occupancyStatus === 'Optimal' ? 'var(--success-400)' : analysis.occupancyStatus === 'Underloaded' ? 'var(--brand-400)' : 'var(--warning-400)'}">${analysis.occupancyStatus}</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: ${analysis.occupancyStatus === 'Optimal' ? 'var(--success-400)' : analysis.occupancyStatus === 'Underloaded' ? 'var(--brand-400)' : 'var(--warning-400)'}">${escapeHtml(analysis.occupancyStatus)}</div>
         </div>
       </div>
     `;
@@ -2214,17 +2215,17 @@ function calculatePMVForm(e) {
     resultDiv.innerHTML = `
       <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 10px; border: 1px solid ${result.status === 'C' ? 'var(--success-400)' : 'var(--warning-400)'}">
         <div style="text-align: center; margin-bottom: 16px;">
-          <div style="font-size: 3rem; font-weight: 800; color: ${result.status === 'C' ? 'var(--success-400)' : 'var(--warning-400)'}">${result.pmv}</div>
+          <div style="font-size: 3rem; font-weight: 800; color: ${result.status === 'C' ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(result.pmv)}</div>
           <div style="font-size: 0.85rem; color: var(--text-secondary);">PMV Index</div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: center;">
           <div>
             <div style="font-size: 0.75rem; color: var(--text-tertiary);">PPD</div>
-            <div style="font-size: 1.1rem; font-weight: 600; color: white;">${result.ppd}</div>
+            <div style="font-size: 1.1rem; font-weight: 600; color: white;">${escapeHtml(result.ppd)}</div>
           </div>
           <div>
             <div style="font-size: 0.75rem; color: var(--text-tertiary);">Comfort Level</div>
-            <div style="font-size: 1.1rem; font-weight: 600; color: ${result.status === 'C' ? 'var(--success-400)' : 'var(--warning-400)'}">${result.comfortLevel}</div>
+            <div style="font-size: 1.1rem; font-weight: 600; color: ${result.status === 'C' ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(result.comfortLevel)}</div>
           </div>
         </div>
       </div>
@@ -2254,15 +2255,15 @@ function calculateVentilation() {
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: center;">
         <div>
           <div style="font-size: 0.75rem; color: var(--text-tertiary);">Rp (per person)</div>
-          <div style="font-size: 1.2rem; font-weight: 700; color: white;">${rate.rp} L/s</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(rate.rp)} L/s</div>
         </div>
         <div>
           <div style="font-size: 0.75rem; color: var(--text-tertiary);">Ra (per m²)</div>
-          <div style="font-size: 1.2rem; font-weight: 700; color: white;">${rate.ra} L/s</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(rate.ra)} L/s</div>
         </div>
         <div>
           <div style="font-size: 0.75rem; color: var(--text-tertiary);">Vbz (Total)</div>
-          <div style="font-size: 1.2rem; font-weight: 700; color: var(--success-400);">${vbz.toFixed(1)} L/s</div>
+          <div style="font-size: 1.2rem; font-weight: 700; color: var(--success-400);">${escapeHtml(vbz.toFixed(1))} L/s</div>
         </div>
       </div>
     `;
@@ -2366,10 +2367,24 @@ async function generateComfortReport() {
   // For now, create a simple HTML report that can be printed
   const reportHTML = generateHTMLReport(reportData);
   
-  // Open in new window
-  const reportWindow = window.open('', '_blank');
-  reportWindow.document.write(reportHTML);
-  reportWindow.document.close();
+  // Buka di tab baru lewat Blob URL — BUKAN document.write().
+  //
+  // Kenapa diganti: `window.open('', '_blank')` menghasilkan dokumen
+  // about:blank yang MEWARISI origin aplikasi. Apa pun yang ditulis ke
+  // dokumen itu berjalan dengan hak akses penuh sesi pengguna, sehingga
+  // satu nilai yang lolos dari escaping = XSS penuh. Blob URL memberi
+  // dokumen terpisah, tetap tanpa `document.write` (API yang secara
+  // desain dapat menimpa dokumen yang sedang tayang).
+  const reportBlob = new Blob([reportHTML], { type: 'text/html' });
+  const reportUrl = URL.createObjectURL(reportBlob);
+  const reportWindow = window.open(reportUrl, '_blank');
+  if (!reportWindow) {
+    URL.revokeObjectURL(reportUrl);
+    showError('Tab baru diblokir peramban. Izinkan pop-up untuk melihat laporan.');
+    return;
+  }
+  // Bebaskan memori setelah tab selesai memuat.
+  setTimeout(() => URL.revokeObjectURL(reportUrl), 60000);
   
   showSuccess('Laporan berhasil dibuka di tab baru');
 }
@@ -2379,7 +2394,7 @@ function generateHTMLReport(data) {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Laporan Aspek Kenyamanan - ${data.projectName}</title>
+      <title>Laporan Aspek Kenyamanan - ${escapeHtml(data.projectName)}</title>
       <style>
         body { font-family: Arial, sans-serif; margin: 40px; }
         h1 { color: #333; }
@@ -2395,9 +2410,9 @@ function generateHTMLReport(data) {
     <body>
       <h1>LAPORAN PEMERIKSAAN ASPEK KENYAMANAN</h1>
       <div class="summary">
-        <p><strong>Proyek:</strong> ${data.projectName}</p>
-        <p><strong>Tanggal:</strong> ${data.date}</p>
-        <p><strong>Overall Comfort Score:</strong> ${data.overallScore}%</p>
+        <p><strong>Proyek:</strong> ${escapeHtml(data.projectName)}</p>
+        <p><strong>Tanggal:</strong> ${escapeHtml(data.date)}</p>
+        <p><strong>Overall Comfort Score:</strong> ${escapeHtml(data.overallScore)}%</p>
       </div>
       
       <h2>A. Data Ruang & Occupancy</h2>
@@ -2405,11 +2420,11 @@ function generateHTMLReport(data) {
         <tr><th>Kode</th><th>Nama</th><th>Luas</th><th>Occupancy</th><th>Status</th></tr>
         ${data.rooms.map(r => `
           <tr>
-            <td>${r.room_code}</td>
-            <td>${r.room_name}</td>
-            <td>${r.floor_area} m²</td>
-            <td>${r.actual_occupants || 0} orang</td>
-            <td class="${r.compliance_status === 'C' ? 'compliant' : 'non-compliant'}">${r.compliance_status}</td>
+            <td>${escapeHtml(r.room_code)}</td>
+            <td>${escapeHtml(r.room_name)}</td>
+            <td>${escapeHtml(r.floor_area)} m²</td>
+            <td>${escapeHtml(r.actual_occupants || 0)} orang</td>
+            <td class="${r.compliance_status === 'C' ? 'compliant' : 'non-compliant'}">${escapeHtml(r.compliance_status)}</td>
           </tr>
         `).join('')}
       </table>
@@ -2420,10 +2435,10 @@ function generateHTMLReport(data) {
         ${data.climateData.slice(0, 20).map(c => `
           <tr>
             <td>${new Date(c.measured_at).toLocaleString('id-ID')}</td>
-            <td>${c.temperature}</td>
-            <td>${c.humidity}</td>
-            <td>${c.pmv || '-'}</td>
-            <td class="${c.compliance === 'C' ? 'compliant' : 'non-compliant'}">${c.compliance}</td>
+            <td>${escapeHtml(c.temperature)}</td>
+            <td>${escapeHtml(c.humidity)}</td>
+            <td>${escapeHtml(c.pmv || '-')}</td>
+            <td class="${c.compliance === 'C' ? 'compliant' : 'non-compliant'}">${escapeHtml(c.compliance)}</td>
           </tr>
         `).join('')}
       </table>
@@ -2433,18 +2448,18 @@ function generateHTMLReport(data) {
         <tr><th>Lokasi</th><th>dB(A)</th><th>PPV (mm/s)</th><th>Status</th></tr>
         ${data.noiseData.slice(0, 10).map(n => `
           <tr>
-            <td>${n.room_id || '-'}</td>
-            <td>${n.db_level}</td>
+            <td>${escapeHtml(n.room_id || '-')}</td>
+            <td>${escapeHtml(n.db_level)}</td>
             <td>-</td>
-            <td class="${n.compliance === 'C' ? 'compliant' : 'non-compliant'}">${n.compliance}</td>
+            <td class="${n.compliance === 'C' ? 'compliant' : 'non-compliant'}">${escapeHtml(n.compliance)}</td>
           </tr>
         `).join('')}
         ${data.vibrationData.slice(0, 10).map(v => `
           <tr>
-            <td>${v.location}</td>
+            <td>${escapeHtml(v.location)}</td>
             <td>-</td>
-            <td>${v.ppv}</td>
-            <td class="${v.compliance === 'C' ? 'compliant' : 'non-compliant'}">${v.compliance}</td>
+            <td>${escapeHtml(v.ppv)}</td>
+            <td class="${v.compliance === 'C' ? 'compliant' : 'non-compliant'}">${escapeHtml(v.compliance)}</td>
           </tr>
         `).join('')}
       </table>

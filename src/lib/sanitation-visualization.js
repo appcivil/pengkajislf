@@ -6,6 +6,7 @@
 
 import Chart from 'chart.js/auto';
 
+import { escapeHtml } from './safe-markdown.js';
 // Color scheme
 const COLORS = {
   brown: { main: '#8B4513', light: '#CD853F', dark: '#5D3A1A' },
@@ -50,43 +51,43 @@ export function generateFlowDiagram(config = {}) {
     <svg viewBox="0 0 800 200" style="width: 100%; max-width: 900px; height: auto;">
       <defs>
         <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-          <polygon points="0 0, 10 3.5, 0 7" fill="${COLORS.gray.main}" />
+          <polygon points="0 0, 10 3.5, 0 7" fill="${escapeHtml(COLORS.gray.main)}" />
         </marker>
         <linearGradient id="septicGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style="stop-color:${septicColor};stop-opacity:0.8" />
-          <stop offset="100%" style="stop-color:${septicColor};stop-opacity:1" />
+          <stop offset="0%" style="stop-color:${escapeHtml(septicColor)};stop-opacity:0.8" />
+          <stop offset="100%" style="stop-color:${escapeHtml(septicColor)};stop-opacity:1" />
         </linearGradient>
         <linearGradient id="ipalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style="stop-color:${ipalColor};stop-opacity:0.8" />
-          <stop offset="100%" style="stop-color:${ipalColor};stop-opacity:1" />
+          <stop offset="0%" style="stop-color:${escapeHtml(ipalColor)};stop-opacity:0.8" />
+          <stop offset="100%" style="stop-color:${escapeHtml(ipalColor)};stop-opacity:1" />
         </linearGradient>
       </defs>
       
       <!-- Connection Lines -->
-      <line x1="140" y1="100" x2="200" y2="100" stroke="${COLORS.brown.main}" stroke-width="4" marker-end="url(#arrowhead)" />
-      <line x1="340" y1="100" x2="420" y2="100" stroke="${COLORS.brown.main}" stroke-width="4" marker-end="url(#arrowhead)" />
-      <line x1="580" y1="100" x2="660" y2="100" stroke="${COLORS.blue.main}" stroke-width="4" marker-end="url(#arrowhead)" />
+      <line x1="140" y1="100" x2="200" y2="100" stroke="${escapeHtml(COLORS.brown.main)}" stroke-width="4" marker-end="url(#arrowhead)" />
+      <line x1="340" y1="100" x2="420" y2="100" stroke="${escapeHtml(COLORS.brown.main)}" stroke-width="4" marker-end="url(#arrowhead)" />
+      <line x1="580" y1="100" x2="660" y2="100" stroke="${escapeHtml(COLORS.blue.main)}" stroke-width="4" marker-end="url(#arrowhead)" />
       
       <!-- Chute/Inlet -->
       ${hasChute ? `
       <g transform="translate(50, 50)">
-        <rect x="0" y="0" width="80" height="100" rx="10" fill="hsla(220, 20%, 100%, 0.05)" stroke="${COLORS.gray.main}" stroke-width="2" />
+        <rect x="0" y="0" width="80" height="100" rx="10" fill="hsla(220, 20%, 100%, 0.05)" stroke="${escapeHtml(COLORS.gray.main)}" stroke-width="2" />
         <rect x="20" y="20" width="40" height="60" rx="5" fill="url(#septicGradient)" opacity="0.8" />
         <text x="40" y="95" text-anchor="middle" fill="white" font-size="10" font-family="monospace">INLET</text>
-        ${showLabels ? `<text x="40" y="-10" text-anchor="middle" fill="${COLORS.gray.light}" font-size="9">Chute/Pipa</text>` : ''}
+        ${showLabels ? `<text x="40" y="-10" text-anchor="middle" fill="${escapeHtml(COLORS.gray.light)}" font-size="9">Chute/Pipa</text>` : ''}
       </g>
       ` : ''}
       
       <!-- Septic Tank -->
       ${hasSeptic ? `
       <g transform="translate(220, 50)" style="cursor: pointer;" onclick="window._showComponentDetail('septic')">
-        <rect x="0" y="0" width="100" height="100" rx="15" fill="hsla(220, 20%, 100%, 0.05)" stroke="${septicColor}" stroke-width="3" />
+        <rect x="0" y="0" width="100" height="100" rx="15" fill="hsla(220, 20%, 100%, 0.05)" stroke="${escapeHtml(septicColor)}" stroke-width="3" />
         <rect x="10" y="15" width="35" height="70" rx="5" fill="url(#septicGradient)" opacity="0.6" />
         <rect x="55" y="35" width="35" height="50" rx="5" fill="url(#septicGradient)" opacity="0.8" />
         <text x="50" y="95" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="monospace">SEPTIC</text>
         <text x="27" y="55" text-anchor="middle" fill="white" font-size="8">2/3</text>
         <text x="72" y="65" text-anchor="middle" fill="white" font-size="8">1/3</text>
-        ${showLabels ? `<text x="50" y="-10" text-anchor="middle" fill="${COLORS.gray.light}" font-size="9">Penampungan</text>` : ''}
+        ${showLabels ? `<text x="50" y="-10" text-anchor="middle" fill="${escapeHtml(COLORS.gray.light)}" font-size="9">Penampungan</text>` : ''}
         ${septicStatus !== 'normal' ? `
           <circle cx="90" cy="10" r="8" fill="${septicStatus === 'critical' ? COLORS.danger : COLORS.warning}" />
           <text x="90" y="14" text-anchor="middle" fill="white" font-size="10">!</text>
@@ -97,7 +98,7 @@ export function generateFlowDiagram(config = {}) {
       <!-- IPAL -->
       ${hasIPAL ? `
       <g transform="translate(440, 40)" style="cursor: pointer;" onclick="window._showComponentDetail('ipal')">
-        <rect x="0" y="0" width="120" height="120" rx="15" fill="hsla(220, 20%, 100%, 0.05)" stroke="${ipalColor}" stroke-width="3" />
+        <rect x="0" y="0" width="120" height="120" rx="15" fill="hsla(220, 20%, 100%, 0.05)" stroke="${escapeHtml(ipalColor)}" stroke-width="3" />
         <!-- Anaerob compartment -->
         <rect x="10" y="15" width="30" height="90" rx="5" fill="url(#ipalGradient)" opacity="0.4" />
         <text x="25" y="65" text-anchor="middle" fill="white" font-size="7">ANA</text>
@@ -108,7 +109,7 @@ export function generateFlowDiagram(config = {}) {
         <rect x="80" y="35" width="30" height="70" rx="5" fill="url(#ipalGradient)" opacity="0.8" />
         <text x="95" y="75" text-anchor="middle" fill="white" font-size="7">SET</text>
         <text x="60" y="115" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="monospace">IPAL</text>
-        ${showLabels ? `<text x="60" y="-5" text-anchor="middle" fill="${COLORS.gray.light}" font-size="9">Pengolahan</text>` : ''}
+        ${showLabels ? `<text x="60" y="-5" text-anchor="middle" fill="${escapeHtml(COLORS.gray.light)}" font-size="9">Pengolahan</text>` : ''}
         ${ipalStatus !== 'normal' ? `
           <circle cx="110" cy="10" r="8" fill="${ipalStatus === 'critical' ? COLORS.danger : COLORS.warning}" />
           <text x="110" y="14" text-anchor="middle" fill="white" font-size="10">!</text>
@@ -118,15 +119,15 @@ export function generateFlowDiagram(config = {}) {
       
       <!-- Outlet -->
       <g transform="translate(680, 50)">
-        <rect x="0" y="0" width="80" height="100" rx="10" fill="hsla(220, 20%, 100%, 0.05)" stroke="${COLORS.blue.main}" stroke-width="2" />
-        <path d="M 20 35 L 60 35 L 60 25 L 75 50 L 60 75 L 60 65 L 20 65 Z" fill="${COLORS.blue.light}" opacity="0.7" />
+        <rect x="0" y="0" width="80" height="100" rx="10" fill="hsla(220, 20%, 100%, 0.05)" stroke="${escapeHtml(COLORS.blue.main)}" stroke-width="2" />
+        <path d="M 20 35 L 60 35 L 60 25 L 75 50 L 60 75 L 60 65 L 20 65 Z" fill="${escapeHtml(COLORS.blue.light)}" opacity="0.7" />
         <text x="40" y="95" text-anchor="middle" fill="white" font-size="10" font-family="monospace">OUTLET</text>
-        ${showLabels ? `<text x="40" y="-10" text-anchor="middle" fill="${COLORS.gray.light}" font-size="9">Effluent</text>` : ''}
+        ${showLabels ? `<text x="40" y="-10" text-anchor="middle" fill="${escapeHtml(COLORS.gray.light)}" font-size="9">Effluent</text>` : ''}
       </g>
       
       <!-- Flow Rate Indicator -->
-      <text x="400" y="170" text-anchor="middle" fill="${COLORS.gray.light}" font-size="10" font-family="monospace">
-        FLOW RATE: ${flowRate}%
+      <text x="400" y="170" text-anchor="middle" fill="${escapeHtml(COLORS.gray.light)}" font-size="10" font-family="monospace">
+        FLOW RATE: ${escapeHtml(flowRate)}%
       </text>
     </svg>
   `;
@@ -167,48 +168,48 @@ export function generateSepticTankCrossSection(dimensions = {}, sludgeLevel = 30
   const dividerX = offsetX + wallThick + (tankWidth * 2 / 3);
   
   return `
-    <svg viewBox="0 0 ${svgWidth} ${svgHeight}" style="width: 100%; max-width: ${svgWidth}px; height: auto;">
+    <svg viewBox="0 0 ${escapeHtml(svgWidth)} ${escapeHtml(svgHeight)}" style="width: 100%; max-width: ${escapeHtml(svgWidth)}px; height: auto;">
       <!-- Tank walls -->
-      <rect x="${offsetX}" y="${offsetY}" 
+      <rect x="${escapeHtml(offsetX)}" y="${escapeHtml(offsetY)}" 
             width="${tankWidth + wallThick * 2}" height="${tankHeight + wallThick * 2}" 
-            fill="none" stroke="${COLORS.gray.main}" stroke-width="${wallThick}" rx="5" />
+            fill="none" stroke="${escapeHtml(COLORS.gray.main)}" stroke-width="${escapeHtml(wallThick)}" rx="5" />
       
       <!-- Inner tank -->
       <rect x="${offsetX + wallThick}" y="${offsetY + wallThick}" 
-            width="${tankWidth}" height="${tankHeight}" 
+            width="${escapeHtml(tankWidth)}" height="${escapeHtml(tankHeight)}" 
             fill="hsla(200, 20%, 50%, 0.1)" stroke="none" />
       
       <!-- Sludge -->
       <rect x="${offsetX + wallThick}" y="${offsetY + wallThick + tankHeight - sludgeHeight}" 
-            width="${tankWidth}" height="${sludgeHeight}" 
-            fill="${COLORS.brown.main}" opacity="0.6" />
+            width="${escapeHtml(tankWidth)}" height="${escapeHtml(sludgeHeight)}" 
+            fill="${escapeHtml(COLORS.brown.main)}" opacity="0.6" />
       
       <!-- Compartment divider -->
-      <line x1="${dividerX}" y1="${offsetY + wallThick}" 
-            x2="${dividerX}" y2="${offsetY + wallThick + tankHeight}" 
-            stroke="${COLORS.gray.main}" stroke-width="3" stroke-dasharray="5,3" />
+      <line x1="${escapeHtml(dividerX)}" y1="${offsetY + wallThick}" 
+            x2="${escapeHtml(dividerX)}" y2="${offsetY + wallThick + tankHeight}" 
+            stroke="${escapeHtml(COLORS.gray.main)}" stroke-width="3" stroke-dasharray="5,3" />
       
       <!-- Water level -->
       <line x1="${offsetX + wallThick}" y1="${offsetY + wallThick + tankHeight * 0.8}" 
             x2="${offsetX + wallThick + tankWidth}" y2="${offsetY + wallThick + tankHeight * 0.8}" 
-            stroke="${COLORS.blue.main}" stroke-width="2" stroke-dasharray="3,3" />
+            stroke="${escapeHtml(COLORS.blue.main)}" stroke-width="2" stroke-dasharray="3,3" />
       
       <!-- Inlet pipe -->
       <rect x="${offsetX - 20}" y="${offsetY + wallThick + 20}" 
-            width="25" height="12" fill="${COLORS.gray.dark}" />
+            width="25" height="12" fill="${escapeHtml(COLORS.gray.dark)}" />
       
       <!-- Outlet pipe -->
       <rect x="${offsetX + tankWidth + wallThick - 5}" y="${offsetY + wallThick + tankHeight - 40}" 
-            width="25" height="12" fill="${COLORS.gray.dark}" />
+            width="25" height="12" fill="${escapeHtml(COLORS.gray.dark)}" />
       
       <!-- Dimensions -->
       <text x="${offsetX + wallThick + tankWidth/2}" y="${offsetY + wallThick + tankHeight + 25}" 
             text-anchor="middle" fill="white" font-size="11" font-family="monospace">
-        L: ${length}m
+        L: ${escapeHtml(length)}m
       </text>
       <text x="${offsetX - 5}" y="${offsetY + wallThick + tankHeight/2}" 
             text-anchor="end" fill="white" font-size="11" font-family="monospace" transform="rotate(-90, ${offsetX - 5}, ${offsetY + wallThick + tankHeight/2})">
-        D: ${depth}m
+        D: ${escapeHtml(depth)}m
       </text>
       
       <!-- Labels -->
@@ -217,7 +218,7 @@ export function generateSepticTankCrossSection(dimensions = {}, sludgeLevel = 30
       
       <!-- Sludge level indicator -->
       <text x="${offsetX + tankWidth + wallThick + 10}" y="${offsetY + wallThick + tankHeight - sludgeHeight/2}" 
-            fill="${COLORS.brown.light}" font-size="9">Lumpur: ${sludgeLevel}%</text>
+            fill="${escapeHtml(COLORS.brown.light)}" font-size="9">Lumpur: ${escapeHtml(sludgeLevel)}%</text>
     </svg>
   `;
 }
@@ -251,48 +252,48 @@ export function generateIPALCrossSection(config = {}) {
   const settlingWidth = tankLength * (settlingPercent / 100);
   
   return `
-    <svg viewBox="0 0 ${svgWidth} ${svgHeight}" style="width: 100%; max-width: ${svgWidth}px; height: auto;">
+    <svg viewBox="0 0 ${escapeHtml(svgWidth)} ${escapeHtml(svgHeight)}" style="width: 100%; max-width: ${escapeHtml(svgWidth)}px; height: auto;">
       <!-- Anaerob compartment -->
-      <g transform="translate(${offsetX}, ${offsetY})">
-        <rect x="0" y="0" width="${anaerobWidth}" height="${tankHeight}" 
-              fill="${COLORS.green.dark}" opacity="0.5" stroke="${COLORS.gray.main}" stroke-width="2" />
+      <g transform="translate(${escapeHtml(offsetX)}, ${escapeHtml(offsetY)})">
+        <rect x="0" y="0" width="${escapeHtml(anaerobWidth)}" height="${escapeHtml(tankHeight)}" 
+              fill="${escapeHtml(COLORS.green.dark)}" opacity="0.5" stroke="${escapeHtml(COLORS.gray.main)}" stroke-width="2" />
         <text x="${anaerobWidth/2}" y="${tankHeight/2}" text-anchor="middle" fill="white" font-size="10" font-weight="bold">ANAEROB</text>
-        <text x="${anaerobWidth/2}" y="${tankHeight/2 + 15}" text-anchor="middle" fill="white" font-size="9">${anaerobPercent}%</text>
-        <text x="${anaerobWidth/2}" y="${tankHeight + 20}" text-anchor="middle" fill="${COLORS.gray.light}" font-size="10">${(totalVolume * anaerobPercent/100).toFixed(1)}m³</text>
+        <text x="${anaerobWidth/2}" y="${tankHeight/2 + 15}" text-anchor="middle" fill="white" font-size="9">${escapeHtml(anaerobPercent)}%</text>
+        <text x="${anaerobWidth/2}" y="${tankHeight + 20}" text-anchor="middle" fill="${escapeHtml(COLORS.gray.light)}" font-size="10">${(totalVolume * anaerobPercent/100).toFixed(1)}m³</text>
       </g>
       
       <!-- Aerob compartment -->
-      <g transform="translate(${offsetX + anaerobWidth}, ${offsetY})">
-        <rect x="0" y="0" width="${aerobWidth}" height="${tankHeight}" 
-              fill="${COLORS.green.main}" opacity="0.6" stroke="${COLORS.gray.main}" stroke-width="2" />
+      <g transform="translate(${offsetX + anaerobWidth}, ${escapeHtml(offsetY)})">
+        <rect x="0" y="0" width="${escapeHtml(aerobWidth)}" height="${escapeHtml(tankHeight)}" 
+              fill="${escapeHtml(COLORS.green.main)}" opacity="0.6" stroke="${escapeHtml(COLORS.gray.main)}" stroke-width="2" />
         <text x="${aerobWidth/2}" y="${tankHeight/2}" text-anchor="middle" fill="white" font-size="10" font-weight="bold">AEROB</text>
-        <text x="${aerobWidth/2}" y="${tankHeight/2 + 15}" text-anchor="middle" fill="white" font-size="9">${aerobPercent}%</text>
-        <text x="${aerobWidth/2}" y="${tankHeight + 20}" text-anchor="middle" fill="${COLORS.gray.light}" font-size="10">${(totalVolume * aerobPercent/100).toFixed(1)}m³</text>
+        <text x="${aerobWidth/2}" y="${tankHeight/2 + 15}" text-anchor="middle" fill="white" font-size="9">${escapeHtml(aerobPercent)}%</text>
+        <text x="${aerobWidth/2}" y="${tankHeight + 20}" text-anchor="middle" fill="${escapeHtml(COLORS.gray.light)}" font-size="10">${(totalVolume * aerobPercent/100).toFixed(1)}m³</text>
       </g>
       
       <!-- Settling compartment -->
-      <g transform="translate(${offsetX + anaerobWidth + aerobWidth}, ${offsetY})">
-        <rect x="0" y="0" width="${settlingWidth}" height="${tankHeight}" 
-              fill="${COLORS.blue.main}" opacity="0.5" stroke="${COLORS.gray.main}" stroke-width="2" />
+      <g transform="translate(${offsetX + anaerobWidth + aerobWidth}, ${escapeHtml(offsetY)})">
+        <rect x="0" y="0" width="${escapeHtml(settlingWidth)}" height="${escapeHtml(tankHeight)}" 
+              fill="${escapeHtml(COLORS.blue.main)}" opacity="0.5" stroke="${escapeHtml(COLORS.gray.main)}" stroke-width="2" />
         <text x="${settlingWidth/2}" y="${tankHeight/2}" text-anchor="middle" fill="white" font-size="9" font-weight="bold">SETTLING</text>
-        <text x="${settlingWidth/2}" y="${tankHeight/2 + 15}" text-anchor="middle" fill="white" font-size="8">${settlingPercent}%</text>
-        <text x="${settlingWidth/2}" y="${tankHeight + 20}" text-anchor="middle" fill="${COLORS.gray.light}" font-size="10">${(totalVolume * settlingPercent/100).toFixed(1)}m³</text>
+        <text x="${settlingWidth/2}" y="${tankHeight/2 + 15}" text-anchor="middle" fill="white" font-size="8">${escapeHtml(settlingPercent)}%</text>
+        <text x="${settlingWidth/2}" y="${tankHeight + 20}" text-anchor="middle" fill="${escapeHtml(COLORS.gray.light)}" font-size="10">${(totalVolume * settlingPercent/100).toFixed(1)}m³</text>
       </g>
       
       <!-- Arrows showing flow -->
-      <g transform="translate(${offsetX}, ${offsetY - 20})">
-        <line x1="0" y1="10" x2="${tankLength}" y2="10" stroke="${COLORS.blue.light}" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead-ipal)" />
+      <g transform="translate(${escapeHtml(offsetX)}, ${offsetY - 20})">
+        <line x1="0" y1="10" x2="${escapeHtml(tankLength)}" y2="10" stroke="${escapeHtml(COLORS.blue.light)}" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead-ipal)" />
       </g>
       
       <defs>
         <marker id="arrowhead-ipal" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-          <polygon points="0 0, 8 3, 0 6" fill="${COLORS.blue.light}" />
+          <polygon points="0 0, 8 3, 0 6" fill="${escapeHtml(COLORS.blue.light)}" />
         </marker>
       </defs>
       
       <!-- Title -->
       <text x="${svgWidth/2}" y="25" text-anchor="middle" fill="white" font-size="12" font-weight="bold" font-family="monospace">
-        IPAL Biofilter - Total: ${totalVolume}m³
+        IPAL Biofilter - Total: ${escapeHtml(totalVolume)}m³
       </text>
     </svg>
   `;
@@ -340,11 +341,11 @@ export function generatePipeProfile(segments = []) {
   });
   
   return `
-    <svg viewBox="0 0 ${width} ${height}" style="width: 100%; max-width: ${width}px; height: auto;">
+    <svg viewBox="0 0 ${escapeHtml(width)} ${escapeHtml(height)}" style="width: 100%; max-width: ${escapeHtml(width)}px; height: auto;">
       <!-- Grid lines -->
       ${Array.from({ length: 6 }, (_, i) => {
         const y = padding.top + (chartHeight * i / 5);
-        return `<line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" stroke="hsla(220, 20%, 100%, 0.1)" stroke-width="1" />`;
+        return `<line x1="${escapeHtml(padding.left)}" y1="${escapeHtml(y)}" x2="${width - padding.right}" y2="${escapeHtml(y)}" stroke="hsla(220, 20%, 100%, 0.1)" stroke-width="1" />`;
       }).join('')}
       
       <!-- Ground level line -->
@@ -352,34 +353,34 @@ export function generatePipeProfile(segments = []) {
         // Simplified ground level (2m above pipe)
         const groundY1 = p.y1 - 40;
         const groundY2 = p.y2 - 40;
-        return `<line x1="${p.x1}" y1="${groundY1}" x2="${p.x2}" y2="${groundY2}" stroke="${COLORS.brown.light}" stroke-width="2" stroke-dasharray="3,3" />`;
+        return `<line x1="${escapeHtml(p.x1)}" y1="${escapeHtml(groundY1)}" x2="${escapeHtml(p.x2)}" y2="${escapeHtml(groundY2)}" stroke="${escapeHtml(COLORS.brown.light)}" stroke-width="2" stroke-dasharray="3,3" />`;
       }).join('')}
       
       <!-- Pipe line -->
       ${points.map((p, i) => `
-        <line x1="${p.x1}" y1="${p.y1}" x2="${p.x2}" y2="${p.y2}" 
+        <line x1="${escapeHtml(p.x1)}" y1="${escapeHtml(p.y1)}" x2="${escapeHtml(p.x2)}" y2="${escapeHtml(p.y2)}" 
               stroke="${p.slope >= 2 ? COLORS.success : COLORS.warning}" stroke-width="6" />
-        <circle cx="${p.x1}" cy="${p.y1}" r="4" fill="${COLORS.gray.main}" />
-        ${i === points.length - 1 ? `<circle cx="${p.x2}" cy="${p.y2}" r="4" fill="${COLORS.gray.main}" />` : ''}
+        <circle cx="${escapeHtml(p.x1)}" cy="${escapeHtml(p.y1)}" r="4" fill="${escapeHtml(COLORS.gray.main)}" />
+        ${i === points.length - 1 ? `<circle cx="${escapeHtml(p.x2)}" cy="${escapeHtml(p.y2)}" r="4" fill="${escapeHtml(COLORS.gray.main)}" />` : ''}
       `).join('')}
       
       <!-- Slope indicators -->
       ${points.map((p, i) => `
         <g transform="translate(${(p.x1 + p.x2) / 2}, ${(p.y1 + p.y2) / 2 - 20})">
           <rect x="-25" y="-10" width="50" height="20" rx="4" fill="hsla(220, 20%, 5%, 0.8)" stroke="${p.slope >= 2 ? COLORS.success : COLORS.warning}" stroke-width="1" />
-          <text x="0" y="4" text-anchor="middle" fill="${p.slope >= 2 ? COLORS.success : COLORS.warning}" font-size="9" font-weight="bold">${p.slope}%</text>
+          <text x="0" y="4" text-anchor="middle" fill="${p.slope >= 2 ? COLORS.success : COLORS.warning}" font-size="9" font-weight="bold">${escapeHtml(p.slope)}%</text>
         </g>
       `).join('')}
       
       <!-- Distance markers -->
       ${points.map((p, i) => `
-        <text x="${p.x1}" y="${height - 20}" text-anchor="middle" fill="${COLORS.gray.light}" font-size="9">${(i * 10)}m</text>
+        <text x="${escapeHtml(p.x1)}" y="${height - 20}" text-anchor="middle" fill="${escapeHtml(COLORS.gray.light)}" font-size="9">${(i * 10)}m</text>
       `).join('')}
-      <text x="${width - padding.right}" y="${height - 20}" text-anchor="middle" fill="${COLORS.gray.light}" font-size="9">${totalLength}m</text>
+      <text x="${width - padding.right}" y="${height - 20}" text-anchor="middle" fill="${escapeHtml(COLORS.gray.light)}" font-size="9">${escapeHtml(totalLength)}m</text>
       
       <!-- Labels -->
-      <text x="20" y="${height / 2}" text-anchor="middle" fill="${COLORS.gray.light}" font-size="10" transform="rotate(-90, 20, ${height / 2})">Elevasi (m)</text>
-      <text x="${width / 2}" y="${height - 5}" text-anchor="middle" fill="${COLORS.gray.light}" font-size="10">Jarak (m)</text>
+      <text x="20" y="${height / 2}" text-anchor="middle" fill="${escapeHtml(COLORS.gray.light)}" font-size="10" transform="rotate(-90, 20, ${height / 2})">Elevasi (m)</text>
+      <text x="${width / 2}" y="${height - 5}" text-anchor="middle" fill="${escapeHtml(COLORS.gray.light)}" font-size="10">Jarak (m)</text>
       <text x="${width / 2}" y="20" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Profil Longitudinal Pipa</text>
     </svg>
   `;
@@ -650,7 +651,7 @@ export function generateSafetyDistanceMap(distances = {}) {
       
       <!-- Septic Tank (center) -->
       <g transform="translate(200, 150)">
-        <circle r="30" fill="${COLORS.brown.main}" opacity="0.8" stroke="white" stroke-width="2" />
+        <circle r="30" fill="${escapeHtml(COLORS.brown.main)}" opacity="0.8" stroke="white" stroke-width="2" />
         <text y="5" text-anchor="middle" fill="white" font-size="10" font-weight="bold">SEPTIC</text>
         
         <!-- Compliance zones -->
@@ -660,25 +661,25 @@ export function generateSafetyDistanceMap(distances = {}) {
       
       <!-- Well -->
       <g transform="translate(320, 80)">
-        <circle r="20" fill="${COLORS.blue.main}" opacity="0.8" stroke="white" stroke-width="2" />
+        <circle r="20" fill="${escapeHtml(COLORS.blue.main)}" opacity="0.8" stroke="white" stroke-width="2" />
         <text y="4" text-anchor="middle" fill="white" font-size="9">SUMUR</text>
-        <text y="40" text-anchor="middle" fill="${wellCompliant ? COLORS.success : COLORS.danger}" font-size="10" font-weight="bold">${toWell}m</text>
-        <text y="55" text-anchor="middle" fill="${COLORS.gray.light}" font-size="8">min: ${standards.toWell}m</text>
+        <text y="40" text-anchor="middle" fill="${wellCompliant ? COLORS.success : COLORS.danger}" font-size="10" font-weight="bold">${escapeHtml(toWell)}m</text>
+        <text y="55" text-anchor="middle" fill="${escapeHtml(COLORS.gray.light)}" font-size="8">min: ${escapeHtml(standards.toWell)}m</text>
       </g>
       
       <!-- Building -->
       <g transform="translate(100, 100)">
-        <rect x="-25" y="-20" width="50" height="40" rx="5" fill="${COLORS.gray.main}" opacity="0.8" stroke="white" stroke-width="2" />
+        <rect x="-25" y="-20" width="50" height="40" rx="5" fill="${escapeHtml(COLORS.gray.main)}" opacity="0.8" stroke="white" stroke-width="2" />
         <text y="4" text-anchor="middle" fill="white" font-size="8">BANGUNAN</text>
-        <text y="45" text-anchor="middle" fill="${buildingCompliant ? COLORS.success : COLORS.danger}" font-size="10" font-weight="bold">${toBuilding}m</text>
-        <text y="60" text-anchor="middle" fill="${COLORS.gray.light}" font-size="8">min: ${standards.toBuilding}m</text>
+        <text y="45" text-anchor="middle" fill="${buildingCompliant ? COLORS.success : COLORS.danger}" font-size="10" font-weight="bold">${escapeHtml(toBuilding)}m</text>
+        <text y="60" text-anchor="middle" fill="${escapeHtml(COLORS.gray.light)}" font-size="8">min: ${escapeHtml(standards.toBuilding)}m</text>
       </g>
       
       <!-- Legend -->
       <g transform="translate(20, 250)">
-        <circle r="6" fill="${COLORS.success}" />
+        <circle r="6" fill="${escapeHtml(COLORS.success)}" />
         <text x="15" y="4" fill="white" font-size="9">Memenuhi</text>
-        <circle cx="80" r="6" fill="${COLORS.danger}" />
+        <circle cx="80" r="6" fill="${escapeHtml(COLORS.danger)}" />
         <text x="95" y="4" fill="white" font-size="9">Tidak Memenuhi</text>
       </g>
     </svg>
@@ -695,13 +696,13 @@ export function generateVolumeCard(title, volume, capacity, status) {
   
   return `
     <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px;">
-      <div style="font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px;">${title}</div>
-      <div style="font-size: 24px; font-weight: 800; color: white; font-family: var(--font-mono);">${volume.toFixed(1)}</div>
-      <div style="font-size: 10px; color: var(--text-tertiary); margin-bottom: 8px;">m³ / ${capacity.toFixed(1)} m³</div>
+      <div style="font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px;">${escapeHtml(title)}</div>
+      <div style="font-size: 24px; font-weight: 800; color: white; font-family: var(--font-mono);">${escapeHtml(volume.toFixed(1))}</div>
+      <div style="font-size: 10px; color: var(--text-tertiary); margin-bottom: 8px;">m³ / ${escapeHtml(capacity.toFixed(1))} m³</div>
       <div style="height: 6px; background: hsla(220, 20%, 100%, 0.1); border-radius: 3px; overflow: hidden;">
-        <div style="width: ${percentage}%; height: 100%; background: ${color}; transition: width 0.3s;"></div>
+        <div style="width: ${escapeHtml(percentage)}%; height: 100%; background: ${escapeHtml(color)}; transition: width 0.3s;"></div>
       </div>
-      <div style="margin-top: 6px; font-size: 10px; color: ${color}; text-align: right;">${percentage.toFixed(0)}%</div>
+      <div style="margin-top: 6px; font-size: 10px; color: ${escapeHtml(color)}; text-align: right;">${escapeHtml(percentage.toFixed(0))}%</div>
     </div>
   `;
 }
@@ -718,17 +719,17 @@ export function generateStatusCard(title, status, message = '') {
   const style = colors[status] || colors['NC'];
   
   return `
-    <div style="background: ${style.bg}; border: 1px solid ${style.border}; border-radius: 12px; padding: 16px;">
+    <div style="background: ${escapeHtml(style.bg)}; border: 1px solid ${escapeHtml(style.border)}; border-radius: 12px; padding: 16px;">
       <div style="display: flex; align-items: center; justify-content: space-between;">
         <div>
-          <div style="font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px;">${title}</div>
-          <div style="font-size: 18px; font-weight: 800; color: ${style.text}; font-family: var(--font-mono);">
+          <div style="font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px;">${escapeHtml(title)}</div>
+          <div style="font-size: 18px; font-weight: 800; color: ${escapeHtml(style.text)}; font-family: var(--font-mono);">
             <i class="fas ${style.icon}" style="margin-right: 8px;"></i>
             ${status === 'C' ? 'COMPLIANT' : status === 'NC' ? 'NON-COMPLIANT' : status}
           </div>
         </div>
       </div>
-      ${message ? `<div style="margin-top: 8px; font-size: 10px; color: var(--text-secondary);">${message}</div>` : ''}
+      ${message ? `<div style="margin-top: 8px; font-size: 10px; color: var(--text-secondary);">${escapeHtml(message)}</div>` : ''}
     </div>
   `;
 }
@@ -739,13 +740,13 @@ export function generateMetricCard(label, value, unit, trend = null) {
   
   return `
     <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-      <div style="font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px; text-transform: uppercase;">${label}</div>
+      <div style="font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px; text-transform: uppercase;">${escapeHtml(label)}</div>
       <div style="font-size: 28px; font-weight: 800; color: white; font-family: var(--font-mono);">
-        ${value}
+        ${escapeHtml(value)}
       </div>
-      <div style="font-size: 10px; color: var(--text-tertiary);">${unit}</div>
+      <div style="font-size: 10px; color: var(--text-tertiary);">${escapeHtml(unit)}</div>
       ${trend !== null ? `
-        <div style="margin-top: 4px; font-size: 10px; color: ${trendColor};">
+        <div style="margin-top: 4px; font-size: 10px; color: ${escapeHtml(trendColor)};">
           <i class="fas ${trendIcon}" style="margin-right: 4px;"></i>
           ${Math.abs(trend).toFixed(1)}%
         </div>
@@ -764,7 +765,7 @@ export function generateInspectionTable(inspections = []) {
   }
   
   return `
-    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width: 100%; border-collapse: collapse; font-size: 12px;">
       <thead>
         <tr style="background: hsla(220, 20%, 100%, 0.05);">
           <th style="padding: 12px; text-align: left; color: var(--text-tertiary); font-weight: 600;">No</th>
@@ -780,11 +781,11 @@ export function generateInspectionTable(inspections = []) {
         ${inspections.map((insp, i) => `
           <tr style="border-bottom: 1px solid hsla(220, 20%, 100%, 0.05);">
             <td style="padding: 12px; color: var(--text-secondary);">${i + 1}</td>
-            <td style="padding: 12px; color: white; font-weight: 600;">${insp.component}</td>
-            <td style="padding: 12px; color: var(--text-secondary);">${insp.location}</td>
-            <td style="padding: 12px; color: var(--text-secondary);">${insp.parameter}</td>
-            <td style="padding: 12px; color: var(--text-secondary);">${insp.standard}</td>
-            <td style="padding: 12px; color: white; font-family: var(--font-mono);">${insp.measured}</td>
+            <td style="padding: 12px; color: white; font-weight: 600;">${escapeHtml(insp.component)}</td>
+            <td style="padding: 12px; color: var(--text-secondary);">${escapeHtml(insp.location)}</td>
+            <td style="padding: 12px; color: var(--text-secondary);">${escapeHtml(insp.parameter)}</td>
+            <td style="padding: 12px; color: var(--text-secondary);">${escapeHtml(insp.standard)}</td>
+            <td style="padding: 12px; color: white; font-family: var(--font-mono);">${escapeHtml(insp.measured)}</td>
             <td style="padding: 12px; text-align: center;">
               <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: ${insp.status === 'C' ? COLORS.success + '33' : COLORS.danger + '33'}; color: ${insp.status === 'C' ? COLORS.success : COLORS.danger}; font-weight: bold;">
                 ${insp.status === 'C' ? '✓' : '✗'}
@@ -793,7 +794,7 @@ export function generateInspectionTable(inspections = []) {
           </tr>
         `).join('')}
       </tbody>
-    </table>
+    </table></div>
   `;
 }
 

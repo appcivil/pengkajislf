@@ -1,3 +1,4 @@
+import { escapeHtml } from '../lib/safe-markdown.js';
 /**
  * TIER CHECKLIST COMPONENTS (ASCE 41-17)
  * UI Components for Tier 1/2/3 Evaluation
@@ -67,7 +68,7 @@ export function renderTierChecklistShell(proyek, activeTier = 'tier1') {
 
         <!-- Navigation -->
         <div style="margin-top: auto; padding: 16px;">
-          <button class="btn btn-ghost" onclick="window.navigate('proyek-detail',{id:'${proyek.id}'})" style="width:100%; border-radius:12px; font-size:0.8rem;">
+          <button class="btn btn-ghost" onclick="window.navigate('proyek-detail',{id:'${escapeHtml(proyek.id)}'})" style="width:100%; border-radius:12px; font-size:0.8rem;">
             <i class="fas fa-sign-out-alt" style="margin-right:8px"></i> Kembali ke Proyek
           </button>
         </div>
@@ -156,10 +157,10 @@ export function renderTier1Section(dataMap = {}) {
       <div class="flex-between flex-stack" style="margin-bottom: 32px">
         <div>
           <h1 style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2rem; margin:0; color:white">
-            ${checklist.name}
+            ${escapeHtml(checklist.name)}
           </h1>
           <p style="font-size:0.85rem; color:var(--text-tertiary); margin-top:8px">
-            ${checklist.description} | Ref: ${checklist.reference}
+            ${escapeHtml(checklist.description)} | Ref: ${escapeHtml(checklist.reference)}
           </p>
         </div>
         <div class="flex gap-3">
@@ -177,8 +178,8 @@ export function renderTier1Section(dataMap = {}) {
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid hsla(220, 20%, 100%, 0.1);">
             <i class="fas ${section.icon}" style="font-size: 1.2rem; color: var(--brand-400);"></i>
             <div>
-              <div style="font-weight: 800; font-size: 1.1rem; color: white;">${section.name}</div>
-              <div style="font-size: 0.75rem; color: var(--text-tertiary);">Ref: ${section.reference}</div>
+              <div style="font-weight: 800; font-size: 1.1rem; color: white;">${escapeHtml(section.name)}</div>
+              <div style="font-size: 0.75rem; color: var(--text-tertiary);">Ref: ${escapeHtml(section.reference)}</div>
             </div>
           </div>
 
@@ -204,23 +205,23 @@ function renderTier1Item(item, data = {}) {
         <div>
           <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px;">
             <div style="font-family: var(--font-mono); font-weight: 800; font-size: 11px; color: var(--brand-400); background: hsla(220, 95%, 52%, 0.1); padding: 4px 10px; border-radius: 6px;">
-              ${item.kode}
+              ${escapeHtml(item.kode)}
             </div>
             <div style="font-weight: 700; font-size: 1rem; color: white; line-height: 1.4;">
-              ${item.nama}
+              ${escapeHtml(item.nama)}
             </div>
           </div>
           
           ${item.tooltip ? `
             <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 8px; font-style: italic;">
-              <i class="fas fa-info-circle" style="margin-right: 6px;"></i>${item.tooltip}
+              <i class="fas fa-info-circle" style="margin-right: 6px;"></i>${escapeHtml(item.tooltip)}
             </div>
           ` : ''}
           
           <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-            <a href="#" onclick="window._showPasalRef('${item.pasal}'); return false;" 
+            <a href="#" onclick="window._showPasalRef('${escapeHtml(item.pasal)}'); return false;" 
                style="font-size: 0.7rem; color: var(--brand-400); text-decoration: none;">
-              <i class="fas fa-book" style="margin-right: 4px;"></i>${item.pasal}
+              <i class="fas fa-book" style="margin-right: 4px;"></i>${escapeHtml(item.pasal)}
             </a>
             ${needsTier2 ? `
               <span class="status-badge" style="background: hsla(0, 85%, 60%, 0.15); color: #ef4444;">
@@ -237,11 +238,11 @@ function renderTier1Item(item, data = {}) {
           </div>
           <div class="status-options" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;">
             ${TIER_STATUS_OPTIONS.map(opt => `
-              <button onclick="window._setTier1Status('${item.kode}', '${opt.value}')" 
+              <button onclick="window._setTier1Status('${escapeHtml(item.kode)}', '${escapeHtml(opt.value)}')" 
                       class="status-btn ${currentStatus === opt.value ? 'active' : ''}"
-                      style="--status-color: ${opt.color}"
-                      title="${opt.description}">
-                <span style="font-weight: 800;">${opt.value}</span>
+                      style="--status-color: ${escapeHtml(opt.color)}"
+                      title="${escapeHtml(opt.description)}">
+                <span style="font-weight: 800;">${escapeHtml(opt.value)}</span>
               </button>
             `).join('')}
           </div>
@@ -251,7 +252,7 @@ function renderTier1Item(item, data = {}) {
       ${data.catatan ? `
         <div style="margin-top: 12px; padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px;">
           <div style="font-size: 0.75rem; color: var(--text-tertiary);">
-            <i class="fas fa-sticky-note" style="margin-right: 6px;"></i>${data.catatan}
+            <i class="fas fa-sticky-note" style="margin-right: 6px;"></i>${escapeHtml(data.catatan)}
           </div>
         </div>
       ` : ''}
@@ -302,10 +303,10 @@ export function renderTier2Section(dataMap = {}) {
       <div class="flex-between flex-stack" style="margin-bottom: 32px">
         <div>
           <h1 style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2rem; margin:0; color:white">
-            ${checklist.name}
+            ${escapeHtml(checklist.name)}
           </h1>
           <p style="font-size:0.85rem; color:var(--text-tertiary); margin-top:8px">
-            ${checklist.description} | Ref: ${checklist.reference}
+            ${escapeHtml(checklist.description)} | Ref: ${escapeHtml(checklist.reference)}
           </p>
         </div>
         <div class="flex gap-3">
@@ -334,8 +335,8 @@ export function renderTier2Section(dataMap = {}) {
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid hsla(220, 20%, 100%, 0.1);">
             <i class="fas ${section.icon}" style="font-size: 1.2rem; color: var(--brand-400);"></i>
             <div>
-              <div style="font-weight: 800; font-size: 1.1rem; color: white;">${section.name}</div>
-              <div style="font-size: 0.75rem; color: var(--text-tertiary);">Ref: ${section.reference}</div>
+              <div style="font-weight: 800; font-size: 1.1rem; color: white;">${escapeHtml(section.name)}</div>
+              <div style="font-size: 0.75rem; color: var(--text-tertiary);">Ref: ${escapeHtml(section.reference)}</div>
             </div>
           </div>
 
@@ -354,32 +355,32 @@ function renderTier2Item(item, data = {}) {
   const dcrStatus = getDCRStatus(dcr, item.batas || 2.0);
   
   return `
-    <div class="card-quartz tier2-item" style="padding: 24px;" data-kode="${item.kode}">
+    <div class="card-quartz tier2-item" style="padding: 24px;" data-kode="${escapeHtml(item.kode)}">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
         
         <!-- Left: Info & Formula -->
         <div>
           <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 16px;">
             <div style="font-family: var(--font-mono); font-weight: 800; font-size: 11px; color: var(--brand-400); background: hsla(220, 95%, 52%, 0.1); padding: 4px 10px; border-radius: 6px;">
-              ${item.kode}
+              ${escapeHtml(item.kode)}
             </div>
             <div style="font-weight: 700; font-size: 1rem; color: white;">
-              ${item.nama}
+              ${escapeHtml(item.nama)}
             </div>
           </div>
           
           <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 10px; margin-bottom: 16px;">
             <div style="font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); margin-bottom: 8px;">FORMULA:</div>
-            <code style="font-size: 0.85rem; color: var(--brand-400); background: none;">${item.formula}</code>
+            <code style="font-size: 0.85rem; color: var(--brand-400); background: none;">${escapeHtml(item.formula)}</code>
           </div>
           
           <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
             <span style="font-size: 0.75rem; color: var(--text-tertiary);">
-              Batas DCR: <strong style="color: white;">${item.batas || 2.0}</strong>
+              Batas DCR: <strong style="color: white;">${escapeHtml(item.batas || 2.0)}</strong>
             </span>
-            <a href="#" onclick="window._showPasalRef('${item.pasal}'); return false;" 
+            <a href="#" onclick="window._showPasalRef('${escapeHtml(item.pasal)}'); return false;" 
                style="font-size: 0.7rem; color: var(--brand-400); text-decoration: none;">
-              <i class="fas fa-book" style="margin-right: 4px;"></i>${item.pasal}
+              <i class="fas fa-book" style="margin-right: 4px;"></i>${escapeHtml(item.pasal)}
             </a>
             ${item.tier3Required ? `
               <span class="status-badge" style="background: hsla(258, 70%, 65%, 0.15); color: hsla(258, 70%, 65%, 1);">
@@ -395,14 +396,14 @@ function renderTier2Item(item, data = {}) {
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px;">
               ${item.fields.map(field => `
                 <div class="input-group">
-                  <label style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 4px; display: block;">${field.label}</label>
-                  <input type="${field.type}" 
+                  <label style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 4px; display: block;">${escapeHtml(field.label)}</label>
+                  <input type="${escapeHtml(field.type)}" 
                          class="form-input tier2-field" 
-                         data-field="${field.name}"
-                         data-kode="${item.kode}"
+                         data-field="${escapeHtml(field.name)}"
+                         data-kode="${escapeHtml(item.kode)}"
                          value="${data[field.name] || ''}"
                          placeholder="0.0"
-                         onchange="window._updateTier2Field('${item.kode}', '${field.name}', this.value)"
+                         onchange="window._updateTier2Field('${escapeHtml(item.kode)}', '${escapeHtml(field.name)}', this.value)"
                          style="background: hsla(220, 20%, 100%, 0.03); border-color: hsla(220, 20%, 100%, 0.1); border-radius: 8px; color: white; font-weight: 600;">
                 </div>
               `).join('')}
@@ -410,19 +411,19 @@ function renderTier2Item(item, data = {}) {
           ` : ''}
           
           <!-- DCR Result -->
-          <div style="display: flex; gap: 16px; align-items: center; padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 10px; border: 1px solid ${dcrStatus.color}44;">
+          <div style="display: flex; gap: 16px; align-items: center; padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 10px; border: 1px solid ${escapeHtml(dcrStatus.color)}44;">
             <div style="text-align: center;">
               <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-bottom: 4px;">DCR</div>
-              <div id="dcr-value-${item.kode}" style="font-size: 2rem; font-weight: 800; color: ${dcrStatus.color};">
+              <div id="dcr-value-${escapeHtml(item.kode)}" style="font-size: 2rem; font-weight: 800; color: ${escapeHtml(dcrStatus.color)};">
                 ${dcr ? dcr.toFixed(2) : '--'}
               </div>
             </div>
             <div style="flex: 1;">
-              <div id="dcr-status-${item.kode}" class="status-badge" style="background: ${dcrStatus.color}22; color: ${dcrStatus.color}; margin-bottom: 4px;">
-                ${dcrStatus.status}
+              <div id="dcr-status-${escapeHtml(item.kode)}" class="status-badge" style="background: ${escapeHtml(dcrStatus.color)}22; color: ${escapeHtml(dcrStatus.color)}; margin-bottom: 4px;">
+                ${escapeHtml(dcrStatus.status)}
               </div>
-              <div id="dcr-message-${item.kode}" style="font-size: 0.75rem; color: var(--text-tertiary);">
-                ${dcrStatus.message}
+              <div id="dcr-message-${escapeHtml(item.kode)}" style="font-size: 0.75rem; color: var(--text-tertiary);">
+                ${escapeHtml(dcrStatus.message)}
               </div>
             </div>
           </div>
@@ -443,10 +444,10 @@ export function renderTier3Section(dataMap = {}) {
       <div class="flex-between flex-stack" style="margin-bottom: 32px">
         <div>
           <h1 style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2rem; margin:0; color:white">
-            ${checklist.name}
+            ${escapeHtml(checklist.name)}
           </h1>
           <p style="font-size:0.85rem; color:var(--text-tertiary); margin-top:8px">
-            ${checklist.description} | Ref: ${checklist.reference}
+            ${escapeHtml(checklist.description)} | Ref: ${escapeHtml(checklist.reference)}
           </p>
         </div>
         <div class="flex gap-3">
@@ -486,8 +487,8 @@ export function renderTier3Section(dataMap = {}) {
         <div style="display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;">
           ${Object.entries(PLASTIC_HINGE_STATUS).map(([key, val]) => `
             <div style="display: flex; align-items: center; gap: 8px;">
-              <div style="width: 16px; height: 16px; border-radius: 4px; background: ${val.color};"></div>
-              <span style="font-size: 0.8rem; color: var(--text-secondary);">${val.label}</span>
+              <div style="width: 16px; height: 16px; border-radius: 4px; background: ${escapeHtml(val.color)};"></div>
+              <span style="font-size: 0.8rem; color: var(--text-secondary);">${escapeHtml(val.label)}</span>
             </div>
           `).join('')}
         </div>
@@ -502,8 +503,8 @@ export function renderTier3Section(dataMap = {}) {
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid hsla(220, 20%, 100%, 0.1);">
             <i class="fas ${section.icon}" style="font-size: 1.2rem; color: var(--brand-400);"></i>
             <div>
-              <div style="font-weight: 800; font-size: 1.1rem; color: white;">${section.name}</div>
-              <div style="font-size: 0.75rem; color: var(--text-tertiary);">Ref: ${section.reference}</div>
+              <div style="font-weight: 800; font-size: 1.1rem; color: white;">${escapeHtml(section.name)}</div>
+              <div style="font-size: 0.75rem; color: var(--text-tertiary);">Ref: ${escapeHtml(section.reference)}</div>
             </div>
           </div>
 
@@ -521,16 +522,16 @@ function renderTier3Item(item, data = {}) {
     <div class="card-quartz" style="padding: 20px;">
       <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px;">
         <div style="font-family: var(--font-mono); font-weight: 800; font-size: 11px; color: var(--brand-400); background: hsla(220, 95%, 52%, 0.1); padding: 4px 10px; border-radius: 6px;">
-          ${item.kode}
+          ${escapeHtml(item.kode)}
         </div>
         <div style="font-weight: 700; font-size: 1rem; color: white;">
-          ${item.nama}
+          ${escapeHtml(item.nama)}
         </div>
       </div>
       
       ${item.keterangan ? `
         <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 12px;">
-          <i class="fas fa-info-circle" style="margin-right: 6px;"></i>${item.keterangan}
+          <i class="fas fa-info-circle" style="margin-right: 6px;"></i>${escapeHtml(item.keterangan)}
         </div>
       ` : ''}
 
@@ -548,11 +549,11 @@ function renderTier3Input(item, data) {
         <div style="display: flex; align-items: center; gap: 12px;">
           <input type="number" 
                  class="form-input" 
-                 value="${data.value || ''}"
+                 value="${escapeHtml(data.value || '')}"
                  placeholder="0.0"
-                 onchange="window._updateTier3Field('${item.kode}', 'value', this.value)"
+                 onchange="window._updateTier3Field('${escapeHtml(item.kode)}', 'value', this.value)"
                  style="flex: 1; max-width: 200px; background: hsla(220, 20%, 100%, 0.03); border-color: hsla(220, 20%, 100%, 0.1); border-radius: 8px; color: white; font-weight: 600;">
-          <span style="color: var(--text-tertiary); font-size: 0.85rem;">${item.unit || ''}</span>
+          <span style="color: var(--text-tertiary); font-size: 0.85rem;">${escapeHtml(item.unit || '')}</span>
         </div>
       `;
     
@@ -560,15 +561,15 @@ function renderTier3Input(item, data) {
       return `
         <div style="display: flex; gap: 12px; align-items: center;">
           <input type="file" 
-                 id="file-${item.kode}" 
-                 accept="${item.accept || '.csv,.xlsx'}" 
+                 id="file-${escapeHtml(item.kode)}" 
+                 accept="${escapeHtml(item.accept || '.csv,.xlsx')}" 
                  style="display: none;"
-                 onchange="window._handleTier3File('${item.kode}', this)">
-          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('file-${item.kode}').click()">
+                 onchange="window._handleTier3File('${escapeHtml(item.kode)}', this)">
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('file-${escapeHtml(item.kode)}').click()">
             <i class="fas fa-upload" style="margin-right: 6px;"></i> Pilih File
           </button>
-          <span id="file-name-${item.kode}" style="font-size: 0.8rem; color: var(--text-tertiary);">
-            ${data.filename || 'Belum ada file'}
+          <span id="file-name-${escapeHtml(item.kode)}" style="font-size: 0.8rem; color: var(--text-tertiary);">
+            ${escapeHtml(data.filename || 'Belum ada file')}
           </span>
         </div>
       `;
@@ -585,13 +586,13 @@ function renderTier3Input(item, data) {
       return `
         <div style="display: flex; gap: 16px; flex-wrap: wrap;">
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-            <input type="radio" name="${item.kode}" value="SCWB" ${data.value === 'SCWB' ? 'checked' : ''} 
-                   onchange="window._updateTier3Field('${item.kode}', 'value', this.value)">
+            <input type="radio" name="${escapeHtml(item.kode)}" value="SCWB" ${data.value === 'SCWB' ? 'checked' : ''} 
+                   onchange="window._updateTier3Field('${escapeHtml(item.kode)}', 'value', this.value)">
             <span style="color: var(--text-secondary);">Strong Column Weak Beam</span>
           </label>
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-            <input type="radio" name="${item.kode}" value="SWCB" ${data.value === 'SWCB' ? 'checked' : ''}
-                   onchange="window._updateTier3Field('${item.kode}', 'value', this.value)">
+            <input type="radio" name="${escapeHtml(item.kode)}" value="SWCB" ${data.value === 'SWCB' ? 'checked' : ''}
+                   onchange="window._updateTier3Field('${escapeHtml(item.kode)}', 'value', this.value)">
             <span style="color: var(--text-secondary);">Strong Weak Column Beam (Bukan)</span>
           </label>
         </div>
@@ -601,9 +602,9 @@ function renderTier3Input(item, data) {
       return `
         <input type="text" 
                class="form-input" 
-               value="${data.value || ''}"
+               value="${escapeHtml(data.value || '')}"
                placeholder="Input data..."
-               onchange="window._updateTier3Field('${item.kode}', 'value', this.value)"
+               onchange="window._updateTier3Field('${escapeHtml(item.kode)}', 'value', this.value)"
                style="background: hsla(220, 20%, 100%, 0.03); border-color: hsla(220, 20%, 100%, 0.1); border-radius: 8px; color: white;">
       `;
   }
@@ -623,13 +624,13 @@ export function renderStatusSummary(tier1Data, tier2Data, tier3Data) {
     <div style="display: flex; flex-direction: column; gap: 12px;">
       <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px;">
         <span style="font-size: 0.8rem; color: var(--text-secondary);">Tier 1 Progress</span>
-        <span style="font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700; color: white;">${completedTier1}/${totalTier1}</span>
+        <span style="font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700; color: white;">${escapeHtml(completedTier1)}/${escapeHtml(totalTier1)}</span>
       </div>
       
       ${tier1NC ? `
         <div style="padding: 12px; background: hsla(0, 85%, 60%, 0.1); border-radius: 8px; border: 1px solid hsla(0, 85%, 60%, 0.2);">
           <div style="font-size: 0.8rem; color: #ef4444; font-weight: 600; margin-bottom: 4px;">
-            <i class="fas fa-exclamation-circle" style="margin-right: 6px;"></i>${tier1NC.length} item NC
+            <i class="fas fa-exclamation-circle" style="margin-right: 6px;"></i>${escapeHtml(tier1NC.length)} item NC
           </div>
           <div style="font-size: 0.75rem; color: var(--text-tertiary);">Lanjut ke Tier 2</div>
         </div>
@@ -638,7 +639,7 @@ export function renderStatusSummary(tier1Data, tier2Data, tier3Data) {
       ${tier2Need3 ? `
         <div style="padding: 12px; background: hsla(258, 70%, 65%, 0.1); border-radius: 8px; border: 1px solid hsla(258, 70%, 65%, 0.2);">
           <div style="font-size: 0.8rem; color: hsla(258, 70%, 65%, 1); font-weight: 600; margin-bottom: 4px;">
-            <i class="fas fa-layer-group" style="margin-right: 6px;"></i>${tier2Need3.length} item perlu Tier 3
+            <i class="fas fa-layer-group" style="margin-right: 6px;"></i>${escapeHtml(tier2Need3.length)} item perlu Tier 3
           </div>
           <div style="font-size: 0.75rem; color: var(--text-tertiary);">Pushover Analysis Required</div>
         </div>
@@ -649,8 +650,8 @@ export function renderStatusSummary(tier1Data, tier2Data, tier3Data) {
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
           ${TIER_STATUS_OPTIONS.map(opt => `
             <div style="display: flex; align-items: center; gap: 4px;">
-              <div style="width: 10px; height: 10px; border-radius: 2px; background: ${opt.color};"></div>
-              <span style="font-size: 0.7rem; color: var(--text-tertiary);">${opt.value}</span>
+              <div style="width: 10px; height: 10px; border-radius: 2px; background: ${escapeHtml(opt.color)};"></div>
+              <span style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(opt.value)}</span>
             </div>
           `).join('')}
         </div>

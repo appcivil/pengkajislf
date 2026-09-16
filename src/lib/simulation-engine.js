@@ -7,6 +7,7 @@
 
 import { supabase } from './supabase.js';
 
+import { escapeHtml } from './safe-markdown.js';
 // Global Pyodide instance
 let pyodideInstance = null;
 let pyodideReady = false;
@@ -660,17 +661,17 @@ export function createSimulationPanel(type, onRun) {
   
   container.innerHTML = `
     <div class="card" style="padding:20px">
-      <h3 style="margin-bottom:16px"><i class="fas fa-flask"></i> ${config.title}</h3>
+      <h3 style="margin-bottom:16px"><i class="fas fa-flask"></i> ${escapeHtml(config.title)}</h3>
       <div class="simulation-form" style="display:grid;gap:12px">
         ${config.fields.map(f => `
           <div>
-            <label style="display:block;font-size:12px;color:var(--text-tertiary);margin-bottom:4px">${f.label}</label>
+            <label style="display:block;font-size:12px;color:var(--text-tertiary);margin-bottom:4px">${escapeHtml(f.label)}</label>
             ${f.type === 'select' ? `
-              <select id="sim-${f.id}" class="input" style="width:100%">
-                ${f.options.map(o => `<option value="${o}">${o}</option>`).join('')}
+              <select id="sim-${escapeHtml(f.id)}" class="input" style="width:100%">
+                ${f.options.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('')}
               </select>
             ` : `
-              <input type="${f.type}" id="sim-${f.id}" class="input" value="${f.value}" style="width:100%">
+              <input type="${escapeHtml(f.type)}" id="sim-${escapeHtml(f.id)}" class="input" value="${escapeHtml(f.value)}" style="width:100%">
             `}
           </div>
         `).join('')}
@@ -700,7 +701,7 @@ export function createSimulationPanel(type, onRun) {
       const result = await onRun(params);
       resultDiv.innerHTML = renderSimulationResult(result);
     } catch (err) {
-      resultDiv.innerHTML = `<div style="color:var(--danger)">Error: ${err.message}</div>`;
+      resultDiv.innerHTML = `<div style="color:var(--danger)">Error: ${escapeHtml(err.message ?? 'Unknown error')}</div>`;
     } finally {
       runBtn.disabled = false;
       runBtn.innerHTML = '<i class="fas fa-play"></i> Jalankan Simulasi';

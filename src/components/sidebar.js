@@ -2,6 +2,7 @@
 //  SIDEBAR COMPONENT
 // ============================================================
 import { navigate, getCurrentRoute, getParams } from '../lib/router.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { getUserInfo, signOut, isAdmin } from '../lib/auth.js';
 import { APP_CONFIG } from '../lib/config.js';
 import { confirm } from './modal.js';
@@ -60,7 +61,7 @@ export function renderSidebar() {
         return `
           <div class="nav-section-label" style="${idx > 0 ? 'margin-top:20px' : ''}">
             <i class="fas ${item.icon} section-icon"></i>
-            <span>${item.section}</span>
+            <span>${escapeHtml(item.section)}</span>
           </div>
         `;
       }
@@ -73,16 +74,16 @@ export function renderSidebar() {
     const finalParams = (projectId && isProjectItem) ? { id: projectId } : {};
 
     return `
-      <a class="nav-item ${active}" data-route="${item.path}" data-params='${JSON.stringify(finalParams)}' role="button" tabindex="0">
+      <a class="nav-item ${escapeHtml(active)}" data-route="${escapeHtml(item.path)}" data-params='${JSON.stringify(finalParams)}' role="button" tabindex="0">
         <i class="fas ${item.icon} nav-icon"></i>
-        <span>${item.label}</span>
+        <span>${escapeHtml(item.label)}</span>
         ${badge}
       </a>
     `;
   }).join('');
 
   const avatarHtml = user?.avatar
-    ? `<img src="${user.avatar}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="avatar">`
+    ? `<img src="${escapeHtml(user.avatar)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="avatar">`
     : `<div class="user-avatar">${user?.initials || '?'}</div>`;
 
   return `
@@ -93,7 +94,7 @@ export function renderSidebar() {
         </div>
         <div style="overflow:hidden">
           <div class="sidebar-title" style="letter-spacing:0.05em; font-family:'Outfit', sans-serif; font-weight:800; background:linear-gradient(135deg, #fff 0%, var(--gold-400) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${APP_CONFIG.name.split(' ').slice(0,3).join(' ')}</div>
-          <div class="sidebar-subtitle" style="font-family:var(--font-mono); opacity:0.5; font-size:10px; letter-spacing:1px">OPERATIONAL v${APP_CONFIG.version}</div>
+          <div class="sidebar-subtitle" style="font-family:var(--font-mono); opacity:0.5; font-size:10px; letter-spacing:1px">OPERATIONAL v${escapeHtml(APP_CONFIG.version)}</div>
         </div>
       </div>
 
@@ -185,14 +186,14 @@ export function refreshSidebar() {
     .filter(item => !item.adminOnly || isAdmin())
     .map((item, idx) => {
       if (item.section) {
-        return `<div class="nav-section-label" style="${idx > 0 ? 'margin-top:20px' : ''}"><i class="fas ${item.icon} section-icon"></i><span>${item.section}</span></div>`;
+        return `<div class="nav-section-label" style="${idx > 0 ? 'margin-top:20px' : ''}"><i class="fas ${item.icon} section-icon"></i><span>${escapeHtml(item.section)}</span></div>`;
       }
       const active = currentRoute === item.path ? 'active' : '';
       const badge = item.badge ? `<span class="nav-badge">${item.badge}</span>` : '';
       const isProjectItem = PROJECT_NAV.some(p => p.path === item.path && !p.section);
       const finalParams = (projectId && isProjectItem) ? { id: projectId } : {};
 
-      return `<a class="nav-item ${active}" data-route="${item.path}" data-params='${JSON.stringify(finalParams)}' role="button" tabindex="0"><i class="fas ${item.icon} nav-icon"></i><span>${item.label}</span>${badge}</a>`;
+      return `<a class="nav-item ${escapeHtml(active)}" data-route="${escapeHtml(item.path)}" data-params='${JSON.stringify(finalParams)}' role="button" tabindex="0"><i class="fas ${item.icon} nav-icon"></i><span>${escapeHtml(item.label)}</span>${badge}</a>`;
     }).join('');
 
   // Re-bind events

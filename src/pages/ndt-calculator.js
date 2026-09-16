@@ -12,6 +12,7 @@ import {
 } from '../lib/ndt-calculators.js';
 
 import { saveNDTTest, getNDTTestsByProject } from '../lib/local-data-manager.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { showSuccess, showError } from '../components/toast.js';
 
 let currentProyek = null;
@@ -43,7 +44,7 @@ export async function ndtCalculatorPage(params = {}) {
           ${currentProyek ? `
             <div style="text-align: right;">
               <div class="badge" style="background: var(--brand-bg); color: var(--brand-400);">
-                <i class="fas fa-building"></i> ${currentProyek.nama_bangunan || 'Loading...'}
+                <i class="fas fa-building"></i> ${escapeHtml(currentProyek.nama_bangunan || 'Loading...')}
               </div>
             </div>
           ` : ''}
@@ -143,14 +144,14 @@ function renderTestHistory() {
       ${testHistory.slice(0, 10).map(test => `
         <div style="padding: 12px; background: var(--bg-subtle); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
           <div>
-            <div style="font-weight: 600; font-size: 0.9rem; color: white;">${test.type}</div>
+            <div style="font-weight: 600; font-size: 0.9rem; color: white;">${escapeHtml(test.type)}</div>
             <div style="font-size: 0.75rem; color: var(--text-tertiary);">
-              ${test.location || 'No location'} • ${new Date(test.createdAt).toLocaleDateString('id-ID')}
+              ${escapeHtml(test.location || 'No location')} • ${new Date(test.createdAt).toLocaleDateString('id-ID')}
             </div>
           </div>
           <div style="text-align: right;">
-            <div style="font-weight: 700; color: var(--brand-400);">${test.resultValue || '-'}</div>
-            <div style="font-size: 0.7rem; color: var(--text-tertiary);">${test.resultUnit || ''}</div>
+            <div style="font-weight: 700; color: var(--brand-400);">${escapeHtml(test.resultValue || '-')}</div>
+            <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(test.resultUnit || '')}</div>
           </div>
         </div>
       `).join('')}
@@ -206,7 +207,7 @@ function renderSchmidtCalculator() {
       </label>
       <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
         ${Array.from({ length: 10 }, (_, i) => `
-          <input type="number" id="schmidt-rn-${i}" class="form-input schmidt-rn" 
+          <input type="number" id="schmidt-rn-${escapeHtml(i)}" class="form-input schmidt-rn" 
                  placeholder="${i + 1}" min="0" max="100" 
                  style="text-align: center;">
         `).join('')}
@@ -506,22 +507,22 @@ function displayResult(result, type, location) {
       html = `
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
           <div style="text-align: center; padding: 16px; background: var(--bg-subtle); border-radius: 8px;">
-            <div style="font-size: 2rem; font-weight: 700; color: ${result.quality.color};">${result.concrete.fc}</div>
+            <div style="font-size: 2rem; font-weight: 700; color: ${escapeHtml(result.quality.color)};">${escapeHtml(result.concrete.fc)}</div>
             <div class="text-xs text-tertiary">fc' (MPa)</div>
           </div>
           <div style="text-align: center; padding: 16px; background: var(--bg-subtle); border-radius: 8px;">
-            <div style="font-size: 2rem; font-weight: 700; color: white;">${result.statistics.meanRn}</div>
+            <div style="font-size: 2rem; font-weight: 700; color: white;">${escapeHtml(result.statistics.meanRn)}</div>
             <div class="text-xs text-tertiary">Mean Rn</div>
           </div>
         </div>
-        <div style="padding: 12px; background: ${result.quality.color}20; border-radius: 8px; margin-bottom: 12px;">
-          <div style="font-weight: 700; color: ${result.quality.color};">${result.quality.label}</div>
-          <div style="font-size: 0.8rem; color: var(--text-tertiary);">${result.compliance.message}</div>
+        <div style="padding: 12px; background: ${escapeHtml(result.quality.color)}20; border-radius: 8px; margin-bottom: 12px;">
+          <div style="font-weight: 700; color: ${escapeHtml(result.quality.color)};">${escapeHtml(result.quality.label)}</div>
+          <div style="font-size: 0.8rem; color: var(--text-tertiary);">${escapeHtml(result.compliance.message)}</div>
         </div>
         <div style="font-size: 0.8rem; color: var(--text-tertiary);">
-          <div>Min Rn: ${result.statistics.minRn} | Max Rn: ${result.statistics.maxRn}</div>
-          <div>Std Dev: ${result.statistics.stdRn} | CV: ${result.statistics.cv}%</div>
-          ${result.grubbsTest.outliers.length > 0 ? `<div style="color: #ef4444;">Outlier terdeteksi: ${result.grubbsTest.outliers.length}</div>` : ''}
+          <div>Min Rn: ${escapeHtml(result.statistics.minRn)} | Max Rn: ${escapeHtml(result.statistics.maxRn)}</div>
+          <div>Std Dev: ${escapeHtml(result.statistics.stdRn)} | CV: ${escapeHtml(result.statistics.cv)}%</div>
+          ${result.grubbsTest.outliers.length > 0 ? `<div style="color: #ef4444;">Outlier terdeteksi: ${escapeHtml(result.grubbsTest.outliers.length)}</div>` : ''}
         </div>
       `;
       break;
@@ -531,17 +532,17 @@ function displayResult(result, type, location) {
       unit = 'km/s';
       html = `
         <div style="text-align: center; padding: 24px; background: var(--bg-subtle); border-radius: 8px; margin-bottom: 16px;">
-          <div style="font-size: 2.5rem; font-weight: 700; color: ${result.classification.color};">${result.velocity}</div>
+          <div style="font-size: 2.5rem; font-weight: 700; color: ${escapeHtml(result.classification.color)};">${escapeHtml(result.velocity)}</div>
           <div class="text-sm text-tertiary">km/s</div>
-          <div style="font-size: 1rem; color: ${result.classification.color}; margin-top: 8px;">${result.classification.quality}</div>
+          <div style="font-size: 1rem; color: ${escapeHtml(result.classification.color)}; margin-top: 8px;">${escapeHtml(result.classification.quality)}</div>
         </div>
         <div style="font-size: 0.85rem; color: var(--text-tertiary); margin-bottom: 8px;">
-          <div><strong>Klasifikasi:</strong> ${result.classification.label}</div>
-          <div><strong>Estimasi fc':</strong> ${result.concrete.fcEstimate} MPa</div>
-          <div><strong>Modulus Dinamis:</strong> ${result.concrete.dynamicModulus} GPa</div>
+          <div><strong>Klasifikasi:</strong> ${escapeHtml(result.classification.label)}</div>
+          <div><strong>Estimasi fc':</strong> ${escapeHtml(result.concrete.fcEstimate)} MPa</div>
+          <div><strong>Modulus Dinamis:</strong> ${escapeHtml(result.concrete.dynamicModulus)} GPa</div>
         </div>
         <div style="font-size: 0.8rem; color: var(--text-tertiary); font-style: italic;">
-          ${result.classification.description}
+          ${escapeHtml(result.classification.description)}
         </div>
       `;
       break;
@@ -552,18 +553,18 @@ function displayResult(result, type, location) {
       html = `
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
           <div style="text-align: center; padding: 16px; background: var(--bg-subtle); border-radius: 8px;">
-            <div style="font-size: 2rem; font-weight: 700; color: var(--brand-400);">${result.strength.fcCylinder}</div>
+            <div style="font-size: 2rem; font-weight: 700; color: var(--brand-400);">${escapeHtml(result.strength.fcCylinder)}</div>
             <div class="text-xs text-tertiary">fc' Cylinder (MPa)</div>
           </div>
           <div style="text-align: center; padding: 16px; background: var(--bg-subtle); border-radius: 8px;">
-            <div style="font-size: 2rem; font-weight: 700; color: white;">${result.strength.class}</div>
+            <div style="font-size: 2rem; font-weight: 700; color: white;">${escapeHtml(result.strength.class)}</div>
             <div class="text-xs text-tertiary">Kelas Beton</div>
           </div>
         </div>
         <div style="font-size: 0.85rem; color: var(--text-tertiary);">
-          <div>fc' Core: ${result.strength.fcCore} MPa</div>
-          <div>L/D Ratio: ${result.geometry.l_d_ratio}</div>
-          ${result.correction.factor !== 1 ? `<div>Faktor Koreksi: ${result.correction.factor}</div>` : ''}
+          <div>fc' Core: ${escapeHtml(result.strength.fcCore)} MPa</div>
+          <div>L/D Ratio: ${escapeHtml(result.geometry.l_d_ratio)}</div>
+          ${result.correction.factor !== 1 ? `<div>Faktor Koreksi: ${escapeHtml(result.correction.factor)}</div>` : ''}
         </div>
       `;
       break;
@@ -574,21 +575,21 @@ function displayResult(result, type, location) {
       html = `
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
           <div style="text-align: center; padding: 12px; background: var(--bg-subtle); border-radius: 8px;">
-            <div style="font-size: 1.5rem; font-weight: 700; color: ${result.assessment.condition.color};">${result.loss.percent}%</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: ${escapeHtml(result.assessment.condition.color)};">${escapeHtml(result.loss.percent)}%</div>
             <div class="text-xs text-tertiary">Penipisan</div>
           </div>
           <div style="text-align: center; padding: 12px; background: var(--bg-subtle); border-radius: 8px;">
-            <div style="font-size: 1.5rem; font-weight: 700; color: white;">${result.remaining.percent}%</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: white;">${escapeHtml(result.remaining.percent)}%</div>
             <div class="text-xs text-tertiary">Tersisa</div>
           </div>
           <div style="text-align: center; padding: 12px; background: var(--bg-subtle); border-radius: 8px;">
-            <div style="font-size: 1.5rem; font-weight: 700; color: white;">${result.remaining.capacity}</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: white;">${escapeHtml(result.remaining.capacity)}</div>
             <div class="text-xs text-tertiary">Kapasitas</div>
           </div>
         </div>
-        <div style="padding: 12px; background: ${result.assessment.condition.color}20; border-radius: 8px;">
-          <div style="font-weight: 700; color: ${result.assessment.condition.color};">${result.assessment.condition.label}</div>
-          <div style="font-size: 0.8rem; color: var(--text-tertiary);">${result.assessment.action}</div>
+        <div style="padding: 12px; background: ${escapeHtml(result.assessment.condition.color)}20; border-radius: 8px;">
+          <div style="font-weight: 700; color: ${escapeHtml(result.assessment.condition.color)};">${escapeHtml(result.assessment.condition.label)}</div>
+          <div style="font-size: 0.8rem; color: var(--text-tertiary);">${escapeHtml(result.assessment.action)}</div>
         </div>
       `;
       break;
@@ -598,21 +599,21 @@ function displayResult(result, type, location) {
       unit = 'MPa';
       html = `
         <div style="text-align: center; padding: 24px; background: var(--bg-subtle); border-radius: 8px; margin-bottom: 16px;">
-          <div style="font-size: 2.5rem; font-weight: 700; color: var(--success-400);">${result.combined.corrected}</div>
+          <div style="font-size: 2.5rem; font-weight: 700; color: var(--success-400);">${escapeHtml(result.combined.corrected)}</div>
           <div class="text-sm text-tertiary">MPa (fc' Terkoreksi)</div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
           <div style="text-align: center; padding: 12px; background: var(--bg-subtle); border-radius: 8px;">
-            <div style="font-size: 1.2rem; color: var(--text-secondary);">${result.methods.schmidt} MPa</div>
+            <div style="font-size: 1.2rem; color: var(--text-secondary);">${escapeHtml(result.methods.schmidt)} MPa</div>
             <div class="text-xs text-tertiary">Schmidt</div>
           </div>
           <div style="text-align: center; padding: 12px; background: var(--bg-subtle); border-radius: 8px;">
-            <div style="font-size: 1.2rem; color: var(--text-secondary);">${result.methods.upv} MPa</div>
+            <div style="font-size: 1.2rem; color: var(--text-secondary);">${escapeHtml(result.methods.upv)} MPa</div>
             <div class="text-xs text-tertiary">UPV</div>
           </div>
         </div>
         <div style="font-size: 0.85rem; color: var(--text-tertiary);">
-          ${result.recommendation}
+          ${escapeHtml(result.recommendation)}
         </div>
       `;
       break;

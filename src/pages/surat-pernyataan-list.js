@@ -3,6 +3,7 @@
 //  Centralized management of SLF Statements & Legal Docs
 // ============================================================
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError } from '../components/toast.js';
 
@@ -44,7 +45,7 @@ function buildHtml(projects) {
       <div class="kpi-grid" style="margin-bottom:var(--space-6)">
         <div class="kpi-card">
           <div class="kpi-icon-wrap kpi-blue"><i class="fas fa-file-signature"></i></div>
-          <div class="kpi-value">${projects.length}</div>
+          <div class="kpi-value">${escapeHtml(projects.length)}</div>
           <div class="kpi-label">Total Dokumen</div>
         </div>
         <div class="kpi-card">
@@ -94,24 +95,24 @@ function renderSPCard(p) {
   const date = new Date(p.updated_at || p.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
   return `
-    <div class="card sp-card-item" data-name="${(p.nama_bangunan || '').toLowerCase()}" data-pemilik="${(p.pemilik || '').toLowerCase()}" data-status="${p.status_slf || ''}">
+    <div class="card sp-card-item" data-name="${(p.nama_bangunan || '').toLowerCase()}" data-pemilik="${(p.pemilik || '').toLowerCase()}" data-status="${escapeHtml(p.status_slf || '')}">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px">
-        <div class="badge ${s.cls}"><i class="fas ${s.icon}"></i> ${s.label}</div>
-        <div class="text-xs text-tertiary">${date}</div>
+        <div class="badge ${escapeHtml(s.cls)}"><i class="fas ${s.icon}"></i> ${escapeHtml(s.label)}</div>
+        <div class="text-xs text-tertiary">${escapeHtml(date)}</div>
       </div>
       
       <h3 style="font-size:1rem; font-weight:800; color:var(--text-primary); margin-bottom:4px; line-height:1.2; height:2.4em; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical">
-        ${p.nama_bangunan || 'Proyek Tanpa Nama'}
+        ${escapeHtml(p.nama_bangunan || 'Proyek Tanpa Nama')}
       </h3>
       <div style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:15px; display:flex; align-items:center; gap:8px">
-        <i class="fas fa-user-circle"></i> ${p.pemilik || '-'}
+        <i class="fas fa-user-circle"></i> ${escapeHtml(p.pemilik || '-')}
       </div>
 
       <div style="border-top:1px solid var(--border-subtle); padding-top:15px; margin-top:auto; display:flex; gap:8px">
-        <button class="btn btn-primary btn-sm" onclick="window.navigate('surat-pernyataan', {id:'${p.id}'})" style="flex:1">
+        <button class="btn btn-primary btn-sm" onclick="window.navigate('surat-pernyataan', {id:'${escapeHtml(p.id)}'})" style="flex:1">
           <i class="fas fa-file-signature"></i> Preview
         </button>
-        <button class="btn btn-outline btn-sm" onclick="window._copyVerifyLink('${p.id}')" title="Copy Link Verifikasi QR">
+        <button class="btn btn-outline btn-sm" onclick="window._copyVerifyLink('${escapeHtml(p.id)}')" title="Copy Link Verifikasi QR">
           <i class="fas fa-qrcode"></i>
         </button>
       </div>

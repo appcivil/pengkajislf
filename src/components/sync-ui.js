@@ -25,11 +25,28 @@ export function initSyncIndicator() {
     `;
   };
 
+  // Guard: initSyncIndicator hanya boleh memasang satu set listener/timer.
+  // Tanpa ini, pemanggilan ulang (mis. setelah render ulang shell) membuat
+  // polling 5 detik berjalan berganda.
+  if (initSyncIndicator._initialized) return;
+  initSyncIndicator._initialized = true;
+
   // Listeners
   window.addEventListener('online', update);
   window.addEventListener('offline', update);
-  
+
   // Poll for pending drafts every 5 seconds
-  setInterval(update, 5000);
+  // Catatan: `update()` hanya membaca IndexedDB lokal (hasPendingDrafts),
+  // tidak menyentuh jaringan — jadi tidak menambah egress Supabase.
+  initSyncIndicator._intervalId = setInterval(update, 5000);
   update();
+}
+
+/** Hentikan polling (dipakai saat logout / pembersihan). */
+export function stopSyncIndicator() {
+  if (initSyncIndicator._intervalId) {
+    clearInterval(initSyncIndicator._intervalId);
+    initSyncIndicator._intervalId = null;
+  }
+  initSyncIndicator._initialized = false;
 }

@@ -4,6 +4,7 @@
 // ============================================================
 
 import { supabase } from '../../lib/supabase.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { navigate } from '../../lib/router.js';
 import { showSuccess, showError, showInfo } from '../../components/toast.js';
 import { generateDocxBlob } from '../../lib/docx-service.js';
@@ -180,7 +181,7 @@ function renderControlBarStable(proyek, data) {
             letter-spacing: 1px;
           ">
             Render identik dengan format Microsoft Word A4
-            ${summary.totalSections ? `• ${summary.totalSections} sections loaded` : ''}
+            ${summary.totalSections ? `• ${escapeHtml(summary.totalSections)} sections loaded` : ''}
           </div>
         </div>
       </div>
@@ -353,11 +354,11 @@ function renderPreviewStable(proyek) {
           <div style="height:40px; flex-shrink: 0;"></div>
         </div>
         <div style="position:absolute;bottom:20px;right:20px;display:flex;align-items:center;gap:4px;background:white;border-radius:8px;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,0.15);border:1px solid #e9ecef;z-index:30;">
-          <button onclick="window._docxZoomOut()" style="width:32px;height:32px;border:none;background:transparent;cursor:pointer;border-radius:4px;color:#6c757d;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+          <button type="button" aria-label="Perkecil tampilan" onclick="window._docxZoomOut()" style="width:32px;height:32px;border:none;background:transparent;cursor:pointer;border-radius:4px;color:#6c757d;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
             <i class="fas fa-minus"></i>
           </button>
           <span id="docx-zoom-level" style="min-width:50px;text-align:center;font-size:0.85rem;color:#495057;font-weight:500;user-select:none;">100%</span>
-          <button onclick="window._docxZoomIn()" style="width:32px;height:32px;border:none;background:transparent;cursor:pointer;border-radius:4px;color:#6c757d;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+          <button type="button" aria-label="Perbesar tampilan" onclick="window._docxZoomIn()" style="width:32px;height:32px;border:none;background:transparent;cursor:pointer;border-radius:4px;color:#6c757d;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
             <i class="fas fa-plus"></i>
           </button>
         </div>

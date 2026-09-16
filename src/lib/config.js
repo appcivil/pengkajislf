@@ -58,3 +58,37 @@ export const APP_CONFIG = {
 };
 
 export default APP_CONFIG;
+
+
+/**
+ * URL dashboard Supabase untuk proyek yang sedang dipakai.
+ *
+ * SEBELUMNYA: project ref produksi di-hardcode langsung di
+ * `src/pages/tim-kerja.js` dan `vite.config.js`. Akibatnya:
+ *   - fork/pengguna lain terlempar ke dashboard proyek orang lain,
+ *   - berpindah project berarti mengubah kode,
+ *   - ref produksi ikut ter-commit di repo publik.
+ *
+ * Sekarang ref diturunkan dari VITE_SUPABASE_URL (atau VITE_SUPABASE_PROJECT_REF).
+ *
+ * @param {string} [path] bagian setelah /project/<ref>, mis. 'auth/users'
+ * @returns {string|null} null bila ref tidak dapat ditentukan
+ */
+export function getSupabaseDashboardUrl(path = '') {
+  const explicitRef = import.meta.env?.VITE_SUPABASE_PROJECT_REF;
+  let ref = explicitRef || '';
+
+  if (!ref) {
+    const url = import.meta.env?.VITE_SUPABASE_URL || '';
+    const match = String(url).match(/^https:\/\/([a-z0-9]{20})\.supabase\./i);
+    ref = match ? match[1] : '';
+  }
+
+  if (!ref) {
+    console.warn('[config] VITE_SUPABASE_URL belum diisi — tautan dashboard Supabase tidak tersedia.');
+    return null;
+  }
+
+  const suffix = path ? `/${String(path).replace(/^\/+/, '')}` : '';
+  return `https://supabase.com/dashboard/project/${ref}${suffix}`;
+}

@@ -135,6 +135,46 @@ describe('AIRouter', () => {
       const normalized = router.normalizeResponse({}, 'kimi');
       expect(normalized.text).toBe('');
     });
+
+    // ── Regresi: bentuk respons Edge Function ai-proxy ──
+    // Edge Function mengekstrak teks dari bentuk khas tiap penyedia di sisi
+    // server, lalu mengembalikan { result, provider, model }. Sebelum cabang
+    // ini ada, data.result jatuh ke `data.candidates` / `data.choices` yang
+    // tidak ada di respons proxy — hasilnya SELALU string kosong walaupun
+    // panggilan AI-nya sendiri sukses. Bug ini hanya muncul di produksi
+    // (jalur proxy), sehingga tidak terlihat saat pengembangan lokal.
+    describe('respons dari Edge Function ai-proxy', () => {
+      it('membaca teks dari field `result` (bukan candidates/choices)', () => {
+        const normalized = router.normalizeResponse(
+          { result: 'Halo dari proxy', provider: 'gemini', model: 'gemini-2.0-flash' },
+          'gemini'
+        );
+        expect(normalized.text).toBe('Halo dari proxy');
+      });
+
+      it('berlaku untuk seluruh penyedia, bukan hanya Gemini', () => {
+        for (const provider of ['gemini', 'kimi', 'openrouter', 'groq', 'openai', 'claude']) {
+          const normalized = router.normalizeResponse({ result: 'teks' }, provider);
+          expect(normalized.text, `provider ${provider}`).toBe('teks');
+        }
+      });
+
+      it('mengembalikan string kosong bila `result` memang kosong', () => {
+        // Proxy memakai fallback `?? "{}"` di server, jadi result selalu
+        // berupa string — namun pastikan nilai kosong tidak menjadi "undefined".
+        const normalized = router.normalizeResponse({ result: '' }, 'gemini');
+        expect(normalized.text).toBe('');
+      });
+
+      it('tidak salah menafsirkan respons penyedia langsung sebagai proxy', () => {
+        // Bentuk lama harus tetap bekerja (dipakai di mode pengembangan).
+        const direct = router.normalizeResponse(
+          { choices: [{ message: { content: 'langsung' } }] },
+          'kimi'
+        );
+        expect(direct.text).toBe('langsung');
+      });
+    });
   });
 
   describe('buildRequestBody', () => {

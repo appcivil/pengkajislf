@@ -5,6 +5,7 @@
 // ============================================================
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 
@@ -189,7 +190,7 @@ function renderHeaderCard() {
           <span class="badge" style="background: hsla(220, 95%, 52%, 0.1); color: var(--brand-400); border: 1px solid hsla(220, 95%, 52%, 0.2); font-size: 10px;">
             <i class="fas fa-book" style="margin-right: 6px;"></i>SNI 03-1736-1989
           </span>
-          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${currentProjectId}'})" style="color: var(--text-tertiary);">
+          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${escapeHtml(currentProjectId)}'})" style="color: var(--text-tertiary);">
             <i class="fas fa-arrow-left" style="margin-right: 6px;"></i> Kembali
           </button>
         </div>
@@ -350,7 +351,7 @@ function renderOccupantTab() {
           </h4>
           
           <div style="max-height: 400px; overflow-y: auto;">
-            <table style="width: 100%; font-size: 0.75rem;">
+            <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width: 100%; font-size: 0.75rem;">
               <thead>
                 <tr style="border-bottom: 1px solid hsla(220, 20%, 100%, 0.1);">
                   <th style="text-align: left; padding: 8px; color: var(--text-tertiary);">Fungsi Ruangan</th>
@@ -403,7 +404,7 @@ function renderOccupantTab() {
                   <td style="padding: 8px; color: white; text-align: right; font-weight: 600;">46.5</td>
                 </tr>
               </tbody>
-            </table>
+            </table></div>
           </div>
           
           <div style="margin-top: 20px; padding: 16px; background: hsla(45, 90%, 60%, 0.1); border-radius: 8px; border: 1px solid hsla(45, 90%, 60%, 0.2);">
@@ -428,7 +429,7 @@ function renderOccupantResult(analysis) {
         <div style="font-size: 2rem; font-weight: 800; color: var(--success-400);">${Math.ceil(analysis.occupant_count || 0)} orang</div>
       </div>
       <div style="font-size: 0.7rem; color: var(--text-secondary); text-align: center;">
-        ${analysis.area_size || 'N/A'} m² ÷ ${analysis.occupant_factor || 'N/A'} m²/orang
+        ${escapeHtml(analysis.area_size || 'N/A')} m² ÷ ${escapeHtml(analysis.occupant_factor || 'N/A')} m²/orang
       </div>
     </div>
   `;
@@ -514,7 +515,7 @@ function renderCapacityTab() {
           </div>
           
           <h5 style="font-weight: 700; color: white; margin-bottom: 12px; font-size: 0.9rem;">Minimum Width Requirements</h5>
-          <table style="width: 100%; font-size: 0.7rem;">
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width: 100%; font-size: 0.7rem;">
             <thead>
               <tr style="border-bottom: 1px solid hsla(220, 20%, 100%, 0.1);">
                 <th style="text-align: left; padding: 6px; color: var(--text-tertiary);">Komponen</th>
@@ -539,7 +540,7 @@ function renderCapacityTab() {
                 <td style="padding: 6px; color: white; text-align: right;">900 mm</td>
               </tr>
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
     </div>
@@ -666,17 +667,17 @@ function renderExitsTab() {
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                   <div>
                     <div style="font-weight: 700; color: white;">${s.code || 'STAIR-' + s.id.slice(0,8)}</div>
-                    <div style="font-size: 0.7rem; color: var(--text-tertiary);">${s.location || 'Lokasi tidak ditentukan'}</div>
+                    <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(s.location || 'Lokasi tidak ditentukan')}</div>
                   </div>
                   <span class="badge" style="background: hsla(220, 95%, 52%, 0.1); color: var(--brand-400); font-size: 9px;">
-                    ${s.type || 'Enclosed'}
+                    ${escapeHtml(s.type || 'Enclosed')}
                   </span>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; font-size: 0.7rem;">
-                  <div><span style="color: var(--text-tertiary);">Width:</span> <span style="color: white;">${s.width_mm || 'N/A'} mm</span></div>
-                  <div><span style="color: var(--text-tertiary);">Risers:</span> <span style="color: white;">${s.riser_count || 'N/A'}</span></div>
-                  <div><span style="color: var(--text-tertiary);">Riser H:</span> <span style="color: white;">${s.riser_height || 'N/A'} mm</span></div>
-                  <div><span style="color: var(--text-tertiary);">Tread:</span> <span style="color: white;">${s.tread_depth || 'N/A'} mm</span></div>
+                  <div><span style="color: var(--text-tertiary);">Width:</span> <span style="color: white;">${escapeHtml(s.width_mm || 'N/A')} mm</span></div>
+                  <div><span style="color: var(--text-tertiary);">Risers:</span> <span style="color: white;">${escapeHtml(s.riser_count || 'N/A')}</span></div>
+                  <div><span style="color: var(--text-tertiary);">Riser H:</span> <span style="color: white;">${escapeHtml(s.riser_height || 'N/A')} mm</span></div>
+                  <div><span style="color: var(--text-tertiary);">Tread:</span> <span style="color: white;">${escapeHtml(s.tread_depth || 'N/A')} mm</span></div>
                 </div>
               </div>
             `).join('')}
@@ -696,16 +697,16 @@ function renderExitsTab() {
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                   <div>
                     <div style="font-weight: 700; color: white;">${d.code || 'DOOR-' + d.id.slice(0,8)}</div>
-                    <div style="font-size: 0.7rem; color: var(--text-tertiary);">${d.location || 'Lokasi tidak ditentukan'}</div>
+                    <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(d.location || 'Lokasi tidak ditentukan')}</div>
                   </div>
                   <span class="badge" style="background: ${d.swing_direction === 'OUTWARD' ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; color: ${d.swing_direction === 'OUTWARD' ? 'var(--success-400)' : 'var(--danger-400)'}; font-size: 9px;">
-                    ${d.swing_direction || 'N/A'}
+                    ${escapeHtml(d.swing_direction || 'N/A')}
                   </span>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 0.7rem;">
-                  <div><span style="color: var(--text-tertiary);">Width:</span> <span style="color: white;">${d.width_mm || 'N/A'} mm</span></div>
-                  <div><span style="color: var(--text-tertiary);">Height:</span> <span style="color: white;">${d.height_mm || 'N/A'} mm</span></div>
-                  <div><span style="color: var(--text-tertiary);">Type:</span> <span style="color: white;">${d.door_type || 'N/A'}</span></div>
+                  <div><span style="color: var(--text-tertiary);">Width:</span> <span style="color: white;">${escapeHtml(d.width_mm || 'N/A')} mm</span></div>
+                  <div><span style="color: var(--text-tertiary);">Height:</span> <span style="color: white;">${escapeHtml(d.height_mm || 'N/A')} mm</span></div>
+                  <div><span style="color: var(--text-tertiary);">Type:</span> <span style="color: white;">${escapeHtml(d.door_type || 'N/A')}</span></div>
                 </div>
               </div>
             `).join('')}
@@ -725,16 +726,16 @@ function renderExitsTab() {
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                   <div>
                     <div style="font-weight: 700; color: white;">${e.code || 'EXIT-' + e.id.slice(0,8)}</div>
-                    <div style="font-size: 0.7rem; color: var(--text-tertiary);">${e.location || 'Lokasi tidak ditentukan'}</div>
+                    <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(e.location || 'Lokasi tidak ditentukan')}</div>
                   </div>
                   <span class="badge" style="background: hsla(45, 90%, 60%, 0.1); color: var(--gold-400); font-size: 9px;">
-                    ${e.exit_type || 'Horizontal'}
+                    ${escapeHtml(e.exit_type || 'Horizontal')}
                   </span>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 0.7rem;">
-                  <div><span style="color: var(--text-tertiary);">Width:</span> <span style="color: white;">${e.width_mm || 'N/A'} mm</span></div>
-                  <div><span style="color: var(--text-tertiary);">Length:</span> <span style="color: white;">${e.length_m || 'N/A'} m</span></div>
-                  <div><span style="color: var(--text-tertiary);">To:</span> <span style="color: white;">${e.leads_to || 'N/A'}</span></div>
+                  <div><span style="color: var(--text-tertiary);">Width:</span> <span style="color: white;">${escapeHtml(e.width_mm || 'N/A')} mm</span></div>
+                  <div><span style="color: var(--text-tertiary);">Length:</span> <span style="color: white;">${escapeHtml(e.length_m || 'N/A')} m</span></div>
+                  <div><span style="color: var(--text-tertiary);">To:</span> <span style="color: white;">${escapeHtml(e.leads_to || 'N/A')}</span></div>
                 </div>
               </div>
             `).join('')}
@@ -786,7 +787,7 @@ function renderLightingTab() {
           </h4>
           <div style="display: flex; gap: 8px; align-items: center;">
             <span class="badge" style="background: ${working === total && total > 0 ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; color: ${working === total && total > 0 ? 'var(--success-400)' : 'var(--warning-400)'};">
-              ${working}/${total} Working
+              ${escapeHtml(working)}/${escapeHtml(total)} Working
             </span>
             <button class="btn btn-primary btn-sm" onclick="showLightModal()">
               <i class="fas fa-plus"></i> Tambah
@@ -804,16 +805,16 @@ function renderLightingTab() {
                   <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                     <div>
                       <div style="font-weight: 700; color: white;">${l.code || 'LIGHT-' + l.id.slice(0,8)}</div>
-                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${l.location || 'Lokasi tidak ditentukan'}</div>
+                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(l.location || 'Lokasi tidak ditentukan')}</div>
                     </div>
                     <span class="badge" style="background: ${isWorking ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; color: ${isWorking ? 'var(--success-400)' : 'var(--warning-400)'}; font-size: 9px;">
-                      ${l.status || 'UNKNOWN'}
+                      ${escapeHtml(l.status || 'UNKNOWN')}
                     </span>
                   </div>
                   <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; font-size: 0.7rem;">
-                    <div><span style="color: var(--text-tertiary);">Type:</span> <span style="color: white;">${l.type || 'Maintained'}</span></div>
-                    <div><span style="color: var(--text-tertiary);">Power:</span> <span style="color: white;">${l.power_watt || 'N/A'}W</span></div>
-                    <div><span style="color: var(--text-tertiary);">Battery:</span> <span style="color: white;">${l.battery_duration || 'N/A'}h</span></div>
+                    <div><span style="color: var(--text-tertiary);">Type:</span> <span style="color: white;">${escapeHtml(l.type || 'Maintained')}</span></div>
+                    <div><span style="color: var(--text-tertiary);">Power:</span> <span style="color: white;">${escapeHtml(l.power_watt || 'N/A')}W</span></div>
+                    <div><span style="color: var(--text-tertiary);">Battery:</span> <span style="color: white;">${escapeHtml(l.battery_duration || 'N/A')}h</span></div>
                     <div><span style="color: var(--text-tertiary);">Last Test:</span> <span style="color: white;">${l.last_test ? new Date(l.last_test).toLocaleDateString('id-ID') : 'N/A'}</span></div>
                   </div>
                 </div>
@@ -895,16 +896,16 @@ function renderSmokeTab() {
                   <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                     <div>
                       <div style="font-weight: 700; color: white;">${z.code || 'ZONE-' + z.id.slice(0,8)}</div>
-                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${z.location || 'Lokasi tidak ditentukan'}</div>
+                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(z.location || 'Lokasi tidak ditentukan')}</div>
                     </div>
                     <span class="badge" style="background: hsla(220, 95%, 52%, 0.1); color: var(--brand-400); font-size: 9px;">
-                      ${z.control_type || 'Exhaust'}
+                      ${escapeHtml(z.control_type || 'Exhaust')}
                     </span>
                   </div>
                   <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 0.7rem;">
-                    <div><span style="color: var(--text-tertiary);">Area:</span> <span style="color: white;">${z.area_m2 || 'N/A'} m²</span></div>
-                    <div><span style="color: var(--text-tertiary);">Volume:</span> <span style="color: white;">${z.volume_m3 || 'N/A'} m³</span></div>
-                    <div><span style="color: var(--text-tertiary);">ACH:</span> <span style="color: white;">${z.air_changes || 'N/A'}</span></div>
+                    <div><span style="color: var(--text-tertiary);">Area:</span> <span style="color: white;">${escapeHtml(z.area_m2 || 'N/A')} m²</span></div>
+                    <div><span style="color: var(--text-tertiary);">Volume:</span> <span style="color: white;">${escapeHtml(z.volume_m3 || 'N/A')} m³</span></div>
+                    <div><span style="color: var(--text-tertiary);">ACH:</span> <span style="color: white;">${escapeHtml(z.air_changes || 'N/A')}</span></div>
                   </div>
                 </div>
               `).join('')}
@@ -1422,14 +1423,14 @@ function initEventListeners() {
           </div>
           <div style="text-align: center;">
             <div style="font-size: 0.7rem; color: var(--text-tertiary);">Available Width</div>
-            <div style="font-size: 1.3rem; font-weight: 700; color: ${isAdequate ? 'var(--success-400)' : 'var(--danger-400)'};">${availableWidth} mm</div>
+            <div style="font-size: 1.3rem; font-weight: 700; color: ${isAdequate ? 'var(--success-400)' : 'var(--danger-400)'};">${escapeHtml(availableWidth)} mm</div>
           </div>
         </div>
         <div style="text-align: center; font-size: 0.8rem; color: ${isAdequate ? 'var(--success-400)' : 'var(--danger-400)'};">
           ${isAdequate ? '✓ Memenuhi persyaratan SNI' : '✗ Tidak memenuhi persyaratan'}
         </div>
         <div style="font-size: 0.7rem; color: var(--text-tertiary); text-align: center; margin-top: 8px;">
-          Minimum untuk ${component}: ${minWidths[component] || 900} mm
+          Minimum untuk ${escapeHtml(component)}: ${minWidths[component] || 900} mm
         </div>
       </div>
     `;
@@ -1466,15 +1467,15 @@ function initEventListeners() {
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 0.7rem; text-align: center;">
           <div>
             <div style="color: var(--text-tertiary);">Actual</div>
-            <div style="color: white; font-weight: 600;">${actual} m</div>
+            <div style="color: white; font-weight: 600;">${escapeHtml(actual)} m</div>
           </div>
           <div>
             <div style="color: var(--text-tertiary);">Max Allowed</div>
-            <div style="color: white; font-weight: 600;">${maxAllowed} m</div>
+            <div style="color: white; font-weight: 600;">${escapeHtml(maxAllowed)} m</div>
           </div>
           <div>
             <div style="color: var(--text-tertiary);">Margin</div>
-            <div style="color: ${remaining >= 0 ? 'var(--success-400)' : 'var(--danger-400)'}; font-weight: 600;">${remaining.toFixed(1)} m</div>
+            <div style="color: ${remaining >= 0 ? 'var(--success-400)' : 'var(--danger-400)'}; font-weight: 600;">${escapeHtml(remaining.toFixed(1))} m</div>
           </div>
         </div>
       </div>
@@ -1502,11 +1503,11 @@ function initEventListeners() {
       <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; border: 1px solid var(--success-400);">
         <div style="text-align: center; margin-bottom: 12px;">
           <div style="font-size: 0.75rem; color: var(--text-tertiary);">REQUIRED AIRFLOW</div>
-          <div style="font-size: 1.5rem; font-weight: 800; color: var(--success-400);">${totalFlow.toFixed(1)} m³/min</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: var(--success-400);">${escapeHtml(totalFlow.toFixed(1))} m³/min</div>
           <div style="font-size: 1rem; color: var(--text-secondary);">${(totalFlow * 60).toFixed(0)} m³/h</div>
         </div>
         <div style="font-size: 0.7rem; color: var(--text-tertiary); text-align: center;">
-          Base: ${baseFlow.toFixed(1)} m³/min | Door Leakage: ${doorLeakage.toFixed(1)} m³/min
+          Base: ${escapeHtml(baseFlow.toFixed(1))} m³/min | Door Leakage: ${escapeHtml(doorLeakage.toFixed(1))} m³/min
         </div>
       </div>
     `;

@@ -3,6 +3,7 @@
 // ============================================================
 
 import { BaseInspection } from './BaseInspection.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { InspectionWidgets } from '../../components/inspection/inspection-widgets.js';
 import { showSuccess, showError, showInfo } from '../../components/toast.js';
 
@@ -130,18 +131,18 @@ export class ArchitecturalInspection extends BaseInspection {
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
           <div class="card-quartz" style="padding: 20px; text-align: center;">
             <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-bottom: 8px;">KDB (Koefisien Dasar Bangunan)</div>
-            <div style="font-size: 2rem; font-weight: 800; color: var(--brand-400);">${assessment.kdb || '-'}%</div>
-            <div style="font-size: 0.75rem; color: var(--text-tertiary);">Max: ${assessment.kdb_max || 60}%</div>
+            <div style="font-size: 2rem; font-weight: 800; color: var(--brand-400);">${escapeHtml(assessment.kdb || '-')}%</div>
+            <div style="font-size: 0.75rem; color: var(--text-tertiary);">Max: ${escapeHtml(assessment.kdb_max || 60)}%</div>
           </div>
           <div class="card-quartz" style="padding: 20px; text-align: center;">
             <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-bottom: 8px;">KLB (Koefisien Lantai Bangunan)</div>
-            <div style="font-size: 2rem; font-weight: 800; color: var(--warning-400);">${assessment.klb || '-'}%</div>
-            <div style="font-size: 0.75rem; color: var(--text-tertiary);">Max: ${assessment.klb_max || 'N/A'}</div>
+            <div style="font-size: 2rem; font-weight: 800; color: var(--warning-400);">${escapeHtml(assessment.klb || '-')}%</div>
+            <div style="font-size: 0.75rem; color: var(--text-tertiary);">Max: ${escapeHtml(assessment.klb_max || 'N/A')}</div>
           </div>
           <div class="card-quartz" style="padding: 20px; text-align: center;">
             <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-bottom: 8px;">KDH (Koefisien Dasar Hijau)</div>
-            <div style="font-size: 2rem; font-weight: 800; color: var(--success-400);">${assessment.kdh || '-'}%</div>
-            <div style="font-size: 0.75rem; color: var(--text-tertiary);">Min: ${assessment.kdh_min || 10}%</div>
+            <div style="font-size: 2rem; font-weight: 800; color: var(--success-400);">${escapeHtml(assessment.kdh || '-')}%</div>
+            <div style="font-size: 0.75rem; color: var(--text-tertiary);">Min: ${escapeHtml(assessment.kdh_min || 10)}%</div>
           </div>
         </div>
       `

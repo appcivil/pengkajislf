@@ -2,6 +2,7 @@
 //  HEADER COMPONENT
 // ============================================================
 import { navigate } from '../lib/router.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { toggleMobileSidebar } from './sidebar.js';
 import { getUserInfo, signOut } from '../lib/auth.js';
 import { showSuccess, showError } from './toast.js';
@@ -41,7 +42,7 @@ export function renderHeader(route = 'dashboard') {
             <div style="width:32px; height:32px; border-radius:8px; background:hsla(220, 95%, 52%, 0.1); display:flex; align-items:center; justify-content:center; border:1px solid hsla(220, 95%, 52%, 0.2)">
               <i class="fas ${info.icon}" style="color:var(--brand-400); font-size: 0.9rem"></i>
             </div>
-            <span style="font-family:'Outfit', sans-serif; font-weight:700; letter-spacing:0.02em; color:var(--text-primary); font-size: 1.1rem">${info.title}</span>
+            <span style="font-family:'Outfit', sans-serif; font-weight:700; letter-spacing:0.02em; color:var(--text-primary); font-size: 1.1rem">${escapeHtml(info.title)}</span>
           </div>
         </div>
       </div>
@@ -66,7 +67,7 @@ export function renderHeader(route = 'dashboard') {
         </div>
 
         <!-- Quick Add -->
-        <button class="btn-presidential gold" id="btn-quick-add" style="height:40px; width:40px; padding:0; border-radius:10px; box-shadow: var(--shadow-sm)">
+        <button type="button" aria-label="Tambah" class="btn-presidential gold" id="btn-quick-add" style="height:40px; width:40px; padding:0; border-radius:10px; box-shadow: var(--shadow-sm)">
           <i class="fas fa-plus"></i>
         </button>
 
@@ -147,9 +148,15 @@ export function bindHeaderEvents() {
     profileMenu?.classList.toggle('show');
   });
 
-  document.addEventListener('click', () => {
-    profileMenu?.classList.remove('show');
-  });
+  // Hanya listener ini yang menempel pada `document`. Elemen header dibuat
+  // ulang setiap render, jadi tanpa guard handler ini menumpuk di setiap
+  // render (sekali klik → N kali eksekusi).
+  if (!bindHeaderEvents._docBound) {
+    bindHeaderEvents._docBound = true;
+    document.addEventListener('click', () => {
+      profileMenu?.classList.remove('show');
+    });
+  }
 
   // Logout from Header
   document.getElementById('btn-logout-header')?.addEventListener('click', async () => {

@@ -6,6 +6,8 @@ import { supabase } from '../lib/supabase.js';
 import { store, updateFiles, updateWorkspace } from '../lib/store.js';
 import { analyzeDocumentIntelligence } from './ai-workspace-service.js';
 import { deleteFromGoogleDrive } from '../lib/drive.js';
+import { confirm } from '../components/modal.js';
+import { askInput } from '../components/modal.js';
 
 export async function loadWorkspaceData(proyekId = null) {
   console.log(`[WorkspaceService] Memuat data workspace untuk: ${proyekId || 'Global'}`);
@@ -92,7 +94,13 @@ export function initWorkspaceHotkeys() {
 }
 
 export async function deleteWorkspaceFile(fileId) {
-    if (!confirm("Hapus file dari workspace? Berkas akan dipindahkan ke Kotak Sampah Google Drive (otomatis terhapus permanen dalam 30 hari).")) return false;
+    const lanjut = await confirm({
+      title: 'Hapus Berkas Workspace',
+      message: 'Hapus berkas ini dari workspace? Berkas dipindahkan ke Kotak Sampah Google Drive dan akan terhapus permanen dalam 30 hari.',
+      confirmText: 'Hapus',
+      danger: true,
+    });
+    if (!lanjut) return false;
     
     try {
         // 1. Get file details for cleanup
@@ -156,7 +164,12 @@ export async function deleteWorkspaceFile(fileId) {
 }
 
 window._addTag = async (fileId) => {
-   const tag = prompt("Masukan tag baru:");
+   const tag = await askInput({
+     title: 'Tambah Tag',
+     label: 'Nama tag baru',
+     placeholder: 'mis. drainase-barat',
+     confirmText: 'Tambah',
+   });
    if (!tag) return;
 
    const { documents } = store.get().files;

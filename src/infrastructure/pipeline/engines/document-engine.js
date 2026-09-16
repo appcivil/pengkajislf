@@ -4,6 +4,7 @@
  */
 
 import { IDocumentEngine } from '../../../core/smart-ai/engine-interface.js';
+import { escapeHtml } from '../../../lib/safe-markdown.js';
 import { FileType, PipelineType } from '../../../core/smart-ai/types.js';
 import * as docx from 'docx';
 import PizZip from 'pizzip';
@@ -318,7 +319,7 @@ export class DocumentEngine extends IDocumentEngine {
       
       result.tables.forEach(table => {
         html += `<h4>${this._escapeHtml(table.name)}</h4>`;
-        html += '<table class="preview-table">';
+        html += '<div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table class="preview-table">';
         
         // Hanya tampilkan max 10 baris untuk preview
         const previewData = table.data.slice(0, 10);
@@ -333,10 +334,10 @@ export class DocumentEngine extends IDocumentEngine {
         });
         
         if (table.rowCount > 10) {
-          html += `<tr><td colspan="${row.length}" style="text-align:center;color:#666">... ${table.rowCount - 10} baris lagi ...</td></tr>`;
+          html += `<tr><td colspan="${escapeHtml(row.length)}" style="text-align:center;color:#666">... ${table.rowCount - 10} baris lagi ...</td></tr>`;
         }
         
-        html += '</table>';
+        html += '</table></div>';
       });
       
       html += '</div>';
@@ -421,7 +422,7 @@ export class DocumentEngine extends IDocumentEngine {
     const blob = new Blob([buffer], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);
     
-    return `<iframe src="${url}" style="width:100%;height:600px;border:none;"></iframe>`;
+    return `<iframe src="${escapeHtml(url)}" style="width:100%;height:600px;border:none;"></iframe>`;
   }
 
   // ============================================================================
@@ -520,9 +521,7 @@ export class DocumentEngine extends IDocumentEngine {
    * @private
    */
   _escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    return escapeHtml(text);
   }
 
   /**

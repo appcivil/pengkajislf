@@ -4,6 +4,7 @@
  */
 import { escHtml } from '../lib/utils.js';
 
+import { escapeHtml } from '../lib/safe-markdown.js';
 /**
  * Main Gallery Shell
  */
@@ -13,17 +14,17 @@ export function renderGalleryShell(proyek, photos) {
       <div class="page-header" style="margin-bottom:var(--space-6)">
         <div class="flex-between">
           <div>
-            <button class="btn btn-ghost btn-sm" onclick="window.navigate('proyek-detail', {id:'${proyek.id}'})" style="margin-bottom:8px">
+            <button class="btn btn-ghost btn-sm" onclick="window.navigate('proyek-detail', {id:'${escapeHtml(proyek.id)}'})" style="margin-bottom:8px">
               <i class="fas fa-arrow-left"></i> Kembali ke Proyek
             </button>
             <h1 class="page-title">Galeri Bukti Visual</h1>
-            <p class="page-subtitle">${photos.length} foto teridentifikasi dalam proyek ini.</p>
+            <p class="page-subtitle">${escapeHtml(photos.length)} foto teridentifikasi dalam proyek ini.</p>
           </div>
           <div class="flex gap-2">
             <button class="btn btn-outline" onclick="window._refreshGaleri()">
               <i class="fas fa-sync"></i> Refresh
             </button>
-            <button class="btn btn-primary" onclick="window.navigate('laporan', {id:'${proyek.id}'})">
+            <button class="btn btn-primary" onclick="window.navigate('laporan', {id:'${escapeHtml(proyek.id)}'})">
               <i class="fas fa-file-contract"></i> Lihat Laporan
             </button>
           </div>
@@ -37,7 +38,7 @@ export function renderGalleryShell(proyek, photos) {
           </button>
           <div style="width:1px; background:var(--border-subtle); margin:4px 8px"></div>
           ${['Struktur', 'Arsitektur', 'Mekanikal', 'Administrasi'].map(f => `
-            <button class="btn btn-sm btn-filter" id="filter-${f}" onclick="window._filterGaleri('${f}')">${f}</button>
+            <button class="btn btn-sm btn-filter" id="filter-${escapeHtml(f)}" onclick="window._filterGaleri('${escapeHtml(f)}')">${escapeHtml(f)}</button>
           `).join('')}
         </div>
       </div>
@@ -64,12 +65,12 @@ export function renderPhotoGrid(photos) {
   }
 
   return photos.map(p => `
-    <div class="photo-card ${p.is_starred ? 'starred' : ''}" id="card-${p.id}">
-      <div class="photo-thumb-wrap" onclick="window._openLightbox('${p.id}')">
-        <img src="${p.url}" class="photo-thumb" loading="lazy">
+    <div class="photo-card ${p.is_starred ? 'starred' : ''}" id="card-${escapeHtml(p.id)}">
+      <div class="photo-thumb-wrap" onclick="window._openLightbox('${escapeHtml(p.id)}')">
+        <img alt="Foto galeri proyek" src="${escapeHtml(p.url)}" class="photo-thumb" loading="lazy">
         <div class="source-badge">${p.source === 'checklist' ? p.kode : (p.category || 'FILE')}</div>
-        <button class="star-btn ${p.is_starred ? 'active' : ''}" 
-                onclick="event.stopPropagation(); window._toggleStar('${p.id}')">
+        <button type="button" aria-label="Tampilkan atau sembunyikan" class="star-btn ${p.is_starred ? 'active' : ''}" 
+                onclick="event.stopPropagation(); window._toggleStar('${escapeHtml(p.id)}')">
           <i class="fas fa-star"></i>
         </button>
       </div>
@@ -92,17 +93,17 @@ export function renderLightbox(photo) {
   return `
     <div id="galeri-lightbox" class="lightbox-overlay" onclick="window._closeLightbox()">
       <div class="lightbox-content" onclick="event.stopPropagation()">
-        <img id="lightbox-img" src="${photo.url}" alt="${escHtml(photo.nama || photo.name)}">
+        <img id="lightbox-img" src="${escapeHtml(photo.url)}" alt="${escHtml(photo.nama || photo.name)}">
         <div class="lightbox-footer">
           <div style="flex:1">
              <div class="text-sm font-bold">${escHtml(photo.nama || photo.name)}</div>
-             <div class="text-xs text-tertiary">Aspek: ${escHtml(photo.aspek || photo.category)} · ID: ${photo.kode || photo.id}</div>
+             <div class="text-xs text-tertiary">Aspek: ${escHtml(photo.aspek || photo.category)} · ID: ${escapeHtml(photo.kode || photo.id)}</div>
           </div>
-          <button class="btn btn-primary btn-sm" onclick="window._toggleStar('${photo.id}')">
+          <button class="btn btn-primary btn-sm" onclick="window._toggleStar('${escapeHtml(photo.id)}')">
              <i class="fas fa-star"></i> ${photo.is_starred ? 'Hapus Pilihan' : 'Pilih Lap. Utama'}
           </button>
         </div>
-        <button class="lightbox-close" onclick="window._closeLightbox()"><i class="fas fa-times"></i></button>
+        <button type="button" aria-label="Tutup" class="lightbox-close" onclick="window._closeLightbox()"><i class="fas fa-times"></i></button>
       </div>
     </div>
   `;

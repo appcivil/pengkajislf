@@ -433,7 +433,10 @@ async function uploadFieldDataFile(file, proyekId, tipePengujian) {
   const { data, error } = await supabase.storage
     .from('project-files')
     .upload(filePath, file, {
-      cacheControl: '3600',
+      // EGRESS: file diberi nama unik (timestamp) → isinya tidak pernah berubah,
+      // jadi aman di-cache lama. cacheControl '3600' (1 jam) membuat file
+      // ditarik ULANG dari origin setiap jam — salah satu penyumbang egress terbesar.
+      cacheControl: '31536000',   // 1 tahun
       upsert: true
     });
   

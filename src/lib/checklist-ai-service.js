@@ -3,6 +3,7 @@
  * Orchestrates Local JS, Backend Python, and LLM Reasoning.
  */
 import { voiceService } from './voice-service.js';
+import { escapeHtml } from './safe-markdown.js';
 import { analyzeChecklistImage, analyzeComparativeAudit } from './gemini.js';
 import { uploadToGoogleDrive, fetchDriveFiles } from './drive.js';
 import { store, updateChecklist } from './store.js';
@@ -270,25 +271,25 @@ export async function renderWmPreview() {
     container.innerHTML = `
       <div style="background:rgba(18,22,33,0.85); border-left:5px solid #ffb300; padding:16px; border-radius:12px; width:100%; max-width:400px; color:white; backdrop-filter:blur(12px); box-shadow: 0 10px 40px rgba(0,0,0,0.5); font-family: 'Inter', sans-serif;">
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-           ${logoUrl ? `<img src="${logoUrl}" style="height:40px; width:40px; object-fit:contain;">` : `<div style="height:40px; width:40px; background:rgba(255,255,255,0.1); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:1.5rem;"><i class="fas fa-building"></i></div>`}
-           <div style="font-weight:bold; font-size:1rem; letter-spacing:0.02em;">${wm.company_name || 'INSTANSI PENGKAJI'}</div>
+           ${logoUrl ? `<img alt="Logo instansi" src="${escapeHtml(logoUrl)}" style="height:40px; width:40px; object-fit:contain;">` : `<div style="height:40px; width:40px; background:rgba(255,255,255,0.1); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:1.5rem;"><i class="fas fa-building"></i></div>`}
+           <div style="font-weight:bold; font-size:1rem; letter-spacing:0.02em;">${escapeHtml(wm.company_name || 'INSTANSI PENGKAJI')}</div>
         </div>
         
         <div style="height:1px; background:rgba(255,255,255,0.1); margin-bottom:12px;"></div>
         
         <div style="display:flex; flex-direction:column; gap:6px;">
-          <div style="font-size:0.75rem; opacity:0.8; display:flex; align-items:center; gap:8px;"><i class="fas fa-location-dot" style="color:#ffb300; width:14px;"></i> ${window._currentGps || 'MENCARI GPS...'}</div>
+          <div style="font-size:0.75rem; opacity:0.8; display:flex; align-items:center; gap:8px;"><i class="fas fa-location-dot" style="color:#ffb300; width:14px;"></i> ${escapeHtml(window._currentGps || 'MENCARI GPS...')}</div>
           <div style="font-size:0.75rem; opacity:0.8; display:flex; align-items:center; gap:8px;"><i class="fas fa-calendar" style="color:#ffb300; width:14px;"></i> ${new Date().toLocaleDateString('id-ID', { weekday:'long', day:'2-digit', month:'long', year:'numeric' })}</div>
-          <div style="font-size:0.75rem; opacity:0.8; display:flex; align-items:center; gap:8px;"><i class="fas fa-building" style="color:#ffb300; width:14px;"></i> ${wm.activity_prefix || 'KEGIATAN:'} ${projName.toUpperCase()}</div>
+          <div style="font-size:0.75rem; opacity:0.8; display:flex; align-items:center; gap:8px;"><i class="fas fa-building" style="color:#ffb300; width:14px;"></i> ${escapeHtml(wm.activity_prefix || 'KEGIATAN:')} ${escapeHtml(projName.toUpperCase())}</div>
           
           ${tagsArr.map(tag => `
-            <div style="font-size:0.75rem; opacity:0.8; display:flex; align-items:center; gap:8px;"><i class="fas fa-tag" style="color:#ffb300; width:14px;"></i> ${tag.toUpperCase()}</div>
+            <div style="font-size:0.75rem; opacity:0.8; display:flex; align-items:center; gap:8px;"><i class="fas fa-tag" style="color:#ffb300; width:14px;"></i> ${escapeHtml(tag.toUpperCase())}</div>
           `).join('')}
         </div>
         
         <div style="margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:8px; color:#ffb300; font-weight:800; font-size:0.75rem;">
            <svg viewBox="0 0 24 24" fill="currentColor" style="width:16px; height:16px;"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
-           <span>${wm.verified_label || 'DIVERIFIKASI OLEH SMARTAI SLF'}</span>
+           <span>${escapeHtml(wm.verified_label || 'DIVERIFIKASI OLEH SMARTAI SLF')}</span>
         </div>
       </div>
     `;

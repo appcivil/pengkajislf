@@ -1,3 +1,4 @@
+import { toast } from '../../components/toast.js';
 /**
  * CalculationPanel - Lighting Analysis Controls
  * Web Component for calculation settings and results display
@@ -460,7 +461,7 @@ export class CalculationPanel extends HTMLElement {
 
   exportCSV() {
     if (!this.lastResults || !this.lastResults.grid) {
-      alert('No calculation data to export');
+      toast('Belum ada data perhitungan untuk diekspor.', 'warning');
       return;
     }
     
@@ -482,7 +483,7 @@ export class CalculationPanel extends HTMLElement {
 
   generateReport() {
     if (!this.lastResults) {
-      alert('No calculation data available');
+      toast('Belum ada data perhitungan.', 'warning');
       return;
     }
     

@@ -6,6 +6,7 @@
 
 import { loadSimulasi, getSimulasiSummary } from '../lib/simulation-engine.js';
 
+import { escapeHtml } from '../lib/safe-markdown.js';
 /**
  * Render Simulation Hub Card untuk halaman detail proyek
  * Menampilkan summary semua simulasi yang telah dijalankan
@@ -65,18 +66,18 @@ export function renderSimulationHubCard(proyek, simulasiSummary = {}) {
       <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px;">
         ${simTypes.map(type => `
           <button class="sim-type-btn" 
-                  onclick="window.navigate('simulation', {proyekId: '${proyek.id}', type: '${type.key}'}); event.stopPropagation();"
+                  onclick="window.navigate('simulation', {proyekId: '${escapeHtml(proyek.id)}', type: '${escapeHtml(type.key)}'}); event.stopPropagation();"
                   style="background: hsla(220, 20%, 100%, 0.03); border: 1px solid hsla(220, 20%, 100%, 0.08); border-radius: 10px; padding: 12px; text-align: left; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 10px; position: relative; overflow: hidden;"
                   onmouseover="this.style.background='hsla(220, 95%, 52%, 0.1)'; this.style.borderColor='hsla(220, 95%, 52%, 0.3)';"
                   onmouseout="this.style.background='hsla(220, 20%, 100%, 0.03)'; this.style.borderColor='hsla(220, 20%, 100%, 0.08)';">
-            <div style="width: 32px; height: 32px; border-radius: 8px; background: ${type.color}15; display: flex; align-items: center; justify-content: center; color: ${type.color};">
+            <div style="width: 32px; height: 32px; border-radius: 8px; background: ${escapeHtml(type.color)}15; display: flex; align-items: center; justify-content: center; color: ${escapeHtml(type.color)};">
               <i class="fas ${type.icon}" style="font-size: 0.9rem;"></i>
             </div>
             <div style="flex: 1;">
-              <div style="font-size: 0.75rem; font-weight: 700; color: white;">${type.label}</div>
-              <div style="font-size: 0.65rem; color: var(--text-tertiary);">${type.count > 0 ? `${type.count} simulasi` : 'Belum dijalankan'}</div>
+              <div style="font-size: 0.75rem; font-weight: 700; color: white;">${escapeHtml(type.label)}</div>
+              <div style="font-size: 0.65rem; color: var(--text-tertiary);">${type.count > 0 ? `${escapeHtml(type.count)} simulasi` : 'Belum dijalankan'}</div>
             </div>
-            ${type.count > 0 ? `<div style="width: 8px; height: 8px; border-radius: 50%; background: ${type.color};"></div>` : ''}
+            ${type.count > 0 ? `<div style="width: 8px; height: 8px; border-radius: 50%; background: ${escapeHtml(type.color)};"></div>` : ''}
           </button>
         `).join('')}
       </div>
@@ -86,21 +87,21 @@ export function renderSimulationHubCard(proyek, simulasiSummary = {}) {
         <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 10px; padding: 12px; margin-bottom: 12px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-tertiary);">TOTAL SIMULASI</span>
-            <span style="font-size: 0.8rem; font-weight: 800; color: var(--brand-400);">${totalSimulasi}</span>
+            <span style="font-size: 0.8rem; font-weight: 800; color: var(--brand-400);">${escapeHtml(totalSimulasi)}</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-tertiary);">COMPLETION</span>
-            <span style="font-size: 0.8rem; font-weight: 800; color: ${completionRate >= 80 ? 'var(--success-400)' : completionRate >= 50 ? 'var(--gold-400)' : 'var(--danger-400)'};">${completionRate}%</span>
+            <span style="font-size: 0.8rem; font-weight: 800; color: ${completionRate >= 80 ? 'var(--success-400)' : completionRate >= 50 ? 'var(--gold-400)' : 'var(--danger-400)'};">${escapeHtml(completionRate)}%</span>
           </div>
           <div style="height: 4px; background: hsla(220, 20%, 100%, 0.05); border-radius: 2px; margin-top: 8px;">
-            <div style="width: ${completionRate}%; height: 100%; border-radius: 2px; background: ${completionRate >= 80 ? 'var(--success-400)' : completionRate >= 50 ? 'var(--gold-400)' : 'var(--danger-400)'}; transition: width 0.3s;"></div>
+            <div style="width: ${escapeHtml(completionRate)}%; height: 100%; border-radius: 2px; background: ${completionRate >= 80 ? 'var(--success-400)' : completionRate >= 50 ? 'var(--gold-400)' : 'var(--danger-400)'}; transition: width 0.3s;"></div>
           </div>
         </div>
         
         ${latestSim ? `
           <div style="display: flex; align-items: center; gap: 8px; font-size: 0.7rem; color: var(--text-tertiary);">
             <i class="fas fa-clock" style="color: var(--brand-400);"></i>
-            <span>Terakhir: ${latestType} • ${formatRelativeTime(latestSim.created_at)}</span>
+            <span>Terakhir: ${escapeHtml(latestType)} • ${formatRelativeTime(latestSim.created_at)}</span>
           </div>
         ` : ''}
       ` : `
@@ -112,7 +113,7 @@ export function renderSimulationHubCard(proyek, simulasiSummary = {}) {
       `}
       
       <!-- Main Click Handler Overlay -->
-      <div onclick="window.navigate('simulation', {proyekId: '${proyek.id}'});" 
+      <div onclick="window.navigate('simulation', {proyekId: '${escapeHtml(proyek.id)}'});" 
            style="position: absolute; inset: 0; cursor: pointer; z-index: 1;"
            title="Buka Simulation Hub">
       </div>

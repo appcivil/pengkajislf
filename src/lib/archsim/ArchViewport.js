@@ -4,6 +4,7 @@
  */
 
 import { Renderer3D } from './Renderer3D.js';
+import { escapeHtml } from '../safe-markdown.js';
 import { archState } from './StateManager.js';
 import { Pasal218Engine } from './Pasal218Engine.js';
 
@@ -324,8 +325,8 @@ export class ArchViewport extends HTMLElement {
                   status === 'PENDING' ? 'Evaluasi Belum Dilakukan' : 'Tidak Sesuai';
 
     display.innerHTML = `
-      <span class="compliance-badge ${badgeClass}">
-        ${icon} ${label} (${compliance.score || 0}%)
+      <span class="compliance-badge ${escapeHtml(badgeClass)}">
+        ${icon} ${escapeHtml(label)} (${escapeHtml(compliance.score || 0)}%)
       </span>
     `;
 
@@ -354,8 +355,8 @@ export class ArchViewport extends HTMLElement {
       html += `
         <div style="margin-bottom: 12px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <span style="font-size: 11px; font-weight: 600; color: #d4d4d4;">${data.title}</span>
-            <span style="font-size: 10px; color: ${catColor};">${catScore}%</span>
+            <span style="font-size: 11px; font-weight: 600; color: #d4d4d4;">${escapeHtml(data.title)}</span>
+            <span style="font-size: 10px; color: ${escapeHtml(catColor)};">${escapeHtml(catScore)}%</span>
           </div>
       `;
       
@@ -365,8 +366,8 @@ export class ArchViewport extends HTMLElement {
         
         html += `
           <div class="checklist-item">
-            <span class="check-icon ${iconClass}">${icon}</span>
-            <span style="color: ${item.passed ? '#a3a3a3' : '#fca5a5'};">${item.label}</span>
+            <span class="check-icon ${escapeHtml(iconClass)}">${icon}</span>
+            <span style="color: ${item.passed ? '#a3a3a3' : '#fca5a5'};">${escapeHtml(item.label)}</span>
           </div>
         `;
       });

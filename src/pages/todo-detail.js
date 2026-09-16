@@ -3,6 +3,8 @@
 //  Detail dari satu task beserta log dan komentar
 // ============================================================
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml as escHtml } from '../lib/safe-markdown.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 
 export async function todoDetailPage(params = {}) {
@@ -37,15 +39,15 @@ function buildHtml(task) {
         <div class="flex-between">
           <div>
             <div class="text-sm text-tertiary" style="margin-bottom:4px">
-              ID Task: ${task.id} • ${new Date(task.created_at || Date.now()).toLocaleDateString('id-ID')}
+              ID Task: ${escapeHtml(task.id)} • ${new Date(task.created_at || Date.now()).toLocaleDateString('id-ID')}
             </div>
             <h1 class="page-title">${escHtml(task.judul || task.title)}</h1>
           </div>
           <div class="flex gap-3">
-             <span class="badge" style="background:${statusLabel.c}22;color:${statusLabel.c};font-size:0.9rem;border:1px solid ${statusLabel.c}44">
-               ${statusLabel.l}
+             <span class="badge" style="background:${escapeHtml(statusLabel.c)}22;color:${escapeHtml(statusLabel.c)};font-size:0.9rem;border:1px solid ${escapeHtml(statusLabel.c)}44">
+               ${escapeHtml(statusLabel.l)}
              </span>
-             <button class="btn btn-primary" onclick="alert('Simpan form...')"><i class="fas fa-save"></i> Simpan</button>
+             <button class="btn btn-primary" onclick="window.showToast('Simpan form...', 'info')"><i class="fas fa-save"></i> Simpan</button>
           </div>
         </div>
       </div>
@@ -119,7 +121,7 @@ function buildHtml(task) {
             </div>
             <div style="margin-top:var(--space-5);border-top:1px solid var(--border-subtle);padding-top:var(--space-3);display:flex;gap:var(--space-2)">
               <input type="text" class="form-control" placeholder="Tulis komentar/update log...">
-              <button class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+              <button type="button" aria-label="Kirim" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
             </div>
           </div>
         </div>
@@ -146,4 +148,4 @@ function renderSkeleton() {
             <div class="skeleton" style="height:400px;border-radius:12px"></div>
           </div>`;
 }
-function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+

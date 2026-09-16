@@ -1,3 +1,5 @@
+import { escapeHtml } from '../../lib/safe-markdown.js';
+import { confirm } from '../modal.js';
 /**
  * Chat Container Component
  * Container utama untuk chatbot interface
@@ -142,7 +144,7 @@ export class ChatContainer {
                 </button>
                 <input type="file" id="file-input" hidden multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.md,.json,.csv">
               </div>
-              <button class="btn btn-primary send-btn" id="send-btn" disabled>
+              <button type="button" aria-label="Kirim" class="btn btn-primary send-btn" id="send-btn" disabled>
                 <i class="fas fa-paper-plane"></i>
               </button>
             </div>
@@ -523,8 +525,8 @@ export class ChatContainer {
         <div class="message-text">${this._formatMessageContent(message.content)}</div>
         ${message.attachments?.length ? this._renderAttachments(message.attachments) : ''}
         <div class="message-meta">
-          <span class="message-time">${time}</span>
-          ${message.model ? `<span class="message-model">${message.model}</span>` : ''}
+          <span class="message-time">${escapeHtml(time)}</span>
+          ${message.model ? `<span class="message-model">${escapeHtml(message.model)}</span>` : ''}
         </div>
       </div>
     `;
@@ -574,10 +576,10 @@ export class ChatContainer {
     return `
       <div class="message-attachments">
         ${attachments.map(att => `
-          <div class="attachment-item ${att.type}">
+          <div class="attachment-item ${escapeHtml(att.type)}">
             <i class="fas ${this._getAttachmentIcon(att.type)}"></i>
-            <span class="attachment-name">${att.name}</span>
-            ${att.url ? `<a href="${att.url}" target="_blank" download><i class="fas fa-download"></i></a>` : ''}
+            <span class="attachment-name">${escapeHtml(att.name)}</span>
+            ${att.url ? `<a rel="noopener noreferrer" href="${escapeHtml(att.url)}" target="_blank" download><i class="fas fa-download"></i></a>` : ''}
           </div>
         `).join('')}
       </div>
@@ -631,7 +633,7 @@ export class ChatContainer {
           <i class="fas fa-robot"></i>
         </div>
         <div class="message-content">
-          <div class="typing-status">${status || 'Sedang mengetik...'}</div>
+          <div class="typing-status">${escapeHtml(status || 'Sedang mengetik...')}</div>
           <div class="typing-dots">
             <span></span>
             <span></span>
@@ -744,13 +746,13 @@ Ada yang bisa saya bantu?`;
     }
 
     listContainer.innerHTML = sessions.map(session => `
-      <div class="session-item ${session.id === this.sessionId ? 'active' : ''}" data-session-id="${session.id}">
+      <div class="session-item ${session.id === this.sessionId ? 'active' : ''}" data-session-id="${escapeHtml(session.id)}">
         <i class="fas fa-comment"></i>
         <div class="session-info">
-          <span class="session-title">${session.title}</span>
+          <span class="session-title">${escapeHtml(session.title)}</span>
           <span class="session-time">${new Date(session.updatedAt).toLocaleDateString('id-ID')}</span>
         </div>
-        <button class="btn btn-icon delete-session" data-session-id="${session.id}">
+        <button type="button" aria-label="Hapus" class="btn btn-icon delete-session" data-session-id="${escapeHtml(session.id)}">
           <i class="fas fa-trash"></i>
         </button>
       </div>
@@ -815,8 +817,14 @@ Ada yang bisa saya bantu?`;
   /**
    * Delete session
    */
-  _deleteSession(sessionId) {
-    if (confirm('Hapus percakapan ini?')) {
+  async _deleteSession(sessionId) {
+    const lanjut = await confirm({
+      title: 'Hapus Percakapan',
+      message: 'Hapus percakapan ini? Riwayat pesan tidak dapat dikembalikan.',
+      confirmText: 'Hapus',
+      danger: true,
+    });
+    if (lanjut) {
       const event = new CustomEvent('chat-delete-session', {
         detail: { sessionId }
       });

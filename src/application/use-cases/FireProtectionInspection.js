@@ -4,6 +4,7 @@
 // ============================================================
 
 import { BaseInspection } from './BaseInspection.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { InspectionWidgets } from '../../components/inspection/inspection-widgets.js';
 import { showSuccess, showError, showInfo } from '../../components/toast.js';
 
@@ -141,7 +142,7 @@ export class FireProtectionInspection extends BaseInspection {
               </div>
               <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
                 <div style="padding: 16px; background: hsla(160, 100%, 45%, 0.1); border-radius: 10px; text-align: center;">
-                  <div style="font-size: 1.5rem; font-weight: 700; color: var(--success-400);">${totalReady}</div>
+                  <div style="font-size: 1.5rem; font-weight: 700; color: var(--success-400);">${escapeHtml(totalReady)}</div>
                   <div style="font-size: 0.75rem; color: var(--text-tertiary);">Ready</div>
                 </div>
                 <div style="padding: 16px; background: hsla(0, 80%, 60%, 0.1); border-radius: 10px; text-align: center;">
@@ -158,7 +159,7 @@ export class FireProtectionInspection extends BaseInspection {
             accentColor: 'var(--brand-400)',
             content: `
               <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
-                <p style="margin-bottom: 12px;"><strong>Total Aset:</strong> ${totalAssets} unit</p>
+                <p style="margin-bottom: 12px;"><strong>Total Aset:</strong> ${escapeHtml(totalAssets)} unit</p>
                 <p style="margin-bottom: 12px;"><strong>Terakhir Inspeksi:</strong> ${summary?.last_inspection ? this._formatDate(summary.last_inspection) : 'Belum pernah'}</p>
                 <p><strong>Status:</strong> ${summary?.status || 'Pending'}</p>
               </div>
@@ -179,10 +180,10 @@ export class FireProtectionInspection extends BaseInspection {
     const typeConfig = this.ASSET_TYPES[assetType.toUpperCase()];
 
     return `
-      <div id="fire-tab-${assetType}" class="fire-tab-content">
+      <div id="fire-tab-${escapeHtml(assetType)}" class="fire-tab-content">
         ${InspectionWidgets.renderActionBar([
-          { icon: 'plus', label: `Tambah ${typeConfig?.label || assetType}`, variant: 'primary', onclick: `window._inspectionControllers['fire'].showAddAssetModal('${assetType.toUpperCase()}')` },
-          { icon: 'clipboard-check', label: 'Inspeksi', variant: 'secondary', onclick: `window._inspectionControllers['fire'].showInspectionModal('${assetType.toUpperCase()}')` }
+          { icon: 'plus', label: `Tambah ${typeConfig?.label || assetType}`, variant: 'primary', onclick: `window._inspectionControllers['fire'].showAddAssetModal('${escapeHtml(assetType.toUpperCase())}')` },
+          { icon: 'clipboard-check', label: 'Inspeksi', variant: 'secondary', onclick: `window._inspectionControllers['fire'].showInspectionModal('${escapeHtml(assetType.toUpperCase())}')` }
         ])}
         
         ${typeAssets.length > 0
@@ -194,7 +195,7 @@ export class FireProtectionInspection extends BaseInspection {
                 a.subtype || a.spec_type || '-',
                 this.renderStatusBadge(a.status),
                 a.expiry_date ? this._formatDate(a.expiry_date) : '-',
-                `<button onclick="window._inspectionControllers['fire'].editAsset('${a.id}')" style="background: none; border: none; color: var(--brand-400); cursor: pointer;"><i class="fas fa-edit"></i></button>`
+                `<button type="button" aria-label="Ubah" onclick="window._inspectionControllers['fire'].editAsset('${escapeHtml(a.id)}')" style="background: none; border: none; color: var(--brand-400); cursor: pointer;"><i class="fas fa-edit"></i></button>`
               ]),
               align: ['left', 'left', 'left', 'center', 'left', 'center']
             })
@@ -203,7 +204,7 @@ export class FireProtectionInspection extends BaseInspection {
               title: `Belum Ada ${typeConfig?.label || assetType}`,
               message: `Tambahkan data ${typeConfig?.label || assetType} untuk memulai.`,
               actionLabel: `Tambah ${typeConfig?.label || assetType}`,
-              actionOnClick: `window._inspectionControllers['fire'].showAddAssetModal('${assetType.toUpperCase()}')`
+              actionOnClick: `window._inspectionControllers['fire'].showAddAssetModal('${escapeHtml(assetType.toUpperCase())}')`
             })
         }
       </div>
@@ -220,7 +221,7 @@ export class FireProtectionInspection extends BaseInspection {
     const style = styles[status] || styles.NOT_READY;
     const labels = { READY: 'Ready', EXPIRED: 'Expired', NEED_MAINTENANCE: 'Perlu Perawatan', NOT_READY: 'Not Ready' };
     
-    return `<span style="padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; background: ${style.bg}; color: ${style.color};">${labels[status] || status}</span>`;
+    return `<span style="padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; background: ${escapeHtml(style.bg)}; color: ${escapeHtml(style.color)};">${labels[status] || status}</span>`;
   }
 
   // ============================================================
@@ -248,12 +249,12 @@ export class FireProtectionInspection extends BaseInspection {
                       <i class="fas fa-${check.passed ? 'check' : 'times'}"></i>
                     </div>
                     <div style="flex: 1;">
-                      <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">${check.name}</div>
-                      <div style="font-size: 0.8rem; color: var(--text-tertiary);">${check.description}</div>
+                      <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">${escapeHtml(check.name)}</div>
+                      <div style="font-size: 0.8rem; color: var(--text-tertiary);">${escapeHtml(check.description)}</div>
                     </div>
                     <div style="text-align: right;">
-                      <div style="font-size: 1.2rem; font-weight: 700; color: ${check.passed ? 'var(--success-400)' : 'var(--danger-400)'}">${check.value}</div>
-                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${check.requirement}</div>
+                      <div style="font-size: 1.2rem; font-weight: 700; color: ${check.passed ? 'var(--success-400)' : 'var(--danger-400)'}">${escapeHtml(check.value)}</div>
+                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(check.requirement)}</div>
                     </div>
                   </div>
                 `).join('')}

@@ -6,6 +6,7 @@
 // ============================================================
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import {
@@ -185,13 +186,13 @@ function renderHeaderCard() {
           ${overallScore > 0 ? `
             <div style="text-align: right; margin-right: 12px;">
               <div style="font-size: 0.65rem; color: var(--text-tertiary);">Skor Aksesibilitas</div>
-              <div style="font-size: 1.2rem; font-weight: 800; color: ${grade.color};">${overallScore.toFixed(1)}% (${grade.grade})</div>
+              <div style="font-size: 1.2rem; font-weight: 800; color: ${escapeHtml(grade.color)};">${escapeHtml(overallScore.toFixed(1))}% (${escapeHtml(grade.grade)})</div>
             </div>
           ` : ''}
           <span class="badge" style="background: hsla(220, 95%, 52%, 0.1); color: var(--brand-400); border: 1px solid hsla(220, 95%, 52%, 0.2); font-size: 10px;">
             <i class="fas fa-book" style="margin-right: 6px;"></i>PP 16/2021 & SNI
           </span>
-          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${currentProjectId}'})" style="color: var(--text-tertiary);">
+          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${escapeHtml(currentProjectId)}'})" style="color: var(--text-tertiary);">
             <i class="fas fa-arrow-left" style="margin-right: 6px;"></i> Kembali
           </button>
         </div>
@@ -285,14 +286,14 @@ function renderDashboardTab() {
       <div class="card-quartz" style="padding: 24px; margin-bottom: 20px; background: linear-gradient(135deg, hsla(220, 95%, 52%, 0.1) 0%, hsla(220, 95%, 52%, 0.05) 100%);">
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; align-items: center;">
           <div style="text-align: center; border-right: 1px solid hsla(220, 20%, 100%, 0.1);">
-            <div style="font-size: 3rem; font-weight: 800; color: ${grade.color}; margin-bottom: 8px;">
+            <div style="font-size: 3rem; font-weight: 800; color: ${escapeHtml(grade.color)}; margin-bottom: 8px;">
               ${overallScore > 0 ? overallScore.toFixed(1) + '%' : 'N/A'}
             </div>
             <div style="font-size: 0.8rem; color: var(--text-tertiary);">Skor Aksesibilitas</div>
           </div>
           <div style="text-align: center; border-right: 1px solid hsla(220, 20%, 100%, 0.1);">
             <div style="font-size: 2.5rem; font-weight: 800; color: white; margin-bottom: 8px;">
-              ${accessibilityData.inspectionResults.length}
+              ${escapeHtml(accessibilityData.inspectionResults.length)}
             </div>
             <div style="font-size: 0.8rem; color: var(--text-tertiary);">Total Pemeriksaan</div>
           </div>
@@ -310,28 +311,28 @@ function renderDashboardTab() {
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(220, 95%, 52%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--brand-400); margin: 0 auto 12px;">
             <i class="fas fa-road" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${corridorCount}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(corridorCount)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Koridor</div>
         </div>
         <div class="card-quartz" style="padding: 20px; text-align: center;">
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(45, 90%, 60%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--gold-400); margin: 0 auto 12px;">
             <i class="fas fa-wheelchair" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${rampCount}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(rampCount)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Ram</div>
         </div>
         <div class="card-quartz" style="padding: 20px; text-align: center;">
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(158, 85%, 45%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--success-400); margin: 0 auto 12px;">
             <i class="fas fa-stairs" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${stairCount}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(stairCount)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Tangga</div>
         </div>
         <div class="card-quartz" style="padding: 20px; text-align: center;">
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(0, 85%, 60%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--danger-400); margin: 0 auto 12px;">
             <i class="fas fa-elevator" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${elevatorCount}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(elevatorCount)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Lift</div>
         </div>
       </div>

@@ -5,6 +5,7 @@
 // ============================================================
 
 import { exportSimulationVisuals } from './simulation-visualization.js';
+import { escapeHtml } from './safe-markdown.js';
 import { saveSimulasi } from './simulation-engine.js';
 import { supabase } from './supabase.js';
 
@@ -355,22 +356,22 @@ export async function generateSimulationChapter(proyekId, options = {}) {
 // Formatters
 function formatAsHTML(chapter) {
   let html = `<div class="simulation-chapter">`;
-  html += `<h1>${chapter.title}</h1>`;
-  html += `<p class="introduction">${chapter.introduction}</p>`;
+  html += `<h1>${escapeHtml(chapter.title)}</h1>`;
+  html += `<p class="introduction">${escapeHtml(chapter.introduction)}</p>`;
   
   chapter.sections.forEach(section => {
     html += `<section>`;
-    html += `<h2>${section.title}</h2>`;
-    html += `<div class="narrative">${section.content}</div>`;
+    html += `<h2>${escapeHtml(section.title)}</h2>`;
+    html += `<div class="narrative">${escapeHtml(section.content)}</div>`;
     
     if (section.visualUrl) {
       html += `<figure>`;
-      html += `<img src="${section.visualUrl}" alt="Visualisasi ${section.title}"/>`;
-      html += `<figcaption>Gambar 6.${chapter.sections.indexOf(section) + 1}: Hasil ${section.title}</figcaption>`;
+      html += `<img src="${escapeHtml(section.visualUrl)}" alt="Visualisasi ${escapeHtml(section.title)}"/>`;
+      html += `<figcaption>Gambar 6.${chapter.sections.indexOf(section) + 1}: Hasil ${escapeHtml(section.title)}</figcaption>`;
       html += `</figure>`;
     }
     
-    html += `<p class="sni-reference"><strong>Standar:</strong> ${section.sni}</p>`;
+    html += `<p class="sni-reference"><strong>Standar:</strong> ${escapeHtml(section.sni)}</p>`;
     html += `</section>`;
   });
   

@@ -3,6 +3,7 @@
 //  Menghitung Tingkat Kerusakan Bangunan berdasarkan bobot
 // ============================================================
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError } from '../components/toast.js';
 import { confirm } from '../components/modal.js';
@@ -144,13 +145,13 @@ function buildHtml(proyek) {
       <div class="page-header">
         <div class="flex-between flex-stack" style="gap:var(--space-4)">
           <div>
-            <button class="btn btn-ghost btn-sm" onclick="window.navigate('proyek-detail',{id:'${proyek.id}'})" style="margin-bottom:8px">
+            <button class="btn btn-ghost btn-sm" onclick="window.navigate('proyek-detail',{id:'${escapeHtml(proyek.id)}'})" style="margin-bottom:8px">
               <i class="fas fa-arrow-left"></i> Kembali ke Proyek
             </button>
             <h1 class="page-title">Pemeriksaan Kondisi Bangunan</h1>
             <div style="display:flex; align-items:center; gap:12px; margin-top:4px; flex-wrap:wrap">
                <p class="page-subtitle">Penilaian Tingkat Kerusakan Sesuai Permen PU No. 16/PRT/M/2010</p>
-               <span class="badge ${badgeLantai}" style="font-size:0.7rem">Jumlah Lantai: ${fl}</span>
+               <span class="badge ${escapeHtml(badgeLantai)}" style="font-size:0.7rem">Jumlah Lantai: ${escapeHtml(fl)}</span>
             </div>
           </div>
           <div class="flex gap-3 flex-stack">
@@ -173,12 +174,12 @@ function buildHtml(proyek) {
               <div class="card-header" style="background:var(--bg-elevated); padding:var(--space-4) var(--space-5); border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center">
                 <div style="display:flex; align-items:center; gap:12px">
                    <div style="width:10px; height:10px; border-radius:50%; background:${group.id === 'struktur' ? 'var(--danger-400)' : group.id === 'arsitektur' ? 'var(--brand-400)' : 'var(--blue-400)'}"></div>
-                   <span class="font-bold text-primary">${group.nama} (Bobot ${group.bobot_total}%)</span>
+                   <span class="font-bold text-primary">${escapeHtml(group.nama)} (Bobot ${escapeHtml(group.bobot_total)}%)</span>
                 </div>
-                <div class="text-xs font-bold text-tertiary" id="subtotal-${group.id}">Subtotal: 0.00%</div>
+                <div class="text-xs font-bold text-tertiary" id="subtotal-${escapeHtml(group.id)}">Subtotal: 0.00%</div>
               </div>
               <div class="table-responsive">
-                <table style="width:100%; border-collapse:collapse">
+                <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width:100%; border-collapse:collapse">
                   <thead>
                     <tr style="text-align:left; font-size:0.75rem; color:var(--text-tertiary); text-transform:uppercase">
                       <th style="padding:8px 0; font-weight:700">Item Pekerjaan</th>
@@ -192,34 +193,34 @@ function buildHtml(proyek) {
                       const savedVal = window._kondisiScoreMap[item.id] || 0;
                       return `
                         <tr style="border-bottom:1px solid var(--border-subtle)">
-                          <td style="padding:12px 0; font-size:var(--text-sm); font-weight:600; color:var(--text-secondary)">${item.nama}</td>
-                          <td style="padding:12px 0; font-size:var(--text-sm); text-align:center; color:var(--text-tertiary)">${item.bobot}%</td>
+                          <td style="padding:12px 0; font-size:var(--text-sm); font-weight:600; color:var(--text-secondary)">${escapeHtml(item.nama)}</td>
+                          <td style="padding:12px 0; font-size:var(--text-sm); text-align:center; color:var(--text-tertiary)">${escapeHtml(item.bobot)}%</td>
                           <td style="padding:12px 0">
                             <div style="display:flex; align-items:center; gap:10px">
                               <input type="range" min="0" max="100" step="1" 
                                      class="kondisi-slider" 
-                                     id="slider-${item.id}" 
-                                     data-id="${item.id}" 
-                                     data-bobot="${item.bobot}"
-                                     data-group="${group.id}"
-                                     value="${savedVal}"
-                                     oninput="window._updateItemValue('${item.id}')">
+                                     id="slider-${escapeHtml(item.id)}" 
+                                     data-id="${escapeHtml(item.id)}" 
+                                     data-bobot="${escapeHtml(item.bobot)}"
+                                     data-group="${escapeHtml(group.id)}"
+                                     value="${escapeHtml(savedVal)}"
+                                     oninput="window._updateItemValue('${escapeHtml(item.id)}')">
                               <input type="number" min="0" max="100" 
-                                     id="input-${item.id}" 
-                                     value="${savedVal}"
+                                     id="input-${escapeHtml(item.id)}" 
+                                     value="${escapeHtml(savedVal)}"
                                      style="width:50px; padding:4px; border:1px solid var(--border-subtle); border-radius:4px; font-size:0.75rem; text-align:center"
-                                     onchange="window._updateItemInput('${item.id}')">
+                                     onchange="window._updateItemInput('${escapeHtml(item.id)}')">
                               <span style="font-size:0.75rem">%</span>
                             </div>
                           </td>
-                          <td style="padding:12px 0; text-align:right; font-weight:bold; color:var(--text-primary)" id="result-${item.id}">
+                          <td style="padding:12px 0; text-align:right; font-weight:bold; color:var(--text-primary)" id="result-${escapeHtml(item.id)}">
                             ${((savedVal / 100) * item.bobot).toFixed(2)}%
                           </td>
                         </tr>
                       `;
                     }).join('')}
                   </tbody>
-                </table>
+                </table></div>
               </div>
             </div>
           `).join('')}
@@ -251,11 +252,11 @@ function buildHtml(proyek) {
                  ${window._komponenDinamis.map(g => `
                    <div style="margin-bottom:8px">
                       <div class="flex-between text-xs mb-1">
-                        <span>${g.nama}</span>
-                        <span id="summary-val-${g.id}">0.00%</span>
+                        <span>${escapeHtml(g.nama)}</span>
+                        <span id="summary-val-${escapeHtml(g.id)}">0.00%</span>
                       </div>
                       <div class="progress-wrap" style="height:4px">
-                        <div class="progress-fill ${g.id === 'struktur' ? 'red' : 'blue'}" id="summary-bar-${g.id}" style="width:0%"></div>
+                        <div class="progress-fill ${g.id === 'struktur' ? 'red' : 'blue'}" id="summary-bar-${escapeHtml(g.id)}" style="width:0%"></div>
                       </div>
                    </div>
                  `).join('')}
@@ -264,7 +265,7 @@ function buildHtml(proyek) {
                <div style="margin-top:12px; padding:12px; background:rgba(59,130,246,0.1); border-radius:8px; border-left:3px solid var(--brand-400)">
                  <p class="text-xs text-secondary" style="line-height:1.4">
                    <i class="fas fa-info-circle" style="margin-right:6px"></i>
-                   Komponen dinilai berdasarkan <strong>Bangunan Lantai ${fl}</strong>. Gunakan tombol Ambil Data AI jika Anda sudah menjalankan analisis AI sebelumnya.
+                   Komponen dinilai berdasarkan <strong>Bangunan Lantai ${escapeHtml(fl)}</strong>. Gunakan tombol Ambil Data AI jika Anda sudah menjalankan analisis AI sebelumnya.
                  </p>
                </div>
             </div>

@@ -1,3 +1,4 @@
+import { escapeHtml } from './safe-markdown.js';
 /**
  * PHOTO DOCUMENTATION MODULE
  * WebRTC camera capture with EXIF/GPS metadata
@@ -300,8 +301,8 @@ export function createPhotoGallery(photos, options = {}) {
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">
       ${photos.map((photo, idx) => `
         <div class="photo-item" style="position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; cursor: pointer;"
-             onclick="window._showPhotoLightbox(${idx})">
-          <img src="${photo.imageData || photo.url}" 
+             onclick="window._showPhotoLightbox(${escapeHtml(idx)})">
+          <img alt="Foto dokumentasi pemeriksaan" src="${escapeHtml(photo.imageData || photo.url)}" 
                style="width: 100%; height: 100%; object-fit: cover;"
                loading="lazy">
           ${photo.metadata?.gps ? `
@@ -329,20 +330,20 @@ function renderComparisonGallery(pairs) {
       ${pairs.map((pair, idx) => `
         <div class="comparison-item" style="border: 1px solid hsla(220, 20%, 100%, 0.1); border-radius: 12px; overflow: hidden;">
           <div style="padding: 12px 16px; background: hsla(220, 20%, 100%, 0.03);">
-            <span style="font-weight: 600; color: white;">${pair.title || 'Perbandingan'}</span>
+            <span style="font-weight: 600; color: white;">${escapeHtml(pair.title || 'Perbandingan')}</span>
           </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px;">
             <div style="position: relative;">
               <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.6); padding: 4px 12px; border-radius: 4px; font-size: 12px; color: white;">
                 Before
               </div>
-              <img src="${pair.before.imageData || pair.before.url}" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;">
+              <img alt="Foto dokumentasi pemeriksaan" src="${escapeHtml(pair.before.imageData || pair.before.url)}" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;">
             </div>
             <div style="position: relative;">
               <div style="position: absolute; top: 8px; left: 8px; background: rgba(34,197,94,0.8); padding: 4px 12px; border-radius: 4px; font-size: 12px; color: white;">
                 After
               </div>
-              <img src="${pair.after.imageData || pair.after.url}" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;">
+              <img alt="Foto dokumentasi pemeriksaan" src="${escapeHtml(pair.after.imageData || pair.after.url)}" style="width: 100%; aspect-ratio: 4/3; object-fit: cover;">
             </div>
           </div>
         </div>
@@ -404,19 +405,19 @@ export function renderDamageCatalog() {
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
       ${Object.entries(DAMAGE_CATALOG).map(([key, damage]) => `
         <div class="damage-card" style="padding: 20px; background: hsla(220, 20%, 100%, 0.03); border: 1px solid hsla(220, 20%, 100%, 0.1); border-radius: 12px; cursor: pointer; transition: all 0.3s;"
-             onclick="window._selectDamageType('${key}')">
+             onclick="window._selectDamageType('${escapeHtml(key)}')">
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-            <div style="width: 48px; height: 48px; border-radius: 12px; background: ${damage.color}20; display: flex; align-items: center; justify-content: center; color: ${damage.color}; font-size: 1.3rem;">
+            <div style="width: 48px; height: 48px; border-radius: 12px; background: ${escapeHtml(damage.color)}20; display: flex; align-items: center; justify-content: center; color: ${escapeHtml(damage.color)}; font-size: 1.3rem;">
               <i class="fas ${damage.icon}"></i>
             </div>
-            <div style="font-weight: 700; color: white; font-size: 1rem;">${damage.label}</div>
+            <div style="font-weight: 700; color: white; font-size: 1rem;">${escapeHtml(damage.label)}</div>
           </div>
           <div style="font-size: 0.85rem; color: var(--text-tertiary); margin-bottom: 12px;">
-            ${damage.description}
+            ${escapeHtml(damage.description)}
           </div>
           <div style="display: flex; gap: 6px;">
             ${damage.severity.map(s => `
-              <span style="font-size: 0.7rem; padding: 2px 8px; background: hsla(220, 20%, 100%, 0.1); border-radius: 4px; color: var(--text-tertiary); text-transform: capitalize;">${s}</span>
+              <span style="font-size: 0.7rem; padding: 2px 8px; background: hsla(220, 20%, 100%, 0.1); border-radius: 4px; color: var(--text-tertiary); text-transform: capitalize;">${escapeHtml(s)}</span>
             `).join('')}
           </div>
         </div>

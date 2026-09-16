@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { 
@@ -166,8 +167,8 @@ export function renderLPSCard(p, summary = {}) {
           </div>
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <span class="badge" style="background: ${statusColor}20; color: ${statusColor}; border: 1px solid ${statusColor}40; font-size: 10px;">
-            <i class="fas ${statusIcon}" style="margin-right: 6px;"></i>${statusText}
+          <span class="badge" style="background: ${escapeHtml(statusColor)}20; color: ${escapeHtml(statusColor)}; border: 1px solid ${escapeHtml(statusColor)}40; font-size: 10px;">
+            <i class="fas ${statusIcon}" style="margin-right: 6px;"></i>${escapeHtml(statusText)}
           </span>
           <span class="badge" style="background: hsla(45, 90%, 60%, 0.1); color: var(--gold-400); border: 1px solid hsla(45, 90%, 60%, 0.2); font-size: 10px;">
             <i class="fas fa-book" style="margin-right: 6px;"></i>SNI 03-7015-2014
@@ -183,19 +184,19 @@ export function renderLPSCard(p, summary = {}) {
         <!-- Stats Grid -->
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;">
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${summary.totalAirTerminals}</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${escapeHtml(summary.totalAirTerminals)}</div>
             <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">AIR TERMINAL</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: ${summary.failedGroundingTests > 0 ? 'var(--danger-400)' : 'var(--success-400)'};">${summary.totalGroundingPoints}</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: ${summary.failedGroundingTests > 0 ? 'var(--danger-400)' : 'var(--success-400)'};">${escapeHtml(summary.totalGroundingPoints)}</div>
             <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">GROUNDING</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: ${summary.failedGroundingTests > 0 ? 'var(--danger-400)' : 'var(--success-400)'};">${summary.totalGroundingTests}</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: ${summary.failedGroundingTests > 0 ? 'var(--danger-400)' : 'var(--success-400)'};">${escapeHtml(summary.totalGroundingTests)}</div>
             <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">TEST RESULT</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${summary.totalInspections}</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${escapeHtml(summary.totalInspections)}</div>
             <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">INSPECTION</div>
           </div>
         </div>
@@ -208,14 +209,14 @@ export function renderLPSCard(p, summary = {}) {
                 <div style="font-size: 14px; color: white; font-weight: 600;">
                   R = ${summary.latestRisk.risk_calculated?.toExponential(2) || '-'} 
                   <span style="color: ${isRequired ? 'var(--warning-400)' : 'var(--success-400)'}">
-                    (${summary.latestRisk.status || '-'})
+                    (${escapeHtml(summary.latestRisk.status || '-')})
                   </span>
                 </div>
               </div>
               <div style="text-align: right;">
                 <div style="font-size: 10px; color: var(--text-tertiary); margin-bottom: 4px;">LPL RECOMMENDED</div>
                 <div style="font-size: 14px; color: var(--gold-400); font-weight: 600;">
-                  ${lplLevel || '-'}
+                  ${escapeHtml(lplLevel || '-')}
                 </div>
               </div>
             </div>
@@ -227,18 +228,18 @@ export function renderLPSCard(p, summary = {}) {
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
         <button class="btn-presidential" 
                 style="width: 100%; height: 44px; border-radius: 12px; font-size: 10px; background: ${hasData ? 'var(--gradient-brand)' : 'var(--gradient-dark)'};"
-                onclick="window._openLPSInspection('${p.id}')">
+                onclick="window._openLPSInspection('${escapeHtml(p.id)}')">
           <i class="fas fa-ruler-combined" style="margin-right: 8px;"></i> ${hasData ? 'LANJUTKAN PENGKAJIAN' : 'MULAI PENGKAJIAN'}
         </button>
         ${hasData ? `
           <button class="btn btn-outline" 
                   style="width: 100%; height: 44px; border-radius: 12px; font-size: 10px; border-color: hsla(220, 95%, 52%, 0.2); color: white;"
-                  onclick="window._viewLPSReport('${p.id}')">
+                  onclick="window._viewLPSReport('${escapeHtml(p.id)}')">
             <i class="fas fa-file-pdf" style="margin-right: 8px;"></i> LAPORAN
           </button>
           <button class="btn btn-outline" 
                   style="width: 100%; height: 44px; border-radius: 12px; font-size: 10px; border-color: hsla(45, 90%, 60%, 0.2); color: var(--gold-400);"
-                  onclick="window._exportLPSData('${p.id}')">
+                  onclick="window._exportLPSData('${escapeHtml(p.id)}')">
             <i class="fas fa-download" style="margin-right: 8px;"></i> EXPORT DATA
           </button>
         ` : `
@@ -261,7 +262,7 @@ export function renderLPSCard(p, summary = {}) {
               Inspeksi terakhir: ${new Date(summary.latestInspectionDate).toLocaleString('id-ID')}
             </div>
             <div style="font-size: 11px; color: var(--text-tertiary);">
-              Oleh: ${summary.latestInspection.inspector_name || '-'}
+              Oleh: ${escapeHtml(summary.latestInspection.inspector_name || '-')}
             </div>
           </div>
         </div>
@@ -412,15 +413,15 @@ export function renderLPSModule(proyek, summary = {}) {
  */
 function renderRiskAssessmentTab(proyek, summary) {
   const lplOptions = Object.entries(LPL_LEVELS).map(([key, data]) => 
-    `<option value="${key}">${data.label} (R=${data.rollingSphereRadius}m)</option>`
+    `<option value="${escapeHtml(key)}">${escapeHtml(data.label)} (R=${escapeHtml(data.rollingSphereRadius)}m)</option>`
   ).join('');
   
   const envOptions = Object.entries(ENVIRONMENT_FACTORS).map(([key, data]) =>
-    `<option value="${data.value}">${data.label} (Cd=${data.value})</option>`
+    `<option value="${escapeHtml(data.value)}">${escapeHtml(data.label)} (Cd=${escapeHtml(data.value)})</option>`
   ).join('');
   
   const classOptions = Object.entries(BUILDING_CLASSES).map(([key, data]) =>
-    `<option value="${key}">${data.name}</option>`
+    `<option value="${escapeHtml(key)}">${escapeHtml(data.name)}</option>`
   ).join('');
 
   return `
@@ -441,7 +442,7 @@ function renderRiskAssessmentTab(proyek, summary) {
             <div>
               <label class="form-label">Kelas Bangunan</label>
               <select id="lps-building-class" class="form-input-dark" style="cursor: pointer;">
-                ${classOptions}
+                ${escapeHtml(classOptions)}
               </select>
             </div>
           </div>
@@ -464,11 +465,11 @@ function renderRiskAssessmentTab(proyek, summary) {
           <div style="margin-bottom: 20px;">
             <label class="form-label">Faktor Lingkungan (Cd)</label>
             <select id="lps-cd" class="form-input-dark" style="cursor: pointer;">
-              ${envOptions}
+              ${escapeHtml(envOptions)}
             </select>
           </div>
 
-          <button onclick="window._calculateLPSRisk('${proyek.id}')" class="btn btn-primary" style="width: 100%;">
+          <button onclick="window._calculateLPSRisk('${escapeHtml(proyek.id)}')" class="btn btn-primary" style="width: 100%;">
             <i class="fas fa-calculator" style="margin-right: 8px;"></i> Hitung Risiko
           </button>
         </div>
@@ -509,9 +510,9 @@ function renderRiskAssessmentTab(proyek, summary) {
           <div style="display: flex; flex-direction: column; gap: 12px;">
             ${Object.entries(LPL_LEVELS).map(([key, data]) => `
               <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; border-left: 3px solid ${key === 'LPL_I' ? 'var(--danger-400)' : key === 'LPL_II' ? 'var(--warning-400)' : 'var(--success-400)'};">
-                <div style="font-weight: 700; color: white; font-size: 0.85rem;">${data.label}</div>
+                <div style="font-weight: 700; color: white; font-size: 0.85rem;">${escapeHtml(data.label)}</div>
                 <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 4px;">
-                  Radius Bola: ${data.rollingSphereRadius}m | Mesh: ${data.meshSize}m | Down Conductor: ${data.downConductorSpacing}m
+                  Radius Bola: ${escapeHtml(data.rollingSphereRadius)}m | Mesh: ${escapeHtml(data.meshSize)}m | Down Conductor: ${escapeHtml(data.downConductorSpacing)}m
                 </div>
               </div>
             `).join('')}
@@ -785,11 +786,11 @@ function renderInternalLPSTab(proyek, summary) {
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
           ${Object.entries(LPZ_ZONES).map(([key, data]) => `
             <div style="padding: 20px; background: hsla(220, 20%, 100%, 0.03); border-radius: 12px; border-left: 4px solid ${key === 'LPZ_0A' ? 'var(--danger-400)' : key === 'LPZ_0B' ? 'var(--warning-400)' : key === 'LPZ_1' ? 'var(--brand-400)' : 'var(--success-400)'};">
-              <div style="font-weight: 800; color: white; font-size: 1rem; margin-bottom: 8px;">${data.name}</div>
-              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">${data.description}</div>
+              <div style="font-weight: 800; color: white; font-size: 1rem; margin-bottom: 8px;">${escapeHtml(data.name)}</div>
+              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">${escapeHtml(data.description)}</div>
               <div style="font-size: 0.75rem; color: var(--text-tertiary); line-height: 1.5;">
-                <div><strong>Ancaman:</strong> ${data.threat}</div>
-                <div style="margin-top: 4px;"><strong>Proteksi:</strong> ${data.protection}</div>
+                <div><strong>Ancaman:</strong> ${escapeHtml(data.threat)}</div>
+                <div style="margin-top: 4px;"><strong>Proteksi:</strong> ${escapeHtml(data.protection)}</div>
               </div>
             </div>
           `).join('')}
@@ -807,17 +808,17 @@ function renderInternalLPSTab(proyek, summary) {
           ${Object.entries(SPD_TYPES).map(([key, data]) => `
             <div style="padding: 20px; background: hsla(220, 20%, 100%, 0.03); border-radius: 12px; border: 1px solid hsla(220, 20%, 100%, 0.1);">
               <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                <div style="font-weight: 800; color: white; font-size: 1rem;">${data.name}</div>
+                <div style="font-weight: 800; color: white; font-size: 1rem;">${escapeHtml(data.name)}</div>
                 <span class="badge" style="background: ${key === 'TYPE_1' ? 'hsla(0, 85%, 60%, 0.2)' : key === 'TYPE_2' ? 'hsla(45, 90%, 60%, 0.2)' : 'hsla(160, 100%, 45%, 0.2)'}; 
                              color: ${key === 'TYPE_1' ? 'var(--danger-400)' : key === 'TYPE_2' ? 'var(--warning-400)' : 'var(--success-400)'}; 
                              font-size: 10px; padding: 4px 8px;">
-                  ${data.location}
+                  ${escapeHtml(data.location)}
                 </span>
               </div>
-              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;">${data.description}</div>
+              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;">${escapeHtml(data.description)}</div>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.75rem; color: var(--text-tertiary);">
-                <div><strong>Impulse Current:</strong> ${data.impulseCurrent}</div>
-                <div><strong>Aplikasi:</strong> ${data.application}</div>
+                <div><strong>Impulse Current:</strong> ${escapeHtml(data.impulseCurrent)}</div>
+                <div><strong>Aplikasi:</strong> ${escapeHtml(data.application)}</div>
               </div>
             </div>
           `).join('')}
@@ -949,7 +950,7 @@ function renderTestingTab(proyek, summary) {
         <div id="lps-test-history">
           ${summary.groundingTests?.length > 0 ? `
             <div style="overflow-x: auto;">
-              <table style="width: 100%; font-size: 0.8rem;">
+              <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width: 100%; font-size: 0.8rem;">
                 <thead>
                   <tr style="border-bottom: 1px solid hsla(220, 20%, 100%, 0.1);">
                     <th style="text-align: left; padding: 12px; color: var(--text-tertiary);">Tanggal</th>
@@ -962,19 +963,19 @@ function renderTestingTab(proyek, summary) {
                   ${summary.groundingTests.map(test => `
                     <tr style="border-bottom: 1px solid hsla(220, 20%, 100%, 0.05);">
                       <td style="padding: 12px; color: white;">${new Date(test.test_date).toLocaleDateString('id-ID')}</td>
-                      <td style="padding: 12px; color: var(--text-secondary);">${test.location || '-'}</td>
-                      <td style="padding: 12px; color: white; font-weight: 600;">${test.resistance_ohm}</td>
+                      <td style="padding: 12px; color: var(--text-secondary);">${escapeHtml(test.location || '-')}</td>
+                      <td style="padding: 12px; color: white; font-weight: 600;">${escapeHtml(test.resistance_ohm)}</td>
                       <td style="padding: 12px;">
                         <span class="badge" style="background: ${test.status === 'PASS' ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'}; 
                                      color: ${test.status === 'PASS' ? 'var(--success-400)' : 'var(--danger-400)'}; 
                                      font-size: 10px; padding: 4px 8px;">
-                          ${test.status}
+                          ${escapeHtml(test.status)}
                         </span>
                       </td>
                     </tr>
                   `).join('')}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           ` : `
             <div style="text-align: center; padding: 40px; color: var(--text-tertiary);">
@@ -1076,29 +1077,29 @@ export function initLPSHandlers(proyekId) {
                            color: ${result.isRequired ? 'var(--danger-400)' : 'var(--success-400)'}; 
                            font-size: 12px; padding: 6px 12px;">
                 <i class="fas ${result.isRequired ? 'fa-exclamation-triangle' : 'fa-check-circle'}" style="margin-right: 6px;"></i>
-                ${result.status}
+                ${escapeHtml(result.status)}
               </span>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <span style="color: var(--text-secondary);">LPL Rekomendasi:</span>
-              <span style="color: var(--gold-400); font-weight: 700;">${result.lplRecommended.replace('LPL_', 'Level ')}</span>
+              <span style="color: var(--gold-400); font-weight: 700;">${escapeHtml(result.lplRecommended.replace('LPL_', 'Level '))}</span>
             </div>
           </div>
           
           <div class="result-card">
             <div style="font-weight: 700; color: white; margin-bottom: 12px;">Detail Perhitungan</div>
             <div style="font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.8;">
-              <div>Area Koleksi (Ae): <span style="color: white;">${result.collectionArea} m²</span></div>
+              <div>Area Koleksi (Ae): <span style="color: white;">${escapeHtml(result.collectionArea)} m²</span></div>
               <div>Frekuensi Sambaran (N): <span style="color: white;">${result.strikeFrequency.toExponential(2)} /tahun</span></div>
-              <div>Kerapatan Petir (Ng): <span style="color: white;">${Ng} sambaran/km²/th</span></div>
-              <div>Faktor Lingkungan (Cd): <span style="color: white;">${Cd}</span></div>
+              <div>Kerapatan Petir (Ng): <span style="color: white;">${escapeHtml(Ng)} sambaran/km²/th</span></div>
+              <div>Faktor Lingkungan (Cd): <span style="color: white;">${escapeHtml(Cd)}</span></div>
             </div>
           </div>
           
           <div style="margin-top: 16px; padding: 16px; background: ${result.isRequired ? 'hsla(0, 85%, 60%, 0.1)' : 'hsla(160, 100%, 45%, 0.1)'}; border-radius: 10px; border: 1px solid ${result.isRequired ? 'hsla(0, 85%, 60%, 0.2)' : 'hsla(160, 100%, 45%, 0.2)'};">
             <div style="font-size: 0.85rem; color: ${result.isRequired ? 'var(--danger-400)' : 'var(--success-400)'}; font-weight: 600;">
               <i class="fas ${result.isRequired ? 'fa-exclamation-circle' : 'fa-info-circle'}" style="margin-right: 8px;"></i>
-              ${result.recommendation}
+              ${escapeHtml(result.recommendation)}
             </div>
           </div>
         `;
@@ -1132,16 +1133,16 @@ export function initLPSHandlers(proyekId) {
         <div class="result-card">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
             <div style="text-align: center;">
-              <div class="metric-value" style="font-size: 1.2rem;">${result.sphereRadius}m</div>
+              <div class="metric-value" style="font-size: 1.2rem;">${escapeHtml(result.sphereRadius)}m</div>
               <div class="metric-label">Radius Bola</div>
             </div>
             <div style="text-align: center;">
-              <div class="metric-value" style="font-size: 1.2rem;">${result.protectedRadius}m</div>
+              <div class="metric-value" style="font-size: 1.2rem;">${escapeHtml(result.protectedRadius)}m</div>
               <div class="metric-label">Radius Perlindungan</div>
             </div>
           </div>
           <div style="font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.6;">
-            <p><strong>Tinggi Efektif:</strong> ${result.effectiveHeight}m</p>
+            <p><strong>Tinggi Efektif:</strong> ${escapeHtml(result.effectiveHeight)}m</p>
             <p><strong>Status:</strong> <span style="color: ${result.isProtected ? 'var(--success-400)' : 'var(--warning-400)'}">${result.isProtected ? 'Terdapat zona perlindungan' : 'Tinggi rod tidak mencukupi'}</span></p>
           </div>
         </div>
@@ -1171,21 +1172,21 @@ export function initLPSHandlers(proyekId) {
         <div class="result-card">
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
             <div style="text-align: center;">
-              <div class="metric-value" style="font-size: 1.2rem;">${result.meshSize.width}m</div>
+              <div class="metric-value" style="font-size: 1.2rem;">${escapeHtml(result.meshSize.width)}m</div>
               <div class="metric-label">Ukuran Mesh</div>
             </div>
             <div style="text-align: center;">
-              <div class="metric-value" style="font-size: 1.2rem;">${result.meshCount.total}</div>
+              <div class="metric-value" style="font-size: 1.2rem;">${escapeHtml(result.meshCount.total)}</div>
               <div class="metric-label">Jumlah Mesh</div>
             </div>
             <div style="text-align: center;">
-              <div class="metric-value" style="font-size: 1.2rem;">${result.conductorLength.total}m</div>
+              <div class="metric-value" style="font-size: 1.2rem;">${escapeHtml(result.conductorLength.total)}m</div>
               <div class="metric-label">Panjang Konduktor</div>
             </div>
           </div>
           <div style="font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.6;">
-            <p><strong>Mesh X:</strong> ${result.meshCount.x} buah | <strong>Mesh Y:</strong> ${result.meshCount.y} buah</p>
-            <p><strong>Area:</strong> ${result.area} m² | <strong>Perimeter:</strong> ${result.perimeter} m</p>
+            <p><strong>Mesh X:</strong> ${escapeHtml(result.meshCount.x)} buah | <strong>Mesh Y:</strong> ${escapeHtml(result.meshCount.y)} buah</p>
+            <p><strong>Area:</strong> ${escapeHtml(result.area)} m² | <strong>Perimeter:</strong> ${escapeHtml(result.perimeter)} m</p>
           </div>
         </div>
       `;
@@ -1216,17 +1217,17 @@ export function initLPSHandlers(proyekId) {
         <div class="result-card">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
             <div style="text-align: center;">
-              <div class="metric-value" style="font-size: 1.2rem;">${angle}°</div>
+              <div class="metric-value" style="font-size: 1.2rem;">${escapeHtml(angle)}°</div>
               <div class="metric-label">Sudut Perlindungan</div>
             </div>
             <div style="text-align: center;">
-              <div class="metric-value" style="font-size: 1.2rem;">${result.groundRadius}m</div>
+              <div class="metric-value" style="font-size: 1.2rem;">${escapeHtml(result.groundRadius)}m</div>
               <div class="metric-label">Radius di Tanah</div>
             </div>
           </div>
           <div style="font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.6;">
-            <p><strong>Tinggi Rod:</strong> ${result.rodHeight}m</p>
-            <p>Zona perlindungan berbentuk kerucut dengan sudut ${angle}°</p>
+            <p><strong>Tinggi Rod:</strong> ${escapeHtml(result.rodHeight)}m</p>
+            <p>Zona perlindungan berbentuk kerucut dengan sudut ${escapeHtml(angle)}°</p>
           </div>
         </div>
       `;
@@ -1250,7 +1251,7 @@ export function initLPSHandlers(proyekId) {
     const soilClass = classifySoil(rho);
     document.getElementById('lps-soil-class').innerHTML = `
       <span style="color: ${soilClass.type === 'VERY_WET' ? 'var(--success-400)' : soilClass.type === 'DRY' ? 'var(--warning-400)' : 'var(--text-tertiary)'}">
-        ${soilClass.label} - ${soilClass.description} (${soilClass.groundingDifficulty})
+        ${escapeHtml(soilClass.label)} - ${escapeHtml(soilClass.description)} (${escapeHtml(soilClass.groundingDifficulty)})
       </span>
     `;
     
@@ -1263,12 +1264,12 @@ export function initLPSHandlers(proyekId) {
       resultContainer.innerHTML = `
         <div class="result-card">
           <div style="text-align: center; margin-bottom: 16px;">
-            <div class="metric-value" style="font-size: 2rem; color: ${result <= target.max ? 'var(--success-400)' : 'var(--warning-400)'}">${result}Ω</div>
+            <div class="metric-value" style="font-size: 2rem; color: ${result <= target.max ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(result)}Ω</div>
             <div class="metric-label">Resistansi Single Rod</div>
           </div>
           <div style="font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.6;">
-            <p><strong>Jenis Tanah:</strong> ${soilClass.label}</p>
-            <p><strong>Target SNI:</strong> <span style="color: ${result <= target.max ? 'var(--success-400)' : 'var(--warning-400)'}">${target.description} ${result <= target.max ? '✓' : '✗'}</span></p>
+            <p><strong>Jenis Tanah:</strong> ${escapeHtml(soilClass.label)}</p>
+            <p><strong>Target SNI:</strong> <span style="color: ${result <= target.max ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(target.description)} ${result <= target.max ? '✓' : '✗'}</span></p>
           </div>
         </div>
       `;
@@ -1296,12 +1297,12 @@ export function initLPSHandlers(proyekId) {
       resultContainer.innerHTML = `
         <div class="result-card">
           <div style="text-align: center; margin-bottom: 16px;">
-            <div class="metric-value">${rho}Ω.m</div>
+            <div class="metric-value">${escapeHtml(rho)}Ω.m</div>
             <div class="metric-label">Resistivitas Tanah (ρ = 2πaR)</div>
           </div>
           <div style="font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.6;">
-            <p><strong>Klasifikasi:</strong> <span style="color: ${soilClass.type === 'VERY_WET' ? 'var(--success-400)' : soilClass.type === 'DRY' ? 'var(--warning-400)' : 'var(--brand-400)'}">${soilClass.label}</span></p>
-            <p><strong>Kesulitan:</strong> ${soilClass.groundingDifficulty}</p>
+            <p><strong>Klasifikasi:</strong> <span style="color: ${soilClass.type === 'VERY_WET' ? 'var(--success-400)' : soilClass.type === 'DRY' ? 'var(--warning-400)' : 'var(--brand-400)'}">${escapeHtml(soilClass.label)}</span></p>
+            <p><strong>Kesulitan:</strong> ${escapeHtml(soilClass.groundingDifficulty)}</p>
           </div>
         </div>
       `;
@@ -1330,12 +1331,12 @@ export function initLPSHandlers(proyekId) {
       resultContainer.innerHTML = `
         <div class="result-card">
           <div style="text-align: center; margin-bottom: 16px;">
-            <div class="metric-value" style="font-size: 2rem; color: ${result <= 5 ? 'var(--success-400)' : result <= 10 ? 'var(--warning-400)' : 'var(--danger-400)'}">${result}Ω</div>
-            <div class="metric-label">Resistansi Total (${n} rods)</div>
+            <div class="metric-value" style="font-size: 2rem; color: ${result <= 5 ? 'var(--success-400)' : result <= 10 ? 'var(--warning-400)' : 'var(--danger-400)'}">${escapeHtml(result)}Ω</div>
+            <div class="metric-label">Resistansi Total (${escapeHtml(n)} rods)</div>
           </div>
           <div style="font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.6;">
-            <p><strong>Single Rod:</strong> ${singleR}Ω | <strong>Jumlah:</strong> ${n} rods</p>
-            <p><strong>Jarak:</strong> ${spacing}m | <strong>Faktor koreksi:</strong> ~${(result * n / singleR).toFixed(2)}</p>
+            <p><strong>Single Rod:</strong> ${escapeHtml(singleR)}Ω | <strong>Jumlah:</strong> ${escapeHtml(n)} rods</p>
+            <p><strong>Jarak:</strong> ${escapeHtml(spacing)}m | <strong>Faktor koreksi:</strong> ~${(result * n / singleR).toFixed(2)}</p>
           </div>
         </div>
       `;
@@ -1367,12 +1368,12 @@ export function initLPSHandlers(proyekId) {
                       border-radius: 10px; border: 1px solid ${compliance.isCompliant ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
           <div style="font-weight: 700; color: ${compliance.isCompliant ? 'var(--success-400)' : 'var(--danger-400)'}; margin-bottom: 8px;">
             <i class="fas ${compliance.isCompliant ? 'fa-check-circle' : 'fa-exclamation-triangle'}" style="margin-right: 8px;"></i>
-            ${compliance.status}
+            ${escapeHtml(compliance.status)}
           </div>
           <div style="font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.6;">
-            <p><strong>Jarak Aktual:</strong> ${compliance.actualDistance}m</p>
-            <p><strong>Margin:</strong> ${compliance.margin > 0 ? '+' : ''}${compliance.margin}m</p>
-            ${compliance.alert ? `<p style="color: var(--danger-400);">${compliance.alert}</p>` : ''}
+            <p><strong>Jarak Aktual:</strong> ${escapeHtml(compliance.actualDistance)}m</p>
+            <p><strong>Margin:</strong> ${compliance.margin > 0 ? '+' : ''}${escapeHtml(compliance.margin)}m</p>
+            ${compliance.alert ? `<p style="color: var(--danger-400);">${escapeHtml(compliance.alert)}</p>` : ''}
           </div>
         </div>
       `;
@@ -1384,11 +1385,11 @@ export function initLPSHandlers(proyekId) {
       resultContainer.innerHTML = `
         <div class="result-card">
           <div style="text-align: center; margin-bottom: 16px;">
-            <div class="metric-value" style="font-size: 2rem;">${requiredDistance}m</div>
+            <div class="metric-value" style="font-size: 2rem;">${escapeHtml(requiredDistance)}m</div>
             <div class="metric-label">Jarak Aman S = ki × kc × L / km</div>
           </div>
           <div style="font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.6;">
-            <p><strong>ki (LPL):</strong> ${ki} | <strong>kc:</strong> ${kc} | <strong>L:</strong> ${L}m</p>
+            <p><strong>ki (LPL):</strong> ${escapeHtml(ki)} | <strong>kc:</strong> ${escapeHtml(kc)} | <strong>L:</strong> ${escapeHtml(L)}m</p>
             <p style="margin-top: 8px;">Jarak minimum antara down conductor dan instalasi logam untuk mencegah side flash</p>
           </div>
           ${complianceHtml}
@@ -1434,22 +1435,22 @@ export function initLPSHandlers(proyekId) {
         resultContainer.innerHTML = `
           <div class="result-card">
             <div style="text-align: center; margin-bottom: 16px;">
-              <div class="metric-value" style="font-size: 2rem; color: ${result.isPass ? 'var(--success-400)' : 'var(--danger-400)'}">${result.correctedResistance}Ω</div>
+              <div class="metric-value" style="font-size: 2rem; color: ${result.isPass ? 'var(--success-400)' : 'var(--danger-400)'}">${escapeHtml(result.correctedResistance)}Ω</div>
               <div class="metric-label">Resistansi Terkoreksi (20°C)</div>
             </div>
             <div style="font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.6;">
-              <p><strong>Terukur:</strong> ${result.measuredResistance}Ω @ ${result.temperature}°C</p>
-              <p><strong>Target:</strong> < ${result.targetResistance}Ω</p>
-              <p><strong>Margin:</strong> ${result.margin > 0 ? '+' : ''}${result.margin}Ω</p>
+              <p><strong>Terukur:</strong> ${escapeHtml(result.measuredResistance)}Ω @ ${escapeHtml(result.temperature)}°C</p>
+              <p><strong>Target:</strong> < ${escapeHtml(result.targetResistance)}Ω</p>
+              <p><strong>Margin:</strong> ${result.margin > 0 ? '+' : ''}${escapeHtml(result.margin)}Ω</p>
             </div>
             <div style="margin-top: 16px; padding: 12px; background: ${result.isPass ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; 
                         border-radius: 8px; text-align: center;">
               <span style="color: ${result.isPass ? 'var(--success-400)' : 'var(--danger-400)'}; font-weight: 700; font-size: 1rem;">
                 <i class="fas ${result.isPass ? 'fa-check-circle' : 'fa-times-circle'}" style="margin-right: 8px;"></i>
-                ${result.status}
+                ${escapeHtml(result.status)}
               </span>
             </div>
-            ${result.recommendation ? `<div style="margin-top: 12px; font-size: 0.75rem; color: var(--text-tertiary);">${result.recommendation}</div>` : ''}
+            ${result.recommendation ? `<div style="margin-top: 12px; font-size: 0.75rem; color: var(--text-tertiary);">${escapeHtml(result.recommendation)}</div>` : ''}
           </div>
         `;
       }
@@ -1479,21 +1480,21 @@ export function initLPSHandlers(proyekId) {
       resultContainer.innerHTML = `
         <div class="result-card">
           <div style="text-align: center; margin-bottom: 16px;">
-            <div class="metric-value" style="font-size: 2rem; color: ${result.isPass ? 'var(--success-400)' : 'var(--danger-400)'}">${result.resistance}Ω</div>
+            <div class="metric-value" style="font-size: 2rem; color: ${result.isPass ? 'var(--success-400)' : 'var(--danger-400)'}">${escapeHtml(result.resistance)}Ω</div>
             <div class="metric-label">Resistansi Joint</div>
           </div>
           <div style="font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.6;">
-            <p><strong>Batas:</strong> < ${result.limit}Ω (SNI 03-7015-2014)</p>
-            <p><strong>Quality:</strong> ${result.quality}</p>
+            <p><strong>Batas:</strong> < ${escapeHtml(result.limit)}Ω (SNI 03-7015-2014)</p>
+            <p><strong>Quality:</strong> ${escapeHtml(result.quality)}</p>
           </div>
           <div style="margin-top: 16px; padding: 12px; background: ${result.isPass ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; 
                       border-radius: 8px; text-align: center;">
             <span style="color: ${result.isPass ? 'var(--success-400)' : 'var(--danger-400)'}; font-weight: 700; font-size: 1rem;">
               <i class="fas ${result.isPass ? 'fa-check-circle' : 'fa-times-circle'}" style="margin-right: 8px;"></i>
-              ${result.status}
+              ${escapeHtml(result.status)}
             </span>
           </div>
-          ${!result.isPass ? `<div style="margin-top: 12px; font-size: 0.75rem; color: var(--danger-400);">${result.recommendation}</div>` : ''}
+          ${!result.isPass ? `<div style="margin-top: 12px; font-size: 0.75rem; color: var(--danger-400);">${escapeHtml(result.recommendation)}</div>` : ''}
         </div>
       `;
     }
@@ -1566,7 +1567,7 @@ export function initLPSHandlers(proyekId) {
         const soilClass = classifySoil(rho);
         document.getElementById('lps-soil-class').innerHTML = `
           <span style="color: ${soilClass.type === 'VERY_WET' ? 'var(--success-400)' : soilClass.type === 'DRY' ? 'var(--warning-400)' : 'var(--text-tertiary)'}">
-            ${soilClass.label} - ${soilClass.description}
+            ${escapeHtml(soilClass.label)} - ${escapeHtml(soilClass.description)}
           </span>
         `;
       }

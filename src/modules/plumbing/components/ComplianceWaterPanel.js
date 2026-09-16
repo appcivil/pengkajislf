@@ -5,6 +5,7 @@
 
 import { globalEventBus } from '../../../core/EventBus.js';
 
+import { escapeHtml } from '../../../lib/safe-markdown.js';
 export class ComplianceWaterPanel extends HTMLElement {
   constructor() {
     super();
@@ -582,9 +583,9 @@ export class ComplianceWaterPanel extends HTMLElement {
 
       container.innerHTML = data.items.map(item => `
         <div class="check-item">
-          <span class="check-name">${item.name}</span>
+          <span class="check-name">${escapeHtml(item.name)}</span>
           <div style="display: flex; align-items: center;">
-            <span class="check-value" title="Standard: ${item.standard}">${item.value}</span>
+            <span class="check-value" title="Standard: ${escapeHtml(item.standard)}">${escapeHtml(item.value)}</span>
             <span class="status ${item.pass ? 'pass' : 'fail'}">${item.pass ? '✓ PASS' : '✗ FAIL'}</span>
           </div>
         </div>
@@ -708,7 +709,7 @@ export class ComplianceWaterPanel extends HTMLElement {
     
     if (recs.length > 0) {
       recSection.style.display = 'block';
-      recList.innerHTML = recs.map(r => `<li>${r}</li>`).join('');
+      recList.innerHTML = recs.map(r => `<li>${escapeHtml(r)}</li>`).join('');
     } else {
       recSection.style.display = 'none';
     }

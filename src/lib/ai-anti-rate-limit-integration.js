@@ -412,7 +412,8 @@ export {
   DOCUMENT_ANALYSIS_SCHEMA,
   getRuleEngine,
   getWorkflowOrchestrator,
-  VALIDATION_RULES
+  VALIDATION_RULES,
+  checkAIHealth
 };
 
 // Default export untuk convenience

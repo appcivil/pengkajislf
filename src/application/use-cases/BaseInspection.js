@@ -5,6 +5,7 @@
 // ============================================================
 
 import { navigate } from '../../lib/router.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { showSuccess, showError, showInfo } from '../../components/toast.js';
 import { InspectionRepository } from '../../infrastructure/persistence/InspectionRepository.js';
 
@@ -654,9 +655,9 @@ export class BaseInspection {
     }
 
     return `
-      <div id="${this.config.moduleName}-inspection-page" class="inspection-page" style="padding: var(--space-6); max-width: 1600px; margin: 0 auto;">
+      <div id="${escapeHtml(this.config.moduleName)}-inspection-page" class="inspection-page" style="padding: var(--space-6); max-width: 1600px; margin: 0 auto;">
         ${this.renderHeader()}
-        <div id="${this.config.moduleName}-content" class="inspection-content">
+        <div id="${escapeHtml(this.config.moduleName)}-content" class="inspection-content">
           ${this.renderTabContent(this._state.currentTab)}
         </div>
         ${this.renderModals()}
@@ -676,19 +677,19 @@ export class BaseInspection {
       <div class="card-quartz inspection-header-card" style="padding: var(--space-6); margin-bottom: var(--space-6);">
         <div class="flex-between" style="margin-bottom: 20px;">
           <div style="display: flex; align-items: center; gap: 16px;">
-            <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, ${accentColor}25, ${accentColor}15); display: flex; align-items: center; justify-content: center; color: ${accentColor};">
+            <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, ${escapeHtml(accentColor)}25, ${escapeHtml(accentColor)}15); display: flex; align-items: center; justify-content: center; color: ${escapeHtml(accentColor)};">
               <i class="fas fa-${icon}" style="font-size: 1.4rem;"></i>
             </div>
             <div>
-              <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: ${accentColor};">${phaseCode}</div>
-              <h3 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1rem; color: white; margin: 0;">${title}</h3>
+              <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: ${escapeHtml(accentColor)};">${escapeHtml(phaseCode)}</div>
+              <h3 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1rem; color: white; margin: 0;">${escapeHtml(title)}</h3>
             </div>
           </div>
           <div style="display: flex; gap: 8px;">
-            <span class="badge" style="background: ${accentColor}15; color: ${accentColor}; border: 1px solid ${accentColor}30; font-size: 10px;">
+            <span class="badge" style="background: ${escapeHtml(accentColor)}15; color: ${escapeHtml(accentColor)}; border: 1px solid ${escapeHtml(accentColor)}30; font-size: 10px;">
               <i class="fas fa-book" style="margin-right: 6px;"></i>${badge}
             </span>
-            <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${projectId}'}" style="color: var(--text-tertiary);">
+            <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${escapeHtml(projectId)}'}" style="color: var(--text-tertiary);">
               <i class="fas fa-arrow-left" style="margin-right: 6px;"></i> Kembali
             </button>
           </div>
@@ -696,7 +697,7 @@ export class BaseInspection {
         
         ${description ? `
         <p style="font-size: 0.75rem; color: var(--text-tertiary); line-height: 1.5; margin-bottom: 20px;">
-          ${description}
+          ${escapeHtml(description)}
         </p>
         ` : ''}
 
@@ -720,11 +721,11 @@ export class BaseInspection {
         : 'color: var(--text-tertiary);';
       
       return `
-        <button onclick="window._inspectionControllers['${this.config.moduleName}'].switchTab('${tab.id}')" 
+        <button onclick="window._inspectionControllers['${escapeHtml(this.config.moduleName)}'].switchTab('${escapeHtml(tab.id)}')" 
                 class="inspection-tab-item ${isActive ? 'active' : ''}"
-                data-tab="${tab.id}"
-                style="flex: 1; min-width: 120px; height: 44px; border: none; border-radius: 10px; cursor: pointer; font-family: var(--font-mono); font-size: 10px; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s; ${activeStyle}">
-          <i class="fas fa-${tab.icon}"></i> ${tab.label}
+                data-tab="${escapeHtml(tab.id)}"
+                style="flex: 1; min-width: 120px; height: 44px; border: none; border-radius: 10px; cursor: pointer; font-family: var(--font-mono); font-size: 10px; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s; ${escapeHtml(activeStyle)}">
+          <i class="fas fa-${tab.icon}"></i> ${escapeHtml(tab.label)}
         </button>
       `;
     }).join('');
@@ -742,7 +743,7 @@ export class BaseInspection {
    */
   renderLoading() {
     return `
-      <div id="${this.config.moduleName}-inspection-page" class="inspection-page" style="padding: var(--space-6); max-width: 1600px; margin: 0 auto;">
+      <div id="${escapeHtml(this.config.moduleName)}-inspection-page" class="inspection-page" style="padding: var(--space-6); max-width: 1600px; margin: 0 auto;">
         <div class="inspection-loading-skeleton">
           <div style="padding: var(--space-6); background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border-subtle);">
             <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
@@ -777,13 +778,13 @@ export class BaseInspection {
    */
   renderError(error) {
     return `
-      <div id="${this.config.moduleName}-inspection-page" class="inspection-page" style="padding: var(--space-6); max-width: 1600px; margin: 0 auto;">
+      <div id="${escapeHtml(this.config.moduleName)}-inspection-page" class="inspection-page" style="padding: var(--space-6); max-width: 1600px; margin: 0 auto;">
         <div class="card-quartz" style="padding: 60px 40px; text-align: center;">
           <div style="width: 80px; height: 80px; border-radius: 24px; background: hsla(0, 80%, 60%, 0.15); display: flex; align-items: center; justify-content: center; color: var(--danger-400); margin: 0 auto 24px;">
             <i class="fas fa-exclamation-triangle" style="font-size: 2rem;"></i>
           </div>
           <h3 style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.3rem; color: white; margin-bottom: 12px;">Terjadi Kesalahan</h3>
-          <p style="font-size: 0.9rem; color: var(--text-tertiary); max-width: 400px; margin: 0 auto 24px;">${error.message}</p>
+          <p style="font-size: 0.9rem; color: var(--text-tertiary); max-width: 400px; margin: 0 auto 24px;">${escapeHtml(error.message)}</p>
           <button onclick="location.reload()" class="btn btn-primary" style="padding: 12px 24px; border-radius: 10px; background: var(--gradient-brand); color: white; border: none; cursor: pointer; font-family: var(--font-mono); font-size: 12px; font-weight: 700;">
             <i class="fas fa-redo" style="margin-right: 8px;"></i>Muat Ulang Halaman
           </button>

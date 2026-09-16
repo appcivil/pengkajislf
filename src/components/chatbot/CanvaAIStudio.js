@@ -1,3 +1,4 @@
+import { escapeHtml } from '../../lib/safe-markdown.js';
 /**
  * Canva AI Studio Component
  * AI-powered design and content creation studio
@@ -27,7 +28,7 @@ export class CanvaAIStudio {
             <button class="btn btn-icon" id="canva-help-btn">
               <i class="fas fa-question-circle"></i>
             </button>
-            <button class="btn btn-icon" id="canva-close-btn">
+            <button type="button" aria-label="Tutup" class="btn btn-icon" id="canva-close-btn">
               <i class="fas fa-times"></i>
             </button>
           </div>
@@ -304,7 +305,7 @@ export class CanvaAIStudio {
       <div class="generating-indicator">
         <div class="ai-spinner"></div>
         <p>AI sedang membuat desain...</p>
-        <span>${prompt}</span>
+        <span>${escapeHtml(prompt)}</span>
       </div>
     `;
 
@@ -332,12 +333,12 @@ export class CanvaAIStudio {
     const canvas = this.element.querySelector('#design-canvas');
     canvas.innerHTML = `
       <div class="generated-result">
-        <img src="${result.url}" alt="Generated design" />
+        <img src="${escapeHtml(result.url)}" alt="Generated design" />
         <div class="result-actions">
-          <button class="btn btn-secondary" onclick="this.closest('.generated-result').querySelector('img').download">
+          <button type="button" aria-label="Tutup" class="btn btn-secondary" onclick="this.closest('.generated-result').querySelector('img').download">
             <i class="fas fa-download"></i>
           </button>
-          <button class="btn btn-secondary">
+          <button type="button" aria-label="Ubah" class="btn btn-secondary">
             <i class="fas fa-edit"></i>
           </button>
         </div>

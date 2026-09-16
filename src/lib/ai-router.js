@@ -16,7 +16,9 @@ import { supabase } from './supabase.js';
 
 // ── Edge Function Proxy URL ───────────────────────────────────
 // Di production: set VITE_AI_PROXY_URL di .env ke URL Edge Function Anda
-// Contoh: https://hrzplcqeadhvbrfhlfuh.supabase.co/functions/v1/ai-proxy
+// Contoh: https://<project-ref>.supabase.co/functions/v1/ai-proxy
+// (ref proyek sengaja tidak ditulis di sini: repo ini publik, dan setiap
+//  pengguna harus memakai proyeknya sendiri — jangan hardcode ref produksi.)
 const AI_PROXY_URL = env.VITE_AI_PROXY_URL || '';
 const USE_PROXY = env.PROD && !!AI_PROXY_URL;
 
@@ -766,7 +768,21 @@ export async function callAI(model, prompt, options = {}) {
     return data.result;
   }
 
-  // Mode 2: Direct API call (development / fallback jika proxy belum di-deploy)
+  // Mode 2: Direct API call — HANYA pengembangan lokal.
+  //
+  // Sebelumnya cabang ini juga menjadi "fallback jika proxy belum di-deploy"
+  // di produksi. Itu berbahaya: kunci penyedia tersedia di `model.key`, dan
+  // setiap nilai `import.meta.env.VITE_*` disalin sebagai teks biasa ke dalam
+  // bundel publik. Bila VITE_AI_PROXY_URL lupa diisi saat build, aplikasi
+  // akan diam-diam memanggil penyedia AI langsung dari peramban.
+  // Sekarang produksi tanpa proxy = gagal jelas, bukan gagal senyap.
+  if (env.PROD) {
+    throw new Error(
+      'Produksi memerlukan Edge Function ai-proxy. Isi VITE_AI_PROXY_URL ' +
+      'lalu build ulang — lihat docs/SUPABASE-SETUP.md.'
+    );
+  }
+
   switch (model.vendor) {
     case 'google': return await fetchGemini(model, prompt, options);
     case 'openai': return await fetchKimi(model, prompt); // Kimi uses OpenAI-compatible API

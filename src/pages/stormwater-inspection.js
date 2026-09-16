@@ -11,6 +11,8 @@
  */
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml, escapeHtml as escHtml } from '../lib/safe-markdown.js';
+import { setBusy } from '../lib/a11y.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 
@@ -111,7 +113,7 @@ function renderPage() {
       <div class="card-quartz" style="padding: var(--space-6); margin-bottom: var(--space-4); flex-shrink: 0;">
         <div class="flex-between flex-stack" style="align-items: flex-start; gap: var(--space-4);">
           <div>
-            <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id:'${currentProjectId}'})" 
+            <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id:'${escapeHtml(currentProjectId)}'})" 
               style="margin-bottom: 12px; color: var(--brand-300); padding: 0; font-weight: 700; letter-spacing: 1px;">
               <i class="fas fa-arrow-left" style="margin-right: 8px;"></i> KEMBALI KE PROYEK
             </button>
@@ -498,9 +500,22 @@ function initEventListeners() {
   const btnLoad = document.getElementById('btn-load-data');
   if (btnLoad) {
     btnLoad.addEventListener('click', async () => {
-      await loadStormwaterData();
-      renderCurrentTab();
-      showSuccess('Data berhasil dimuat');
+      // Memuat data menembak beberapa permintaan berurutan. Tanpa penjagaan,
+      // klik kedua saat proses berjalan memicu satu set permintaan lagi yang
+      // tumpang tindih — hasilnya data ganda dan pesan "berhasil dimuat"
+      // muncul dua kali. setBusy() menonaktifkan tombol, menandai aria-busy
+      // untuk pembaca layar, dan mengembalikan keadaan aslinya setelah selesai.
+      setBusy(btnLoad, true, 'Memuat data…');
+      try {
+        await loadStormwaterData();
+        renderCurrentTab();
+        showSuccess('Data berhasil dimuat');
+      } catch (err) {
+        console.error('[Stormwater] Gagal memuat data:', err);
+        showError('Data gagal dimuat. Periksa koneksi lalu coba lagi.');
+      } finally {
+        setBusy(btnLoad, false);
+      }
     });
   }
 
@@ -633,16 +648,6 @@ function downloadFile(content, filename, mimeType) {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-}
-
-function escHtml(str) {
-  if (!str) return '';
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
 }
 
 export default stormwaterInspectionPage;

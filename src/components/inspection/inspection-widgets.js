@@ -1,3 +1,4 @@
+import { escapeHtml } from '../../lib/safe-markdown.js';
 // ============================================================
 // INSPECTION WIDGETS - UI Factory untuk Modul Pemeriksaan SLF
 // Menghentikan duplikasi UI di 14 file inspection
@@ -59,20 +60,20 @@ export function renderHeaderCard(config) {
     <div class="card-quartz inspection-header-card" style="padding: var(--space-6); margin-bottom: var(--space-6);">
       <div class="flex-between" style="margin-bottom: 20px;">
         <div style="display: flex; align-items: center; gap: 16px;">
-          <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, ${gradientFrom}, ${gradientTo}); display: flex; align-items: center; justify-content: center; color: ${accentColor};">
+          <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, ${escapeHtml(gradientFrom)}, ${escapeHtml(gradientTo)}); display: flex; align-items: center; justify-content: center; color: ${escapeHtml(accentColor)};">
             <i class="fas fa-${icon}" style="font-size: 1.4rem;"></i>
           </div>
           <div>
-            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: ${accentColor};">${phase}</div>
-            <h3 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1rem; color: white; margin: 0;">${title}</h3>
+            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: ${escapeHtml(accentColor)};">${escapeHtml(phase)}</div>
+            <h3 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1rem; color: white; margin: 0;">${escapeHtml(title)}</h3>
           </div>
         </div>
         <div style="display: flex; gap: 8px;">
-          <span class="badge" style="background: ${gradientFrom}; color: ${accentColor}; border: 1px solid ${gradientTo}; font-size: 10px;">
+          <span class="badge" style="background: ${escapeHtml(gradientFrom)}; color: ${escapeHtml(accentColor)}; border: 1px solid ${escapeHtml(gradientTo)}; font-size: 10px;">
             <i class="fas fa-book" style="margin-right: 6px;"></i>${badge}
           </span>
           ${projectId ? `
-          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${projectId}'}" style="color: var(--text-tertiary);">
+          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${escapeHtml(projectId)}'}" style="color: var(--text-tertiary);">
             <i class="fas fa-arrow-left" style="margin-right: 6px;"></i> Kembali
           </button>
           ` : ''}
@@ -81,7 +82,7 @@ export function renderHeaderCard(config) {
       
       ${description ? `
       <p style="font-size: 0.75rem; color: var(--text-tertiary); line-height: 1.5; margin-bottom: 20px;">
-        ${description}
+        ${escapeHtml(description)}
       </p>
       ` : ''}
 
@@ -117,11 +118,11 @@ export function renderTabNavigation(tabs, activeTab, onSwitchCallback) {
       : 'color: var(--text-tertiary);';
     
     return `
-      <button onclick="${onSwitchCallback}('${tab.id}')" 
+      <button onclick="${escapeHtml(onSwitchCallback)}('${escapeHtml(tab.id)}')" 
               class="inspection-tab-item ${isActive ? 'active' : ''}"
-              data-tab="${tab.id}"
-              style="flex: 1; min-width: 120px; height: 44px; border: none; border-radius: 10px; cursor: pointer; font-family: var(--font-mono); font-size: 10px; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s; ${activeStyle}">
-        <i class="fas fa-${tab.icon}"></i> ${tab.label}
+              data-tab="${escapeHtml(tab.id)}"
+              style="flex: 1; min-width: 120px; height: 44px; border: none; border-radius: 10px; cursor: pointer; font-family: var(--font-mono); font-size: 10px; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s; ${escapeHtml(activeStyle)}">
+        <i class="fas fa-${tab.icon}"></i> ${escapeHtml(tab.label)}
       </button>
     `;
   }).join('');
@@ -148,13 +149,13 @@ export function renderTabNavigation(tabs, activeTab, onSwitchCallback) {
  */
 export function renderStatCard({ icon, value, label, sublabel = '', accentColor = 'var(--brand-400)' }) {
   return `
-    <div class="card-quartz inspection-stat-card" style="padding: 20px; text-align: center; background: linear-gradient(135deg, ${accentColor}15, ${accentColor}08);">
-      <div style="width: 48px; height: 48px; border-radius: 14px; background: ${accentColor}20; display: flex; align-items: center; justify-content: center; color: ${accentColor}; margin: 0 auto 12px;">
+    <div class="card-quartz inspection-stat-card" style="padding: 20px; text-align: center; background: linear-gradient(135deg, ${escapeHtml(accentColor)}15, ${escapeHtml(accentColor)}08);">
+      <div style="width: 48px; height: 48px; border-radius: 14px; background: ${escapeHtml(accentColor)}20; display: flex; align-items: center; justify-content: center; color: ${escapeHtml(accentColor)}; margin: 0 auto 12px;">
         <i class="fas fa-${icon}" style="font-size: 1.4rem;"></i>
       </div>
-      <div style="font-size: 2rem; font-weight: 800; color: white; margin-bottom: 4px;">${value}</div>
-      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${label}</div>
-      ${sublabel ? `<div style="font-size: 0.65rem; color: ${accentColor}; margin-top: 4px;">${sublabel}</div>` : ''}
+      <div style="font-size: 2rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(value)}</div>
+      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(label)}</div>
+      ${sublabel ? `<div style="font-size: 0.65rem; color: ${escapeHtml(accentColor)}; margin-top: 4px;">${escapeHtml(sublabel)}</div>` : ''}
     </div>
   `;
 }
@@ -169,7 +170,7 @@ export function renderStatsGrid(stats) {
   const cards = stats.map(stat => renderStatCard(stat)).join('');
   return `
     <div class="inspection-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-      ${cards}
+      ${escapeHtml(cards)}
     </div>
   `;
 }
@@ -197,8 +198,8 @@ export function renderComplianceBadge(status, size = 'md') {
   };
 
   return `
-    <span class="badge compliance-badge" style="background: ${style.bg}; color: ${style.color}; border: 1px solid ${style.bg}; border-radius: 6px; font-weight: 600; ${sizeStyles[size]};">
-      ${style.text}
+    <span class="badge compliance-badge" style="background: ${escapeHtml(style.bg)}; color: ${escapeHtml(style.color)}; border: 1px solid ${escapeHtml(style.bg)}; border-radius: 6px; font-weight: 600; ${sizeStyles[size]};">
+      ${escapeHtml(style.text)}
     </span>
   `;
 }
@@ -217,13 +218,13 @@ export function renderSectionCard({ title, icon, content, accentColor = 'var(--b
   return `
     <div class="card-quartz inspection-section-card" style="padding: var(--space-5); margin-bottom: var(--space-4);">
       <div class="inspection-section-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle);">
-        <div style="width: 36px; height: 36px; border-radius: 10px; background: ${accentColor}15; display: flex; align-items: center; justify-content: center; color: ${accentColor};">
+        <div style="width: 36px; height: 36px; border-radius: 10px; background: ${escapeHtml(accentColor)}15; display: flex; align-items: center; justify-content: center; color: ${escapeHtml(accentColor)};">
           <i class="fas fa-${icon}"></i>
         </div>
-        <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1rem; color: white; margin: 0;">${title}</h4>
+        <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1rem; color: white; margin: 0;">${escapeHtml(title)}</h4>
       </div>
       <div class="inspection-section-content">
-        ${content}
+        ${escapeHtml(content)}
       </div>
     </div>
   `;
@@ -241,15 +242,15 @@ export function renderSectionCard({ title, icon, content, accentColor = 'var(--b
  */
 export function renderDataTable({ headers, rows, align = [], striped = true }) {
   const headerHtml = headers.map((h, i) => 
-    `<th style="text-align: ${align[i] || 'left'}; padding: 12px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1px;">${h}</th>`
+    `<th style="text-align: ${align[i] || 'left'}; padding: 12px; font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1px;">${escapeHtml(h)}</th>`
   ).join('');
 
   const rowsHtml = rows.map((row, rowIdx) => {
     const bgStyle = striped && rowIdx % 2 === 1 ? 'background: hsla(220, 20%, 20%, 0.3);' : '';
     const cells = row.map((cell, i) => 
-      `<td style="text-align: ${align[i] || 'left'}; padding: 12px; font-size: 0.8rem; color: var(--text-secondary); ${bgStyle}">${cell}</td>`
+      `<td style="text-align: ${align[i] || 'left'}; padding: 12px; font-size: 0.8rem; color: var(--text-secondary); ${escapeHtml(bgStyle)}">${escapeHtml(cell)}</td>`
     ).join('');
-    return `<tr>${cells}</tr>`;
+    return `<tr>${escapeHtml(cells)}</tr>`;
   }).join('');
 
   return `
@@ -283,10 +284,10 @@ export function renderActionBar(buttons) {
   };
 
   const buttonsHtml = buttons.map(btn => `
-    <button onclick="${btn.onclick}" 
+    <button onclick="${escapeHtml(btn.onclick)}" 
             class="btn inspection-action-btn"
             style="padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-family: var(--font-mono); font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 8px; transition: all 0.2s; ${variantStyles[btn.variant] || variantStyles.secondary}">
-      <i class="fas fa-${btn.icon}"></i> ${btn.label}
+      <i class="fas fa-${btn.icon}"></i> ${escapeHtml(btn.label)}
     </button>
   `).join('');
 
@@ -314,11 +315,11 @@ export function renderEmptyState({ icon = 'inbox', title = 'Data Kosong', messag
       <div style="width: 64px; height: 64px; border-radius: 20px; background: hsla(220, 20%, 20%, 0.5); display: flex; align-items: center; justify-content: center; color: var(--text-tertiary); margin: 0 auto 20px;">
         <i class="fas fa-${icon}" style="font-size: 1.8rem;"></i>
       </div>
-      <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--text-primary); margin-bottom: 8px;">${title}</h4>
-      <p style="font-size: 0.85rem; color: var(--text-tertiary); max-width: 300px; margin: 0 auto 20px;">${message}</p>
+      <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--text-primary); margin-bottom: 8px;">${escapeHtml(title)}</h4>
+      <p style="font-size: 0.85rem; color: var(--text-tertiary); max-width: 300px; margin: 0 auto 20px;">${escapeHtml(message)}</p>
       ${actionLabel ? `
-      <button onclick="${actionOnClick}" class="btn btn-primary" style="padding: 10px 20px; border-radius: 10px; background: var(--gradient-brand); color: white; border: none; cursor: pointer; font-family: var(--font-mono); font-size: 11px; font-weight: 700;">
-        <i class="fas fa-plus" style="margin-right: 8px;"></i>${actionLabel}
+      <button onclick="${escapeHtml(actionOnClick)}" class="btn btn-primary" style="padding: 10px 20px; border-radius: 10px; background: var(--gradient-brand); color: white; border: none; cursor: pointer; font-family: var(--font-mono); font-size: 11px; font-weight: 700;">
+        <i class="fas fa-plus" style="margin-right: 8px;"></i>${escapeHtml(actionLabel)}
       </button>
       ` : ''}
     </div>
@@ -395,10 +396,10 @@ export function renderScoreIndicator({ score, label, size = 'md' }) {
 
   return `
     <div class="inspection-score-indicator" style="text-align: center;">
-      <div style="font-size: ${styles.fontSize}; font-weight: 800; color: ${color}; margin-bottom: 8px;">${score}</div>
-      ${label ? `<div style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 12px;">${label}</div>` : ''}
-      <div style="width: 100%; height: ${styles.height}; background: hsla(220, 20%, 20%, 0.5); border-radius: ${styles.height}; overflow: hidden;">
-        <div style="width: ${score}%; height: 100%; background: ${color}; border-radius: ${styles.height}; transition: width 0.5s ease;"></div>
+      <div style="font-size: ${escapeHtml(styles.fontSize)}; font-weight: 800; color: ${escapeHtml(color)}; margin-bottom: 8px;">${escapeHtml(score)}</div>
+      ${label ? `<div style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 12px;">${escapeHtml(label)}</div>` : ''}
+      <div style="width: 100%; height: ${escapeHtml(styles.height)}; background: hsla(220, 20%, 20%, 0.5); border-radius: ${escapeHtml(styles.height)}; overflow: hidden;">
+        <div style="width: ${escapeHtml(score)}%; height: 100%; background: ${escapeHtml(color)}; border-radius: ${escapeHtml(styles.height)}; transition: width 0.5s ease;"></div>
       </div>
     </div>
   `;
@@ -423,16 +424,16 @@ export function renderModal({ id, title, content, size = 'md' }) {
   };
 
   return `
-    <div id="${id}" class="inspection-modal" style="display: none; position: fixed; inset: 0; background: hsla(220, 25%, 5%, 0.8); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
+    <div id="${escapeHtml(id)}" class="inspection-modal" style="display: none; position: fixed; inset: 0; background: hsla(220, 25%, 5%, 0.8); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
       <div class="card-quartz inspection-modal-content" style="${sizeStyles[size]} width: 100%; max-height: 90vh; overflow-y: auto; padding: 0; border-radius: 16px;">
         <div class="inspection-modal-header" style="display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border-subtle);">
-          <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.1rem; color: white; margin: 0;">${title}</h4>
-          <button onclick="document.getElementById('${id}').style.display='none'" style="background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 1.2rem; padding: 4px;">
+          <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.1rem; color: white; margin: 0;">${escapeHtml(title)}</h4>
+          <button type="button" aria-label="Tutup" onclick="document.getElementById('${escapeHtml(id)}').style.display='none'" style="background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 1.2rem; padding: 4px;">
             <i class="fas fa-times"></i>
           </button>
         </div>
         <div class="inspection-modal-body" style="padding: 24px;">
-          ${content}
+          ${escapeHtml(content)}
         </div>
       </div>
     </div>

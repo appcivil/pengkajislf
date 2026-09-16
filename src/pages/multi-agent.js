@@ -1,11 +1,13 @@
 import { generateSLFReport } from '../lib/report-service.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { supabase } from '../lib/supabase.js';
 import { AGENT_CONFIG } from '../lib/multi-agent-service.js';
-import { showError, showSuccess } from '../components/toast.js';
+import { showError, showSuccess, showWarning } from '../components/toast.js';
 import { initializeProjectFolder, uploadToGoogleDrive } from '../lib/drive.js';
 
 let _sessionResults = {};
 let _selectedProyekId = null;
+let _proyekError = null;
 let _editingAgentId = null;
 let _cachedProyekList = [];
 let _isRunningAll = false;
@@ -15,13 +17,27 @@ let _isRunningAll = false;
  */
 export async function multiAgentPage(params = {}) {
   _selectedProyekId = params.proyekId || null;
-  
+
+  // Galat pengambilan daftar proyek disimpan supaya dapat ditampilkan di
+  // halaman. Sebelumnya galat hanya masuk console.error: bila jaringan mati
+  // atau sesi kedaluwarsa, pengguna melihat dropdown "-- Pilih Proyek --"
+  // yang kosong tanpa satu pun penjelasan, dan wajar menyimpulkan bahwa
+  // memang belum ada proyek.
+  _proyekError = null;
   if (_cachedProyekList.length === 0 || params.refresh) {
     try {
       _cachedProyekList = await fetchProyekList();
     } catch (err) {
       console.error("Fetch projects failed:", err);
+      _proyekError = err?.message || 'Tidak dapat menghubungi server.';
+      showError('Daftar proyek gagal dimuat. Periksa koneksi lalu muat ulang halaman.', 0);
     }
+  }
+
+  // Berhasil terhubung tetapi memang belum ada proyek sama sekali — beda
+  // masalah, beda pula yang harus dikatakan kepada pengguna.
+  if (!_proyekError && _cachedProyekList.length === 0) {
+    showWarning('Belum ada proyek. Tambahkan proyek terlebih dahulu agar agen dapat menganalisis.');
   }
 
   return buildHtml();
@@ -55,7 +71,7 @@ function renderCommandBridge() {
         <div style="display:flex; gap:12px">
           <select id="select-proyek-bridge" class="form-input" style="width:280px; border-radius:14px; background:white">
             <option value="">-- Pilih Proyek --</option>
-            ${_cachedProyekList.map(p => `<option value="${p.id}" ${p.id === _selectedProyekId ? 'selected' : ''}>${p.nama_bangunan}</option>`).join('')}
+            ${_cachedProyekList.map(p => `<option value="${escapeHtml(p.id)}" ${p.id === _selectedProyekId ? 'selected' : ''}>${escapeHtml(p.nama_bangunan)}</option>`).join('')}
           </select>
           <button id="btn-run-all" class="btn btn-primary" style="border-radius:14px; padding:0 24px" ${_selectedProyekId ? '' : 'disabled'}>
             <i class="fas fa-microchip"></i> Jalankan Semua Ahli
@@ -79,9 +95,9 @@ function renderCommandBridge() {
               const x = 225 + 225 * Math.cos(angle) - 26; // Center 225, radius 225, node width 52
               const y = 225 + 225 * Math.sin(angle) - 26;
               return `
-                <div class="agent-node" id="node-${a.id}" data-id="${a.id}" 
-                     style="left:${x}px; top:${y}px; color:${a.color}; border-color:${a.color}40"
-                     title="${a.name}">
+                <div class="agent-node" id="node-${escapeHtml(a.id)}" data-id="${escapeHtml(a.id)}" 
+                     style="left:${escapeHtml(x)}px; top:${escapeHtml(y)}px; color:${escapeHtml(a.color)}; border-color:${escapeHtml(a.color)}40"
+                     title="${escapeHtml(a.name)}">
                   <i class="fas ${a.icon}"></i>
                 </div>
               `;
@@ -218,9 +234,9 @@ function addTerminalLine(tag, message, category = 'SYSTEM', color = '#6366f1') {
   
   const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   line.innerHTML = `
-    <span class="feed-timestamp">${time}</span>
-    <span class="feed-tag" style="background:${color}">${tag}</span>
-    <span class="feed-content">${message}</span>
+    <span class="feed-timestamp">${escapeHtml(time)}</span>
+    <span class="feed-tag" style="background:${escapeHtml(color)}">${escapeHtml(tag)}</span>
+    <span class="feed-content">${escapeHtml(message)}</span>
   `;
   grid.appendChild(line);
   grid.scrollTop = grid.scrollHeight;

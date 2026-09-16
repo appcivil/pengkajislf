@@ -4,6 +4,7 @@
  */
 import { store, updateWorkspace } from '../../lib/store.js';
 
+import { escapeHtml } from '../../lib/safe-markdown.js';
 export function renderSidebar() {
   const { workspace, ui } = store.get();
   
@@ -45,16 +46,16 @@ export function renderSidebar() {
 
       ${sections.map(section => `
         <div class="sidebar-label" style="font-size:0.6rem; font-weight:800; color:var(--tertiary); text-transform:uppercase; margin:16px 0 8px 8px; letter-spacing:0.05em">
-          ${section.label}
+          ${escapeHtml(section.label)}
         </div>
         ${section.items.map(item => {
           const isActive = (item.view && workspace.activeView === item.view) || 
                           (item.filter && workspace.smartFilter === item.filter);
           return `
             <button class="drive-nav-item ${isActive ? 'active' : ''}" 
-                    onclick="window._handleWorkspaceNav('${item.view || ''}', '${item.filter || ''}')">
+                    onclick="window._handleWorkspaceNav('${escapeHtml(item.view || '')}', '${escapeHtml(item.filter || '')}')">
               <i class="fas ${item.icon}"></i>
-              <span>${item.label}</span>
+              <span>${escapeHtml(item.label)}</span>
             </button>
           `;
         }).join('')}

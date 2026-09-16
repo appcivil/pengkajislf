@@ -1,3 +1,4 @@
+import { escapeHtml } from '../../../lib/safe-markdown.js';
 // ============================================================
 //  COMPONENT: NavigationPane
 //  Panel navigasi dokumen untuk DOCX preview
@@ -16,9 +17,9 @@ export function renderNavigationPane(headings = []) {
   return `
     <div class="nav-tree">
       ${headings.map((h, idx) => `
-        <div class="nav-item nav-level-${h.level || 1}" 
-             data-target="${h.id || `heading-${idx}`}"
-             onclick="window._navigateToHeading('${h.id || `heading-${idx}`}')">
+        <div class="nav-item nav-level-${escapeHtml(h.level || 1)}" 
+             data-target="${escapeHtml(h.id || `heading-${escapeHtml(idx)}`)}"
+             onclick="window._navigateToHeading('${escapeHtml(h.id || `heading-${escapeHtml(idx)}`)}')">
           <span class="nav-bullet"></span>
           <span class="nav-text">${escapeHtml(h.text?.substring(0, 50) || 'Untitled')}</span>
         </div>
@@ -27,9 +28,3 @@ export function renderNavigationPane(headings = []) {
   `;
 }
 
-function escapeHtml(text) {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}

@@ -254,18 +254,32 @@ export class AIRouter {
   }
 
   async executeViaProxy(prompt, modelConfig, options) {
+    // Edge Function memverifikasi token ini ke GoTrue dan menolak anon key.
+    // Tanpa sesi yang sah, lebih baik gagal di sini dengan pesan yang jelas
+    // daripada mengirim "Bearer " kosong lalu menerima 401 tanpa konteks.
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      throw new Error(
+        'Sesi login tidak ditemukan. Silakan login kembali untuk memakai fitur AI.'
+      );
+    }
+
     const response = await fetch(this.proxyUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || ''}`
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+        'Authorization': `Bearer ${session.access_token}`
       },
       body: JSON.stringify({
         provider: modelConfig.provider,
         model: modelConfig.id,
         prompt,
         temperature: options.temperature,
-        max_tokens: options.maxTokens || modelConfig.maxTokens
+        // Edge Function membaca `maxTokens` (camelCase). Sebelumnya dikirim
+        // sebagai `max_tokens`, sehingga parameter ini dibuang diam-diam dan
+        // selalu jatuh ke nilai default server.
+        maxTokens: options.maxTokens || modelConfig.maxTokens
       })
     });
 
@@ -278,7 +292,14 @@ export class AIRouter {
   }
 
   async executeDirect(prompt, modelConfig, options) {
-    // Direct API call (development only)
+    // Direct API call — HANYA pengembangan. Di produksi, kunci penyedia AI
+    // tidak boleh ada di peramban; gunakan ai-proxy.
+    if (!import.meta.env.DEV) {
+      throw new Error(
+        'Permintaan AI langsung dari peramban dinonaktifkan di produksi. ' +
+        'Set VITE_AI_PROXY_URL ke Edge Function ai-proxy.'
+      );
+    }
     const endpoints = {
       kimi: 'https://api.moonshot.ai/v1/chat/completions',
       gemini: `https://generativelanguage.googleapis.com/v1beta/models/${modelConfig.id}:generateContent`,
@@ -329,6 +350,14 @@ export class AIRouter {
   }
 
   normalizeResponse(data, provider) {
+    // Edge Function `ai-proxy` mengembalikan { result, provider, model } —
+    // teksnya sudah diekstrak dari bentuk khas tiap penyedia di sisi server.
+    // SEBELUMNYA cabang ini tidak ada, sehingga data.result jatuh ke
+    // `data.candidates` / `data.choices` yang tidak ada di respons proxy →
+    // hasilnya selalu string kosong walau panggilan AI-nya sendiri sukses.
+    if (typeof data?.result === 'string') {
+      return { text: data.result, usage: data.usage, provider: data.provider || provider };
+    }
     switch (provider) {
       case 'gemini':
         return {
@@ -347,7 +376,30 @@ export class AIRouter {
     }
   }
 
+  /**
+   * Kunci API penyedia AI — HANYA untuk pengembangan lokal.
+   *
+   * KENAPA DIBATASI
+   * ---------------
+   * Setiap nilai `import.meta.env.VITE_*` diganti menjadi teks biasa di
+   * dalam berkas JS saat `npm run build`. Jadi kunci yang ada di `.env`
+   * saat build akan IKUT TERBIT ke bundel publik dan dapat dibaca siapa
+   * pun lewat DevTools — lalu dipakai atas biaya Anda.
+   *
+   * Di produksi permintaan AI WAJIB lewat Edge Function `ai-proxy`
+   * (set `VITE_AI_PROXY_URL`). Kuncinya disimpan sebagai secret Edge
+   * Function dan tidak pernah menyentuh peramban.
+   *
+   * Lapis kedua: `npm run build` akan GAGAL bila mendapati kunci AI di
+   * environment produksi — lihat scripts/check-client-secrets.mjs.
+   */
   getApiKey(provider) {
+    if (!import.meta.env.DEV) {
+      throw new Error(
+        `Permintaan AI langsung ke ${provider} dinonaktifkan di produksi. ` +
+        'Arahkan trafik lewat Edge Function ai-proxy dengan mengisi VITE_AI_PROXY_URL.'
+      );
+    }
     const keys = {
       kimi: import.meta.env.VITE_KIMI_API_KEY,
       gemini: import.meta.env.VITE_GEMINI_API_KEY,

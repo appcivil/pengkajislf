@@ -3,7 +3,9 @@
  * The "Heart" of the workspace providing deep document intelligence.
  */
 import { store, updateWorkspace } from '../../lib/store.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { escHtml } from '../../lib/utils.js';
+import { toast } from '../../components/toast.js';
 
 export function renderInspector() {
   const { workspace, files, ui } = store.get();
@@ -47,13 +49,13 @@ export function renderInspector() {
           <div class="fm-file-icon has-file ${file.name.match(/\.(jpg|jpeg|png|webp)$/i) ? 'image' : ''}" style="width:100%; height:120px; margin-bottom:12px; border-radius:12px">
              <i class="fas ${file.name.toLowerCase().endsWith('.pdf') ? 'fa-file-pdf' : 'fa-file'}" style="font-size:2rem"></i>
           </div>
-          <h3 class="font-extrabold text-h truncate" title="${file.subcategory}">${escHtml(file.subcategory)}</h3>
+          <h3 class="font-extrabold text-h truncate" title="${escapeHtml(file.subcategory)}">${escHtml(file.subcategory)}</h3>
           <div class="flex-between items-center">
              <div class="flex items-center gap-2">
                 <div class="status-dot ${file.status === 'Final' ? 'green' : 'yellow'}"></div>
-                <span class="text-xs font-bold">${file.status || 'Draft'}</span>
+                <span class="text-xs font-bold">${escapeHtml(file.status || 'Draft')}</span>
              </div>
-             <span class="text-xs text-tertiary">v${file.version || 1.0}</span>
+             <span class="text-xs text-tertiary">v${escapeHtml(file.version || 1.0)}</span>
           </div>
        </div>
 
@@ -61,8 +63,8 @@ export function renderInspector() {
        <div class="inspector-tabs">
           ${tabs.map(t => `
             <button class="inspector-tab-btn ${workspace.activeInspectorTab === t.id ? 'active shadow-sm' : ''}" 
-                    onclick="window._handleInspectorTab('${t.id}')">
-               ${t.label}
+                    onclick="window._handleInspectorTab('${escapeHtml(t.id)}')">
+               ${escapeHtml(t.label)}
             </button>
           `).join('')}
        </div>
@@ -74,13 +76,13 @@ export function renderInspector() {
 
        <!-- Footer Actions -->
        <div class="p-6 border-top flex gap-2">
-          <button class="btn btn-primary btn-sm flex-1 font-bold" onclick="window.open('${file.file_url}', '_blank')">
+          <button class="btn btn-primary btn-sm flex-1 font-bold" onclick="window.open('${escapeHtml(file.file_url)}', '_blank')">
              <i class="fas fa-external-link-alt"></i> Open File
           </button>
-          <button class="btn btn-secondary btn-sm" title="Compare with another version" onclick="window._startCompare('${file.id}')">
+          <button class="btn btn-secondary btn-sm" title="Compare with another version" onclick="window._startCompare('${escapeHtml(file.id)}')">
              <i class="fas fa-columns"></i>
           </button>
-          <button class="btn btn-secondary btn-sm" onclick="window._analyzeFile('${file.id}')">
+          <button type="button" aria-label="Muat ulang" class="btn btn-secondary btn-sm" onclick="window._analyzeFile('${escapeHtml(file.id)}')">
              <i class="fas fa-sync"></i>
           </button>
        </div>
@@ -95,7 +97,7 @@ function renderTabContent(file, activeId) {
         <div class="ai-insight-card animate-slide-in" style="border-left:4px solid #8b5cf6">
            <h4 class="text-brand-500"><i class="fas fa-magic"></i> AI Assessment</h4>
            <div class="text-xs text-secondary leading-relaxed mb-4">
-              ${file.ai_summary || "AI is analyzing this document. It looks like a building structure calculation report."}
+              ${escapeHtml(file.ai_summary || "AI sedang menganalisis dokumen ini. Tampaknya berupa laporan perhitungan struktur bangunan.")}
            </div>
            
            <h4 class="mt-6"><i class="fas fa-tasks"></i> Validation Results</h4>
@@ -142,8 +144,8 @@ function renderTabContent(file, activeId) {
             <div class="flex-column">
                <span class="form-label">Tags</span>
                <div class="flex gap-1 mt-1 flex-wrap">
-                  ${(file.metadata?.tags || ['Structural', 'Audit 2026']).map(t => `<span class="badge badge-secondary" style="font-size:0.55rem; padding:1px 6px">${t}</span>`).join('')}
-                  <button class="btn btn-ghost btn-xs" onclick="window._addTag('${file.id}')"><i class="fas fa-plus"></i></button>
+                  ${(file.metadata?.tags || ['Structural', 'Audit 2026']).map(t => `<span class="badge badge-secondary" style="font-size:0.55rem; padding:1px 6px">${escapeHtml(t)}</span>`).join('')}
+                  <button type="button" aria-label="Tambah" class="btn btn-ghost btn-xs" onclick="window._addTag('${escapeHtml(file.id)}')"><i class="fas fa-plus"></i></button>
                </div>
             </div>
          </div>
@@ -154,7 +156,7 @@ function renderTabContent(file, activeId) {
            <div class="flex-column gap-3">
               <i class="fas fa-file-pdf text-4xl opacity-0.2"></i>
               <p class="text-xs font-bold opacity-0.4">Preview not available in this view</p>
-              <button class="btn btn-ghost btn-xs" onclick="window.open('${file.file_url}', '_blank')">View Full Screen</button>
+              <button class="btn btn-ghost btn-xs" onclick="window.open('${escapeHtml(file.file_url)}', '_blank')">View Full Screen</button>
            </div>
         </div>
       `;
@@ -181,7 +183,7 @@ function renderTabContent(file, activeId) {
               </div>
               <i class="fas fa-link text-brand-500 text-xs"></i>
            </div>
-           <button class="btn btn-ghost btn-xs mt-2" onclick="alert('Pilih foto dari Evidence Vault untuk dihubungkan.')">
+           <button class="btn btn-ghost btn-xs mt-2" onclick="window.showToast('Pilih foto dari Evidence Vault untuk dihubungkan.', 'info')">
               <i class="fas fa-plus"></i> Hubungkan Evidence Baru
            </button>
         </div>
@@ -220,6 +222,6 @@ window._analyzeFile = (id) => {
    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
    setTimeout(() => {
       btn.innerHTML = '<i class="fas fa-sync"></i>';
-      alert("AI Analysis completed for file " + id);
+      toast(`Analisis AI selesai untuk berkas ${id}.`, 'success');
    }, 1500);
 };

@@ -6,6 +6,7 @@
 
 import { PLASTIC_HINGE_STATUS } from '../lib/asce41-tier-data.js';
 
+import { escapeHtml } from './safe-markdown.js';
 /**
  * Parse CSV data dari ETABS
  * Expected format: Step, BaseShear(kN), RoofDisplacement(mm)
@@ -101,7 +102,7 @@ export function generatePushoverSVG(data, options = {}) {
   const yGrid = Array.from({ length: 6 }, (_, i) => (maxShear / 5) * i);
   
   return `
-    <svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%;">
+    <svg viewBox="0 0 ${escapeHtml(width)} ${escapeHtml(height)}" style="width: 100%; height: 100%;">
       <defs>
         <linearGradient id="capacityGradient" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" style="stop-color:hsla(220, 95%, 52%, 0.3)"/>
@@ -110,40 +111,40 @@ export function generatePushoverSVG(data, options = {}) {
       </defs>
       
       <!-- Background -->
-      <rect width="${width}" height="${height}" fill="#0a0f1a"/>
+      <rect width="${escapeHtml(width)}" height="${escapeHtml(height)}" fill="#0a0f1a"/>
       
       <!-- Grid -->
-      <g transform="translate(${margin.left}, ${margin.top})">
+      <g transform="translate(${escapeHtml(margin.left)}, ${escapeHtml(margin.top)})">
         ${xGrid.map(x => `
-          <line x1="${xScale(x)}" y1="0" x2="${xScale(x)}" y2="${innerHeight}" 
+          <line x1="${xScale(x)}" y1="0" x2="${xScale(x)}" y2="${escapeHtml(innerHeight)}" 
                 stroke="hsla(220, 20%, 100%, 0.1)" stroke-dasharray="2,2"/>
           <text x="${xScale(x)}" y="${innerHeight + 20}" 
                 fill="hsla(220, 20%, 100%, 0.5)" font-size="11" text-anchor="middle">
-            ${x.toFixed(0)}
+            ${escapeHtml(x.toFixed(0))}
           </text>
         `).join('')}
         
         ${yGrid.map(y => `
-          <line x1="0" y1="${yScale(y)}" x2="${innerWidth}" y2="${yScale(y)}" 
+          <line x1="0" y1="${yScale(y)}" x2="${escapeHtml(innerWidth)}" y2="${yScale(y)}" 
                 stroke="hsla(220, 20%, 100%, 0.1)" stroke-dasharray="2,2"/>
           <text x="-10" y="${yScale(y) + 4}" 
                 fill="hsla(220, 20%, 100%, 0.5)" font-size="11" text-anchor="end">
-            ${y.toFixed(0)}
+            ${escapeHtml(y.toFixed(0))}
           </text>
         `).join('')}
         
         <!-- Axes -->
-        <line x1="0" y1="${innerHeight}" x2="${innerWidth}" y2="${innerHeight}" 
+        <line x1="0" y1="${escapeHtml(innerHeight)}" x2="${escapeHtml(innerWidth)}" y2="${escapeHtml(innerHeight)}" 
               stroke="hsla(220, 20%, 100%, 0.3)" stroke-width="2"/>
-        <line x1="0" y1="0" x2="0" y2="${innerHeight}" 
+        <line x1="0" y1="0" x2="0" y2="${escapeHtml(innerHeight)}" 
               stroke="hsla(220, 20%, 100%, 0.3)" stroke-width="2"/>
         
         <!-- Capacity Curve Area -->
-        <path d="${pathData} L ${xScale(maxDisp)} ${innerHeight} L 0 ${innerHeight} Z" 
+        <path d="${escapeHtml(pathData)} L ${xScale(maxDisp)} ${escapeHtml(innerHeight)} L 0 ${escapeHtml(innerHeight)} Z" 
               fill="url(#capacityGradient)"/>
         
         <!-- Capacity Curve Line -->
-        <path d="${pathData}" fill="none" stroke="#3b82f6" stroke-width="3"/>
+        <path d="${escapeHtml(pathData)}" fill="none" stroke="#3b82f6" stroke-width="3"/>
         
         <!-- Demand Curve (if provided) -->
         ${demandCurve ? `
@@ -208,16 +209,16 @@ export function generateHingeStatusGrid(hinges = [], options = {}) {
   const data = hinges.length > 0 ? hinges : defaultHinges;
   
   return `
-    <div class="hinge-grid" style="display: grid; grid-template-columns: repeat(${cols}, 1fr); gap: 4px;">
+    <div class="hinge-grid" style="display: grid; grid-template-columns: repeat(${escapeHtml(cols)}, 1fr); gap: 4px;">
       ${data.map(hinge => {
         const status = PLASTIC_HINGE_STATUS[hinge.status] || PLASTIC_HINGE_STATUS['B-IO'];
         return `
           <div class="hinge-cell" 
-               style="aspect-ratio: 1; background: ${status.color}; border-radius: 4px; cursor: pointer; position: relative;"
-               title="${hinge.element} - ${hinge.location}: ${status.label}"
-               onclick="window._showHingeDetail('${hinge.id}')">
+               style="aspect-ratio: 1; background: ${escapeHtml(status.color)}; border-radius: 4px; cursor: pointer; position: relative;"
+               title="${hinge.element} - ${escapeHtml(hinge.location)}: ${escapeHtml(status.label)}"
+               onclick="window._showHingeDetail('${escapeHtml(hinge.id)}')">
             <span style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; color: white; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
-              ${hinge.id}
+              ${escapeHtml(hinge.id)}
             </span>
           </div>
         `;

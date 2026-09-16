@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 
 // ============================================================
@@ -82,12 +83,12 @@ export function renderKondisiCard(project, summary = {}) {
   
   return `
     <div class="card-quartz clickable" id="kondisi-card" 
-         onclick="window.navigate('kondisi', {id:'${project.id}'})">
+         onclick="window.navigate('kondisi', {id:'${escapeHtml(project.id)}'})">
       <div class="card-header">
-        <div class="card-icon" style="background: ${st.bg}; color: ${st.text}; border-color: ${st.border}44">
+        <div class="card-icon" style="background: ${escapeHtml(st.bg)}; color: ${escapeHtml(st.text)}; border-color: ${escapeHtml(st.border)}44">
           <i class="fas fa-building-circle-exclamation" style="font-size: 1.4rem"></i>
         </div>
-        <div class="card-phase" style="color: ${st.text}">PHASE 02.5</div>
+        <div class="card-phase" style="color: ${escapeHtml(st.text)}">PHASE 02.5</div>
       </div>
       
       <h3 class="card-title">Pemeriksaan Kondisi</h3>
@@ -98,23 +99,23 @@ export function renderKondisiCard(project, summary = {}) {
       ${hasError ? `
         <div class="card-error-state">
           <i class="fas fa-exclamation-triangle"></i>
-          <span>${summary.error_message || 'Terjadi kesalahan saat memuat data'}</span>
+          <span>${escapeHtml(summary.error_message || 'Terjadi kesalahan saat memuat data')}</span>
         </div>
       ` : hasData ? `
-        <div class="card-score-section" style="background: ${st.bg}; border-color: ${st.border}44">
+        <div class="card-score-section" style="background: ${escapeHtml(st.bg)}; border-color: ${escapeHtml(st.border)}44">
           <div class="score-display">
-            <div class="score-value" style="color: ${st.text}">${summary.skor_total}%</div>
+            <div class="score-value" style="color: ${escapeHtml(st.text)}">${escapeHtml(summary.skor_total)}%</div>
             <div class="score-label">SKOR KESELURUHAN</div>
           </div>
-          <div class="score-status" style="color: ${st.text}">
-            ${summary.overall_status}
+          <div class="score-status" style="color: ${escapeHtml(st.text)}">
+            ${escapeHtml(summary.overall_status)}
           </div>
         </div>
         
         ${summary.kategori_kerusakan !== '-' ? `
           <div class="card-detail-row">
             <span class="detail-label">Kategori:</span>
-            <span class="detail-value">${summary.kategori_kerusakan}</span>
+            <span class="detail-value">${escapeHtml(summary.kategori_kerusakan)}</span>
           </div>
         ` : ''}
         

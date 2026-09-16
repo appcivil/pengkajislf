@@ -1,3 +1,4 @@
+import { escapeHtml } from '../../lib/safe-markdown.js';
 /**
  * Floating Chat Button Component
  * Quick access button untuk chatbot di pojok kanan bawah
@@ -29,7 +30,7 @@ export class FloatingChatButton {
             <button class="btn btn-icon btn-sm" id="expand-chat-btn" title="Buka Full Chat">
               <i class="fas fa-expand"></i>
             </button>
-            <button class="btn btn-icon btn-sm" id="close-mini-chat-btn">
+            <button type="button" aria-label="Tutup" class="btn btn-icon btn-sm" id="close-mini-chat-btn">
               <i class="fas fa-times"></i>
             </button>
           </div>
@@ -42,7 +43,7 @@ export class FloatingChatButton {
         </div>
         <div class="mini-chat-input">
           <input type="text" id="mini-chat-input" placeholder="Tanya AI..." />
-          <button class="btn btn-primary btn-sm" id="mini-send-btn">
+          <button type="button" aria-label="Kirim" class="btn btn-primary btn-sm" id="mini-send-btn">
             <i class="fas fa-paper-plane"></i>
           </button>
         </div>
@@ -97,7 +98,7 @@ export class FloatingChatButton {
     ];
 
     const quickActionsHtml = quickActions.map(action => `
-      <button class="quick-action-fab" data-action="${action.action}" title="${action.label}">
+      <button class="quick-action-fab" data-action="${escapeHtml(action.action)}" title="${escapeHtml(action.label)}">
         <i class="fas ${action.icon}"></i>
       </button>
     `).join('');
@@ -193,7 +194,7 @@ export class FloatingChatButton {
     const messageEl = document.createElement('div');
     messageEl.className = `mini-message ${role}`;
     messageEl.innerHTML = `
-      <div class="mini-message-content">${content}</div>
+      <div class="mini-message-content">${escapeHtml(content)}</div>
     `;
 
     container.appendChild(messageEl);

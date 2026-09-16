@@ -4,6 +4,7 @@
 // ============================================================
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 
 export function renderWaterSystemCard(proyek, summary = {}) {
@@ -22,24 +23,24 @@ export function renderWaterSystemCard(proyek, summary = {}) {
   return `
     <div class="card-quartz clickable water-system-card" 
          id="water-system-card"
-         onclick="window.navigate('water-inspection', {id:'${proyek.id}'})"
+         onclick="window.navigate('water-inspection', {id:'${escapeHtml(proyek.id)}'})"
          style="padding: var(--space-6); position: relative; overflow: hidden;">
       
       <!-- Background Decoration -->
       <div style="position: absolute; right: -30px; top: -30px; width: 120px; height: 120px; 
-                  background: radial-gradient(circle, ${colors.color}15 0%, transparent 70%); 
+                  background: radial-gradient(circle, ${escapeHtml(colors.color)}15 0%, transparent 70%); 
                   pointer-events: none;"></div>
 
       <div class="flex-between" style="margin-bottom: 20px; position: relative; z-index: 1;">
         <div style="width: 48px; height: 48px; border-radius: 14px; 
-                    background: ${colors.bg}; 
+                    background: ${escapeHtml(colors.bg)}; 
                     display: flex; align-items: center; justify-content: center; 
-                    color: ${colors.color}; border: 1px solid ${colors.color}30;">
+                    color: ${escapeHtml(colors.color)}; border: 1px solid ${escapeHtml(colors.color)}30;">
           <i class="fas ${colors.icon}" style="font-size: 1.4rem;"></i>
         </div>
         <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 700; 
-                    color: ${colors.color}; text-transform: uppercase; letter-spacing: 1px;
-                    background: ${colors.bg}; padding: 4px 10px; border-radius: 20px;">
+                    color: ${escapeHtml(colors.color)}; text-transform: uppercase; letter-spacing: 1px;
+                    background: ${escapeHtml(colors.bg)}; padding: 4px 10px; border-radius: 20px;">
           ${score > 0 ? score + '%' : 'BELUM DIEVALUASI'}
         </div>
       </div>
@@ -114,11 +115,11 @@ export function renderWaterSystemCard(proyek, summary = {}) {
 
       <div style="margin-top: 16px; display: flex; gap: 8px; position: relative; z-index: 1;">
         <button class="btn btn-sm btn-primary" style="flex: 1; font-size: 11px;"
-                onclick="event.stopPropagation(); window.navigate('water-inspection', {id:'${proyek.id}', tab:'demand'})">
+                onclick="event.stopPropagation(); window.navigate('water-inspection', {id:'${escapeHtml(proyek.id)}', tab:'demand'})">
           <i class="fas fa-calculator"></i> Kalkulator
         </button>
         <button class="btn btn-sm btn-secondary" style="flex: 1; font-size: 11px;"
-                onclick="event.stopPropagation(); window.navigate('water-inspection', {id:'${proyek.id}', tab:'network'})">
+                onclick="event.stopPropagation(); window.navigate('water-inspection', {id:'${escapeHtml(proyek.id)}', tab:'network'})">
           <i class="fas fa-network-wired"></i> Jaringan
         </button>
       </div>

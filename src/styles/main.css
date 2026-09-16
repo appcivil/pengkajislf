@@ -3,8 +3,16 @@
    Premium Dark Theme with Glass Morphism
    ============================================================ */
 
-/* --- Google Fonts Import --- */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Google Fonts sengaja TIDAK diimpor di sini.
+   index.html sudah memuatnya lewat <link rel="stylesheet"> bersama
+   preconnect ke fonts.googleapis.com dan fonts.gstatic.com. Versi @import
+   yang dulu ada di baris ini menimbulkan dua hal buruk sekaligus:
+   (a) permintaan yang sama diunduh dua kali, dan
+   (b) @import membuat peramban menunggu CSS ini selesai diurai sebelum
+       mengetahui bahwa ada berkas lain yang harus diunduh — render jadi
+       tertunda berantai.
+   Bila suatu saat font perlu dimuat dari CSS lagi, gunakan <link> di
+   index.html, bukan @import. */
 
 /* ── Public Portal Mode (Eliminate all spaces/grids) ── */
 .app-layout.public-portal {
@@ -1812,6 +1820,72 @@ tbody tr:hover { background: var(--bg-elevated); }
 .toast-info    .toast-icon { background: var(--info-bg);    color: var(--info-400); }
 .toast-title { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
 .toast-msg   { font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px; }
+
+/* ── Tombol tutup toast ───────────────────────────────────────
+   Sebelumnya toast tidak punya tombol tutup sama sekali, sehingga
+   galat yang panjang harus ditunggu sampai hilang sendiri. */
+.toast-close {
+  margin-left: auto;
+  align-self: flex-start;
+  flex-shrink: 0;
+  min-width: 32px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.toast-close:hover {
+  color: var(--text-primary);
+  background: hsla(220, 20%, 100%, 0.08);
+}
+
+/* Aksi opsional di dalam toast, mis. "Coba lagi". */
+.toast-action {
+  flex-shrink: 0;
+  align-self: center;
+  padding: 4px var(--space-3);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.toast-body { min-width: 0; }
+
+/* Teks panjang (mis. pesan galat Supabase) tidak boleh melebarkan toast
+   sampai keluar layar. */
+.toast-msg { overflow-wrap: anywhere; }
+
+/* Di layar sempit, toast turun ke bawah dan mengambil lebar penuh supaya
+   tidak menutupi bilah atas maupun tombol aksi utama. */
+@media (max-width: 640px) {
+  .toast-container {
+    top: auto;
+    left: var(--space-3);
+    right: var(--space-3);
+    bottom: calc(var(--space-16) + env(safe-area-inset-bottom, 0px));
+    max-width: none;
+  }
+  .toast {
+    min-width: 0;
+    width: 100%;
+    transform: translateY(120%);
+  }
+  .toast.show { transform: translateY(0); }
+  .toast.hide { transform: translateY(120%); }
+}
+
 
 /* --- Login Page --- */
 .auth-page {
@@ -3866,4 +3940,388 @@ tbody tr:hover { background: var(--bg-elevated); }
 .detail-value {
   color: var(--text-primary);
   font-weight: 600;
+}
+
+/* ============================================================
+   LAPISAN AKSESIBILITAS & UX
+   ============================================================
+   Ditambahkan oleh audit UI/UX (docs/UI-UX-AUDIT-2026-09.md).
+
+   Isi bagian ini hanya aturan yang berlaku untuk SELURUH aplikasi.
+   Perbaikan yang butuh pengetahuan konteks (nama aksesibel tombol,
+   teks alternatif gambar) dikerjakan di berkas masing-masing, karena
+   hanya penulisnya yang tahu maksud elemennya.
+   ============================================================ */
+
+/* ── 1. Terlihat bagi pembaca layar, tidak bagi mata ───────── */
+.sr-only,
+[data-a11y-live] {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Wilayah pengumuman harus tetap ada di pohon aksesibilitas. */
+[data-a11y-live] {
+    clip-path: inset(50%);
+}
+
+/* ── 2. Indikator fokus ────────────────────────────────────── */
+/* Pemakai keyboard harus selalu tahu di mana posisinya. */
+:focus-visible {
+    outline: 2px solid var(--brand-300);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm, 4px);
+}
+
+/* Latar gelap: fokus emas agar kontras terhadap kartu gelap. */
+[data-theme="dark"] :focus-visible,
+body.dark :focus-visible {
+    outline-color: var(--gold-400);
+}
+
+/* Jangan tampilkan cincin fokus saat klik tetikus, tetapi JANGAN hapus
+   aturan :focus-visible di atas — keyboard tetap butuh penanda. */
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Elemen yang difokuskan secara programatik oleh jebakan fokus. */
+[role="dialog"]:focus {
+    outline: none;
+}
+
+/* ── 3. Menghormati setelan "kurangi gerakan" ─────────────── */
+/* Pengguna dengan gangguan vestibular, migrain, atau ADHD dapat jatuh
+   sakit karena animasi yang tidak bisa dimatikan. Menghormati setelan
+   sistem bukan kemewahan, melainkan syarat aksesibilitas (WCAG 2.3.3). */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        transition-delay: 0ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    /* Elemen dekoratif yang hanya bergerak tanpa memberi informasi
+       sebaiknya hilang sama sekali, bukan sekadar berhenti. */
+    .logo-ring,
+    .loading-bar-glow,
+    .spinner-ring,
+    .pulse-dot {
+        animation: none !important;
+    }
+}
+
+/* ── 4. Sasaran sentuh ────────────────────────────────────── */
+/* WCAG 2.5.8 menyarankan minimal 24x24 px; panduan platform 44x44 px
+   lebih nyaman untuk jempol. Berlaku hanya untuk kontrol ikon kecil
+   supaya tombol teks biasa tidak ikut melar. */
+.btn-icon,
+.icon-btn,
+button[aria-label]:not(.btn-lg),
+[role="button"].icon-only {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Tautan di dalam teks tidak perlu 44px, tetapi harus punya jarak
+   vertikal yang cukup agar tidak salah tekan di layar sempit. */
+@media (max-width: 640px) {
+    .btn,
+    button.btn,
+    a.btn {
+        min-height: 44px;
+    }
+}
+
+/* ── 5. Status tombol ─────────────────────────────────────── */
+button[aria-busy="true"],
+button[disabled][aria-busy="true"] {
+    cursor: progress;
+    opacity: 0.7;
+}
+
+button[disabled] {
+    cursor: not-allowed;
+}
+
+/* ── 6. Tabel yang dapat digulir ──────────────────────────── */
+/* Tabel lebar pada layar sempit harus bisa digulir, dan wadahnya harus
+   dapat difokus keyboard supaya dapat digulir tanpa tetikus
+   (WCAG 2.1.1). */
+.table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.table-wrap:focus-visible {
+    outline: 2px solid var(--brand-300);
+    outline-offset: 2px;
+}
+
+.table-wrap > table {
+    min-width: 100%;
+}
+
+/* Petunjuk visual bahwa tabel masih bisa digulir ke samping. */
+.table-wrap[data-scrollable="true"] {
+    background:
+        linear-gradient(to right, transparent 0, transparent calc(100% - 24px),
+            color-mix(in srgb, var(--bg-base) 85%, transparent) 100%);
+}
+
+/* ── 7. Status kosong ─────────────────────────────────────── */
+/* Status kosong harus menjelaskan APA yang kosong dan APA yang bisa
+   dilakukan — bukan sekadar "Tidak ada data". */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-10) var(--space-6);
+    text-align: center;
+    color: var(--text-muted, hsl(220, 15%, 60%));
+}
+
+.empty-state__icon {
+    font-size: 2.5rem;
+    opacity: 0.45;
+    line-height: 1;
+}
+
+.empty-state__title {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--text-primary, hsl(220, 20%, 92%));
+}
+
+.empty-state__hint {
+    margin: 0;
+    max-width: 46ch;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+/* ── 8. Kerangka pemuatan ─────────────────────────────────── */
+/* Kerangka menahan tata letak sehingga tidak ada lompatan isi
+   saat data tiba (CLS). */
+.skeleton {
+    background: linear-gradient(90deg,
+        hsla(220, 20%, 100%, 0.04) 25%,
+        hsla(220, 20%, 100%, 0.09) 37%,
+        hsla(220, 20%, 100%, 0.04) 63%);
+    background-size: 400% 100%;
+    animation: skeleton-sweep 1.4s ease-in-out infinite;
+    border-radius: var(--radius-sm, 4px);
+    min-height: 1em;
+}
+
+@keyframes skeleton-sweep {
+    0%   { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skeleton { animation: none; background: hsla(220, 20%, 100%, 0.06); }
+}
+
+/* ── 9. Lompat ke konten ──────────────────────────────────── */
+/* Pengguna keyboard tidak perlu menekan Tab puluhan kali melewati
+   sidebar dan header di setiap halaman. */
+.skip-link {
+    position: absolute;
+    left: var(--space-4);
+    top: -100px;
+    z-index: 10000;
+    padding: var(--space-3) var(--space-5);
+    background: var(--bg-elevated, #16213e);
+    color: var(--text-primary, #fff);
+    border: 1px solid var(--border-brand);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    text-decoration: none;
+    transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+    top: var(--space-4);
+    outline: 2px solid var(--gold-400);
+    outline-offset: 2px;
+}
+
+/* ── 10. Wadah dialog ─────────────────────────────────────── */
+[role="dialog"],
+[role="alertdialog"] {
+    /* Pastikan dialog selalu berada di atas lapisan lain, termasuk
+       bottom-nav dan sidebar. */
+    z-index: 9000;
+}
+
+/* Saat dialog terbuka, sembunyikan sisa halaman dari pembaca layar
+   supaya pengguna tidak tersesat ke belakang dialog. */
+body[data-dialog-open="true"] > #app {
+    /* `inert` diatur lewat JS; aturan ini hanya cadangan visual. */
+    pointer-events: none;
+}
+
+/* ── 11. Teks panjang ─────────────────────────────────────── */
+/* Nama proyek dan catatan pengguna bisa sangat panjang. Tanpa aturan ini
+   kartu akan meluber ke samping di layar sempit. */
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.break-words {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+
+/* ── Latar halaman login ──────────────────────────────────────
+   Menggantikan gambar yang tidak pernah ada (lihat src/pages/login.js).
+   Garis-garis tipis meniru kertas gambar arsitektur; seluruhnya dibuat
+   dengan gradien CSS sehingga tidak ada berkas yang perlu diunduh. */
+.login-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-color: #020408;
+    background-image:
+        /* vignette agar panel di tengah tetap terbaca */
+        radial-gradient(circle at 50% 45%, transparent 0%, #020408 78%),
+        /* garis bantu vertikal */
+        repeating-linear-gradient(90deg,
+            hsla(220, 60%, 60%, 0.055) 0 1px,
+            transparent 1px 84px),
+        /* garis bantu horizontal */
+        repeating-linear-gradient(0deg,
+            hsla(220, 60%, 60%, 0.045) 0 1px,
+            transparent 1px 84px),
+        /* cahaya lembut di belakang panel */
+        radial-gradient(ellipse 70% 55% at 50% 40%,
+            hsla(220, 90%, 45%, 0.20) 0%,
+            transparent 70%),
+        radial-gradient(ellipse 40% 30% at 78% 82%,
+            hsla(45, 90%, 60%, 0.10) 0%,
+            transparent 70%);
+}
+
+/* Di ponsel, garis bantu rapat membuat layar terlihat penuh dan berisik —
+   cukup sisakan vignette dan cahayanya. */
+@media (max-width: 768px) {
+    .login-backdrop {
+        background-image:
+            radial-gradient(circle at 50% 45%, transparent 0%, #020408 80%),
+            radial-gradient(ellipse 90% 45% at 50% 35%,
+                hsla(220, 90%, 45%, 0.22) 0%,
+                transparent 72%);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   13. Status memuat rute (dipakai oleh src/lib/router.js)
+   ───────────────────────────────────────────────────────────────────
+   Sebelum ini, navigasi ke halaman yang mengambil data tidak memberi
+   umpan balik apa pun: halaman sebelumnya membeku di layar sampai data
+   tiba. Pada jaringan lambat jeda itu bisa beberapa detik, dan pengguna
+   wajar mengira kliknya tidak terdaftar — lalu mengklik menu berulang
+   kali. Kerangka di bawah menampilkan bentuk halaman yang akan datang
+   sehingga perpindahannya terasa mulus, bukan macet.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.route-loading {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5, 20px);
+    padding: var(--space-6, 24px);
+    animation: route-loading-in 240ms ease-out both;
+}
+
+.route-loading-head {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.route-loading-title,
+.route-loading-sub,
+.route-loading-card {
+    display: block;
+    border-radius: var(--radius-md, 10px);
+    background: linear-gradient(90deg,
+        hsla(220, 20%, 80%, 0.05) 0%,
+        hsla(220, 20%, 80%, 0.11) 50%,
+        hsla(220, 20%, 80%, 0.05) 100%);
+    background-size: 200% 100%;
+    animation: route-loading-sweep 1.4s ease-in-out infinite;
+}
+
+.route-loading-title { height: 28px; width: min(280px, 55%); }
+.route-loading-sub   { height: 14px; width: min(420px, 75%); }
+
+.route-loading-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-4, 16px);
+}
+
+.route-loading-card { height: 116px; }
+
+@keyframes route-loading-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes route-loading-sweep {
+    0%   { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+}
+
+/* Teks yang hanya untuk pembaca layar. Dipakai kerangka memuat agar
+   pengguna pembaca layar mendengar "Memuat …" tanpa melihat teksnya. */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Gerakan berdenyut dapat memicu ketidaknyamanan. Ketika pengguna meminta
+   pengurangan gerakan, kerangka tetap tampil — yang hilang hanya denyutnya,
+   sehingga informasi "sedang memuat" tetap tersampaikan. */
+@media (prefers-reduced-motion: reduce) {
+    .route-loading { animation: none; }
+    .route-loading-title,
+    .route-loading-sub,
+    .route-loading-card {
+        animation: none;
+        background: hsla(220, 20%, 80%, 0.07);
+    }
 }

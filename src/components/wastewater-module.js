@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 
 // ============================================================
@@ -97,12 +98,12 @@ export function renderWastewaterCard(project, summary = {}) {
   
   return `
     <div class="card-quartz clickable" id="wastewater-card" 
-         onclick="window.navigate('wastewater-inspection', {id:'${project.id}'})">
+         onclick="window.navigate('wastewater-inspection', {id:'${escapeHtml(project.id)}'})">
       <div class="card-header">
-        <div class="card-icon" style="background: ${st.bg}; color: ${st.text}; border-color: ${st.border}44">
+        <div class="card-icon" style="background: ${escapeHtml(st.bg)}; color: ${escapeHtml(st.text)}; border-color: ${escapeHtml(st.border)}44">
           <i class="fas ${st.icon}" style="font-size: 1.4rem"></i>
         </div>
-        <div class="card-phase" style="color: ${st.text}">PHASE 02F</div>
+        <div class="card-phase" style="color: ${escapeHtml(st.text)}">PHASE 02F</div>
       </div>
       
       <h3 class="card-title">Sistem Air Limbah</h3>
@@ -113,25 +114,25 @@ export function renderWastewaterCard(project, summary = {}) {
       ${hasError ? `
         <div class="card-error-state">
           <i class="fas fa-exclamation-triangle"></i>
-          <span>${summary.error_message || 'Terjadi kesalahan saat memuat data'}</span>
+          <span>${escapeHtml(summary.error_message || 'Terjadi kesalahan saat memuat data')}</span>
         </div>
       ` : hasData ? `
         <div class="card-metrics-grid">
           <div class="metric-item">
-            <div class="metric-value" style="color: ${st.text}">${summary.ph_value || '-'}</div>
+            <div class="metric-value" style="color: ${escapeHtml(st.text)}">${escapeHtml(summary.ph_value || '-')}</div>
             <div class="metric-label">pH</div>
           </div>
           <div class="metric-item">
-            <div class="metric-value" style="color: var(--brand-400)">${summary.bod_value || '-'}<small style="font-size:0.6em">mg/L</small></div>
+            <div class="metric-value" style="color: var(--brand-400)">${escapeHtml(summary.bod_value || '-')}<small style="font-size:0.6em">mg/L</small></div>
             <div class="metric-label">BOD</div>
           </div>
           <div class="metric-item">
-            <div class="metric-value" style="color: var(--gold-400)">${summary.tss_value || '-'}<small style="font-size:0.6em">mg/L</small></div>
+            <div class="metric-value" style="color: var(--gold-400)">${escapeHtml(summary.tss_value || '-')}<small style="font-size:0.6em">mg/L</small></div>
             <div class="metric-label">TSS</div>
           </div>
         </div>
         
-        <div class="card-status-badge" style="background: ${st.bg}; color: ${st.text}; border-color: ${st.border}44">
+        <div class="card-status-badge" style="background: ${escapeHtml(st.bg)}; color: ${escapeHtml(st.text)}; border-color: ${escapeHtml(st.border)}44">
           <i class="fas ${st.icon}"></i>
           ${statusLabels[summary.overall_status] || 'Belum Dianalisis'}
         </div>

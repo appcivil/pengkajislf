@@ -5,6 +5,7 @@
 // ============================================================
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { uploadToGoogleDrive } from '../lib/drive.js';
@@ -198,7 +199,7 @@ function renderHeaderCard() {
           <span class="badge" style="background: hsla(220, 95%, 52%, 0.1); color: var(--brand-400); border: 1px solid hsla(220, 95%, 52%, 0.2); font-size: 10px;">
             <i class="fas fa-book" style="margin-right: 6px;"></i>PUIL 2020
           </span>
-          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${currentProjectId}'})" style="color: var(--text-tertiary);">
+          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${escapeHtml(currentProjectId)}'})" style="color: var(--text-tertiary);">
             <i class="fas fa-arrow-left" style="margin-right: 6px;"></i> Kembali
           </button>
         </div>
@@ -287,7 +288,7 @@ function renderDashboardTab() {
             </div>
             <span class="badge" style="background: hsla(220, 95%, 52%, 0.1); color: var(--brand-400); font-size: 9px;">PANEL</span>
           </div>
-          <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: white; margin-bottom: 8px; font-size: 2rem;">${totalPanels}</h4>
+          <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: white; margin-bottom: 8px; font-size: 2rem;">${escapeHtml(totalPanels)}</h4>
           <p style="font-size: 0.75rem; color: var(--text-tertiary);">Total Panel Terdaftar</p>
         </div>
         
@@ -298,7 +299,7 @@ function renderDashboardTab() {
             </div>
             <span class="badge" style="background: hsla(160, 100%, 45%, 0.1); color: var(--success-400); font-size: 9px;">SAFE</span>
           </div>
-          <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: white; margin-bottom: 8px; font-size: 2rem;">${safePanels}</h4>
+          <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: white; margin-bottom: 8px; font-size: 2rem;">${escapeHtml(safePanels)}</h4>
           <p style="font-size: 0.75rem; color: var(--text-tertiary);">Panel Loading Normal (&lt;80%)</p>
         </div>
         
@@ -309,7 +310,7 @@ function renderDashboardTab() {
             </div>
             <span class="badge" style="background: hsla(45, 90%, 60%, 0.1); color: var(--warning-400); font-size: 9px;">WARNING</span>
           </div>
-          <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: white; margin-bottom: 8px; font-size: 2rem;">${warningPanels}</h4>
+          <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: white; margin-bottom: 8px; font-size: 2rem;">${escapeHtml(warningPanels)}</h4>
           <p style="font-size: 0.75rem; color: var(--text-tertiary);">Panel Warning (80-100%)</p>
         </div>
         
@@ -320,7 +321,7 @@ function renderDashboardTab() {
             </div>
             <span class="badge" style="background: hsla(0, 85%, 60%, 0.1); color: var(--danger-400); font-size: 9px;">CRITICAL</span>
           </div>
-          <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: white; margin-bottom: 8px; font-size: 2rem;">${overloadPanels}</h4>
+          <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: white; margin-bottom: 8px; font-size: 2rem;">${escapeHtml(overloadPanels)}</h4>
           <p style="font-size: 0.75rem; color: var(--text-tertiary);">Panel Overload (&gt;100%)</p>
         </div>
         
@@ -331,7 +332,7 @@ function renderDashboardTab() {
             </div>
             <span class="badge" style="background: hsla(280, 95%, 52%, 0.1); color: #a855f7; font-size: 9px;">MEASUREMENT</span>
           </div>
-          <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: white; margin-bottom: 8px; font-size: 2rem;">${totalMeasurements}</h4>
+          <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: white; margin-bottom: 8px; font-size: 2rem;">${escapeHtml(totalMeasurements)}</h4>
           <p style="font-size: 0.75rem; color: var(--text-tertiary);">Total Pengukuran</p>
         </div>
         
@@ -342,7 +343,7 @@ function renderDashboardTab() {
             </div>
             <span class="badge" style="background: hsla(20, 95%, 52%, 0.1); color: #f97316; font-size: 9px;">THERMAL</span>
           </div>
-          <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: white; margin-bottom: 8px; font-size: 2rem;">${totalThermal}</h4>
+          <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: white; margin-bottom: 8px; font-size: 2rem;">${escapeHtml(totalThermal)}</h4>
           <p style="font-size: 0.75rem; color: var(--text-tertiary);">Thermal Images</p>
         </div>
       </div>
@@ -427,10 +428,10 @@ function renderDashboardTab() {
         <div style="margin-bottom: 12px;">
           <div class="flex-between" style="margin-bottom: 8px;">
             <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-tertiary);">OVERALL INSPECTION PROGRESS</span>
-            <span style="font-size: 0.75rem; font-weight: 800; color: var(--brand-400);">${inspectionProgress}%</span>
+            <span style="font-size: 0.75rem; font-weight: 800; color: var(--brand-400);">${escapeHtml(inspectionProgress)}%</span>
           </div>
           <div style="height: 8px; background: hsla(220, 20%, 100%, 0.05); border-radius: 10px; overflow: hidden;">
-            <div style="width: ${inspectionProgress}%; height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--brand-500), var(--success-500)); box-shadow: 0 0 15px var(--brand-500); transition: width 0.5s ease;"></div>
+            <div style="width: ${escapeHtml(inspectionProgress)}%; height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--brand-500), var(--success-500)); box-shadow: 0 0 15px var(--brand-500); transition: width 0.5s ease;"></div>
           </div>
         </div>
         <p style="font-size: 0.7rem; color: var(--text-tertiary); margin: 0;">
@@ -473,12 +474,12 @@ function renderRecentActivity() {
   
   return activities.slice(0, 10).map(a => `
     <div class="activity-item">
-      <div class="activity-icon ${a.type}">
+      <div class="activity-icon ${escapeHtml(a.type)}">
         <i class="fas ${a.type === 'measurement' ? 'fa-ruler' : 'fa-temperature-high'}"></i>
       </div>
       <div class="activity-info">
         <span class="activity-panel">${escapeHtml(a.panel)}</span>
-        <span class="activity-desc">${a.description}</span>
+        <span class="activity-desc">${escapeHtml(a.description)}</span>
         <span class="activity-time">${new Date(a.time).toLocaleString('id-ID')}</span>
       </div>
     </div>
@@ -604,14 +605,14 @@ function renderModals() {
               <label>Panel *</label>
               <select name="panelId" id="measurement-panel-select" required>
                 <option value="">Pilih Panel</option>
-                ${panels.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('')}
+                ${panels.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('')}
               </select>
             </div>
             <div class="form-group">
               <label>Titik Pengukuran *</label>
               <select name="measurementPoint" required>
                 ${MEASUREMENT_POINT_TYPES.map(t => `
-                  <option value="${t.id}">${t.label} (${t.phase})</option>
+                  <option value="${escapeHtml(t.id)}">${escapeHtml(t.label)} (${escapeHtml(t.phase)})</option>
                 `).join('')}
               </select>
             </div>
@@ -695,7 +696,7 @@ function renderModals() {
             <label>Pilih Panel Target</label>
             <select id="import-panel-select">
               <option value="">Pilih Panel</option>
-              ${panels.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('')}
+              ${panels.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('')}
             </select>
           </div>
           <div class="file-drop-zone" id="import-drop-zone">
@@ -737,7 +738,7 @@ function renderModals() {
               <label>Panel *</label>
               <select name="panelId" id="thermal-panel-select" required>
                 <option value="">Pilih Panel</option>
-                ${panels.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('')}
+                ${panels.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('')}
               </select>
             </div>
             <div class="form-group">
@@ -814,8 +815,8 @@ function renderMCBSimulation() {
           <select id="sim-panel-select" onchange="updateSimPanel()">
             <option value="">Pilih Panel</option>
             ${panels.map(p => `
-              <option value="${p.id}" data-rating="${p.mcbRating}" data-current="${p.measurements?.[0]?.current || 0}">
-                ${escapeHtml(p.name)} - ${p.mcbRating}A
+              <option value="${escapeHtml(p.id)}" data-rating="${escapeHtml(p.mcbRating)}" data-current="${p.measurements?.[0]?.current || 0}">
+                ${escapeHtml(p.name)} - ${escapeHtml(p.mcbRating)}A
               </option>
             `).join('')}
           </select>
@@ -1434,14 +1435,6 @@ function getElectricalStyles() {
 }
 
 // Helper function
-function escapeHtml(text) {
-  if (!text) return '';
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
 
 // Make functions available globally
 window._switchElectricalTab = _switchElectricalTab;
@@ -1516,7 +1509,7 @@ function initThermalUploadListeners() {
       if (file) {
         const reader = new FileReader();
         reader.onload = (event) => {
-          preview.innerHTML = `<img src="${event.target.result}" style="max-width: 100%; max-height: 200px; border-radius: 8px;">`;
+          preview.innerHTML = `<img alt="Pratinjau gambar yang dipilih" src="${escapeHtml(event.target.result)}" style="max-width: 100%; max-height: 200px; border-radius: 8px;">`;
         };
         reader.readAsDataURL(file);
       }
@@ -1604,7 +1597,7 @@ function showMeasurementModal() {
     const select = document.getElementById('measurement-panel-select');
     if (select) {
       select.innerHTML = '<option value="">Pilih Panel</option>' +
-        panels.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+        panels.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('');
     }
   }
 }
@@ -1617,7 +1610,7 @@ function showImportModal() {
     const select = document.getElementById('import-panel-select');
     if (select) {
       select.innerHTML = '<option value="">Pilih Panel</option>' +
-        panels.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+        panels.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('');
     }
   }
 }
@@ -1629,7 +1622,7 @@ function showThermalModal() {
     const select = document.getElementById('thermal-panel-select');
     if (select) {
       select.innerHTML = '<option value="">Pilih Panel</option>' +
-        panels.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+        panels.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('');
     }
   }
 }
@@ -1778,19 +1771,19 @@ function previewCalculation() {
     <div class="calc-results-grid">
       <div class="calc-item">
         <span class="calc-label">Daya Aktif:</span>
-        <span class="calc-value">${powerCalc.activePowerKW} kW</span>
+        <span class="calc-value">${escapeHtml(powerCalc.activePowerKW)} kW</span>
       </div>
       <div class="calc-item">
         <span class="calc-label">Daya Semu:</span>
-        <span class="calc-value">${powerCalc.apparentPowerKVA} kVA</span>
+        <span class="calc-value">${escapeHtml(powerCalc.apparentPowerKVA)} kVA</span>
       </div>
       <div class="calc-item">
         <span class="calc-label">Arus Rata-rata:</span>
-        <span class="calc-value">${avgCurrent.toFixed(2)} A</span>
+        <span class="calc-value">${escapeHtml(avgCurrent.toFixed(2))} A</span>
       </div>
       <div class="calc-item">
         <span class="calc-label">Imbalance:</span>
-        <span class="calc-value ${imbalance.isCritical ? 'text-red' : 'text-green'}">${imbalance.imbalance}%</span>
+        <span class="calc-value ${imbalance.isCritical ? 'text-red' : 'text-green'}">${escapeHtml(imbalance.imbalance)}%</span>
       </div>
     </div>
   `;
@@ -1890,21 +1883,21 @@ async function handleImportFiles(files) {
     // Show preview
     previewDiv.style.display = 'block';
     document.getElementById('import-preview-content').innerHTML = `
-      <p><strong>Total Records:</strong> ${result.measurements.length}</p>
+      <p><strong>Total Records:</strong> ${escapeHtml(result.measurements.length)}</p>
       <p><strong>Valid Records:</strong> ${result.stats?.validRows || result.measurements.length}</p>
-      <p><strong>Errors:</strong> ${result.errors.length}</p>
+      <p><strong>Errors:</strong> ${escapeHtml(result.errors.length)}</p>
       ${result.measurements.length > 0 ? `
-        <table class="preview-table">
+        <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table class="preview-table">
           <tr><th>Time</th><th>Current (A)</th><th>Voltage (V)</th><th>Temp (°C)</th></tr>
           ${result.measurements.slice(0, 5).map(m => `
             <tr>
               <td>${new Date(m.timestamp).toLocaleString()}</td>
-              <td>${m.current?.toFixed(2) || '-'}</td>
-              <td>${m.voltage?.toFixed(1) || '-'}</td>
-              <td>${m.temperature?.toFixed(1) || '-'}</td>
+              <td>${escapeHtml(m.current?.toFixed(2) || '-')}</td>
+              <td>${escapeHtml(m.voltage?.toFixed(1) || '-')}</td>
+              <td>${escapeHtml(m.temperature?.toFixed(1) || '-')}</td>
             </tr>
           `).join('')}
-        </table>
+        </table></div>
         ${result.measurements.length > 5 ? `<p>... and ${result.measurements.length - 5} more records</p>` : ''}
       ` : ''}
     `;
@@ -1997,26 +1990,26 @@ function runMCBSimulation() {
     <div class="sim-result-grid">
       <div class="sim-item">
         <span class="sim-label">MCB Saat Ini:</span>
-        <span class="sim-value">${result.currentRating}A</span>
+        <span class="sim-value">${escapeHtml(result.currentRating)}A</span>
       </div>
       <div class="sim-item">
         <span class="sim-label">Loading Saat Ini:</span>
-        <span class="sim-value ${result.currentStatus === 'OVERLOAD' ? 'text-red' : result.currentStatus === 'WARNING' ? 'text-yellow' : 'text-green'}">${result.currentLoading}%</span>
+        <span class="sim-value ${result.currentStatus === 'OVERLOAD' ? 'text-red' : result.currentStatus === 'WARNING' ? 'text-yellow' : 'text-green'}">${escapeHtml(result.currentLoading)}%</span>
       </div>
       <div class="sim-item">
         <span class="sim-label">MCB Baru:</span>
-        <span class="sim-value">${result.newRating}A</span>
+        <span class="sim-value">${escapeHtml(result.newRating)}A</span>
       </div>
       <div class="sim-item">
         <span class="sim-label">Loading Baru:</span>
-        <span class="sim-value ${result.newStatus === 'OVERLOAD' ? 'text-red' : result.newStatus === 'WARNING' ? 'text-yellow' : 'text-green'}">${result.newLoading}%</span>
+        <span class="sim-value ${result.newStatus === 'OVERLOAD' ? 'text-red' : result.newStatus === 'WARNING' ? 'text-yellow' : 'text-green'}">${escapeHtml(result.newLoading)}%</span>
       </div>
       <div class="sim-item">
         <span class="sim-label">Perbaikan:</span>
-        <span class="sim-value text-green">${result.improvement.toFixed(1)}%</span>
+        <span class="sim-value text-green">${escapeHtml(result.improvement.toFixed(1))}%</span>
       </div>
     </div>
-    ${result.recommendation ? `<p class="sim-warning"><i class="fas fa-info-circle"></i> ${result.recommendation}</p>` : ''}
+    ${result.recommendation ? `<p class="sim-warning"><i class="fas fa-info-circle"></i> ${escapeHtml(result.recommendation)}</p>` : ''}
   `;
 }
 
@@ -2209,7 +2202,7 @@ function renderThermalTab() {
       </div>
       ${allThermal.length === 0 
         ? '<p class="empty-state">Belum ada data thermal. Upload gambar thermal untuk analisis.</p>'
-        : generateThermalHeatmap(allThermal.map(t => ({ temp: t.tempMax, component: `${t.panelName} - ${t.component}` })))
+        : generateThermalHeatmap(allThermal.map(t => ({ temp: t.tempMax, component: `${escapeHtml(t.panelName)} - ${escapeHtml(t.component)}` })))
       }
     </div>
   `;
@@ -2242,8 +2235,8 @@ function renderComplianceTab() {
         <div class="standards-list">
           ${PUIL_DATABASE.map(p => `
             <div class="standard-item">
-              <span class="standard-id">${p.id}</span>
-              <span class="standard-title">${p.judul}</span>
+              <span class="standard-id">${escapeHtml(p.id)}</span>
+              <span class="standard-title">${escapeHtml(p.judul)}</span>
             </div>
           `).join('')}
         </div>

@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import * as FireCalc from '../lib/fire-protection-calculators.js';
 import { showSuccess, showError, showInfo } from './toast.js';
 import { openModal, confirm } from './modal.js';
@@ -57,13 +58,13 @@ export function renderFireProtectionCard(project, summary = {}) {
   const hasData = summary.total_assets > 0;
   
   return `
-    <div class="card-quartz clickable" id="fire-protection-card" onclick="window.navigate('fire-protection', {id:'${project.id}'})" style="padding: var(--space-6); background: ${st.bg}; border-color: ${st.border}44">
+    <div class="card-quartz clickable" id="fire-protection-card" onclick="window.navigate('fire-protection', {id:'${escapeHtml(project.id)}'})" style="padding: var(--space-6); background: ${escapeHtml(st.bg)}; border-color: ${escapeHtml(st.border)}44">
       <div class="flex-between" style="margin-bottom: 20px">
-        <div style="width: 48px; height: 48px; border-radius: 14px; background: ${st.bg}; display: flex; align-items: center; justify-content: center; color: ${st.text}; border: 1px solid ${st.border}44">
+        <div style="width: 48px; height: 48px; border-radius: 14px; background: ${escapeHtml(st.bg)}; display: flex; align-items: center; justify-content: center; color: ${escapeHtml(st.text)}; border: 1px solid ${escapeHtml(st.border)}44">
           <i class="fas fa-fire-extinguisher" style="font-size: 1.4rem"></i>
         </div>
-        <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: ${st.text}">
-          ${summary.overall_status?.replace('_', ' ') || 'NOT STARTED'}
+        <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: ${escapeHtml(st.text)}">
+          ${escapeHtml(summary.overall_status?.replace('_', ' ') || 'NOT STARTED')}
         </div>
       </div>
       
@@ -77,19 +78,19 @@ export function renderFireProtectionCard(project, summary = {}) {
       ${hasData ? `
         <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px">
           <div style="background: hsla(220, 20%, 100%, 0.03); padding: 8px; border-radius: 8px; text-align: center">
-            <div style="font-size: 1rem; font-weight: 800; color: var(--success-400)">${summary.apar_count || 0}</div>
+            <div style="font-size: 1rem; font-weight: 800; color: var(--success-400)">${escapeHtml(summary.apar_count || 0)}</div>
             <div style="font-size: 9px; color: var(--text-tertiary)">APAR</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.03); padding: 8px; border-radius: 8px; text-align: center">
-            <div style="font-size: 1rem; font-weight: 800; color: var(--brand-400)">${summary.hydrant_count || 0}</div>
+            <div style="font-size: 1rem; font-weight: 800; color: var(--brand-400)">${escapeHtml(summary.hydrant_count || 0)}</div>
             <div style="font-size: 9px; color: var(--text-tertiary)">Hydrant</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.03); padding: 8px; border-radius: 8px; text-align: center">
-            <div style="font-size: 1rem; font-weight: 800; color: var(--gold-400)">${summary.sprinkler_count || 0}</div>
+            <div style="font-size: 1rem; font-weight: 800; color: var(--gold-400)">${escapeHtml(summary.sprinkler_count || 0)}</div>
             <div style="font-size: 9px; color: var(--text-tertiary)">Sprinkler</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.03); padding: 8px; border-radius: 8px; text-align: center">
-            <div style="font-size: 1rem; font-weight: 800; color: var(--text-secondary)">${summary.detector_count || 0}</div>
+            <div style="font-size: 1rem; font-weight: 800; color: var(--text-secondary)">${escapeHtml(summary.detector_count || 0)}</div>
             <div style="font-size: 9px; color: var(--text-tertiary)">Detector</div>
           </div>
         </div>
@@ -97,15 +98,15 @@ export function renderFireProtectionCard(project, summary = {}) {
         <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid hsla(220, 20%, 100%, 0.05)">
           <div class="flex-between" style="margin-bottom: 8px">
             <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-tertiary)">COMPLIANCE RATE</span>
-            <span style="font-size: 0.7rem; font-weight: 800; color: ${st.text}">${summary.compliance_rate || 0}%</span>
+            <span style="font-size: 0.7rem; font-weight: 800; color: ${escapeHtml(st.text)}">${escapeHtml(summary.compliance_rate || 0)}%</span>
           </div>
           <div style="height: 4px; background: hsla(220, 20%, 100%, 0.05); border-radius: 10px">
-            <div style="width: ${Math.min(100, summary.compliance_rate || 0)}%; height: 100%; border-radius: 10px; background: ${st.text}; box-shadow: 0 0 10px ${st.text}66"></div>
+            <div style="width: ${Math.min(100, summary.compliance_rate || 0)}%; height: 100%; border-radius: 10px; background: ${escapeHtml(st.text)}; box-shadow: 0 0 10px ${escapeHtml(st.text)}66"></div>
           </div>
           ${summary.recent_failures > 0 ? `
             <div style="margin-top: 8px; font-size: 10px; color: var(--danger-400)">
               <i class="fas fa-triangle-exclamation" style="margin-right: 4px"></i>
-              ${summary.recent_failures} kegagalan inspeksi dalam 30 hari terakhir
+              ${escapeHtml(summary.recent_failures)} kegagalan inspeksi dalam 30 hari terakhir
             </div>
           ` : ''}
         </div>
@@ -114,7 +115,7 @@ export function renderFireProtectionCard(project, summary = {}) {
           <p style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 12px">
             Belum ada data fire protection
           </p>
-          <span class="badge" style="background: ${st.bg}; color: ${st.text}; border: 1px solid ${st.border}44; font-size: 10px">
+          <span class="badge" style="background: ${escapeHtml(st.bg)}; color: ${escapeHtml(st.text)}; border: 1px solid ${escapeHtml(st.border)}44; font-size: 10px">
             KLIK UNTUK MEMULAI
           </span>
         </div>
@@ -147,10 +148,10 @@ export async function renderFireProtectionModule(projectId) {
             </p>
           </div>
           <div class="flex gap-3">
-            <button class="btn btn-outline btn-sm" onclick="window._exportFireData('${projectId}')">
+            <button class="btn btn-outline btn-sm" onclick="window._exportFireData('${escapeHtml(projectId)}')">
               <i class="fas fa-download" style="margin-right: 8px"></i> Export
             </button>
-            <button class="btn btn-primary btn-sm" onclick="window._generateFireReport('${projectId}')">
+            <button class="btn btn-primary btn-sm" onclick="window._generateFireReport('${escapeHtml(projectId)}')">
               <i class="fas fa-file-pdf" style="margin-right: 8px"></i> Laporan
             </button>
           </div>
@@ -204,8 +205,8 @@ export async function renderFireProtectionModule(projectId) {
 
 function renderTabButton(id, label, icon, active = false) {
   return `
-    <button class="fire-tab-btn ${active ? 'active' : ''}" data-tab="${id}" 
-            onclick="window._switchFireTab('${id}', this)"
+    <button class="fire-tab-btn ${active ? 'active' : ''}" data-tab="${escapeHtml(id)}" 
+            onclick="window._switchFireTab('${escapeHtml(id)}', this)"
             style="flex: 1; padding: 16px; background: ${active ? 'hsla(0, 85%, 60%, 0.1)' : 'transparent'}; 
                    border: none; border-bottom: 2px solid ${active ? 'var(--danger-400)' : 'transparent'}; 
                    color: ${active ? 'white' : 'var(--text-tertiary)'}; cursor: pointer;
@@ -213,7 +214,7 @@ function renderTabButton(id, label, icon, active = false) {
                    display: flex; align-items: center; justify-content: center; gap: 8px;
                    transition: all 0.2s">
       <i class="fas ${icon}"></i>
-      ${label}
+      ${escapeHtml(label)}
     </button>
   `;
 }
@@ -237,10 +238,10 @@ function renderAssetsTab(projectId, assets = []) {
       <!-- Asset Type Quick Add -->
       <div class="grid-3-col" style="margin-bottom: var(--space-6)">
         ${assetTypes.map(at => `
-          <div class="card-quartz clickable" onclick="window._addFireAsset('${projectId}', '${at.type}')" 
+          <div class="card-quartz clickable" onclick="window._addFireAsset('${escapeHtml(projectId)}', '${escapeHtml(at.type)}')" 
                style="padding: var(--space-4); text-align: center; background: hsla(220, 20%, 100%, 0.02)">
-            <i class="fas ${at.icon}" style="font-size: 1.5rem; color: ${at.color}; margin-bottom: 8px"></i>
-            <div style="font-size: 0.75rem; font-weight: 700; color: white">${at.type}</div>
+            <i class="fas ${at.icon}" style="font-size: 1.5rem; color: ${escapeHtml(at.color)}; margin-bottom: 8px"></i>
+            <div style="font-size: 0.75rem; font-weight: 700; color: white">${escapeHtml(at.type)}</div>
             <div style="font-size: 0.65rem; color: var(--text-tertiary)">Tambah Aset</div>
           </div>
         `).join('')}
@@ -267,7 +268,7 @@ function renderAssetsTab(projectId, assets = []) {
           <div style="text-align: center; padding: 40px; color: var(--text-tertiary)">
             <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 16px; opacity: 0.3"></i>
             <p>Belum ada aset fire protection</p>
-            <button class="btn btn-primary btn-sm" style="margin-top: 12px" onclick="window._addFireAsset('${projectId}')">
+            <button class="btn btn-primary btn-sm" style="margin-top: 12px" onclick="window._addFireAsset('${escapeHtml(projectId)}')">
               <i class="fas fa-plus" style="margin-right: 8px"></i> Tambah Aset Pertama
             </button>
           </div>
@@ -280,7 +281,7 @@ function renderAssetsTab(projectId, assets = []) {
 function renderAssetsTable(assets) {
   return `
     <div style="overflow-x: auto">
-      <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem">
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width: 100%; border-collapse: collapse; font-size: 0.8rem">
         <thead>
           <tr style="border-bottom: 1px solid hsla(220, 20%, 100%, 0.1)">
             <th style="padding: 12px; text-align: left; color: var(--text-tertiary); font-weight: 700">Tipe</th>
@@ -296,30 +297,31 @@ function renderAssetsTable(assets) {
             <tr style="border-bottom: 1px solid hsla(220, 20%, 100%, 0.05)">
               <td style="padding: 12px; color: white; font-weight: 600">
                 <i class="fas ${getAssetIcon(asset.asset_type)}" style="margin-right: 8px; color: var(--brand-400)"></i>
-                ${asset.asset_type}
+                ${escapeHtml(asset.asset_type)}
               </td>
-              <td style="padding: 12px; color: var(--text-secondary)">${asset.location_name || '-'}</td>
-              <td style="padding: 12px; color: var(--text-secondary)">${asset.floor_level || '-'}</td>
+              <td style="padding: 12px; color: var(--text-secondary)">${escapeHtml(asset.location_name || '-')}</td>
+              <td style="padding: 12px; color: var(--text-secondary)">${escapeHtml(asset.floor_level || '-')}</td>
               <td style="padding: 12px; text-align: center">
                 <span class="badge" style="background: ${getStatusColor(asset.status)}1a; color: ${getStatusColor(asset.status)}; border: 1px solid ${getStatusColor(asset.status)}44; font-size: 10px">
-                  ${asset.status}
+                  ${escapeHtml(asset.status)}
                 </span>
               </td>
               <td style="padding: 12px; text-align: center; color: var(--text-secondary)">
                 ${asset.last_inspection_date ? new Date(asset.last_inspection_date).toLocaleDateString('id-ID') : '-'}
               </td>
               <td style="padding: 12px; text-align: center">
-                <button class="btn btn-ghost btn-xs" onclick="window._inspectAsset('${asset.id}')">
-                  <i class="fas fa-clipboard-check"></i>
+                <button class="btn btn-ghost btn-xs" aria-label="Periksa aset"
+                        onclick="window._inspectAsset('${escapeHtml(asset.id)}')">
+                  <i class="fas fa-clipboard-check" aria-hidden="true"></i>
                 </button>
-                <button class="btn btn-ghost btn-xs" onclick="window._editAsset('${asset.id}')">
+                <button type="button" aria-label="Ubah" class="btn btn-ghost btn-xs" onclick="window._editAsset('${escapeHtml(asset.id)}')">
                   <i class="fas fa-pen"></i>
                 </button>
               </td>
             </tr>
           `).join('')}
         </tbody>
-      </table>
+      </table></div>
     </div>
   `;
 }
@@ -436,10 +438,10 @@ function renderDetectionTab() {
 
 function renderStatusCard(status, color, icon, label) {
   return `
-    <div class="card-quartz" style="padding: var(--space-4); text-align: center; background: ${color}1a; border-color: ${color}44">
-      <i class="fas ${icon}" style="font-size: 2rem; color: ${color}; margin-bottom: 12px"></i>
-      <div style="font-size: 0.9rem; font-weight: 800; color: white">${status}</div>
-      <div style="font-size: 0.7rem; color: var(--text-tertiary)">${label}</div>
+    <div class="card-quartz" style="padding: var(--space-4); text-align: center; background: ${escapeHtml(color)}1a; border-color: ${escapeHtml(color)}44">
+      <i class="fas ${icon}" style="font-size: 2rem; color: ${escapeHtml(color)}; margin-bottom: 12px"></i>
+      <div style="font-size: 0.9rem; font-weight: 800; color: white">${escapeHtml(status)}</div>
+      <div style="font-size: 0.7rem; color: var(--text-tertiary)">${escapeHtml(label)}</div>
     </div>
   `;
 }
@@ -925,7 +927,7 @@ function renderRiskTab() {
         </h4>
         <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; max-width: 500px; margin: 0 auto">
           ${renderRiskMatrixCell('', 'transparent', '#')}
-          ${[1, 2, 3, 4, 5].map(c => renderRiskMatrixCell(`C${c}`, 'transparent', c)).join('')}
+          ${[1, 2, 3, 4, 5].map(c => renderRiskMatrixCell(`C${escapeHtml(c)}`, 'transparent', c)).join('')}
           ${[5, 4, 3, 2, 1].map(p => {
             let color;
             if (p * 1 <= 4) color = '#22c55e'; // LOW - Green
@@ -933,7 +935,7 @@ function renderRiskTab() {
             else if (p * 1 <= 14) color = '#f97316'; // HIGH - Orange
             else color = '#ef4444'; // EXTREME - Red
             
-            return renderRiskMatrixCell(`P${p}`, 'transparent', p) + 
+            return renderRiskMatrixCell(`P${escapeHtml(p)}`, 'transparent', p) + 
               [1, 2, 3, 4, 5].map(c => {
                 const score = p * c;
                 let bg = '#22c55e33';
@@ -971,10 +973,10 @@ function renderRiskMatrixCell(text, bg, label) {
   const color = label ? 'var(--text-tertiary)' : 'white';
   return `
     <div style="aspect-ratio: 1; display: flex; align-items: center; justify-content: center; 
-                background: ${bg}; border: 1px solid hsla(220, 20%, 100%, 0.1); 
-                font-size: 0.75rem; font-weight: 700; color: ${color}; 
+                background: ${escapeHtml(bg)}; border: 1px solid hsla(220, 20%, 100%, 0.1); 
+                font-size: 0.75rem; font-weight: 700; color: ${escapeHtml(color)}; 
                 border-radius: 4px">
-      ${text}
+      ${escapeHtml(text)}
     </div>
   `;
 }
@@ -1045,19 +1047,19 @@ export function initFireProtectionHandlers(projectId) {
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px">
           <div style="background: hsla(220, 20%, 100%, 0.03); padding: 12px; border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Radius Coverage</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: var(--success-400)">${coverage.maxRadius} m</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: var(--success-400)">${escapeHtml(coverage.maxRadius)} m</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.03); padding: 12px; border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Max Area per Detector</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: var(--success-400)">${coverage.maxArea} m²</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: var(--success-400)">${escapeHtml(coverage.maxArea)} m²</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.03); padding: 12px; border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Max Spacing</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: var(--success-400)">${coverage.spacing} m</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: var(--success-400)">${escapeHtml(coverage.spacing)} m</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.03); padding: 12px; border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Recommended Qty</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: var(--danger-400)">${recommendedQty} unit</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: var(--danger-400)">${escapeHtml(recommendedQty)} unit</div>
           </div>
         </div>
         <div style="margin-top: 12px; padding: 12px; background: hsla(220, 95%, 52%, 0.1); border-radius: 8px; font-size: 0.75rem; color: var(--text-secondary)">
@@ -1084,23 +1086,23 @@ export function initFireProtectionHandlers(projectId) {
             <i class="fas ${result.allPass ? 'fa-check' : 'fa-xmark'}" style="font-size: 1.5rem; color: ${result.allPass ? 'var(--success-400)' : 'var(--danger-400)'}"></i>
           </div>
           <div>
-            <div style="font-size: 1rem; font-weight: 800; color: white">${result.status}</div>
+            <div style="font-size: 1rem; font-weight: 800; color: white">${escapeHtml(result.status)}</div>
             <div style="font-size: 0.75rem; color: var(--text-tertiary)">SNI 03-1735-2004 Pasal 6.1</div>
           </div>
         </div>
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px">
           <div style="padding: 12px; background: ${result.checks.spacing.pass ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Jarak antar MCP</div>
-            <div style="font-size: 1rem; font-weight: 700; color: white">${result.checks.spacing.value} m</div>
+            <div style="font-size: 1rem; font-weight: 700; color: white">${escapeHtml(result.checks.spacing.value)} m</div>
             <div style="font-size: 0.65rem; color: ${result.checks.spacing.pass ? 'var(--success-400)' : 'var(--danger-400)'}">
-              Max: ${result.checks.spacing.max} m
+              Max: ${escapeHtml(result.checks.spacing.max)} m
             </div>
           </div>
           <div style="padding: 12px; background: ${result.checks.height.pass ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Tinggi Pemasangan</div>
-            <div style="font-size: 1rem; font-weight: 700; color: white">${result.checks.height.value} m</div>
+            <div style="font-size: 1rem; font-weight: 700; color: white">${escapeHtml(result.checks.height.value)} m</div>
             <div style="font-size: 0.65rem; color: ${result.checks.height.pass ? 'var(--success-400)' : 'var(--danger-400)'}">
-              Ideal: ${result.checks.height.ideal} m
+              Ideal: ${escapeHtml(result.checks.height.ideal)} m
             </div>
           </div>
         </div>
@@ -1122,20 +1124,20 @@ export function initFireProtectionHandlers(projectId) {
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px">
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Jumlah APAR Dibutuhkan</div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger-400)">${req.requiredQuantity} unit</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger-400)">${escapeHtml(req.requiredQuantity)} unit</div>
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Kapasitas Minimum</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: var(--success-400)">${req.capacity.minCapacity} kg</div>
-            <div style="font-size: 0.65rem; color: var(--text-tertiary)">${req.capacity.type}</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: var(--success-400)">${escapeHtml(req.capacity.minCapacity)} kg</div>
+            <div style="font-size: 0.65rem; color: var(--text-tertiary)">${escapeHtml(req.capacity.type)}</div>
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Max Travel Distance</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: var(--brand-400)">${req.placement.maxTravelDistance} m</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: var(--brand-400)">${escapeHtml(req.placement.maxTravelDistance)} m</div>
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Mounting Height</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: var(--gold-400)">${req.placement.mountingHeight.min}-${req.placement.mountingHeight.max} m</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: var(--gold-400)">${escapeHtml(req.placement.mountingHeight.min)}-${escapeHtml(req.placement.mountingHeight.max)} m</div>
           </div>
         </div>
         <div style="margin-top: 12px; font-size: 0.7rem; color: var(--text-tertiary)">
@@ -1159,21 +1161,21 @@ export function initFireProtectionHandlers(projectId) {
         <div style="text-align: center; margin-bottom: 16px">
           <div style="font-size: 0.75rem; color: var(--text-tertiary)">Debit Aliran</div>
           <div style="font-size: 2.5rem; font-weight: 800; color: ${result.compliance.outdoor ? 'var(--success-400)' : 'var(--danger-400)'}">
-            ${result.flowRate.value}
+            ${escapeHtml(result.flowRate.value)}
           </div>
           <div style="font-size: 1rem; color: var(--text-secondary)">LPM</div>
         </div>
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px">
           <div style="padding: 12px; background: ${result.compliance.indoor ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; text-align: center">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Indoor Standard</div>
-            <div style="font-size: 0.9rem; font-weight: 700; color: white">${result.standards.indoor.min} LPM</div>
+            <div style="font-size: 0.9rem; font-weight: 700; color: white">${escapeHtml(result.standards.indoor.min)} LPM</div>
             <div style="font-size: 0.65rem; color: ${result.compliance.indoor ? 'var(--success-400)' : 'var(--danger-400)'}">
               ${result.compliance.indoor ? '✓ COMPLIANT' : '✗ FAIL'}
             </div>
           </div>
           <div style="padding: 12px; background: ${result.compliance.outdoor ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; text-align: center">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Outdoor Standard</div>
-            <div style="font-size: 0.9rem; font-weight: 700; color: white">${result.standards.outdoor.min} LPM</div>
+            <div style="font-size: 0.9rem; font-weight: 700; color: white">${escapeHtml(result.standards.outdoor.min)} LPM</div>
             <div style="font-size: 0.65rem; color: ${result.compliance.outdoor ? 'var(--success-400)' : 'var(--danger-400)'}">
               ${result.compliance.outdoor ? '✓ COMPLIANT' : '✗ FAIL'}
             </div>
@@ -1182,7 +1184,7 @@ export function initFireProtectionHandlers(projectId) {
         <div style="margin-top: 12px; padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
           <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-bottom: 4px">Formula</div>
           <div style="font-size: 0.8rem; color: var(--text-secondary); font-family: monospace">
-            Q = 0.067 × d² × √P = 0.067 × ${nozzleDia}² × √${Math.round(pressure/100 * 10)/10}
+            Q = 0.067 × d² × √P = 0.067 × ${escapeHtml(nozzleDia)}² × √${Math.round(pressure/100 * 10)/10}
           </div>
         </div>
       `;
@@ -1202,36 +1204,36 @@ export function initFireProtectionHandlers(projectId) {
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px">
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; text-align: center">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Design Density</div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: var(--success-400)">${design.criteria.density}</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--success-400)">${escapeHtml(design.criteria.density)}</div>
             <div style="font-size: 0.65rem; color: var(--text-tertiary)">mm/min</div>
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; text-align: center">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Required Flow</div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger-400)">${design.requiredFlow}</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger-400)">${escapeHtml(design.requiredFlow)}</div>
             <div style="font-size: 0.65rem; color: var(--text-tertiary)">LPM</div>
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; text-align: center">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">K-Factor</div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: var(--brand-400)">${design.kFactor}</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--brand-400)">${escapeHtml(design.kFactor)}</div>
             <div style="font-size: 0.65rem; color: var(--text-tertiary)">@ 0.7 bar</div>
           </div>
         </div>
         <div style="margin-top: 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px">
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Max Spacing</div>
-            <div style="font-size: 1rem; font-weight: 700; color: white">${design.placement.maxSpacing} m</div>
+            <div style="font-size: 1rem; font-weight: 700; color: white">${escapeHtml(design.placement.maxSpacing)} m</div>
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Max Coverage Area</div>
-            <div style="font-size: 1rem; font-weight: 700; color: white">${design.placement.maxCoverageArea} m²</div>
+            <div style="font-size: 1rem; font-weight: 700; color: white">${escapeHtml(design.placement.maxCoverageArea)} m²</div>
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Sprinklers in Design Area</div>
-            <div style="font-size: 1rem; font-weight: 700; color: white">${design.sprinklersInArea} heads</div>
+            <div style="font-size: 1rem; font-weight: 700; color: white">${escapeHtml(design.sprinklersInArea)} heads</div>
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Flow per Sprinkler</div>
-            <div style="font-size: 1rem; font-weight: 700; color: white">${design.flowPerSprinkler} LPM</div>
+            <div style="font-size: 1rem; font-weight: 700; color: white">${escapeHtml(design.flowPerSprinkler)} LPM</div>
           </div>
         </div>
         <div style="margin-top: 12px; font-size: 0.7rem; color: var(--text-tertiary)">
@@ -1258,13 +1260,13 @@ export function initFireProtectionHandlers(projectId) {
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px">
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Occupant Load</div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger-400)">${result.occupantLoad} orang</div>
-            <div style="font-size: 0.65rem; color: var(--text-tertiary)">${result.loadFactor} m²/person</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger-400)">${escapeHtml(result.occupantLoad)} orang</div>
+            <div style="font-size: 0.65rem; color: var(--text-tertiary)">${escapeHtml(result.loadFactor)} m²/person</div>
           </div>
           <div style="padding: 12px; background: ${result.travelDistance.compliant ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Travel Distance</div>
             <div style="font-size: 1.2rem; font-weight: 800; color: ${result.travelDistance.compliant ? 'var(--success-400)' : 'var(--danger-400)'}">
-              ${result.travelDistance.actual} m
+              ${escapeHtml(result.travelDistance.actual)} m
             </div>
             <div style="font-size: 0.65rem; color: ${result.travelDistance.compliant ? 'var(--success-400)' : 'var(--danger-400)'}">
               ${result.travelDistance.compliant ? '✓ COMPLIANT' : '✗ FAIL (Max: ' + result.travelDistance.maxSprinklered + 'm)'}
@@ -1273,7 +1275,7 @@ export function initFireProtectionHandlers(projectId) {
           <div style="padding: 12px; background: ${result.exitWidth.compliant ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Exit Width</div>
             <div style="font-size: 1.2rem; font-weight: 800; color: ${result.exitWidth.compliant ? 'var(--success-400)' : 'var(--danger-400)'}">
-              ${result.exitWidth.actual} m
+              ${escapeHtml(result.exitWidth.actual)} m
             </div>
             <div style="font-size: 0.65rem; color: ${result.exitWidth.compliant ? 'var(--success-400)' : 'var(--danger-400)'}">
               ${result.exitWidth.compliant ? '✓ COMPLIANT' : '✗ FAIL (Min: ' + result.exitWidth.required + 'm)'}
@@ -1281,14 +1283,14 @@ export function initFireProtectionHandlers(projectId) {
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Dead End Limit</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: var(--brand-400)">${result.deadEndLimit} m</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: var(--brand-400)">${escapeHtml(result.deadEndLimit)} m</div>
           </div>
         </div>
         <div style="margin-top: 12px; padding: 12px; background: hsla(0, 85%, 60%, 0.05); border-radius: 8px">
           <div style="font-size: 0.75rem; color: var(--text-secondary)">
             <i class="fas fa-door-open" style="margin-right: 6px; color: var(--danger-400)"></i>
             Panic Bar Required: ${result.doorRequirements.panicBar ? 'YA' : 'TIDAK'} | 
-            Swing Direction: ${result.doorRequirements.swingDirection}
+            Swing Direction: ${escapeHtml(result.doorRequirements.swingDirection)}
           </div>
         </div>
       `;
@@ -1308,20 +1310,20 @@ export function initFireProtectionHandlers(projectId) {
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px">
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; text-align: center">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Required Lux</div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: var(--success-400)">${result.requiredLux}</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--success-400)">${escapeHtml(result.requiredLux)}</div>
             <div style="font-size: 0.65rem; color: var(--text-tertiary)">lux</div>
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; text-align: center">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Fixtures Required</div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger-400)">${result.requiredFixtures}</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger-400)">${escapeHtml(result.requiredFixtures)}</div>
             <div style="font-size: 0.65rem; color: var(--text-tertiary)">units</div>
           </div>
         </div>
         <div style="margin-top: 12px; padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
           <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-bottom: 4px">Battery Backup</div>
           <div style="font-size: 0.9rem; color: var(--text-secondary)">
-            Min Duration: ${result.batteryBackup.minDuration} minutes | 
-            Est. Load: ${result.batteryBackup.load} W
+            Min Duration: ${escapeHtml(result.batteryBackup.minDuration)} minutes | 
+            Est. Load: ${escapeHtml(result.batteryBackup.load)} W
           </div>
         </div>
       `;
@@ -1342,14 +1344,14 @@ export function initFireProtectionHandlers(projectId) {
         <div style="text-align: center; margin-bottom: 16px">
           <div style="font-size: 0.75rem; color: var(--text-tertiary)">Water Supply Duration</div>
           <div style="font-size: 2.5rem; font-weight: 800; color: ${result.compliance ? 'var(--success-400)' : 'var(--danger-400)'}">
-            ${result.durationMinutes}
+            ${escapeHtml(result.durationMinutes)}
           </div>
-          <div style="font-size: 1rem; color: var(--text-secondary)">minutes (${result.durationHours} hours)</div>
+          <div style="font-size: 1rem; color: var(--text-secondary)">minutes (${escapeHtml(result.durationHours)} hours)</div>
         </div>
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px">
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Required Duration</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: white">${result.requiredDuration} min</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: white">${escapeHtml(result.requiredDuration)} min</div>
           </div>
           <div style="padding: 12px; background: ${result.compliance ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Status</div>
@@ -1384,13 +1386,13 @@ export function initFireProtectionHandlers(projectId) {
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px">
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; text-align: center">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Power Required</div>
-            <div style="font-size: 1.8rem; font-weight: 800; color: var(--danger-400)">${result.powerKW}</div>
-            <div style="font-size: 0.8rem; color: var(--text-tertiary)">kW (${result.powerHP} HP)</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: var(--danger-400)">${escapeHtml(result.powerKW)}</div>
+            <div style="font-size: 0.8rem; color: var(--text-tertiary)">kW (${escapeHtml(result.powerHP)} HP)</div>
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Electrical</div>
-            <div style="font-size: 0.9rem; font-weight: 700; color: white">${result.electrical.voltage}V / ${result.electrical.current}A</div>
-            <div style="font-size: 0.65rem; color: var(--text-tertiary)">Cable: ${result.electrical.cableSize}</div>
+            <div style="font-size: 0.9rem; font-weight: 700; color: white">${escapeHtml(result.electrical.voltage)}V / ${escapeHtml(result.electrical.current)}A</div>
+            <div style="font-size: 0.65rem; color: var(--text-tertiary)">Cable: ${escapeHtml(result.electrical.cableSize)}</div>
           </div>
         </div>
         <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
@@ -1426,22 +1428,22 @@ export function initFireProtectionHandlers(projectId) {
           <div style="width: 80px; height: 80px; border-radius: 50%; background: hsla(0, 85%, 60%, 0.1); 
                       display: flex; align-items: center; justify-content: center; border: 3px solid var(--danger-400)">
             <div style="text-align: center">
-              <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger-400)">${result.requiredFRR}</div>
+              <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger-400)">${escapeHtml(result.requiredFRR)}</div>
               <div style="font-size: 0.6rem; color: var(--text-tertiary)">HOURS</div>
             </div>
           </div>
           <div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: white">${result.elementType.toUpperCase()}</div>
-            <div style="font-size: 0.8rem; color: var(--text-tertiary)">Risk Level: ${result.riskLevel}</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: white">${escapeHtml(result.elementType.toUpperCase())}</div>
+            <div style="font-size: 0.8rem; color: var(--text-tertiary)">Risk Level: ${escapeHtml(result.riskLevel)}</div>
             <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px">
-              ${result.requiredFRRMinutes} minutes FRR required
+              ${escapeHtml(result.requiredFRRMinutes)} minutes FRR required
             </div>
           </div>
         </div>
         <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
           <div style="font-size: 0.75rem; color: var(--text-secondary)">
             <i class="fas fa-info-circle" style="margin-right: 6px; color: var(--brand-400)"></i>
-            ${result.notes}
+            ${escapeHtml(result.notes)}
           </div>
         </div>
       `;
@@ -1460,21 +1462,21 @@ export function initFireProtectionHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="text-align: center; margin-bottom: 16px">
-          <div style="width: 100px; height: 100px; border-radius: 50%; background: ${result.colorCode}22; 
+          <div style="width: 100px; height: 100px; border-radius: 50%; background: ${escapeHtml(result.colorCode)}22; 
                       display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; 
-                      border: 4px solid ${result.colorCode}">
+                      border: 4px solid ${escapeHtml(result.colorCode)}">
             <div>
-              <div style="font-size: 2rem; font-weight: 800; color: ${result.colorCode}">${result.riskScore}</div>
+              <div style="font-size: 2rem; font-weight: 800; color: ${escapeHtml(result.colorCode)}">${escapeHtml(result.riskScore)}</div>
               <div style="font-size: 0.6rem; color: var(--text-tertiary)">SCORE</div>
             </div>
           </div>
-          <div style="font-size: 1.2rem; font-weight: 800; color: ${result.colorCode}">${result.riskLevel}</div>
-          <div style="font-size: 0.75rem; color: var(--text-tertiary)">${result.probabilityLabel} × ${result.consequenceLabel}</div>
+          <div style="font-size: 1.2rem; font-weight: 800; color: ${escapeHtml(result.colorCode)}">${escapeHtml(result.riskLevel)}</div>
+          <div style="font-size: 0.75rem; color: var(--text-tertiary)">${escapeHtml(result.probabilityLabel)} × ${escapeHtml(result.consequenceLabel)}</div>
         </div>
-        <div style="padding: 12px; background: ${result.colorCode}22; border-radius: 8px">
+        <div style="padding: 12px; background: ${escapeHtml(result.colorCode)}22; border-radius: 8px">
           <div style="font-size: 0.75rem; color: var(--text-secondary)">
-            <i class="fas fa-exclamation-triangle" style="margin-right: 6px; color: ${result.colorCode}"></i>
-            <strong>Action Required:</strong> ${result.actionRequired}
+            <i class="fas fa-exclamation-triangle" style="margin-right: 6px; color: ${escapeHtml(result.colorCode)}"></i>
+            <strong>Action Required:</strong> ${escapeHtml(result.actionRequired)}
           </div>
         </div>
       `;
@@ -1506,41 +1508,41 @@ export function initFireProtectionHandlers(projectId) {
             <div>
               <div style="font-size: 2rem; font-weight: 800; 
                           color: ${result.result === 'PASS' ? 'var(--success-400)' : 'var(--danger-400)'}">
-                ${result.totalScore}
+                ${escapeHtml(result.totalScore)}
               </div>
               <div style="font-size: 0.6rem; color: var(--text-tertiary)">POINTS</div>
             </div>
           </div>
           <div style="font-size: 1.2rem; font-weight: 800; 
                       color: ${result.result === 'PASS' ? 'var(--success-400)' : 'var(--danger-400)'}">
-            ${result.result}
+            ${escapeHtml(result.result)}
           </div>
           <div style="font-size: 0.75rem; color: var(--text-tertiary)">
-            Pass Threshold: ${result.passThreshold} points
+            Pass Threshold: ${escapeHtml(result.passThreshold)} points
           </div>
         </div>
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px">
           <div style="padding: 8px; background: hsla(0, 85%, 60%, 0.1); border-radius: 8px; text-align: center">
             <div style="font-size: 0.65rem; color: var(--text-tertiary)">Critical (×10)</div>
-            <div style="font-size: 1rem; font-weight: 700; color: var(--danger-400)">${result.breakdown.critical.count}</div>
-            <div style="font-size: 0.65rem; color: var(--danger-400)">${result.breakdown.critical.score} pts</div>
+            <div style="font-size: 1rem; font-weight: 700; color: var(--danger-400)">${escapeHtml(result.breakdown.critical.count)}</div>
+            <div style="font-size: 0.65rem; color: var(--danger-400)">${escapeHtml(result.breakdown.critical.score)} pts</div>
           </div>
           <div style="padding: 8px; background: hsla(45, 90%, 60%, 0.1); border-radius: 8px; text-align: center">
             <div style="font-size: 0.65rem; color: var(--text-tertiary)">Major (×5)</div>
-            <div style="font-size: 1rem; font-weight: 700; color: var(--warning-400)">${result.breakdown.major.count}</div>
-            <div style="font-size: 0.65rem; color: var(--warning-400)">${result.breakdown.major.score} pts</div>
+            <div style="font-size: 1rem; font-weight: 700; color: var(--warning-400)">${escapeHtml(result.breakdown.major.count)}</div>
+            <div style="font-size: 0.65rem; color: var(--warning-400)">${escapeHtml(result.breakdown.major.score)} pts</div>
           </div>
           <div style="padding: 8px; background: hsla(220, 20%, 100%, 0.05); border-radius: 8px; text-align: center">
             <div style="font-size: 0.65rem; color: var(--text-tertiary)">Minor (×1)</div>
-            <div style="font-size: 1rem; font-weight: 700; color: var(--text-secondary)">${result.breakdown.minor.count}</div>
-            <div style="font-size: 0.65rem; color: var(--text-secondary)">${result.breakdown.minor.score} pts</div>
+            <div style="font-size: 1rem; font-weight: 700; color: var(--text-secondary)">${escapeHtml(result.breakdown.minor.count)}</div>
+            <div style="font-size: 0.65rem; color: var(--text-secondary)">${escapeHtml(result.breakdown.minor.score)} pts</div>
           </div>
         </div>
         ${result.recommendations.length > 0 ? `
           <div style="padding: 12px; background: hsla(0, 85%, 60%, 0.1); border-radius: 8px">
             <div style="font-size: 0.75rem; color: var(--danger-400)">
               <i class="fas fa-exclamation-circle" style="margin-right: 6px"></i>
-              ${result.recommendations[0]}
+              ${escapeHtml(result.recommendations[0])}
             </div>
           </div>
         ` : ''}
@@ -1603,7 +1605,7 @@ export function initFireProtectionHandlers(projectId) {
       `,
       footer: `
         <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
-        <button class="btn btn-primary" onclick="window._saveFireAsset('${projectId}', '${assetType}')">Simpan</button>
+        <button class="btn btn-primary" onclick="window._saveFireAsset('${escapeHtml(projectId)}', '${escapeHtml(assetType)}')">Simpan</button>
       `
     });
   };

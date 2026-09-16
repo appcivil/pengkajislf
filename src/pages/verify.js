@@ -4,6 +4,8 @@
  * Standard: SECURE QUARTZ LIGHT EDITION
  */
 import { supabase } from '../lib/supabase.js';
+import { bindGlobal } from '../lib/global-listeners.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { getSettings } from '../lib/settings.js';
 import { verifyDocumentIntegrity, validateSignerCertificate } from '../lib/tte-service.js';
 import { escHtml, formatTanggal } from '../lib/utils.js';
@@ -67,17 +69,28 @@ function renderEmptyVerify() {
     </div>`;
 }
 
+/**
+ * Guard: listener dipasang pada `document`, sedangkan halaman ini bisa
+ * dibuka berulang kali (link verifikasi). Tanpa penjaga, setiap kunjungan
+ * menambah satu set listener baru sehingga handler berjalan berkali-kali
+ * dan blokir Ctrl+C/Ctrl+V jadi makin agresif.
+ */
+let _securityListenersBound = false;
+
 function initSecurityListeners() {
-   document.addEventListener('contextmenu', e => e.preventDefault());
-   document.addEventListener('keydown', e => {
+   if (_securityListenersBound) return;
+   _securityListenersBound = true;
+
+   bindGlobal(document, 'contextmenu', e => e.preventDefault());
+   bindGlobal(document, 'keydown', e => {
       if (e.ctrlKey && ['c', 'v', 'p', 's', 'u'].includes(e.key.toLowerCase())) e.preventDefault();
       if (e.key === 'F12' || e.key === 'PrintScreen') e.preventDefault();
    });
 
    const overlay = document.getElementById('security-blur-overlay');
    if (overlay) {
-      window.addEventListener('blur', () => { overlay.style.display = 'flex'; overlay.style.opacity = '1'; });
-      window.addEventListener('focus', () => { overlay.style.opacity = '0'; setTimeout(() => { overlay.style.display = 'none'; }, 300); });
+      bindGlobal(window, 'blur', () => { overlay.style.display = 'flex'; overlay.style.opacity = '1'; });
+      bindGlobal(window, 'focus', () => { overlay.style.opacity = '0'; setTimeout(() => { overlay.style.display = 'none'; }, 300); });
    }
 }
 
@@ -101,7 +114,7 @@ function buildVerifyHtml(p, a, s, expertType, expert, integrity, cert) {
       <nav style="background:rgba(255,255,255,0.8); backdrop-filter:blur(20px); border-bottom:1px solid rgba(0,0,0,0.05); padding:16px 20px; position:sticky; top:0; z-index:100; width:100%">
          <div class="flex-between flex-stack" style="width:100%; margin:0 auto; gap:var(--space-4)">
             <div style="display:flex; align-items:center; gap:20px; text-align:left">
-               ${consultant.logo ? `<img src="${consultant.logo}" style="height:44px; object-fit:contain">` : `<div style="width:44px; height:44px; background:var(--gradient-brand); border-radius:10px; display:flex; align-items:center; justify-content:center; color:white; font-size:1.4rem"><i class="fas fa-microchip"></i></div>`}
+               ${consultant.logo ? `<img alt="Logo instansi" src="${escapeHtml(consultant.logo)}" style="height:44px; object-fit:contain">` : `<div style="width:44px; height:44px; background:var(--gradient-brand); border-radius:10px; display:flex; align-items:center; justify-content:center; color:white; font-size:1.4rem"><i class="fas fa-microchip"></i></div>`}
                <div>
                   <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; letter-spacing:0.5px; color:hsl(224, 30%, 12%)">${escHtml(consultant.name || 'SMART AI PENGKAJI')}</div>
                   <div style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); letter-spacing:1px; text-transform:uppercase">Official Digital Integrity Verification Gateway</div>
@@ -121,7 +134,7 @@ function buildVerifyHtml(p, a, s, expertType, expert, integrity, cert) {
                <div style="text-align:left">
                   <div style="font-family:var(--font-mono); font-size:10px; font-weight:800; color:var(--brand-500); letter-spacing:2px; margin-bottom:16px; text-transform:uppercase">Kesimpulan Hasil Verifikasi Teknks</div>
                   <h1 class="responsive-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size:clamp(2rem, 8vw, 4rem); line-height:1; letter-spacing:-0.04em; margin-bottom:20px; color:hsl(224, 30%, 12%)">
-                     ${statusLabel.toUpperCase()}
+                     ${escapeHtml(statusLabel.toUpperCase())}
                   </h1>
                   <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap">
                      <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-tertiary); letter-spacing:1px">DOKUMEN REF: <span style="color:var(--brand-500); font-weight:700">${escHtml(p.metadata?.nomor_surat || p.id.toUpperCase())}</span></span>
@@ -143,7 +156,7 @@ function buildVerifyHtml(p, a, s, expertType, expert, integrity, cert) {
                <!-- Building Visual & Core Data (Light Quartz) -->
                <div style="background:white; border-radius:24px; box-shadow:0 20px 50px rgba(0,0,0,0.05); overflow:hidden; border:1px solid rgba(0,0,0,0.05)">
                   <div style="height:400px; position:relative">
-                     ${p.foto_bangunan ? `<img src="${p.foto_bangunan}" style="width:100%; height:100%; object-fit:cover">` : `<div style="width:100%; height:100%; background:hsl(220, 30%, 95%); display:flex; align-items:center; justify-content:center; color:hsl(224, 30%, 90%); font-size:5rem"><i class="fas fa-building"></i></div>`}
+                     ${p.foto_bangunan ? `<img alt="Foto dokumentasi pemeriksaan" src="${escapeHtml(p.foto_bangunan)}" style="width:100%; height:100%; object-fit:cover">` : `<div style="width:100%; height:100%; background:hsl(220, 30%, 95%); display:flex; align-items:center; justify-content:center; color:hsl(224, 30%, 90%); font-size:5rem"><i class="fas fa-building"></i></div>`}
                      <div style="position:absolute; inset:0; background:linear-gradient(transparent 50%, rgba(255,255,255,0.9) 100%); padding:40px; display:flex; flex-direction:column; justify-content:flex-end">
                         <h2 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:2rem; color:hsl(224, 30%, 12%); margin-bottom:8px">${escHtml(p.nama_bangunan)}</h2>
                         <div style="display:flex; align-items:center; gap:12px; color:var(--text-tertiary); font-size:0.9rem">
@@ -158,11 +171,11 @@ function buildVerifyHtml(p, a, s, expertType, expert, integrity, cert) {
                      </div>
                      <div>
                         <div style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px">Vertical Stats</div>
-                        <div style="font-weight:800; color:hsl(224, 30%, 15%); font-size:0.9rem">${p.jumlah_lantai || 0} LANTAI</div>
+                        <div style="font-weight:800; color:hsl(224, 30%, 15%); font-size:0.9rem">${escapeHtml(p.jumlah_lantai || 0)} LANTAI</div>
                      </div>
                      <div>
                         <div style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px">Total GFA</div>
-                        <div style="font-weight:800; color:hsl(224, 30%, 15%); font-size:0.9rem">${p.luas_bangunan || 0} m²</div>
+                        <div style="font-weight:800; color:hsl(224, 30%, 15%); font-size:0.9rem">${escapeHtml(p.luas_bangunan || 0)} m²</div>
                      </div>
                      <div>
                         <div style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px">Registry Status</div>
@@ -183,7 +196,7 @@ function buildVerifyHtml(p, a, s, expertType, expert, integrity, cert) {
                              <i class="fas fa-${t === 'architecture' ? 'landmark' : t === 'structure' ? 'building-shield' : 'bolt-lightning'}"></i>
                           </div>
                           <div style="flex:1">
-                             <div style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px">Expert: ${t}</div>
+                             <div style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px">Expert: ${escapeHtml(t)}</div>
                              <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.05rem; color:hsl(224, 30%, 15%); margin:2px 0">${escHtml(expertList[t]?.name || '-')}</div>
                              <div style="font-family:var(--font-mono); font-size:9px; color:var(--brand-500); letter-spacing:1px">SKK LICENSE: ${escHtml(expertList[t]?.skk || 'VALIDATION_PROCESS')}</div>
                           </div>
@@ -230,7 +243,7 @@ function buildVerifyHtml(p, a, s, expertType, expert, integrity, cert) {
                      </div>
                      <div style="display:flex; justify-content:space-between">
                         <span style="opacity:0.4">Certificates Authenticated:</span>
-                        <span style="color:var(--brand-400)">${signatureCount} / 4 AUTHENTICATED</span>
+                        <span style="color:var(--brand-400)">${escapeHtml(signatureCount)} / 4 AUTHENTICATED</span>
                      </div>
                   </div>
                </div>
@@ -287,7 +300,7 @@ function renderError(msg) {
          <div style="padding:60px 40px; text-align:center; max-width:480px; background:white; border-radius:30px; box-shadow:0 30px 80px rgba(0,0,0,0.1); border:1px solid rgba(220, 53, 69, 0.1)">
             <i class="fas fa-shield-slash" style="font-size:4rem; color:var(--danger-500); margin-bottom:32px"></i>
             <h2 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.6rem; margin-bottom:12px">Verification Failure</h2>
-            <p style="color:var(--text-tertiary); line-height:1.6; margin-bottom:40px">${msg}</p>
+            <p style="color:var(--text-tertiary); line-height:1.6; margin-bottom:40px">${escapeHtml(msg)}</p>
             <button class="btn btn-outline" style="width:100%; height:48px; border-radius:12px; color:var(--text-primary); border-color:rgba(0,0,0,0.1)" onclick="window.navigate('dashboard')">RE-ENTRY TO SYSTEM</button>
          </div>
       </div>

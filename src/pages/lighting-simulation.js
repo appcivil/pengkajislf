@@ -4,6 +4,7 @@
  */
 
 import * as THREE from 'three';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Room3D } from '../engine/scene/Room3D.js';
 import { RadiosityEngine } from '../engine/lighting/RadiosityEngine.js';
@@ -12,6 +13,7 @@ import { RoomBuilder } from '../ui/components/RoomBuilder.js';
 import { CalculationPanel } from '../ui/components/CalculationPanel.js';
 import { LuminaireTool } from '../ui/components/LuminaireTool.js';
 import { supabase } from '../lib/supabase.js';
+import { toast } from '../components/toast.js';
 
 let scene, camera, renderer, controls;
 let room3D, radiosityEngine;
@@ -626,7 +628,7 @@ async function handleCalculateLighting(e) {
   );
   
   if (numPatches === 0) {
-    alert('No room geometry available. Please draw a room first.');
+    toast('Belum ada geometri ruangan. Gambar denah ruangan terlebih dahulu.', 'warning');
     return;
   }
   
@@ -741,7 +743,7 @@ function handleAddLuminaire(e) {
   const bounds = room3D.getBounds();
   
   if (!bounds) {
-    alert('Please create a room first');
+    toast('Buat ruangan terlebih dahulu.', 'warning');
     return;
   }
   
@@ -819,7 +821,7 @@ function enableDaylightAnalysis() {
   sunLight.castShadow = true;
   scene.add(sunLight);
   
-  alert('Daylight simulation enabled. Adjust sun position in scene.');
+  toast('Simulasi cahaya alami aktif. Sesuaikan posisi matahari pada tampilan 3D.', 'info');
 }
 
 async function saveProject(projectId) {
@@ -838,10 +840,10 @@ async function saveProject(projectId) {
     
     if (error) throw error;
     
-    alert('Project saved successfully!');
+    toast('Proyek berhasil disimpan.', 'success');
   } catch (err) {
     console.error('Failed to save project:', err);
-    alert('Failed to save project. See console for details.');
+    toast('Gagal menyimpan proyek. Periksa konsol untuk keterangan lengkap.', 'error');
   }
 }
 
@@ -944,20 +946,20 @@ function handleGenerateReport(e) {
     
     <div class="report-section" style="background: rgba(30, 41, 59, 0.5); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
       <h4 style="margin: 0 0 12px 0; color: #60a5fa; font-size: 13px;">Calculation Results</h4>
-      <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width: 100%; font-size: 12px; border-collapse: collapse;">
         <tr style="border-bottom: 1px solid rgba(59, 130, 246, 0.2);">
           <td style="padding: 8px 0; color: #94a3b8;">Average Illuminance</td>
-          <td style="padding: 8px 0; text-align: right; color: #f1f5f9; font-weight: 500;">${results.average.toFixed(1)} lux</td>
+          <td style="padding: 8px 0; text-align: right; color: #f1f5f9; font-weight: 500;">${escapeHtml(results.average.toFixed(1))} lux</td>
           <td style="padding: 8px 0; text-align: right; color: #64748b;">Target: ${std?.min}-${std?.max} lux</td>
         </tr>
         <tr style="border-bottom: 1px solid rgba(59, 130, 246, 0.2);">
           <td style="padding: 8px 0; color: #94a3b8;">Minimum Illuminance</td>
-          <td style="padding: 8px 0; text-align: right; color: #f1f5f9; font-weight: 500;">${results.minimum.toFixed(1)} lux</td>
+          <td style="padding: 8px 0; text-align: right; color: #f1f5f9; font-weight: 500;">${escapeHtml(results.minimum.toFixed(1))} lux</td>
           <td style="padding: 8px 0; text-align: right;"></td>
         </tr>
         <tr style="border-bottom: 1px solid rgba(59, 130, 246, 0.2);">
           <td style="padding: 8px 0; color: #94a3b8;">Maximum Illuminance</td>
-          <td style="padding: 8px 0; text-align: right; color: #f1f5f9; font-weight: 500;">${results.maximum.toFixed(1)} lux</td>
+          <td style="padding: 8px 0; text-align: right; color: #f1f5f9; font-weight: 500;">${escapeHtml(results.maximum.toFixed(1))} lux</td>
           <td style="padding: 8px 0; text-align: right;"></td>
         </tr>
         <tr style="border-bottom: 1px solid rgba(59, 130, 246, 0.2);">
@@ -975,7 +977,7 @@ function handleGenerateReport(e) {
           <td style="padding: 8px 0; text-align: right; color: #f1f5f9; font-weight: 500;">${(results.powerDensity || 0).toFixed(2)} W/m²</td>
           <td style="padding: 8px 0; text-align: right; color: #64748b;">SNI Limit: 15 W/m²</td>
         </tr>
-      </table>
+      </table></div>
     </div>
     
     <div class="report-section" style="background: rgba(30, 41, 59, 0.5); padding: 16px; border-radius: 8px;">
@@ -996,7 +998,7 @@ function closeModal() {
 
 async function exportDOCX() {
   if (!calculationResults) {
-    alert('No calculation data to export');
+    toast('Belum ada data perhitungan untuk diekspor.', 'warning');
     return;
   }
   
@@ -1025,7 +1027,7 @@ async function exportDOCX() {
   });
   
   // For now, use a simple download approach
-  alert('DOCX export feature requires additional implementation. Use CSV export for now.');
+  toast('Ekspor DOCX belum tersedia. Gunakan ekspor CSV untuk sementara.', 'warning');
 }
 
 function exportPDF() {

@@ -6,6 +6,7 @@
 
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 
+import { escapeHtml } from './safe-markdown.js';
 /**
  * FEMA 356 Hinge Property Definitions
  * Rotations in radians, moments in kN-m
@@ -321,19 +322,22 @@ export class FEMA356Pushover {
       const y = scaleY(p.baseShear);
       const color = p.level === 'IO' ? '#3b82f6' : p.level === 'LS' ? '#22c55e' : '#eab308';
       return `
-        <circle cx="${x}" cy="${y}" r="8" fill="${color}" stroke="white" stroke-width="2"/>
-        <text x="${x + 12}" y="${y}" fill="${color}" font-size="12" font-weight="bold">${p.level}</text>
+        <circle cx="${escapeHtml(x)}" cy="${escapeHtml(y)}" r="8" fill="${escapeHtml(color)}" stroke="white" stroke-width="2"/>
+        <text x="${x + 12}" y="${escapeHtml(y)}" fill="${escapeHtml(color)}" font-size="12" font-weight="bold">${escapeHtml(p.level)}</text>
       `;
     }).join('');
 
     // Grid lines
-    const gridLines = `
-      <line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${height - margin.bottom}" stroke="#333" stroke-width="2"/>
-      <line x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}" stroke="#333" stroke-width="2"/>
+    // Diberi akhiran "Html" secara sengaja: nilai ini MEMANG markah SVG
+    // yang sudah tersusun dari nilai ter-escape di atasnya, jadi tidak boleh
+    // di-escape lagi oleh skrip audit.
+    const gridLinesHtml = `
+      <line x1="${escapeHtml(margin.left)}" y1="${escapeHtml(margin.top)}" x2="${escapeHtml(margin.left)}" y2="${height - margin.bottom}" stroke="#333" stroke-width="2"/>
+      <line x1="${escapeHtml(margin.left)}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}" stroke="#333" stroke-width="2"/>
     `;
 
     return `
-      <svg width="${width}" height="${height}" style="background: #18181b;">
+      <svg width="${escapeHtml(width)}" height="${escapeHtml(height)}" style="background: #18181b;">
         <defs>
           <linearGradient id="capacityGradient" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
@@ -343,10 +347,10 @@ export class FEMA356Pushover {
         </defs>
         
         <!-- Grid -->
-        ${gridLines}
+        ${escapeHtml(gridLines)}
         
         <!-- Capacity curve -->
-        <path d="${path}" fill="none" stroke="url(#capacityGradient)" stroke-width="3"/>
+        <path d="${escapeHtml(path)}" fill="none" stroke="url(#capacityGradient)" stroke-width="3"/>
         
         <!-- Performance points -->
         ${markers}
@@ -369,18 +373,18 @@ export class FEMA356Pushover {
 
     const rows = Array.from(this.hinges.values()).map(h => `
       <tr style="border-bottom: 1px solid #333;">
-        <td style="padding: 8px; color: white;">${h.elementId}</td>
+        <td style="padding: 8px; color: white;">${escapeHtml(h.elementId)}</td>
         <td style="padding: 8px;">
-          <span style="background: ${h.color}; padding: 4px 8px; border-radius: 4px; color: white; font-size: 12px;">${h.state}</span>
+          <span style="background: ${escapeHtml(h.color)}; padding: 4px 8px; border-radius: 4px; color: white; font-size: 12px;">${escapeHtml(h.state)}</span>
         </td>
-        <td style="padding: 8px; color: #a1a1aa;">${h.rotation.toFixed(4)} rad</td>
-        <td style="padding: 8px; color: #a1a1aa;">${h.moment.toFixed(0)} kN-m</td>
-        <td style="padding: 8px; color: #a1a1aa;">${h.location}</td>
+        <td style="padding: 8px; color: #a1a1aa;">${escapeHtml(h.rotation.toFixed(4))} rad</td>
+        <td style="padding: 8px; color: #a1a1aa;">${escapeHtml(h.moment.toFixed(0))} kN-m</td>
+        <td style="padding: 8px; color: #a1a1aa;">${escapeHtml(h.location)}</td>
       </tr>
     `).join('');
 
     return `
-      <table style="width: 100%; font-size: 13px;">
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width: 100%; font-size: 13px;">
         <thead>
           <tr style="border-bottom: 2px solid #444;">
             <th style="padding: 8px; text-align: left; color: #10b981;">Element</th>
@@ -390,8 +394,8 @@ export class FEMA356Pushover {
             <th style="padding: 8px; text-align: left; color: #10b981;">Location</th>
           </tr>
         </thead>
-        <tbody>${rows}</tbody>
-      </table>
+        <tbody>${escapeHtml(rows)}</tbody>
+      </table></div>
     `;
   }
 

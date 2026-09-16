@@ -12,6 +12,7 @@ import {
 
 import { showSuccess, showInfo } from '../components/toast.js';
 
+import { escapeHtml } from '../lib/safe-markdown.js';
 let spectrumChart = null;
 let lastResult = null;
 
@@ -40,7 +41,7 @@ export async function seismicCalculatorPage(params = {}) {
               <select id="region-select" class="form-select" style="width: 100%; margin-bottom: 8px;">
                 <option value="">-- Pilih Wilayah --</option>
                 ${Object.entries(PUSGEN_DATA).map(([key, data]) => `
-                  <option value="${key}">${data.region} (Ss=${data.Ss}, S1=${data.S1})</option>
+                  <option value="${escapeHtml(key)}">${escapeHtml(data.region)} (Ss=${escapeHtml(data.Ss)}, S1=${escapeHtml(data.S1)})</option>
                 `).join('')}
               </select>
               <button class="btn btn-secondary btn-sm" onclick="window._applyRegion()" style="width: 100%;">
@@ -74,7 +75,7 @@ export async function seismicCalculatorPage(params = {}) {
                 </label>
                 <select id="input-site-class" class="form-select" style="width: 100%;">
                   ${Object.entries(SITE_CLASSES).map(([code, data]) => `
-                    <option value="${code}">${code} - ${data.name} (${data.description})</option>
+                    <option value="${escapeHtml(code)}">${escapeHtml(code)} - ${escapeHtml(data.name)} (${escapeHtml(data.description)})</option>
                   `).join('')}
                 </select>
               </div>
@@ -118,7 +119,7 @@ export async function seismicCalculatorPage(params = {}) {
           <div id="spectrum-card" class="card" style="display: none;">
             <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
               <span><i class="fas fa-chart-line"></i> Spektrum Respons Desain</span>
-              <button class="btn btn-xs btn-ghost" onclick="window._exportSpectrum()">
+              <button type="button" aria-label="Unduh" class="btn btn-xs btn-ghost" onclick="window._exportSpectrum()">
                 <i class="fas fa-download"></i>
               </button>
             </div>
@@ -213,37 +214,37 @@ function displayResults(result) {
   content.innerHTML = `
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
       <div style="text-align: center; padding: 16px; background: var(--bg-subtle); border-radius: 8px;">
-        <div style="font-size: 2rem; font-weight: 700; color: var(--brand-400);">${design.SDS}</div>
+        <div style="font-size: 2rem; font-weight: 700; color: var(--brand-400);">${escapeHtml(design.SDS)}</div>
         <div class="text-xs text-tertiary">SDS (g)</div>
       </div>
       <div style="text-align: center; padding: 16px; background: var(--bg-subtle); border-radius: 8px;">
-        <div style="font-size: 2rem; font-weight: 700; color: var(--brand-400);">${design.SD1}</div>
+        <div style="font-size: 2rem; font-weight: 700; color: var(--brand-400);">${escapeHtml(design.SD1)}</div>
         <div class="text-xs text-tertiary">SD1 (g)</div>
       </div>
     </div>
     
-    <div style="padding: 16px; background: ${category.description.color}20; border: 1px solid ${category.description.color}40; border-radius: 8px; margin-bottom: 16px;">
+    <div style="padding: 16px; background: ${escapeHtml(category.description.color)}20; border: 1px solid ${escapeHtml(category.description.color)}40; border-radius: 8px; margin-bottom: 16px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <span style="font-weight: 700; color: ${category.description.color}; font-size: 1.1rem;">
-          Level Seismisitas: ${category.seismicity}
+        <span style="font-weight: 700; color: ${escapeHtml(category.description.color)}; font-size: 1.1rem;">
+          Level Seismisitas: ${escapeHtml(category.seismicity)}
         </span>
-        <span style="padding: 4px 12px; background: ${category.description.color}; color: white; border-radius: 4px; font-size: 0.8rem; font-weight: 700;">
-          SDC ${category.sdc}
+        <span style="padding: 4px 12px; background: ${escapeHtml(category.description.color)}; color: white; border-radius: 4px; font-size: 0.8rem; font-weight: 700;">
+          SDC ${escapeHtml(category.sdc)}
         </span>
       </div>
       <div style="font-size: 0.85rem; color: var(--text-secondary);">
-        ${category.description.description}
+        ${escapeHtml(category.description.description)}
       </div>
     </div>
     
     <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.8;">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-        <div><strong>Fa:</strong> ${site.Fa}</div>
-        <div><strong>Fv:</strong> ${site.Fv}</div>
-        <div><strong>SMS:</strong> ${result.max.SMS} g</div>
-        <div><strong>SM1:</strong> ${result.max.SM1} g</div>
-        <div><strong>T0:</strong> ${periodParams.T0.toFixed(3)} s</div>
-        <div><strong>Ts:</strong> ${periodParams.Ts.toFixed(3)} s</div>
+        <div><strong>Fa:</strong> ${escapeHtml(site.Fa)}</div>
+        <div><strong>Fv:</strong> ${escapeHtml(site.Fv)}</div>
+        <div><strong>SMS:</strong> ${escapeHtml(result.max.SMS)} g</div>
+        <div><strong>SM1:</strong> ${escapeHtml(result.max.SM1)} g</div>
+        <div><strong>T0:</strong> ${escapeHtml(periodParams.T0.toFixed(3))} s</div>
+        <div><strong>Ts:</strong> ${escapeHtml(periodParams.Ts.toFixed(3))} s</div>
       </div>
     </div>
   `;
@@ -277,7 +278,7 @@ function plotSpectrum(result) {
   const Ts = result.periodParams.Ts;
   
   container.innerHTML = `
-    <svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%;">
+    <svg viewBox="0 0 ${escapeHtml(width)} ${escapeHtml(height)}" style="width: 100%; height: 100%;">
       <defs>
         <linearGradient id="spectrumGrad" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" style="stop-color:hsla(220, 95%, 52%, 0.3)"/>
@@ -285,44 +286,44 @@ function plotSpectrum(result) {
         </linearGradient>
       </defs>
       
-      <g transform="translate(${margin.left}, ${margin.top})">
+      <g transform="translate(${escapeHtml(margin.left)}, ${escapeHtml(margin.top)})">
         <!-- Grid -->
         ${[0, 1, 2, 3, 4, 5, 6].map(t => `
-          <line x1="${xScale(t)}" y1="0" x2="${xScale(t)}" y2="${innerHeight}" 
+          <line x1="${xScale(t)}" y1="0" x2="${xScale(t)}" y2="${escapeHtml(innerHeight)}" 
                 stroke="hsla(220, 20%, 100%, 0.1)" stroke-dasharray="2,2"/>
           <text x="${xScale(t)}" y="${innerHeight + 20}" 
-                fill="hsla(220, 20%, 100%, 0.5)" font-size="10" text-anchor="middle">${t}s</text>
+                fill="hsla(220, 20%, 100%, 0.5)" font-size="10" text-anchor="middle">${escapeHtml(t)}s</text>
         `).join('')}
         
         ${[0, 0.2, 0.4, 0.6, 0.8, 1.0].map((s, i) => {
           const sa = s * maxSa;
           return `
-            <line x1="0" y1="${yScale(sa)}" x2="${innerWidth}" y2="${yScale(sa)}" 
+            <line x1="0" y1="${yScale(sa)}" x2="${escapeHtml(innerWidth)}" y2="${yScale(sa)}" 
                   stroke="hsla(220, 20%, 100%, 0.1)" stroke-dasharray="2,2"/>
             <text x="-10" y="${yScale(sa) + 4}" 
-                  fill="hsla(220, 20%, 100%, 0.5)" font-size="10" text-anchor="end">${sa.toFixed(2)}</text>
+                  fill="hsla(220, 20%, 100%, 0.5)" font-size="10" text-anchor="end">${escapeHtml(sa.toFixed(2))}</text>
           `;
         }).join('')}
         
         <!-- Axes -->
-        <line x1="0" y1="${innerHeight}" x2="${innerWidth}" y2="${innerHeight}" 
+        <line x1="0" y1="${escapeHtml(innerHeight)}" x2="${escapeHtml(innerWidth)}" y2="${escapeHtml(innerHeight)}" 
               stroke="hsla(220, 20%, 100%, 0.3)" stroke-width="2"/>
-        <line x1="0" y1="0" x2="0" y2="${innerHeight}" 
+        <line x1="0" y1="0" x2="0" y2="${escapeHtml(innerHeight)}" 
               stroke="hsla(220, 20%, 100%, 0.3)" stroke-width="2"/>
         
         <!-- Fill area -->
-        <path d="${pathData} L ${innerWidth} ${innerHeight} L 0 ${innerHeight} Z" 
+        <path d="${escapeHtml(pathData)} L ${escapeHtml(innerWidth)} ${escapeHtml(innerHeight)} L 0 ${escapeHtml(innerHeight)} Z" 
               fill="url(#spectrumGrad)"/>
         
         <!-- Spectrum line -->
-        <path d="${pathData}" fill="none" stroke="#3b82f6" stroke-width="2"/>
+        <path d="${escapeHtml(pathData)}" fill="none" stroke="#3b82f6" stroke-width="2"/>
         
         <!-- Key points -->
-        <line x1="${xScale(T0)}" y1="0" x2="${xScale(T0)}" y2="${innerHeight}" 
+        <line x1="${xScale(T0)}" y1="0" x2="${xScale(T0)}" y2="${escapeHtml(innerHeight)}" 
               stroke="#eab308" stroke-width="1" stroke-dasharray="4,4"/>
         <text x="${xScale(T0)}" y="10" fill="#eab308" font-size="9" text-anchor="middle">T0</text>
         
-        <line x1="${xScale(Ts)}" y1="0" x2="${xScale(Ts)}" y2="${innerHeight}" 
+        <line x1="${xScale(Ts)}" y1="0" x2="${xScale(Ts)}" y2="${escapeHtml(innerHeight)}" 
               stroke="#22c55e" stroke-width="1" stroke-dasharray="4,4"/>
         <text x="${xScale(Ts)}" y="10" fill="#22c55e" font-size="9" text-anchor="middle">Ts</text>
       </g>

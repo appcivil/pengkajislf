@@ -1,3 +1,4 @@
+import { escapeHtml } from './safe-markdown.js';
 // ============================================================
 //  HTML SECURITY UTILITY
 //  Fungsi-fungsi untuk mencegah XSS di template string HTML
@@ -25,14 +26,17 @@ const HTML_ESCAPE_MAP = {
 /**
  * Escape karakter HTML berbahaya dari string.
  * Gunakan untuk semua data text dari DB/user yang dimasukkan ke innerHTML template.
- * 
+ *
+ * Diteruskan ke implementasi kanonik di lib/safe-markdown.js supaya
+ * escaping di seluruh aplikasi hanya punya SATU definisi. Sebelumnya
+ * helper ini punya implementasi sendiri, dan beberapa berkas lain punya
+ * versi yang berbeda pula — sebagian bahkan tidak meng-escape tanda kutip,
+ * sehingga tidak aman di dalam atribut HTML.
+ *
  * @param {*} value - Nilai yang akan di-escape
  * @returns {string} String yang aman untuk diinsert ke HTML
  */
-export function esc(value) {
-  if (value === null || value === undefined) return '';
-  return String(value).replace(/[&<>"'`/]/g, (char) => HTML_ESCAPE_MAP[char]);
-}
+export const esc = escapeHtml;
 
 /**
  * Escape untuk nilai dalam atribut HTML (href, data-*, dsb).
@@ -104,7 +108,7 @@ export function escDate(value, opts = {}) {
 
 /**
  * Tag template literal untuk HTML escape otomatis.
- * Penggunaan: html`<div>${userInput}</div>`
+ * Penggunaan: html`<div>${escapeHtml(userInput)}</div>`
  * Semua interpolasi ${} otomatis di-escape.
  * 
  * Untuk nilai yang memang HTML aman (dari kode kita sendiri), 

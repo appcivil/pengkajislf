@@ -5,7 +5,14 @@
 
 import { archState } from '../archsim/StateManager.js';
 
+import { escapeHtml } from '../safe-markdown.js';
 export class EgressCompliancePanel extends HTMLElement {
+  /** Lepas listener `window` saat panel dilepas dari DOM. */
+  disconnectedCallback() {
+    if (this._winListener) window.removeEventListener('evacuation-complete', this._winListener);
+    this._winListener = null;
+  }
+
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
@@ -292,10 +299,10 @@ export class EgressCompliancePanel extends HTMLElement {
       this.checkCompliance();
     });
 
-    // Listen untuk simulation complete
-    window.addEventListener('evacuation-complete', (e) => {
-      this.evaluateResults(e.detail);
-    });
+    // Listener `window` harus disimpan agar bisa dilepas di disconnectedCallback().
+    // Tanpa itu, setiap panel yang dibuat ulang menambah satu handler baru.
+    this._winListener = (e) => this.evaluateResults(e.detail);
+    window.addEventListener('evacuation-complete', this._winListener);
   }
 
   checkCompliance() {
@@ -458,12 +465,12 @@ export class EgressCompliancePanel extends HTMLElement {
     return `
       <div class="check-row">
         <div class="check-label">
-          <div class="check-icon ${status}">${icon}</div>
-          <span>${check.name}</span>
+          <div class="check-icon ${escapeHtml(status)}">${icon}</div>
+          <span>${escapeHtml(check.name)}</span>
         </div>
         <div class="check-value">
-          <span class="value-actual">${check.actual}</span>
-          <span class="value-required">/ ${check.required}</span>
+          <span class="value-actual">${escapeHtml(check.actual)}</span>
+          <span class="value-required">/ ${escapeHtml(check.required)}</span>
         </div>
       </div>
     `;
@@ -541,7 +548,7 @@ export class EgressCompliancePanel extends HTMLElement {
     items.innerHTML = recs.map(r => `
       <div class="recommendation-item">
         <span class="rec-icon">→</span>
-        <span>${r}</span>
+        <span>${escapeHtml(r)}</span>
       </div>
     `).join('');
     

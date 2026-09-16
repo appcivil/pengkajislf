@@ -1,3 +1,4 @@
+import { escapeHtml } from './safe-markdown.js';
 // ============================================================
 //  REPORT FORMATTER — Post-Processing AI Output
 //  Mengubah narasi AI mentah menjadi format laporan profesional
@@ -353,10 +354,10 @@ function renderSummaryHTML(summary) {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
         ${summary.skor != null ? `
           <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:48px;height:48px;border-radius:50%;background:${summary.skor >= 80 ? '#dcfce7' : summary.skor >= 60 ? '#fef9c3' : '#fee2e2'};display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;color:${summary.skor >= 80 ? '#166534' : summary.skor >= 60 ? '#854d0e' : '#991b1b'}">${summary.skor}</div>
+            <div style="width:48px;height:48px;border-radius:50%;background:${summary.skor >= 80 ? '#dcfce7' : summary.skor >= 60 ? '#fef9c3' : '#fee2e2'};display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;color:${summary.skor >= 80 ? '#166534' : summary.skor >= 60 ? '#854d0e' : '#991b1b'}">${escapeHtml(summary.skor)}</div>
             <div>
               <div style="font-size:0.78rem;color:#64748b">Skor Kepatuhan</div>
-              <div style="font-size:0.9rem;font-weight:700;color:#0f172a">${summary.skor}%</div>
+              <div style="font-size:0.9rem;font-weight:700;color:#0f172a">${escapeHtml(summary.skor)}%</div>
             </div>
           </div>
         ` : ''}
@@ -394,15 +395,15 @@ function renderItemHTML(item, idx) {
   return `
     <div class="report-item-card" style="background:white;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:20px;overflow:hidden;page-break-inside:avoid">
       <!-- Header -->
-      <div style="background:${rc.bg};padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid ${rc.border}">
+      <div style="background:${escapeHtml(rc.bg)};padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid ${escapeHtml(rc.border)}">
         <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:36px;height:36px;border-radius:8px;background:white;border:2px solid ${rc.accent};display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:${rc.accent};font-family:monospace">${escH(item.kode)}</div>
+          <div style="width:36px;height:36px;border-radius:8px;background:white;border:2px solid ${escapeHtml(rc.accent)};display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:${escapeHtml(rc.accent)};font-family:monospace">${escH(item.kode)}</div>
           <div>
             <div style="font-size:0.95rem;font-weight:700;color:#0f172a">${escH(item.nama)}</div>
-            ${item.status ? `<div style="font-size:0.78rem;color:${rc.accent};font-weight:600;margin-top:2px">Status: ${escH(item.status)}</div>` : ''}
+            ${item.status ? `<div style="font-size:0.78rem;color:${escapeHtml(rc.accent)};font-weight:600;margin-top:2px">Status: ${escH(item.status)}</div>` : ''}
           </div>
         </div>
-        <span style="background:${rc.accent};color:white;padding:3px 10px;border-radius:999px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em">${rc.label}</span>
+        <span style="background:${escapeHtml(rc.accent)};color:white;padding:3px 10px;border-radius:999px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em">${escapeHtml(rc.label)}</span>
       </div>
 
       <!-- Body -->
@@ -596,7 +597,7 @@ function formatTable(tableText) {
   const dataLines = lines.filter(l => !isDelimiter(l));
   if (dataLines.length === 0) return '';
 
-  let html = '<table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:0.825rem">';
+  let html = '<div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:0.825rem">';
 
   dataLines.forEach((line, idx) => {
     const cols = parseRow(line);
@@ -612,7 +613,7 @@ function formatTable(tableText) {
     html += '</tr>';
   });
 
-  html += '</table>';
+  html += '</table></div>';
   return html;
 }
 

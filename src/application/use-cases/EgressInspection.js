@@ -3,6 +3,7 @@
 // ============================================================
 
 import { BaseInspection } from './BaseInspection.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { InspectionWidgets } from '../../components/inspection/inspection-widgets.js';
 import { showSuccess, showError, showInfo } from '../../components/toast.js';
 
@@ -100,10 +101,10 @@ export class EgressInspection extends BaseInspection {
             accentColor: 'var(--danger-400)',
             content: `
               <div style="text-align: center; padding: 20px;">
-                <div style="font-size: 4rem; font-weight: 800; color: ${assessment.evacuation_time <= 5 ? 'var(--success-400)' : assessment.evacuation_time <= 10 ? 'var(--warning-400)' : 'var(--danger-400)'};">${assessment.evacuation_time || '-'}<span style="font-size: 1.5rem;"> min</span></div>
+                <div style="font-size: 4rem; font-weight: 800; color: ${assessment.evacuation_time <= 5 ? 'var(--success-400)' : assessment.evacuation_time <= 10 ? 'var(--warning-400)' : 'var(--danger-400)'};">${escapeHtml(assessment.evacuation_time || '-')}<span style="font-size: 1.5rem;"> min</span></div>
                 <div style="font-size: 0.9rem; color: var(--text-tertiary); margin-top: 8px;">Total Waktu Evakuasi</div>
                 <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 12px;">
-                  Required: <strong>${assessment.required_evacuation_time || 5} menit</strong>
+                  Required: <strong>${escapeHtml(assessment.required_evacuation_time || 5)} menit</strong>
                 </div>
               </div>
             `
@@ -117,11 +118,11 @@ export class EgressInspection extends BaseInspection {
               <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
                 <p style="margin-bottom: 8px;"><strong>Lebar Minimum:</strong></p>
                 <ul style="margin-left: 20px; margin-bottom: 12px;">
-                  <li>Koridor: ${this.EGRESS_STANDARDS.corridor_min_width} m</li>
-                  <li>Tangga: ${this.EGRESS_STANDARDS.stair_min_width} m</li>
-                  <li>Pintu: ${this.EGRESS_STANDARDS.door_min_width} m</li>
+                  <li>Koridor: ${escapeHtml(this.EGRESS_STANDARDS.corridor_min_width)} m</li>
+                  <li>Tangga: ${escapeHtml(this.EGRESS_STANDARDS.stair_min_width)} m</li>
+                  <li>Pintu: ${escapeHtml(this.EGRESS_STANDARDS.door_min_width)} m</li>
                 </ul>
-                <p><strong>Jarak Tempuh:</strong> Maks ${this.EGRESS_STANDARDS.max_travel_distance} m</p>
+                <p><strong>Jarak Tempuh:</strong> Maks ${escapeHtml(this.EGRESS_STANDARDS.max_travel_distance)} m</p>
               </div>
             `
           })}
@@ -346,9 +347,9 @@ export class EgressInspection extends BaseInspection {
                       <i class="fas fa-${check.passed ? 'check' : 'times'}"></i>
                     </div>
                     <div style="flex: 1;">
-                      <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">${check.name}</div>
+                      <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">${escapeHtml(check.name)}</div>
                     </div>
-                    <div style="font-size: 1rem; font-weight: 700; color: ${check.passed ? 'var(--success-400)' : 'var(--danger-400)'};">${check.value}</div>
+                    <div style="font-size: 1rem; font-weight: 700; color: ${check.passed ? 'var(--success-400)' : 'var(--danger-400)'};">${escapeHtml(check.value)}</div>
                   </div>
                 `).join('')}
               </div>

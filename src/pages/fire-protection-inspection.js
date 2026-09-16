@@ -5,6 +5,7 @@
 // ============================================================
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 
@@ -134,7 +135,7 @@ function renderHeaderCard() {
           <span class="badge" style="background: hsla(0, 85%, 60%, 0.1); color: var(--danger-400); border: 1px solid hsla(0, 85%, 60%, 0.2); font-size: 10px;">
             <i class="fas fa-book" style="margin-right: 6px;"></i>SNI 03-1735-2000
           </span>
-          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${currentProjectId}'})" style="color: var(--text-tertiary);">
+          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${escapeHtml(currentProjectId)}'})" style="color: var(--text-tertiary);">
             <i class="fas fa-arrow-left" style="margin-right: 6px;"></i> Kembali
           </button>
         </div>
@@ -237,36 +238,36 @@ function renderDashboardTab() {
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(0, 85%, 60%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--danger-400); margin: 0 auto 12px;">
             <i class="fas fa-fire-extinguisher" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 2rem; font-weight: 800; color: white; margin-bottom: 4px;">${aparCount}</div>
+          <div style="font-size: 2rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(aparCount)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Total APAR</div>
-          <div style="font-size: 0.65rem; color: var(--success-400); margin-top: 4px;">${aparOk} BAIK</div>
+          <div style="font-size: 0.65rem; color: var(--success-400); margin-top: 4px;">${escapeHtml(aparOk)} BAIK</div>
         </div>
         
         <div class="card-quartz" style="padding: 20px; text-align: center;">
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(220, 95%, 52%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--brand-400); margin: 0 auto 12px;">
             <i class="fas fa-tint" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 2rem; font-weight: 800; color: white; margin-bottom: 4px;">${hydrantCount}</div>
+          <div style="font-size: 2rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(hydrantCount)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Total Hydrant</div>
-          <div style="font-size: 0.65rem; color: var(--success-400); margin-top: 4px;">${hydrantOk} BAIK</div>
+          <div style="font-size: 0.65rem; color: var(--success-400); margin-top: 4px;">${escapeHtml(hydrantOk)} BAIK</div>
         </div>
         
         <div class="card-quartz" style="padding: 20px; text-align: center;">
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(158, 85%, 45%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--success-400); margin: 0 auto 12px;">
             <i class="fas fa-shower" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 2rem; font-weight: 800; color: white; margin-bottom: 4px;">${sprinklerCount}</div>
+          <div style="font-size: 2rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(sprinklerCount)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Total Sprinkler</div>
-          <div style="font-size: 0.65rem; color: var(--success-400); margin-top: 4px;">${sprinklerOk} BAIK</div>
+          <div style="font-size: 0.65rem; color: var(--success-400); margin-top: 4px;">${escapeHtml(sprinklerOk)} BAIK</div>
         </div>
         
         <div class="card-quartz" style="padding: 20px; text-align: center;">
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(45, 90%, 60%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--gold-400); margin: 0 auto 12px;">
             <i class="fas fa-bell" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 2rem; font-weight: 800; color: white; margin-bottom: 4px;">${detectorCount}</div>
+          <div style="font-size: 2rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(detectorCount)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Total Detektor</div>
-          <div style="font-size: 0.65rem; color: var(--success-400); margin-top: 4px;">${detectorOk} BAIK</div>
+          <div style="font-size: 0.65rem; color: var(--success-400); margin-top: 4px;">${escapeHtml(detectorOk)} BAIK</div>
         </div>
       </div>
       
@@ -395,7 +396,7 @@ function renderAparTab() {
                     <div>
                       <div style="font-weight: 700; color: white; margin-bottom: 4px;">${apar.asset_tag || 'APAR-' + apar.id.slice(0,8)}</div>
                       <div style="font-size: 0.7rem; color: var(--text-tertiary);">
-                        ${apar.asset_subtype || specs.agent_type || 'Powder'} | ${specs.capacity_kg || '3'} kg | ${apar.location_name || 'Belum ditentukan'}
+                        ${escapeHtml(apar.asset_subtype || specs.agent_type || 'Powder')} | ${escapeHtml(specs.capacity_kg || '3')} kg | ${escapeHtml(apar.location_name || 'Belum ditentukan')}
                       </div>
                     </div>
                     <span class="badge" style="background: ${isGood ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; color: ${isGood ? 'var(--success-400)' : 'var(--danger-400)'}; font-size: 9px;">
@@ -404,20 +405,20 @@ function renderAparTab() {
                   </div>
                   <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 0.75rem; margin-bottom: 12px;">
                     <div>
-                      <span style="color: var(--text-tertiary);">Expired:</span> <span style="color: white;">${expDate}</span>
+                      <span style="color: var(--text-tertiary);">Expired:</span> <span style="color: white;">${escapeHtml(expDate)}</span>
                     </div>
                     <div>
-                      <span style="color: var(--text-tertiary);">Terakhir Cek:</span> <span style="color: white;">${lastCheck}</span>
+                      <span style="color: var(--text-tertiary);">Terakhir Cek:</span> <span style="color: white;">${escapeHtml(lastCheck)}</span>
                     </div>
                     <div>
                       <span style="color: var(--text-tertiary);">Manufacture:</span> <span style="color: white;">${specs.manufacturing_date ? new Date(specs.manufacturing_date).getFullYear() : 'N/A'}</span>
                     </div>
                   </div>
                   <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-primary btn-xs" onclick="inspectApar('${apar.id}')">
+                    <button class="btn btn-primary btn-xs" onclick="inspectApar('${escapeHtml(apar.id)}')">
                       <i class="fas fa-clipboard-check"></i> Inspeksi
                     </button>
-                    <button class="btn-ghost btn-xs" onclick="editApar('${apar.id}')">
+                    <button class="btn-ghost btn-xs" onclick="editApar('${escapeHtml(apar.id)}')">
                       <i class="fas fa-edit"></i> Edit
                     </button>
                   </div>
@@ -488,7 +489,7 @@ function renderHydrantTab() {
                     <div>
                       <div style="font-weight: 700; color: white; margin-bottom: 4px;">${h.asset_tag || 'HYDRANT-' + h.id.slice(0,8)}</div>
                       <div style="font-size: 0.7rem; color: var(--text-tertiary);">
-                        ${h.asset_subtype || specs.type || 'Pillar'} | ${h.location_name || 'Outdoor'}
+                        ${escapeHtml(h.asset_subtype || specs.type || 'Pillar')} | ${escapeHtml(h.location_name || 'Outdoor')}
                       </div>
                     </div>
                     <span class="badge" style="background: ${isGood ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; color: ${isGood ? 'var(--success-400)' : 'var(--danger-400)'}; font-size: 9px;">
@@ -497,20 +498,20 @@ function renderHydrantTab() {
                   </div>
                   <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 0.75rem; margin-bottom: 12px;">
                     <div>
-                      <span style="color: var(--text-tertiary);">Flow Test:</span> <span style="color: white;">${lastTest}</span>
+                      <span style="color: var(--text-tertiary);">Flow Test:</span> <span style="color: white;">${escapeHtml(lastTest)}</span>
                     </div>
                     <div>
-                      <span style="color: var(--text-tertiary);">Flow Rate:</span> <span style="color: white;">${specs.flow_rate || 'N/A'} L/min</span>
+                      <span style="color: var(--text-tertiary);">Flow Rate:</span> <span style="color: white;">${escapeHtml(specs.flow_rate || 'N/A')} L/min</span>
                     </div>
                     <div>
-                      <span style="color: var(--text-tertiary);">Pressure:</span> <span style="color: white;">${specs.pressure || 'N/A'} bar</span>
+                      <span style="color: var(--text-tertiary);">Pressure:</span> <span style="color: white;">${escapeHtml(specs.pressure || 'N/A')} bar</span>
                     </div>
                   </div>
                   <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-primary btn-xs" onclick="testHydrant('${h.id}')">
+                    <button class="btn btn-primary btn-xs" onclick="testHydrant('${escapeHtml(h.id)}')">
                       <i class="fas fa-vial"></i> Flow Test
                     </button>
-                    <button class="btn-ghost btn-xs" onclick="editHydrant('${h.id}')">
+                    <button class="btn-ghost btn-xs" onclick="editHydrant('${escapeHtml(h.id)}')">
                       <i class="fas fa-edit"></i> Edit
                     </button>
                   </div>
@@ -581,7 +582,7 @@ function renderSprinklerTab() {
                     <div>
                       <div style="font-weight: 700; color: white; margin-bottom: 4px;">${s.asset_tag || 'SPRINKLER-' + s.id.slice(0,8)}</div>
                       <div style="font-size: 0.7rem; color: var(--text-tertiary);">
-                        ${s.asset_subtype || specs.head_type || 'Pendent'} | ${specs.zone || 'Zone 1'} | ${s.location_name || 'Lantai 1'}
+                        ${escapeHtml(s.asset_subtype || specs.head_type || 'Pendent')} | ${escapeHtml(specs.zone || 'Zone 1')} | ${escapeHtml(s.location_name || 'Lantai 1')}
                       </div>
                     </div>
                     <span class="badge" style="background: ${isGood ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; color: ${isGood ? 'var(--success-400)' : 'var(--danger-400)'}; font-size: 9px;">
@@ -590,20 +591,20 @@ function renderSprinklerTab() {
                   </div>
                   <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 0.75rem; margin-bottom: 12px;">
                     <div>
-                      <span style="color: var(--text-tertiary);">Flow Test:</span> <span style="color: white;">${lastTest}</span>
+                      <span style="color: var(--text-tertiary);">Flow Test:</span> <span style="color: white;">${escapeHtml(lastTest)}</span>
                     </div>
                     <div>
-                      <span style="color: var(--text-tertiary);">Coverage:</span> <span style="color: white;">${specs.coverage_area || 'N/A'} m²</span>
+                      <span style="color: var(--text-tertiary);">Coverage:</span> <span style="color: white;">${escapeHtml(specs.coverage_area || 'N/A')} m²</span>
                     </div>
                     <div>
-                      <span style="color: var(--text-tertiary);">K-Factor:</span> <span style="color: white;">${specs.k_factor || 'N/A'}</span>
+                      <span style="color: var(--text-tertiary);">K-Factor:</span> <span style="color: white;">${escapeHtml(specs.k_factor || 'N/A')}</span>
                     </div>
                   </div>
                   <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-primary btn-xs" onclick="testSprinkler('${s.id}')">
+                    <button class="btn btn-primary btn-xs" onclick="testSprinkler('${escapeHtml(s.id)}')">
                       <i class="fas fa-vial"></i> Flow Test
                     </button>
-                    <button class="btn-ghost btn-xs" onclick="editSprinkler('${s.id}')">
+                    <button class="btn-ghost btn-xs" onclick="editSprinkler('${escapeHtml(s.id)}')">
                       <i class="fas fa-edit"></i> Edit
                     </button>
                   </div>
@@ -689,7 +690,7 @@ function renderDetectorTab() {
                       <div>
                         <div style="font-weight: 700; color: white; margin-bottom: 4px;">${d.asset_tag || 'DETECTOR-' + d.id.slice(0,8)}</div>
                         <div style="font-size: 0.7rem; color: var(--text-tertiary);">
-                          ${d.asset_subtype || specs.detector_type || 'Smoke'} | ${specs.zone || 'Zone 1'} | ${d.location_name || 'Lantai 1'}
+                          ${escapeHtml(d.asset_subtype || specs.detector_type || 'Smoke')} | ${escapeHtml(specs.zone || 'Zone 1')} | ${escapeHtml(d.location_name || 'Lantai 1')}
                         </div>
                       </div>
                     </div>
@@ -699,20 +700,20 @@ function renderDetectorTab() {
                   </div>
                   <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 0.75rem; margin-bottom: 12px;">
                     <div>
-                      <span style="color: var(--text-tertiary);">Sensitivity:</span> <span style="color: white;">${specs.sensitivity || 'Normal'}</span>
+                      <span style="color: var(--text-tertiary);">Sensitivity:</span> <span style="color: white;">${escapeHtml(specs.sensitivity || 'Normal')}</span>
                     </div>
                     <div>
-                      <span style="color: var(--text-tertiary);">Last Test:</span> <span style="color: white;">${lastTest}</span>
+                      <span style="color: var(--text-tertiary);">Last Test:</span> <span style="color: white;">${escapeHtml(lastTest)}</span>
                     </div>
                     <div>
-                      <span style="color: var(--text-tertiary);">Battery:</span> <span style="color: white;">${specs.battery_status || 'N/A'}</span>
+                      <span style="color: var(--text-tertiary);">Battery:</span> <span style="color: white;">${escapeHtml(specs.battery_status || 'N/A')}</span>
                     </div>
                   </div>
                   <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-primary btn-xs" onclick="testDetector('${d.id}')">
+                    <button class="btn btn-primary btn-xs" onclick="testDetector('${escapeHtml(d.id)}')">
                       <i class="fas fa-vial"></i> Test
                     </button>
-                    <button class="btn-ghost btn-xs" onclick="editDetector('${d.id}')">
+                    <button class="btn-ghost btn-xs" onclick="editDetector('${escapeHtml(d.id)}')">
                       <i class="fas fa-edit"></i> Edit
                     </button>
                   </div>
@@ -848,7 +849,7 @@ function renderAlarmTab() {
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                 <span style="font-size: 0.8rem; color: var(--text-secondary);">Device Status</span>
                 <span class="badge" style="background: hsla(158, 85%, 45%, 0.1); color: var(--success-400); font-size: 9px;">
-                  ${fireData.detector.length} DETECTORS
+                  ${escapeHtml(fireData.detector.length)} DETECTORS
                 </span>
               </div>
               <div style="font-size: 0.7rem; color: var(--text-tertiary);">
@@ -1370,12 +1371,12 @@ function initEventListeners() {
     resultDiv.innerHTML = `
       <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; border: 1px solid var(--success-400);">
         <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 8px;">Kebutuhan APAR</div>
-        <div style="font-size: 1.5rem; font-weight: 800; color: var(--success-400);">${totalRequired} unit</div>
+        <div style="font-size: 1.5rem; font-weight: 800; color: var(--success-400);">${escapeHtml(totalRequired)} unit</div>
         <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px;">
-          ${requiredApar} unit per lantai × ${floors} lantai
+          ${escapeHtml(requiredApar)} unit per lantai × ${escapeHtml(floors)} lantai
         </div>
         <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 8px;">
-          (Area coverage: ${areaPerApar} m²/APAR untuk risiko ${risk.toLowerCase()})
+          (Area coverage: ${escapeHtml(areaPerApar)} m²/APAR untuk risiko ${escapeHtml(risk.toLowerCase())})
         </div>
       </div>
     `;
@@ -1404,7 +1405,7 @@ function initEventListeners() {
     resultDiv.innerHTML = `
       <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; border: 1px solid ${isAdequate ? 'var(--success-400)' : 'var(--warning-400)'};">
         <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 8px;">Flow Rate</div>
-        <div style="font-size: 1.5rem; font-weight: 800; color: ${isAdequate ? 'var(--success-400)' : 'var(--warning-400)'};">${flowLpm.toFixed(1)} L/min</div>
+        <div style="font-size: 1.5rem; font-weight: 800; color: ${isAdequate ? 'var(--success-400)' : 'var(--warning-400)'};">${escapeHtml(flowLpm.toFixed(1))} L/min</div>
         <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px;">
           ${isAdequate ? '✓ Memenuhi standar SNI (≥750 L/min)' : '⚠ Di bawah standar minimum SNI'}
         </div>
@@ -1435,9 +1436,9 @@ function initEventListeners() {
     resultDiv.innerHTML = `
       <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; border: 1px solid var(--success-400);">
         <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 8px;">Kebutuhan Sprinkler Head</div>
-        <div style="font-size: 1.5rem; font-weight: 800; color: var(--success-400);">${requiredHeads} head</div>
+        <div style="font-size: 1.5rem; font-weight: 800; color: var(--success-400);">${escapeHtml(requiredHeads)} head</div>
         <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px;">
-          Coverage: ${coveragePerHead} m² per head (${hazard} hazard)
+          Coverage: ${escapeHtml(coveragePerHead)} m² per head (${escapeHtml(hazard)} hazard)
         </div>
       </div>
     `;

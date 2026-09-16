@@ -4,6 +4,7 @@
 //  Synchronized with SIMBG Folder Structure
 // ============================================================
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml, escapeHtml as esc } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 
@@ -105,7 +106,7 @@ export async function filesPage() {
                 <i class="fas fa-search"></i>
                 <input type="text" id="drive-search-input" placeholder="Cari berkas..." oninput="window._renderDriveGrid()">
              </div>
-             <button class="btn btn-ghost btn-sm" onclick="location.reload()"><i class="fas fa-sync"></i></button>
+             <button type="button" aria-label="Muat ulang" class="btn btn-ghost btn-sm" onclick="location.reload()"><i class="fas fa-sync"></i></button>
           </header>
 
           <div class="drive-grid" id="drive-content-grid"></div>
@@ -187,8 +188,8 @@ function initDriveLogic() {
         <div class="sidebar-label">Kategori Berkas</div>
         ${window._simbgCategories.map(c => `
           <button class="drive-nav-item ${window._selectedCategory === c.id ? 'active' : ''}" 
-                  onclick="window._changeDriveView('inner', null, '${c.id}')">
-             <i class="fas ${c.icon}"></i> <span>${c.label}</span>
+                  onclick="window._changeDriveView('inner', null, '${escapeHtml(c.id)}')">
+             <i class="fas ${c.icon}"></i> <span>${escapeHtml(c.label)}</span>
           </button>
         `).join('')}
       `;
@@ -203,7 +204,7 @@ function initDriveLogic() {
     if (window._currentView === 'projects') {
        const filtered = window._allProjects.filter(p => p.nama_bangunan.toLowerCase().includes(search));
        grid.innerHTML = filtered.length ? filtered.map(p => `
-          <div class="folder-card" onclick="window._changeDriveView('inner', '${p.id}')">
+          <div class="folder-card" onclick="window._changeDriveView('inner', '${escapeHtml(p.id)}')">
              <div class="folder-icon"></div>
              <div class="folder-name">${esc(p.nama_bangunan)}</div>
              <div class="folder-meta">${window._allGlobalFiles.filter(f => f.proyek_id === p.id).length} berkas</div>
@@ -231,12 +232,12 @@ function renderFileCard(f, showProject = false) {
   const isPdf = f.name.toLowerCase().endsWith('.pdf');
   const isImg = f.name.match(/\.(jpg|jpeg|png|webp)$/i);
   return `
-    <div class="fm-file-card ready" onclick="window.open('${f.file_url}', '_blank')">
+    <div class="fm-file-card ready" onclick="window.open('${escapeHtml(f.file_url)}', '_blank')">
       <div class="fm-file-icon has-file ${isImg ? 'image' : ''}">
          <i class="fas ${isImg ? 'fa-file-image' : isPdf ? 'fa-file-pdf' : 'fa-file'}"></i>
       </div>
       <div class="fm-file-info">
-         <div class="fm-file-name" title="${f.subcategory || f.category}">${esc(f.subcategory || f.category)}</div>
+         <div class="fm-file-name" title="${escapeHtml(f.subcategory || f.category)}">${esc(f.subcategory || f.category)}</div>
          <div class="fm-file-meta">
             <span class="text-primary font-bold">${esc(f.name)}</span>
          </div>
@@ -249,4 +250,3 @@ function renderFileCard(f, showProject = false) {
   `;
 }
 
-function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

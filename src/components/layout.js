@@ -21,6 +21,7 @@ export function renderAppShell(appEl, isPublic = false) {
   if (isPublic) {
     appEl.innerHTML = `
       <div class="app-layout public-layout" id="app-layout">
+        <a class="skip-link" href="#page-root">Lompat ke konten utama</a>
         <main class="main-content no-sidebar" id="main-content" style="margin-left:0; width:100%">
           <div class="page-container" id="page-root">
             <!-- Public page content -->
@@ -33,11 +34,15 @@ export function renderAppShell(appEl, isPublic = false) {
 
   appEl.innerHTML = `
     <div class="app-layout sidebar-collapsed" id="app-layout">
+      <!-- Tanpa tautan ini, pengguna keyboard harus menekan Tab puluhan kali
+           melewati sidebar dan header di SETIAP halaman (WCAG 2.4.1). -->
+      <a class="skip-link" href="#page-root">Lompat ke konten utama</a>
+
       ${renderSidebar()}
       
       ${renderHeader('dashboard')}
       
-      <main class="main-content" id="main-content">
+      <main class="main-content" id="main-content" tabindex="-1">
         <div id="sync-banner-container"></div>
         <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
         

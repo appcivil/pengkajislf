@@ -5,6 +5,7 @@
  */
 import { APP_CONFIG } from '../lib/config.js';
 
+import { escapeHtml } from '../lib/safe-markdown.js';
 export async function legalPage() {
   const root = document.getElementById('page-root') || document.body;
   const year = new Date().getFullYear();
@@ -17,7 +18,7 @@ export async function legalPage() {
              <i class="fas fa-arrow-left"></i> Kembali
            </button>
            <h1 class="legal-title">Kebijakan Privasi & Syarat Ketentuan</h1>
-           <p class="legal-subtitle">Terakhir Diperbarui: 31 Maret 2026 &bullet; Versi ${APP_CONFIG.version}</p>
+           <p class="legal-subtitle">Terakhir Diperbarui: 31 Maret 2026 &bullet; Versi ${escapeHtml(APP_CONFIG.version)}</p>
         </header>
 
         <section class="legal-section">
@@ -50,7 +51,7 @@ export async function legalPage() {
         </section>
 
         <footer class="legal-footer">
-          <p>&copy; ${year} Smart AI Pengkaji SLF &bullet; Penyelenggara Sistem Elektronik (Sistem Internal)</p>
+          <p>&copy; ${escapeHtml(year)} Smart AI Pengkaji SLF &bullet; Penyelenggara Sistem Elektronik (Sistem Internal)</p>
           <div class="legal-badges">
             <span class="l-badge"><i class="fas fa-check-shield"></i> ITE Compliant</span>
             <span class="l-badge"><i class="fas fa-lock"></i> SSL Secured</span>

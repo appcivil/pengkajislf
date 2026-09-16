@@ -1,0 +1,25 @@
+# Dependensi & build
+node_modules/
+dist/
+coverage/
+.vite/
+
+# Rahasia — JANGAN pernah di-commit
+.env
+.env.local
+.env.*.local
+keepalive.targets.json
+.netrc
+
+# Berkas kerja skrip
+.keepalive-stamp
+egress-audit.json
+code-audit.json
+deep-audit.json
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

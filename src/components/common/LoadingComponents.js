@@ -1,3 +1,4 @@
+import { escapeHtml } from '../../lib/safe-markdown.js';
 /**
  * Komponen Loading Animasi Profesional untuk SMART AI Pengkaji SLF
  * Dengan implementasi Light/Dark Mode penuh
@@ -125,19 +126,19 @@ export function LoadingLogo({ size = 120, text = 'Memuat...', showText = true, t
   applyTheme(container, effectiveTheme);
   
   container.innerHTML = `
-    <div class="loading-logo-wrapper" data-theme="${effectiveTheme}">
+    <div class="loading-logo-wrapper" data-theme="${escapeHtml(effectiveTheme)}">
       <div class="loading-logo-glow"></div>
       <img 
-        src="/Logo SMART AI Pengkaji SLF (Small).png" 
+        src="logo-small.png" 
         alt="SMART AI Pengkaji SLF"
         class="loading-logo-img"
-        style="width: ${size}px; height: ${size}px;"
+        style="width: ${escapeHtml(size)}px; height: ${escapeHtml(size)}px;"
         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
       />
-      <div class="loading-logo-fallback" style="display: none; width: ${size}px; height: ${size}px;">
+      <div class="loading-logo-fallback" style="display: none; width: ${escapeHtml(size)}px; height: ${escapeHtml(size)}px;">
         <svg viewBox="0 0 100 100" class="loading-logo-svg">
           <defs>
-            <linearGradient id="logoGradient-${effectiveTheme}" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="logoGradient-${escapeHtml(effectiveTheme)}" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" class="loading-gradient-start"/>
               <stop offset="100%" class="loading-gradient-end"/>
             </linearGradient>
@@ -148,7 +149,7 @@ export function LoadingLogo({ size = 120, text = 'Memuat...', showText = true, t
           <text x="50" y="55" text-anchor="middle" class="loading-logo-text-svg" font-size="20" font-weight="bold">AI</text>
         </svg>
       </div>
-      ${showText ? `<p class="loading-logo-text">${text}</p>` : ''}
+      ${showText ? `<p class="loading-logo-text">${escapeHtml(text)}</p>` : ''}
     </div>
   `;
   
@@ -182,11 +183,11 @@ export function LoadingSpinner({ progress = null, size = 80, text = 'Memuat data
   const hasProgress = progress !== null && !isNaN(progress);
   
   container.innerHTML = `
-    <div class="loading-spinner-wrapper" data-theme="${effectiveTheme}" style="--spinner-size: ${size}px;">
+    <div class="loading-spinner-wrapper" data-theme="${escapeHtml(effectiveTheme)}" style="--spinner-size: ${escapeHtml(size)}px;">
       <div class="loading-spinner-ring">
         <svg viewBox="0 0 100 100" class="loading-spinner-svg">
           <defs>
-            <linearGradient id="spinnerGradient-${effectiveTheme}" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="spinnerGradient-${escapeHtml(effectiveTheme)}" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" class="loading-gradient-start"/>
               <stop offset="100%" class="loading-gradient-end"/>
             </linearGradient>
@@ -199,8 +200,8 @@ export function LoadingSpinner({ progress = null, size = 80, text = 'Memuat data
         </svg>
         ${hasProgress ? `<span class="loading-spinner-percentage">${Math.round(progress)}%</span>` : ''}
       </div>
-      ${text ? `<p class="loading-spinner-text">${text}</p>` : ''}
-      ${hasProgress ? `<div class="loading-progress-bar"><div class="loading-progress-fill" style="width: ${progress}%"></div></div>` : ''}
+      ${text ? `<p class="loading-spinner-text">${escapeHtml(text)}</p>` : ''}
+      ${hasProgress ? `<div class="loading-progress-bar"><div class="loading-progress-fill" style="width: ${escapeHtml(progress)}%"></div></div>` : ''}
     </div>
   `;
   
@@ -230,12 +231,12 @@ export function LoadingScreen({ message = 'Sistem sedang memproses', showDots = 
   applyTheme(overlay, effectiveTheme);
   
   overlay.innerHTML = `
-    <div class="loading-screen-content" data-theme="${effectiveTheme}">
+    <div class="loading-screen-content" data-theme="${escapeHtml(effectiveTheme)}">
       <div class="loading-screen-particles"></div>
       <div class="loading-screen-logo">
         <div class="loading-screen-glow"></div>
         <img 
-          src="/Logo SMART AI Pengkaji SLF (Small).png" 
+          src="logo-small.png" 
           alt="SMART AI Pengkaji SLF"
           class="loading-screen-img"
         />
@@ -243,7 +244,7 @@ export function LoadingScreen({ message = 'Sistem sedang memproses', showDots = 
       </div>
       <h2 class="loading-screen-title">SMART AI Pengkaji SLF</h2>
       <p class="loading-screen-message">
-        ${message}
+        ${escapeHtml(message)}
         ${showDots ? '<span class="loading-dots"><span></span><span></span><span></span></span>' : ''}
       </p>
       <div class="loading-screen-progress">
@@ -281,7 +282,7 @@ export function LoadingSkeleton({ type = 'card', lines = 3, rows = 3, theme = 'a
   
   const skeletons = {
     card: `
-      <div class="skeleton-card" data-theme="${effectiveTheme}">
+      <div class="skeleton-card" data-theme="${escapeHtml(effectiveTheme)}">
         <div class="skeleton-header">
           <div class="skeleton-avatar"></div>
           <div class="skeleton-title-wrapper">
@@ -301,14 +302,14 @@ export function LoadingSkeleton({ type = 'card', lines = 3, rows = 3, theme = 'a
       </div>
     `,
     text: `
-      <div class="skeleton-text" data-theme="${effectiveTheme}">
+      <div class="skeleton-text" data-theme="${escapeHtml(effectiveTheme)}">
         ${Array(lines).fill(0).map((_, i) => 
           `<div class="skeleton-line" style="width: ${100 - (i * 8)}%"></div>`
         ).join('')}
       </div>
     `,
     table: `
-      <div class="skeleton-table" data-theme="${effectiveTheme}">
+      <div class="skeleton-table" data-theme="${escapeHtml(effectiveTheme)}">
         <div class="skeleton-row skeleton-header-row">
           ${Array(4).fill(0).map(() => '<div class="skeleton-cell skeleton-cell-header"></div>').join('')}
         </div>
@@ -320,7 +321,7 @@ export function LoadingSkeleton({ type = 'card', lines = 3, rows = 3, theme = 'a
       </div>
     `,
     form: `
-      <div class="skeleton-form" data-theme="${effectiveTheme}">
+      <div class="skeleton-form" data-theme="${escapeHtml(effectiveTheme)}">
         <div class="skeleton-form-header">
           <div class="skeleton-form-title"></div>
           <div class="skeleton-form-desc"></div>
@@ -339,7 +340,7 @@ export function LoadingSkeleton({ type = 'card', lines = 3, rows = 3, theme = 'a
       </div>
     `,
     list: `
-      <div class="skeleton-list" data-theme="${effectiveTheme}">
+      <div class="skeleton-list" data-theme="${escapeHtml(effectiveTheme)}">
         ${Array(rows).fill(0).map((_, i) => `
           <div class="skeleton-list-item" style="animation-delay: ${i * 0.08}s">
             <div class="skeleton-list-icon"></div>
@@ -380,9 +381,9 @@ export function LoadingDots({ theme = 'auto' }) {
   applyTheme(container, effectiveTheme);
   
   container.innerHTML = `
-    <span class="loading-dot" data-theme="${effectiveTheme}"></span>
-    <span class="loading-dot" data-theme="${effectiveTheme}" style="animation-delay: 0.16s"></span>
-    <span class="loading-dot" data-theme="${effectiveTheme}" style="animation-delay: 0.32s"></span>
+    <span class="loading-dot" data-theme="${escapeHtml(effectiveTheme)}"></span>
+    <span class="loading-dot" data-theme="${escapeHtml(effectiveTheme)}" style="animation-delay: 0.16s"></span>
+    <span class="loading-dot" data-theme="${escapeHtml(effectiveTheme)}" style="animation-delay: 0.32s"></span>
   `;
   
   if (theme === 'auto') {
@@ -410,10 +411,10 @@ export function PageTransitionLoader({ theme = 'auto' }) {
   applyTheme(loader, effectiveTheme);
   
   loader.innerHTML = `
-    <div class="page-transition-bar" data-theme="${effectiveTheme}"></div>
-    <div class="page-transition-progress" data-theme="${effectiveTheme}"></div>
-    <div class="page-transition-logo" data-theme="${effectiveTheme}">
-      <img src="/Logo SMART AI Pengkaji SLF (Small).png" alt="Loading" />
+    <div class="page-transition-bar" data-theme="${escapeHtml(effectiveTheme)}"></div>
+    <div class="page-transition-progress" data-theme="${escapeHtml(effectiveTheme)}"></div>
+    <div class="page-transition-logo" data-theme="${escapeHtml(effectiveTheme)}">
+      <img src="logo-small.png" alt="Loading" />
     </div>
   `;
   

@@ -4,7 +4,10 @@
 // Based on SNI 03-7065-2005 Standard
 // ============================================================
 
-import { EventEmitter } from '../../core/EventBus.js';
+// Path diperbaiki: dari src/modules/plumbing/core/ naik 3 level ke src/core/.
+// Sebelumnya '../../core/EventBus.js' menunjuk ke src/modules/core/ (tidak ada),
+// sehingga modul ini gagal dimuat bila dipanggil.
+import { EventEmitter } from '../../../core/EventBus.js';
 
 export class HydraulicEngine extends EventEmitter {
   constructor() {

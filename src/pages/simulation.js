@@ -25,10 +25,12 @@ import {
   mergeWithFieldData
 } from '../lib/simulation-engine-v2.js';
 import { exportSimulationVisuals } from '../lib/simulation-visualization.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { exportSimulationToReport } from '../lib/simulation-report-integration.js';
 import { importFieldData, convertToSimulationParams, saveImportedFieldData } from '../lib/field-data-import.js';
 import { supabase } from '../lib/supabase.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
+import { askInput } from '../components/modal.js';
 
 let pyodideInitialized = false;
 let currentProyek = null;
@@ -158,7 +160,7 @@ export async function simulationPage(params = {}) {
             <div class="card" style="background:var(--success-bg);border-color:var(--success-border)">
               <div class="card-title" style="color:var(--success);display:flex;justify-content:space-between;align-items:center">
                 <span><i class="fas fa-database"></i> Data Lapangan Tersedia</span>
-                <button class="btn btn-xs btn-ghost" id="btn-refresh-field-data"><i class="fas fa-sync"></i></button>
+                <button type="button" aria-label="Muat ulang" class="btn btn-xs btn-ghost" id="btn-refresh-field-data"><i class="fas fa-sync"></i></button>
               </div>
               <div id="field-data-items" style="max-height:200px;overflow-y:auto"></div>
             </div>
@@ -288,13 +290,16 @@ function setupFieldDataImport(proyekId) {
       const parsed = await importFieldData(selectedFile, { proyekId });
       importedData = parsed;
       
-      statusDiv.innerHTML = `<span style="color:var(--success)"><i class="fas fa-check"></i> File berhasil dibaca! Tipe terdeteksi: ${parsed.detectedType}</span>`;
+      statusDiv.innerHTML = `<span style="color:var(--success)"><i class="fas fa-check"></i> File berhasil dibaca! Tipe terdeteksi: ${escapeHtml(parsed.detectedType)}</span>`;
       
       // Convert ke parameter simulasi
-      const tipeTarget = prompt(
-        `Data terdeteksi sebagai: ${parsed.detectedType}\n\nPilih tipe simulasi untuk menggunakan data ini:\n1. pencahayaan\n2. ventilasi\n3. evakuasi\n4. ndt_rebound\n5. ndt_upv`,
-        parsed.detectedType
-      );
+      const tipeTarget = await askInput({
+        title: 'Pilih Tipe Simulasi',
+        message: `Data terdeteksi sebagai: ${parsed.detectedType}. Pilih tipe simulasi yang akan memakai data ini.`,
+        label: 'Tipe simulasi (pencahayaan / ventilasi / evakuasi / ndt_rebound / ndt_upv)',
+        defaultValue: parsed.detectedType,
+        confirmText: 'Gunakan Data',
+      });
       
       if (!tipeTarget) {
         statusDiv.innerHTML += '<br><span style="color:var(--warning)">Import dibatalkan</span>';
@@ -323,7 +328,7 @@ function setupFieldDataImport(proyekId) {
       
     } catch (err) {
       console.error('[FieldImport] Error:', err);
-      statusDiv.innerHTML = `<span style="color:var(--danger)"><i class="fas fa-exclamation-circle"></i> Error: ${err.message}</span>`;
+      statusDiv.innerHTML = `<span style="color:var(--danger)"><i class="fas fa-exclamation-circle"></i> Error: ${escapeHtml(err.message ?? 'Unknown error')}</span>`;
       showError('Gagal import: ' + err.message);
     } finally {
       btnProcess.disabled = false;
@@ -390,10 +395,10 @@ async function loadImportedFieldDataList(proyekId) {
           <div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--bg-subtle);border-radius:6px;margin-bottom:6px">
             <i class="fas ${icon}" style="color:var(--text-tertiary)"></i>
             <div style="flex:1;min-width:0">
-              <div style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.source_filename}</div>
-              <div style="font-size:9px;color:var(--text-tertiary)">${typeLabels[item.tipe_pengujian] || item.tipe_pengujian} • ${date}</div>
+              <div style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(item.source_filename)}</div>
+              <div style="font-size:9px;color:var(--text-tertiary)">${typeLabels[item.tipe_pengujian] || item.tipe_pengujian} • ${escapeHtml(date)}</div>
             </div>
-            ${item.storage_url ? `<a href="${item.storage_url}" target="_blank" style="font-size:11px;color:var(--brand-400)"><i class="fas fa-external-link-alt"></i></a>` : ''}
+            ${item.storage_url ? `<a rel="noopener noreferrer" href="${escapeHtml(item.storage_url)}" target="_blank" style="font-size:11px;color:var(--brand-400)"><i class="fas fa-external-link-alt"></i></a>` : ''}
           </div>
         `;
       }).join('');
@@ -595,7 +600,7 @@ function loadSimulation(type, proyekId) {
         const fieldDataIndicator = document.getElementById('field-data-indicator');
         if (fieldDataIndicator) {
           fieldDataIndicator.style.display = 'block';
-          fieldDataIndicator.innerHTML = `<i class="fas fa-check-circle"></i> Menggunakan data lapangan: ${fieldDataResult.sourceFile}`;
+          fieldDataIndicator.innerHTML = `<i class="fas fa-check-circle"></i> Menggunakan data lapangan: ${escapeHtml(fieldDataResult.sourceFile)}`;
         }
       }
     }
@@ -719,11 +724,11 @@ function renderLightingResult(result) {
     <div style="margin-bottom:16px">
       <div style="display:flex;gap:16px;margin-bottom:16px">
         <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
-          <div style="font-size:2rem;font-weight:700;color:var(--${complianceClass})">${result.daylight_factor_avg}%</div>
+          <div style="font-size:2rem;font-weight:700;color:var(--${escapeHtml(complianceClass)})">${escapeHtml(result.daylight_factor_avg)}%</div>
           <div class="text-xs text-tertiary">Daylight Factor Rata-rata</div>
         </div>
         <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
-          <div style="font-size:2rem;font-weight:700">${result.illuminance_avg}</div>
+          <div style="font-size:2rem;font-weight:700">${escapeHtml(result.illuminance_avg)}</div>
           <div class="text-xs text-tertiary">Illuminance (lux)</div>
         </div>
       </div>
@@ -732,10 +737,10 @@ function renderLightingResult(result) {
         <div class="text-sm font-bold" style="margin-bottom:8px">Compliance SNI:</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <span class="badge" style="background:${result.compliance.passes_df_min ? 'var(--success-bg)' : 'var(--danger-bg)'};color:${result.compliance.passes_df_min ? 'var(--success)' : 'var(--danger)'}">
-            DF Min: ${result.daylight_factor_min}% ${result.compliance.passes_df_min ? '✓' : '✗'}
+            DF Min: ${escapeHtml(result.daylight_factor_min)}% ${result.compliance.passes_df_min ? '✓' : '✗'}
           </span>
           <span class="badge" style="background:${result.compliance.passes_df_avg ? 'var(--success-bg)' : 'var(--danger-bg)'};color:${result.compliance.passes_df_avg ? 'var(--success)' : 'var(--danger)'}">
-            DF Avg: ${result.daylight_factor_avg}% ${result.compliance.passes_df_avg ? '✓' : '✗'}
+            DF Avg: ${escapeHtml(result.daylight_factor_avg)}% ${result.compliance.passes_df_avg ? '✓' : '✗'}
           </span>
         </div>
       </div>
@@ -743,7 +748,7 @@ function renderLightingResult(result) {
       ${result.recommendations.length > 0 ? `
         <div style="background:var(--warning-bg);padding:12px;border-radius:8px;margin-top:12px">
           <div class="text-sm font-bold" style="margin-bottom:4px;color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> Rekomendasi:</div>
-          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${r}</div>`).join('')}
+          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${escapeHtml(r)}</div>`).join('')}
         </div>
       ` : ''}
     </div>
@@ -757,27 +762,27 @@ function renderVentilationResult(result) {
     <div style="margin-bottom:16px">
       <div style="display:flex;gap:16px;margin-bottom:16px">
         <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
-          <div style="font-size:2rem;font-weight:700;color:var(--${complianceClass})">${result.air_changes_per_hour}</div>
+          <div style="font-size:2rem;font-weight:700;color:var(--${escapeHtml(complianceClass)})">${escapeHtml(result.air_changes_per_hour)}</div>
           <div class="text-xs text-tertiary">Air Changes per Hour (ACH)</div>
         </div>
         <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
-          <div style="font-size:2rem;font-weight:700">${result.airflow_rate}</div>
+          <div style="font-size:2rem;font-weight:700">${escapeHtml(result.airflow_rate)}</div>
           <div class="text-xs text-tertiary">Airflow (m³/s)</div>
         </div>
       </div>
       
       <div style="margin-bottom:12px">
-        <div class="text-sm font-bold" style="margin-bottom:8px">Kategori: <span style="color:var(--${result.compliance.category === 'Good' ? 'success' : result.compliance.category === 'Adequate' ? 'warning' : 'danger'})">${result.compliance.category}</span></div>
+        <div class="text-sm font-bold" style="margin-bottom:8px">Kategori: <span style="color:var(--${result.compliance.category === 'Good' ? 'success' : result.compliance.category === 'Adequate' ? 'warning' : 'danger'})">${escapeHtml(result.compliance.category)}</span></div>
         <div style="display:flex;gap:8px">
-          <span class="badge" style="background:var(--info-bg);color:var(--info)">Wind: ${result.wind_driven_percentage}%</span>
-          <span class="badge" style="background:var(--info-bg);color:var(--info)">Stack: ${result.stack_driven_percentage}%</span>
+          <span class="badge" style="background:var(--info-bg);color:var(--info)">Wind: ${escapeHtml(result.wind_driven_percentage)}%</span>
+          <span class="badge" style="background:var(--info-bg);color:var(--info)">Stack: ${escapeHtml(result.stack_driven_percentage)}%</span>
         </div>
       </div>
       
       ${result.recommendations.length > 0 ? `
         <div style="background:var(--warning-bg);padding:12px;border-radius:8px;margin-top:12px">
           <div class="text-sm font-bold" style="margin-bottom:4px;color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> Rekomendasi:</div>
-          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${r}</div>`).join('')}
+          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${escapeHtml(r)}</div>`).join('')}
         </div>
       ` : ''}
     </div>
@@ -791,11 +796,11 @@ function renderEvacuationResult(result) {
     <div style="margin-bottom:16px">
       <div style="display:flex;gap:16px;margin-bottom:16px">
         <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
-          <div style="font-size:2rem;font-weight:700">${result.average_evacuation_time}s</div>
+          <div style="font-size:2rem;font-weight:700">${escapeHtml(result.average_evacuation_time)}s</div>
           <div class="text-xs text-tertiary">Rata-rata Waktu Evakuasi</div>
         </div>
         <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
-          <div style="font-size:2rem;font-weight:700;color:var(--${complianceClass})">${result.maximum_evacuation_time}s</div>
+          <div style="font-size:2rem;font-weight:700;color:var(--${escapeHtml(complianceClass)})">${escapeHtml(result.maximum_evacuation_time)}s</div>
           <div class="text-xs text-tertiary">Maksimum (${result.compliance.passes ? 'Lulus' : 'Gagal'})</div>
         </div>
       </div>
@@ -805,7 +810,7 @@ function renderEvacuationResult(result) {
           <div class="text-sm font-bold" style="margin-bottom:8px;color:var(--danger)"><i class="fas fa-exclamation-circle"></i> Bottlenecks Terdeteksi:</div>
           ${result.bottlenecks.map((b, i) => `
             <div style="background:var(--danger-bg);padding:8px 12px;border-radius:4px;margin-bottom:4px">
-              <span class="text-sm" style="color:var(--danger)">#${i+1}: ${b.edge[0]} → ${b.edge[1]} (${b.severity})</span>
+              <span class="text-sm" style="color:var(--danger)">#${i+1}: ${escapeHtml(b.edge[0])} → ${escapeHtml(b.edge[1])} (${escapeHtml(b.severity)})</span>
             </div>
           `).join('')}
         </div>
@@ -814,7 +819,7 @@ function renderEvacuationResult(result) {
       ${result.recommendations.length > 0 ? `
         <div style="background:var(--warning-bg);padding:12px;border-radius:8px;margin-top:12px">
           <div class="text-sm font-bold" style="margin-bottom:4px;color:var(--warning)"><i class="fas fa-lightbulb"></i> Rekomendasi:</div>
-          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${r}</div>`).join('')}
+          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${escapeHtml(r)}</div>`).join('')}
         </div>
       ` : ''}
     </div>
@@ -830,15 +835,15 @@ function renderNDTResult(result) {
   return `
     <div style="margin-bottom:16px">
       <div style="text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px;margin-bottom:16px">
-        <div style="font-size:2rem;font-weight:700;color:var(--${complianceClass})">${value}</div>
-        <div class="text-xs text-tertiary">${unit}</div>
-        <div class="text-sm" style="margin-top:4px;color:var(--${complianceClass})">${rating}</div>
+        <div style="font-size:2rem;font-weight:700;color:var(--${escapeHtml(complianceClass)})">${escapeHtml(value)}</div>
+        <div class="text-xs text-tertiary">${escapeHtml(unit)}</div>
+        <div class="text-sm" style="margin-top:4px;color:var(--${escapeHtml(complianceClass)})">${escapeHtml(rating)}</div>
       </div>
       
       ${result.potential_cracks_detected > 0 ? `
         <div style="background:var(--danger-bg);padding:12px;border-radius:8px;margin-bottom:12px">
           <div class="text-sm font-bold" style="color:var(--danger)">
-            <i class="fas fa-exclamation-triangle"></i> ${result.potential_cracks_detected} Potensi Retak Terdeteksi
+            <i class="fas fa-exclamation-triangle"></i> ${escapeHtml(result.potential_cracks_detected)} Potensi Retak Terdeteksi
           </div>
         </div>
       ` : ''}
@@ -846,7 +851,7 @@ function renderNDTResult(result) {
       ${result.recommendations?.length > 0 ? `
         <div style="background:var(--warning-bg);padding:12px;border-radius:8px">
           <div class="text-sm font-bold" style="margin-bottom:4px;color:var(--warning)"><i class="fas fa-lightbulb"></i> Rekomendasi:</div>
-          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${r}</div>`).join('')}
+          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${escapeHtml(r)}</div>`).join('')}
         </div>
       ` : ''}
     </div>
@@ -860,25 +865,25 @@ function renderStormwaterResult(result) {
     <div style="margin-bottom:16px">
       <div style="display:flex;gap:16px;margin-bottom:16px">
         <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
-          <div style="font-size:2rem;font-weight:700">${result.total_runoff_volume_m3}</div>
+          <div style="font-size:2rem;font-weight:700">${escapeHtml(result.total_runoff_volume_m3)}</div>
           <div class="text-xs text-tertiary">Total Runoff (m³)</div>
         </div>
         <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
-          <div style="font-size:2rem;font-weight:700;color:var(--${complianceClass})">${result.wells_required}</div>
+          <div style="font-size:2rem;font-weight:700;color:var(--${escapeHtml(complianceClass)})">${escapeHtml(result.wells_required)}</div>
           <div class="text-xs text-tertiary">Sumur Resapan</div>
         </div>
       </div>
       
       <div style="margin-bottom:12px">
         <div class="text-sm font-bold" style="margin-bottom:8px">Status: 
-          <span style="color:var(--${complianceClass})">${result.compliance?.message || '-'}</span>
+          <span style="color:var(--${escapeHtml(complianceClass)})">${result.compliance?.message || '-'}</span>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <span class="badge" style="background:var(--info-bg);color:var(--info)">
-            Runoff: ${result.runoff_managed_percentage}%
+            Runoff: ${escapeHtml(result.runoff_managed_percentage)}%
           </span>
           <span class="badge" style="background:var(--info-bg);color:var(--info)">
-            PAH: ${result.pah_size_recommended_m3} m³
+            PAH: ${escapeHtml(result.pah_size_recommended_m3)} m³
           </span>
         </div>
       </div>
@@ -886,7 +891,7 @@ function renderStormwaterResult(result) {
       ${result.recommendations?.length > 0 ? `
         <div style="background:var(--warning-bg);padding:12px;border-radius:8px">
           <div class="text-sm font-bold" style="margin-bottom:4px;color:var(--warning)"><i class="fas fa-lightbulb"></i> Rekomendasi:</div>
-          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${r}</div>`).join('')}
+          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${escapeHtml(r)}</div>`).join('')}
         </div>
       ` : ''}
     </div>
@@ -903,18 +908,18 @@ function renderOTTVResult(result) {
     <div style="margin-bottom:16px">
       <div style="display:flex;gap:16px;margin-bottom:16px">
         <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
-          <div style="font-size:2rem;font-weight:700;color:var(--${complianceClass})">${result.ottv_total}</div>
+          <div style="font-size:2rem;font-weight:700;color:var(--${escapeHtml(complianceClass)})">${escapeHtml(result.ottv_total)}</div>
           <div class="text-xs text-tertiary">OTTV (W/m²)</div>
         </div>
         <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
-          <div style="font-size:2rem;font-weight:700;color:var(--${gradeColor})">${result.energy_efficiency?.grade || '-'}</div>
+          <div style="font-size:2rem;font-weight:700;color:var(--${escapeHtml(gradeColor)})">${result.energy_efficiency?.grade || '-'}</div>
           <div class="text-xs text-tertiary">Grade Energi</div>
         </div>
       </div>
       
       <div style="margin-bottom:12px">
         <div class="text-sm font-bold" style="margin-bottom:8px">
-          Status: <span style="color:var(--${complianceClass})">${result.compliance?.passes ? 'Memenuhi SNI' : 'Tidak Memenuhi'}</span>
+          Status: <span style="color:var(--${escapeHtml(complianceClass)})">${result.compliance?.passes ? 'Memenuhi SNI' : 'Tidak Memenuhi'}</span>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <span class="badge" style="background:var(--info-bg);color:var(--info)">WWR: ${(result.thermal_parameters?.wwr * 100).toFixed(1)}%</span>
@@ -925,7 +930,7 @@ function renderOTTVResult(result) {
       ${result.recommendations?.length > 0 ? `
         <div style="background:var(--warning-bg);padding:12px;border-radius:8px">
           <div class="text-sm font-bold" style="margin-bottom:4px;color:var(--warning)"><i class="fas fa-lightbulb"></i> Rekomendasi:</div>
-          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${r}</div>`).join('')}
+          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${escapeHtml(r)}</div>`).join('')}
         </div>
       ` : ''}
     </div>
@@ -943,7 +948,7 @@ function renderSeismicResult(result) {
           <div class="text-xs text-tertiary">Base Shear (kN)</div>
         </div>
         <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
-          <div style="font-size:2rem;font-weight:700;color:var(--${complianceClass})">${result.building_response?.natural_period_sec || 0}s</div>
+          <div style="font-size:2rem;font-weight:700;color:var(--${escapeHtml(complianceClass)})">${result.building_response?.natural_period_sec || 0}s</div>
           <div class="text-xs text-tertiary">Perioda Alami</div>
         </div>
       </div>
@@ -951,7 +956,7 @@ function renderSeismicResult(result) {
       <div style="margin-bottom:12px">
         <div class="text-sm font-bold" style="margin-bottom:8px">
           Zona Gempa: <span class="badge" style="background:var(--info-bg);color:var(--info)">${result.seismic_parameters?.zone || '-'}</span>
-          <span class="badge" style="background:var(--${complianceClass}-bg);color:var(--${complianceClass})">${result.compliance?.passes ? 'Drift OK' : 'Cek Drift'}</span>
+          <span class="badge" style="background:var(--${escapeHtml(complianceClass)}-bg);color:var(--${escapeHtml(complianceClass)})">${result.compliance?.passes ? 'Drift OK' : 'Cek Drift'}</span>
         </div>
         <div style="font-size:12px;color:var(--text-secondary)">
           SDS: ${result.seismic_parameters?.sds || 0}g | SD1: ${result.seismic_parameters?.sd1 || 0}g
@@ -961,7 +966,7 @@ function renderSeismicResult(result) {
       ${result.recommendations?.length > 0 ? `
         <div style="background:var(--warning-bg);padding:12px;border-radius:8px">
           <div class="text-sm font-bold" style="margin-bottom:4px;color:var(--warning)"><i class="fas fa-lightbulb"></i> Rekomendasi:</div>
-          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${r}</div>`).join('')}
+          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${escapeHtml(r)}</div>`).join('')}
         </div>
       ` : ''}
     </div>
@@ -979,14 +984,14 @@ function renderSanitationResult(result) {
           <div class="text-xs text-tertiary">Air Harian (m³)</div>
         </div>
         <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
-          <div style="font-size:2rem;font-weight:700;color:var(--${complianceClass})">${result.tank_requirements?.total_storage_m3 || 0}</div>
+          <div style="font-size:2rem;font-weight:700;color:var(--${escapeHtml(complianceClass)})">${result.tank_requirements?.total_storage_m3 || 0}</div>
           <div class="text-xs text-tertiary">Tangki (m³)</div>
         </div>
       </div>
       
       <div style="margin-bottom:12px">
         <div class="text-sm font-bold" style="margin-bottom:8px">
-          Supply: <span style="color:var(--${complianceClass})">${result.compliance?.water_supply_compliance ? 'OK' : 'Kurang'}</span>
+          Supply: <span style="color:var(--${escapeHtml(complianceClass)})">${result.compliance?.water_supply_compliance ? 'OK' : 'Kurang'}</span>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <span class="badge" style="background:var(--info-bg);color:var(--info)">Pompa: ${result.pump_requirements?.pump_power_kw || 0} kW</span>
@@ -997,7 +1002,7 @@ function renderSanitationResult(result) {
       ${result.recommendations?.length > 0 ? `
         <div style="background:var(--warning-bg);padding:12px;border-radius:8px">
           <div class="text-sm font-bold" style="margin-bottom:4px;color:var(--warning)"><i class="fas fa-lightbulb"></i> Rekomendasi:</div>
-          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${r}</div>`).join('')}
+          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${escapeHtml(r)}</div>`).join('')}
         </div>
       ` : ''}
     </div>
@@ -1012,11 +1017,11 @@ function renderAcousticsResult(result) {
     <div style="margin-bottom:16px">
       <div style="display:flex;gap:16px;margin-bottom:16px">
         <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
-          <div style="font-size:2rem;font-weight:700;color:var(--${extCompliance})">${result.source_noise?.exterior_level_db || 0}</div>
+          <div style="font-size:2rem;font-weight:700;color:var(--${escapeHtml(extCompliance)})">${result.source_noise?.exterior_level_db || 0}</div>
           <div class="text-xs text-tertiary">Eksterior (dB)</div>
         </div>
         <div style="flex:1;text-align:center;padding:16px;background:var(--bg-subtle);border-radius:8px">
-          <div style="font-size:2rem;font-weight:700;color:var(--${intCompliance})">${result.interior_acoustics?.calculated_noise_db || 0}</div>
+          <div style="font-size:2rem;font-weight:700;color:var(--${escapeHtml(intCompliance)})">${result.interior_acoustics?.calculated_noise_db || 0}</div>
           <div class="text-xs text-tertiary">Interior (dB)</div>
         </div>
       </div>
@@ -1034,7 +1039,7 @@ function renderAcousticsResult(result) {
       ${result.recommendations?.length > 0 ? `
         <div style="background:var(--warning-bg);padding:12px;border-radius:8px">
           <div class="text-sm font-bold" style="margin-bottom:4px;color:var(--warning)"><i class="fas fa-lightbulb"></i> Rekomendasi:</div>
-          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${r}</div>`).join('')}
+          ${result.recommendations.map(r => `<div class="text-sm" style="color:var(--warning-300)">• ${escapeHtml(r)}</div>`).join('')}
         </div>
       ` : ''}
     </div>
@@ -1045,8 +1050,8 @@ function updateStatus(message, isError = false) {
   const statusEl = document.getElementById('pyodide-status');
   if (statusEl) {
     statusEl.innerHTML = isError 
-      ? `<i class="fas fa-exclamation-circle" style="color:var(--danger)"></i> ${message}`
-      : `<i class="fas fa-check-circle" style="color:var(--success)"></i> ${message}`;
+      ? `<i class="fas fa-exclamation-circle" style="color:var(--danger)"></i> ${escapeHtml(message)}`
+      : `<i class="fas fa-check-circle" style="color:var(--success)"></i> ${escapeHtml(message)}`;
   }
 }
 
@@ -1090,8 +1095,8 @@ function showExportButton(proyekId, tipe, result) {
         const visuals = await exportSimulationVisuals(tipe, result);
         container.innerHTML = `
           <div style="background:var(--bg-subtle);padding:12px;border-radius:8px">
-            <div class="text-xs text-tertiary" style="margin-bottom:8px">${visuals.metadata.description}</div>
-            <img src="${visuals.png}" style="max-width:100%;border-radius:4px" />
+            <div class="text-xs text-tertiary" style="margin-bottom:8px">${escapeHtml(visuals.metadata.description)}</div>
+            <img alt="Hasil visual simulasi" src="${escapeHtml(visuals.png)}" style="max-width:100%;border-radius:4px" />
           </div>
         `;
         container.style.display = 'block';

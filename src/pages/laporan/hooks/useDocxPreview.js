@@ -4,6 +4,7 @@
 // ============================================================
 
 import { getPipelineLaporanIntegration } from '../../../infrastructure/pipeline/pipeline-laporan-integration.js';
+import { escapeHtml } from '../../../lib/safe-markdown.js';
 import { generateDocxBlob } from '../../../lib/docx-service.js';
 
 export function useDocxPreview(options = {}) {
@@ -111,11 +112,11 @@ export function useDocxPreview(options = {}) {
           <div style="height:40px;"></div>
         </div>
         <div class="zoom-controls" style="position:absolute;bottom:20px;right:20px;display:flex;align-items:center;gap:4px;background:white;border-radius:8px;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,0.15);border:1px solid #e9ecef;z-index:30;">
-          <button onclick="window._docxZoomOut()" class="zoom-btn" style="width:32px;height:32px;border:none;background:transparent;cursor:pointer;border-radius:4px;color:#6c757d;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+          <button type="button" aria-label="Perkecil tampilan" onclick="window._docxZoomOut()" class="zoom-btn" style="width:32px;height:32px;border:none;background:transparent;cursor:pointer;border-radius:4px;color:#6c757d;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
             <i class="fas fa-minus"></i>
           </button>
           <span id="docx-zoom-level" class="zoom-level" style="min-width:50px;text-align:center;font-size:0.85rem;color:#495057;font-weight:500;user-select:none;">100%</span>
-          <button onclick="window._docxZoomIn()" class="zoom-btn" style="width:32px;height:32px;border:none;background:transparent;cursor:pointer;border-radius:4px;color:#6c757d;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+          <button type="button" aria-label="Perbesar tampilan" onclick="window._docxZoomIn()" class="zoom-btn" style="width:32px;height:32px;border:none;background:transparent;cursor:pointer;border-radius:4px;color:#6c757d;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
             <i class="fas fa-plus"></i>
           </button>
         </div>
@@ -515,9 +516,9 @@ export function useDocxPreview(options = {}) {
     els.navContainer.innerHTML = `
       <div class="docx-nav-tree">
         ${headings.map((h, idx) => `
-          <div class="nav-item nav-level-${h.level || 1}" 
-               onclick="window._scrollToHeading('${h.id || `heading-${idx}`}')"
-               data-target="${h.id || `heading-${idx}`}">
+          <div class="nav-item nav-level-${escapeHtml(h.level || 1)}" 
+               onclick="window._scrollToHeading('${escapeHtml(h.id || `heading-${escapeHtml(idx)}`)}')"
+               data-target="${escapeHtml(h.id || `heading-${escapeHtml(idx)}`)}">
             <span class="nav-bullet"></span>
             <span class="nav-text">${escapeHtml(h.text?.substring(0, 50) || 'Untitled')}</span>
           </div>
@@ -763,12 +764,6 @@ export function useDocxPreview(options = {}) {
 // UTILITIES
 // ============================================================
 
-function escapeHtml(text) {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
 
 // Global functions untuk onclick handlers
 window._scrollToHeading = (id) => {

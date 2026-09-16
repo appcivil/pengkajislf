@@ -1,5 +1,7 @@
 import { IESLoader } from '../../engine/lighting/IESLoader.js';
 
+import { escapeHtml } from '../../lib/safe-markdown.js';
+import { confirm } from '../../components/modal.js';
 /**
  * LuminaireTool - Light Fixture Management Component
  * Web Component for managing luminaires in the scene
@@ -553,14 +555,14 @@ export class LuminaireTool extends HTMLElement {
     }
 
     list.innerHTML = luminaires.map((lum, i) => `
-      <div class="luminaire-item ${this.selectedLuminaire?.id === lum.id ? 'selected' : ''}" data-id="${lum.id}">
+      <div class="luminaire-item ${this.selectedLuminaire?.id === lum.id ? 'selected' : ''}" data-id="${escapeHtml(lum.id)}">
         <div class="luminaire-icon">💡</div>
         <div class="luminaire-info">
-          <div class="luminaire-name">${lum.name || `Lamp ${i + 1}`}</div>
-          <div class="luminaire-specs">${lum.intensity} lm · ${lum.wattage || 36}W</div>
+          <div class="luminaire-name">${escapeHtml(lum.name || `Lamp ${i + 1}`)}</div>
+          <div class="luminaire-specs">${escapeHtml(lum.intensity)} lm · ${escapeHtml(lum.wattage || 36)}W</div>
         </div>
         <div class="luminaire-actions">
-          <button class="btn-icon" data-action="delete" data-id="${lum.id}">🗑️</button>
+          <button class="btn-icon" data-action="delete" data-id="${escapeHtml(lum.id)}">🗑️</button>
         </div>
       </div>
     `).join('');
@@ -694,7 +696,26 @@ export class LuminaireTool extends HTMLElement {
     }));
   }
 
-  deleteLuminaire(id) {
+  /**
+   * Hapus armatur dari denah.
+   *
+   * Sebelumnya berjalan langsung dari satu klik. Armatur membawa data
+   * fotometrik (IES) yang dipilih pengguna dan ikut menentukan hasil
+   * perhitungan pencahayaan — menghapusnya diam-diam karena salah tekan
+   * berarti kehilangan pekerjaan sekaligus mengubah hasil perhitungan tanpa
+   * disadari. Sekarang ada langkah konfirmasi yang menyebut armature-nya.
+   */
+  async deleteLuminaire(id) {
+    const armatur = this.luminaires?.find?.(l => l.id === id);
+    const nama = armatur?.name || armatur?.type || 'armatur ini';
+    const lanjut = await confirm({
+      title: 'Hapus Armatur',
+      message: `Hapus ${nama} dari denah? Hasil perhitungan pencahayaan akan berubah dan tindakan ini tidak dapat dibatalkan.`,
+      confirmText: 'Hapus',
+      danger: true,
+    });
+    if (!lanjut) return;
+
     this.dispatchEvent(new CustomEvent('delete-luminaire', {
       detail: { id },
       bubbles: true,

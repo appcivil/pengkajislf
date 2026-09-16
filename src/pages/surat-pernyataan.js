@@ -1,9 +1,11 @@
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml, escapeHtml as escHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { getSettings } from '../lib/settings.js';
 import { getNextSequence, formatDocumentNumber } from '../lib/numbering-service.js';
 import { logActivity } from '../lib/audit-service.js';
+import { confirm } from '../components/modal.js';
 
 /**
  * SURAT PERNYATAAN PAGE (ULTRA MODERN UI/UX)
@@ -76,7 +78,7 @@ export async function suratPernyataanPage(params = {}) {
   } catch (err) {
     console.error("[SURAT_PERNYATAAN] Critical Error:", err);
     if (root) {
-      root.innerHTML = `<div class="p-10 text-center"><h2 class="text-danger">Gagal Memuat Dokumen</h2><p>${err.message}</p></div>`;
+      root.innerHTML = `<div class="p-10 text-center"><h2 class="text-danger">Gagal Memuat Dokumen</h2><p>${escapeHtml(err.message ?? 'Unknown error')}</p></div>`;
     }
   }
 }
@@ -90,7 +92,7 @@ function buildModernLayout(p, s) {
       <!-- Sidebar Glass -->
       <aside class="sp-sidebar-glass">
         <div class="sidebar-top">
-          <button class="btn-back-modern" onclick="window.navigate('proyek-detail', {id:'${p.id}'})">
+          <button class="btn-back-modern" onclick="window.navigate('proyek-detail', {id:'${escapeHtml(p.id)}'})">
             <i class="fas fa-chevron-left"></i> Kembali ke Proyek
           </button>
           
@@ -339,7 +341,7 @@ function buildModernLayout(p, s) {
 
       /* SIGNATURE PAD OVERLAY */
       .sig-modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(10px); z-index:20000; display:flex; align-items:center; justify-content:center; }
-      .sig-modal-card { background:#fff; border-radius:24px; width:540px; padding:24px; box-shadow:0 30px 60px rgba(0,0,0,0.5); }
+      .sig-modal-card { background:#fff; border-radius:24px; width:100%; max-width:540px; padding:24px; box-sizing:border-box; box-shadow:0 30px 60px rgba(0,0,0,0.5); }
       .sig-modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
       .sig-modal-header h3 { font-family:'Inter'; font-weight:800; font-size:1.1rem; margin:0; }
       .btn-close-sig { background:none; border:none; font-size:1.5rem; cursor:pointer; }
@@ -423,7 +425,13 @@ function initModernHandlers(p, s, findings) {
      }
 
      btnFinalize.onclick = async () => {
-        if (!confirm("Apakah Bapak yakin ingin memfinalisasi & menyegel dokumen ini? \n\nData SEGERA DIKUNCI dan sidik jari digital (Hash) akan dihasilkan untuk keperluan hukum.")) return;
+        const lanjutSegel = await confirm({
+          title: 'Finalisasi & Segel Dokumen',
+          message: 'Finalisasi dan segel dokumen ini? Setelah disegel, data DIKUNCI dan sidik jari digital (hash) dibuat untuk keperluan hukum. Dokumen tidak dapat diubah lagi.',
+          confirmText: 'Segel Dokumen',
+          danger: true,
+        });
+        if (!lanjutSegel) return;
         
         btnFinalize.disabled = true;
         btnFinalize.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Menghitung Hash SHA-256...';
@@ -468,7 +476,7 @@ function openSignaturePad(type, p, s, findings) {
     <div class="sig-modal-overlay show">
       <div class="sig-modal-card">
         <div class="sig-modal-header">
-           <h3>Tanda Tangan Digital: ${roleName}</h3>
+           <h3>Tanda Tangan Digital: ${escapeHtml(roleName)}</h3>
            <button class="btn-close-sig" onclick="this.closest('.sig-modal-overlay').remove()">&times;</button>
         </div>
         <div class="sig-canvas-wrap">
@@ -555,10 +563,10 @@ function renderDocTemplate(type, p, s, findings = []) {
        content = renderOwnerTemplate(p, findings, dateStr);
     }
 
-    return `<div class="paper-page-content">${content}</div>`;
+    return `<div class="paper-page-content">${escapeHtml(content)}</div>`;
   } catch (err) {
     console.error("Render Failed:", err);
-    return `<div class="p-10 text-center"><h3 class="text-danger">Gagal me-render pratinjau</h3><p>${err.message}</p></div>`;
+    return `<div class="p-10 text-center"><h3 class="text-danger">Gagal me-render pratinjau</h3><p>${escapeHtml(err.message)}</p></div>`;
   }
 }
 
@@ -566,7 +574,7 @@ function renderConsultantTemplate(p, s, experts, dateStr) {
   return `
     <div class="hf-doc-header">
        ${s.consultant?.kop_image 
-         ? `<img src="${s.consultant.kop_image}" style="width:100%; max-height:110px; object-fit:contain;">`
+         ? `<img alt="Pratinjau kop surat" src="${escapeHtml(s.consultant.kop_image)}" style="width:100%; max-height:110px; object-fit:contain;">`
          : `<div style="text-align:center;">
               <h1 style="font-size:16pt; margin:0; font-weight:bold">${escHtml(s.consultant?.name || 'KONSULTAN PENGKAJI TEKNIS')}</h1>
               <p style="font-size:10pt; margin:0">${escHtml(s.consultant?.address || 'Alamat Perusahaan / Instansi')}</p>
@@ -580,7 +588,7 @@ function renderConsultantTemplate(p, s, experts, dateStr) {
 
     <div class="hf-meta-grid">
        <div>Nomor</div><div>:</div><div>${escHtml(p.metadata?.nomor_surat || '__________')}</div>
-       <div>Tanggal</div><div>:</div><div>${dateStr}</div>
+       <div>Tanggal</div><div>:</div><div>${escapeHtml(dateStr)}</div>
        <div>Lampiran</div><div>:</div><div>1 (Satu) Berkas</div>
     </div>
 
@@ -618,15 +626,15 @@ function renderConsultantTemplate(p, s, experts, dateStr) {
     <div class="hf-data-grid" style="font-size:10pt">
        <div class="hf-grid-row"><div>1)</div><div>Nama bangunan</div><div>:</div><div style="font-weight:bold">${escHtml(p.nama_bangunan)}</div></div>
        <div class="hf-grid-row"><div>2)</div><div>Alamat bangunan</div><div>:</div><div>${escHtml(p.alamat || '-')}</div></div>
-       <div class="hf-grid-row"><div>3)</div><div>Posisi koordinat</div><div>:</div><div>Lat: ${p.latitude || '0'}, Lng: ${p.longitude || '0'}</div></div>
+       <div class="hf-grid-row"><div>3)</div><div>Posisi koordinat</div><div>:</div><div>Lat: ${escapeHtml(p.latitude || '0')}, Lng: ${escapeHtml(p.longitude || '0')}</div></div>
        <div class="hf-grid-row"><div>4)</div><div>Fungsi bangunan</div><div>:</div><div>${escHtml(p.fungsi_bangunan || '-')}</div></div>
        <div class="hf-grid-row"><div>5)</div><div>Klasifikasi</div><div>:</div><div>${escHtml(p.klasifikasi || 'Bangunan Tidak Sederhana')}</div></div>
-       <div class="hf-grid-row"><div>6)</div><div>Ketinggian bangunan</div><div>:</div><div>${p.ketinggian || '-'} Meter</div></div>
-       <div class="hf-grid-row"><div>7)</div><div>Jumlah lantai</div><div>:</div><div>${p.jumlah_lantai || 1} Lantai</div></div>
-       <div class="hf-grid-row"><div>8)</div><div>Luas lantai</div><div>:</div><div>${p.luas_bangunan || 0} m²</div></div>
-       <div class="hf-grid-row"><div>9)</div><div>Jumlah basement</div><div>:</div><div>${p.jumlah_basement || 0} Lantai</div></div>
-       <div class="hf-grid-row"><div>10)</div><div>Luas basement</div><div>:</div><div>${p.luas_basement || 0} m²</div></div>
-       <div class="hf-grid-row"><div>11)</div><div>Luas lahan</div><div>:</div><div>${p.luas_lahan || 0} m²</div></div>
+       <div class="hf-grid-row"><div>6)</div><div>Ketinggian bangunan</div><div>:</div><div>${escapeHtml(p.ketinggian || '-')} Meter</div></div>
+       <div class="hf-grid-row"><div>7)</div><div>Jumlah lantai</div><div>:</div><div>${escapeHtml(p.jumlah_lantai || 1)} Lantai</div></div>
+       <div class="hf-grid-row"><div>8)</div><div>Luas lantai</div><div>:</div><div>${escapeHtml(p.luas_bangunan || 0)} m²</div></div>
+       <div class="hf-grid-row"><div>9)</div><div>Jumlah basement</div><div>:</div><div>${escapeHtml(p.jumlah_basement || 0)} Lantai</div></div>
+       <div class="hf-grid-row"><div>10)</div><div>Luas basement</div><div>:</div><div>${escapeHtml(p.luas_basement || 0)} m²</div></div>
+       <div class="hf-grid-row"><div>11)</div><div>Luas lahan</div><div>:</div><div>${escapeHtml(p.luas_lahan || 0)} m²</div></div>
     </div>
 
     <p style="margin-top:10px; font-size:10pt">Berdasarkan hasil pemeriksaan persyaratan kelaikan fungsi yang terdiri dari pemeriksaan dokumen administratif dan teknis (Tata Bangunan & Keandalan Bangunan), dengan ini menyatakan bahwa:</p>
@@ -641,7 +649,7 @@ function renderConsultantTemplate(p, s, experts, dateStr) {
 
     <div style="display:flex; justify-content:center; margin-top:20px; font-size:10.5pt">
        <div style="width:380px; text-align:center">
-          <div>${p.kota || 'Bandung'}, ${dateStr}</div>
+          <div>${escapeHtml(p.kota || 'Bandung')}, ${escapeHtml(dateStr)}</div>
        </div>
     </div>
 
@@ -659,11 +667,11 @@ function renderConsultantTemplate(p, s, experts, dateStr) {
              </div>
              <div class="sig-box-tte" style="width:auto">
                 ${(() => {
-                   const vUrl = `${window.location.origin}${window.location.pathname}#/verify?id=${p.id}&role=director`;
-                   return `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(vUrl)}" class="sig-qr-small shadow-sm">`;
+                   const vUrl = `${escapeHtml(window.location.origin)}${escapeHtml(window.location.pathname)}#/verify?id=${escapeHtml(p.id)}&role=director`;
+                   return `<img alt="Kode QR dokumen" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(vUrl)}" class="sig-qr-small shadow-sm">`;
                 })()}
                 ${p.metadata?.signatures?.director 
-                  ? `<img src="${p.metadata.signatures.director}" style="position:absolute; width:130px; opacity:0.8; transform:translateX(15px) translateY(10px)">` 
+                  ? `<img alt="Tanda tangan" src="${escapeHtml(p.metadata.signatures.director)}" style="position:absolute; width:130px; opacity:0.8; transform:translateX(15px) translateY(10px)">` 
                   : `<button class="btn-sign-here" data-type="director"><i class="fas fa-pen-nib"></i> Tanda Tangani</button>`}
              </div>
           </div>
@@ -679,15 +687,15 @@ function renderConsultantTemplate(p, s, experts, dateStr) {
           ${['architecture', 'structure', 'mep'].map(t => {
             const ex = experts[t] || {};
             const role = t === 'architecture' ? 'Bidang Arsitektur' : t === 'structure' ? 'Bidang Struktur' : 'Bidang MEP / Utilitas';
-            const vUrl = `${window.location.origin}${window.location.pathname}#/verify?id=${p.id}&expert=${t}`;
+            const vUrl = `${escapeHtml(window.location.origin)}${escapeHtml(window.location.pathname)}#/verify?id=${escapeHtml(p.id)}&expert=${escapeHtml(t)}`;
             return `
               <div class="sig-expert-card">
-                 <div style="font-weight:bold; min-height:28px; line-height:1.2">${role}</div>
+                 <div style="font-weight:bold; min-height:28px; line-height:1.2">${escapeHtml(role)}</div>
                  <div class="sig-box-tte">
-                   <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(vUrl)}" class="sig-qr-small">
+                   <img alt="Kode QR dokumen" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(vUrl)}" class="sig-qr-small">
                    ${p.metadata?.signatures?.[t] 
-                     ? `<img src="${p.metadata.signatures[t]}" style="position:absolute; width:75px; opacity:0.75; transform:translateX(10px) translateY(5px)">` 
-                     : `<button class="btn-sign-here" data-type="${t}"><i class="fas fa-pen-nib"></i> Sign</button>`}
+                     ? `<img alt="Tanda tangan" src="${p.metadata.signatures[t]}" style="position:absolute; width:75px; opacity:0.75; transform:translateX(10px) translateY(5px)">` 
+                     : `<button class="btn-sign-here" data-type="${escapeHtml(t)}"><i class="fas fa-pen-nib"></i> Sign</button>`}
                  </div>
                  <div class="sig-name-underline" style="font-size:9pt">${escHtml(ex.name || 'NAME')}</div>
                  <div style="font-size:8pt; margin-top:2px">Tenaga Ahli Tetap</div>
@@ -724,7 +732,7 @@ function renderOwnerTemplate(p, findings, dateStr) {
     <p style="text-align:justify">Apabila terdapat temuan teknis hasil pengkajian, saya bersedia menindaklanjuti sesuai dengan rekomendasi dan jangka waktu yang telah ditentukan sebagai berikut:</p>
 
     <!-- TABEL TEMUAN LAMPIRAN -->
-    <table class="modern-table-temuan">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table class="modern-table-temuan">
        <thead>
           <tr>
              <th style="width:30px; text-align:center">No</th>
@@ -748,13 +756,13 @@ function renderOwnerTemplate(p, findings, dateStr) {
             `).join('')
           }
        </tbody>
-    </table>
+    </table></div>
 
     <p style="margin-top:20px">Demikian surat pernyataan ini saya buat dengan penuh tanggung jawab.</p>
 
     <div style="display:flex; justify-content:flex-end; margin-top:50px">
        <div style="text-align:center; width:220px">
-          <div>${p.kota || 'Bandung'}, ${dateStr}</div>
+          <div>${escapeHtml(p.kota || 'Bandung')}, ${escapeHtml(dateStr)}</div>
           <div style="font-weight:bold; margin-top:5px; margin-bottom:80px">Pemilik Bangunan,</div>
           <div style="border-bottom:1px solid #000; font-weight:bold; text-transform:uppercase">${escHtml(p.pemilik || '____________________')}</div>
        </div>
@@ -807,7 +815,3 @@ async function downloadPdf(p, s, findings) {
 /**
  * Utils
  */
-function escHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-}

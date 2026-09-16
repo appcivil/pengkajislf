@@ -9,7 +9,6 @@
     <img src="https://img.shields.io/badge/Mistral_AI-FF6300?style=for-the-badge&logo=mistral&logoColor=black" alt="Mistral AI" />
     <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
     <img src="https://img.shields.io/badge/Three.js-000000?style=for-the-badge&logo=three.js&logoColor=white" alt="Three.js" />
-    <img src="https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="TensorFlow" />
   </p>
 </div>
 
@@ -130,6 +129,39 @@
 
 ---
 
+## 📚 Dokumentasi
+
+| Dokumen | Isi |
+|---|---|
+| [`docs/SUPABASE-SETUP.md`](docs/SUPABASE-SETUP.md) | Setup database dari nol: **urutan 5 berkas SQL**, Storage bucket + policy, deploy 4 Edge Function, secrets GitHub, checklist verifikasi |
+| [`docs/EGRESS-MITIGATION.md`](docs/EGRESS-MITIGATION.md) | Menahan kuota Supabase: Egress Guard (cache + dedup + revalidasi 304), service worker, keepalive 3 lapis agar project Free tidak di-pause |
+| [`docs/BUILD-OPTIMIZATION.md`](docs/BUILD-OPTIMIZATION.md) | Pemisahan chunk & kartu lazy — `proyek-detail` dari 987 kB → 128 kB |
+| [`docs/CODE-AUDIT.md`](docs/CODE-AUDIT.md) | Hasil audit kode: 5 rute mati, import rusak, dependensi hilang, inventaris dead code |
+| [`docs/DEEP-AUDIT-2026-09.md`](docs/DEEP-AUDIT-2026-09.md) | **Audit mendalam + perbaikan (Sep 2026)** — 349 sink XSS, RLS, kunci AI, kebocoran runtime, dan kerentanan dependensi; semuanya sudah diperbaiki dan diverifikasi |
+
+### Perintah bantu
+
+```bash
+npm run audit:deep       # audit mendalam: keamanan + integritas skema + kebocoran runtime
+npm run audit:code       # import/export rusak, rute tidak terdaftar, modul orphan
+npm run audit:egress     # pola yang membengkakkan kuota Supabase
+npm run audit:all        # ketiganya sekaligus
+
+npm run check:secrets    # GAGALKAN build bila ada rahasia akan ikut ke bundel klien
+npm run db:schema-sync   # hasilkan migrasi untuk tabel yang belum ada di repo
+npm run keepalive        # ping manual anti-pause
+```
+
+`check:secrets` sudah terpasang sebagai `prebuild`, jadi `npm run build` selalu
+melewatinya lebih dulu.
+
+### Gerbang keamanan yang berjalan otomatis
+
+| Gerbang | Menangkap |
+|---|---|
+| `npx vitest run` → `src/lib/xss-guard.test.js` | `innerHTML` baru yang menyisipkan data tanpa `escapeHtml()`, diuji lewat pemindaian statis **dan** render nyata dengan muatan `<img src=x onerror=…>` |
+| `npm run build` → `scripts/check-client-secrets.mjs` | kunci API / token yang akan ter-inline ke bundel klien |
+
 ## 🛠️ Stack Teknologi
 
 | Kategori | Teknologi |
@@ -137,7 +169,6 @@
 | **Build Tool** | Vite 6.0 |
 | **Database** | Supabase (PostgreSQL + RLS) |
 | **3D Visualization** | Three.js |
-| **Machine Learning** | TensorFlow.js |
 | **AI/ML Models** | Transformers.js (Xenova) |
 | **Charts** | Chart.js |
 | **Document** | DOCX, DOCXTemplater, PizZip |
@@ -199,25 +230,29 @@ npm install
 ```
 
 ### 2. Konfigurasi Environment
-Buat file `.env` di root:
+```bash
+cp .env.example .env      # lalu isi nilainya
+```
+
+Minimal yang wajib:
 
 ```env
-# Supabase
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
-
-# AI Providers (minimal 1)
-VITE_GEMINI_API_KEY=...
-VITE_MISTRAL_API_KEY=...
-VITE_OPENAI_API_KEY=...
-VITE_CLAUDE_API_KEY=...
-VITE_OPENROUTER_API_KEY=...
-
-# Google Integration
-VITE_GOOGLE_APPS_SCRIPT_URL=...
-VITE_GOOGLE_DOC_TEMPLATE_ID=...
-VITE_GCP_API_KEY=...
 ```
+
+Sisanya (kunci AI, Google Apps Script, Egress Guard, keepalive) opsional —
+daftar lengkap beserta penjelasannya ada di **`.env.example`**.
+
+> ⚠️ Kunci AI sebaiknya **hanya** disimpan di server (Supabase Edge Function
+> `ai-proxy`), bukan di `.env` klien. Variabel `VITE_*` ikut ter-bundle ke
+> browser dan bisa dibaca siapa pun.
+
+### 2b. Setup Database Supabase
+Aplikasi memerlukan **5 berkas SQL, 4 Storage bucket, dan 4 Edge Function**.
+Urutannya tidak boleh ditukar (ada ketergantungan foreign key).
+
+📖 Panduan lengkap + urutan deploy: **[`docs/SUPABASE-SETUP.md`](docs/SUPABASE-SETUP.md)**
 
 ### 3. Jalankan Development
 ```bash

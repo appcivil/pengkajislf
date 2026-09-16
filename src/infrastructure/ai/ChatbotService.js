@@ -3,6 +3,7 @@
  * Implementasi IChatbotService dengan multi-provider AI
  */
 import { IChatbotService } from '../../domain/services/IChatbotService.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { MODELS, fetchOpenRouter, parseAIJson } from '../../lib/ai-router.js';
 import { supabase } from '../../lib/supabase.js';
 import { AdvancedReasoningService } from './AdvancedReasoningService.js';
@@ -59,7 +60,7 @@ export class ChatbotService extends IChatbotService {
             result = await this.reasoningService.think(fullMessage, reasoningContext);
             return {
               content: result.thinking
-                ? `<div class="thinking-process"><strong>🧠 Proses Berpikir:</strong><pre>${result.thinking}</pre></div><div class="final-answer">${result.answer}</div>`
+                ? `<div class="thinking-process"><strong>🧠 Proses Berpikir:</strong><pre>${escapeHtml(result.thinking)}</pre></div><div class="final-answer">${escapeHtml(result.answer)}</div>`
                 : result.answer,
               metadata: {
                 model: result.metadata.model,
@@ -560,7 +561,10 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
       throw new Error('Sesi login tidak ditemukan. Silakan login kembali.');
     }
 
-    // Gunakan manual fetch dengan apikey header (anon key)
+    // `apikey` memakai anon key (gerbang Supabase), sedangkan `Authorization`
+    // WAJIB memakai access_token sesi pengguna: Edge Function memverifikasi
+    // token itu ke GoTrue. Anon key adalah JWT publik — ia bisa dibaca siapa
+    // pun dari bundel, sehingga tidak boleh dipakai untuk membuka ai-proxy.
     const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-proxy`;
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -569,7 +573,7 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
       headers: {
         'Content-Type': 'application/json',
         'apikey': anonKey,
-        'Authorization': `Bearer ${anonKey}`
+        'Authorization': `Bearer ${session.access_token}`
       },
       body: JSON.stringify({
         provider: model.proxyProvider || 'gemini',

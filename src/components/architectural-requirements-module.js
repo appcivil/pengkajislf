@@ -7,6 +7,7 @@
  */
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import * as ArchCalc from '../lib/architectural-requirements-calculators.js';
 import { showSuccess, showError, showInfo } from './toast.js';
 
@@ -76,13 +77,13 @@ export function renderArchitecturalCard(project, summary = {}) {
   const hasData = summary.total_score > 0;
   
   return `
-    <div class="card-quartz clickable" id="architectural-card" onclick="window.navigate('architectural',{id:'${project.id}'})" style="padding: var(--space-6); background: ${st.bg}; border-color: ${st.border}44">
+    <div class="card-quartz clickable" id="architectural-card" onclick="window.navigate('architectural',{id:'${escapeHtml(project.id)}'})" style="padding: var(--space-6); background: ${escapeHtml(st.bg)}; border-color: ${escapeHtml(st.border)}44">
       <div class="flex-between" style="margin-bottom: 20px">
-        <div style="width: 48px; height: 48px; border-radius: 14px; background: ${st.bg}; display: flex; align-items: center; justify-content: center; color: ${st.text}; border: 1px solid ${st.border}44">
+        <div style="width: 48px; height: 48px; border-radius: 14px; background: ${escapeHtml(st.bg)}; display: flex; align-items: center; justify-content: center; color: ${escapeHtml(st.text)}; border: 1px solid ${escapeHtml(st.border)}44">
           <i class="fas fa-building" style="font-size: 1.4rem"></i>
         </div>
-        <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: ${st.text}">
-          ${summary.grade || '-'}
+        <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: ${escapeHtml(st.text)}">
+          ${escapeHtml(summary.grade || '-')}
         </div>
       </div>
       
@@ -97,23 +98,23 @@ export function renderArchitecturalCard(project, summary = {}) {
         <div style="margin-top: 20px">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px">
             <span style="font-size: 0.7rem; color: var(--text-tertiary)">TOTAL SCORE</span>
-            <span style="font-size: 1.2rem; font-weight: 800; color: ${st.text}">${summary.total_score?.toFixed(1) || 0}/100</span>
+            <span style="font-size: 1.2rem; font-weight: 800; color: ${escapeHtml(st.text)}">${escapeHtml(summary.total_score?.toFixed(1) || 0)}/100</span>
           </div>
           <div style="height: 6px; background: hsla(220, 20%, 100%, 0.05); border-radius: 10px; margin-bottom: 16px">
-            <div style="width: ${summary.total_score}%; height: 100%; border-radius: 10px; background: ${st.text}; box-shadow: 0 0 10px ${st.text}66"></div>
+            <div style="width: ${escapeHtml(summary.total_score)}%; height: 100%; border-radius: 10px; background: ${escapeHtml(st.text)}; box-shadow: 0 0 10px ${escapeHtml(st.text)}66"></div>
           </div>
           
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px">
             <div style="background: hsla(220, 20%, 100%, 0.03); padding: 8px; border-radius: 8px; text-align: center">
-              <div style="font-size: 0.9rem; font-weight: 800; color: ${summary.penampilan_score >= 70 ? 'var(--success-400)' : 'var(--warning-400)'}">${summary.penampilan_score?.toFixed(0) || 0}</div>
+              <div style="font-size: 0.9rem; font-weight: 800; color: ${summary.penampilan_score >= 70 ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(summary.penampilan_score?.toFixed(0) || 0)}</div>
               <div style="font-size: 9px; color: var(--text-tertiary)">Penampilan</div>
             </div>
             <div style="background: hsla(220, 20%, 100%, 0.03); padding: 8px; border-radius: 8px; text-align: center">
-              <div style="font-size: 0.9rem; font-weight: 800; color: ${summary.tata_ruang_score >= 70 ? 'var(--success-400)' : 'var(--warning-400)'}">${summary.tata_ruang_score?.toFixed(0) || 0}</div>
+              <div style="font-size: 0.9rem; font-weight: 800; color: ${summary.tata_ruang_score >= 70 ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(summary.tata_ruang_score?.toFixed(0) || 0)}</div>
               <div style="font-size: 9px; color: var(--text-tertiary)">Tata Ruang</div>
             </div>
             <div style="background: hsla(220, 20%, 100%, 0.03); padding: 8px; border-radius: 8px; text-align: center">
-              <div style="font-size: 0.9rem; font-weight: 800; color: ${summary.keselarasan_score >= 70 ? 'var(--success-400)' : 'var(--warning-400)'}">${summary.keselarasan_score?.toFixed(0) || 0}</div>
+              <div style="font-size: 0.9rem; font-weight: 800; color: ${summary.keselarasan_score >= 70 ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(summary.keselarasan_score?.toFixed(0) || 0)}</div>
               <div style="font-size: 9px; color: var(--text-tertiary)">Keselarasan</div>
             </div>
           </div>
@@ -123,7 +124,7 @@ export function renderArchitecturalCard(project, summary = {}) {
           <p style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 12px">
             Belum ada pemeriksaan arsitektur
           </p>
-          <span class="badge" style="background: ${st.bg}; color: ${st.text}; border: 1px solid ${st.border}44; font-size: 10px">
+          <span class="badge" style="background: ${escapeHtml(st.bg)}; color: ${escapeHtml(st.text)}; border: 1px solid ${escapeHtml(st.border)}44; font-size: 10px">
             KLIK UNTUK MEMULAI
           </span>
         </div>
@@ -156,10 +157,10 @@ export async function renderArchitecturalModule(projectId) {
             </p>
           </div>
           <div class="flex gap-3">
-            <button class="btn btn-outline btn-sm" onclick="window._uploadFacadePhotos('${projectId}')">
+            <button class="btn btn-outline btn-sm" onclick="window._uploadFacadePhotos('${escapeHtml(projectId)}')">
               <i class="fas fa-camera" style="margin-right: 8px"></i> Foto Fasad
             </button>
-            <button class="btn btn-primary btn-sm" onclick="window._generateArchBA('${projectId}')">
+            <button class="btn btn-primary btn-sm" onclick="window._generateArchBA('${escapeHtml(projectId)}')">
               <i class="fas fa-file-contract" style="margin-right: 8px"></i> Buat BA
             </button>
           </div>
@@ -219,8 +220,8 @@ export async function renderArchitecturalModule(projectId) {
 
 function renderTabButton(id, label, icon, active = false) {
   return `
-    <button class="arch-tab-btn ${active ? 'active' : ''}" data-tab="${id}" 
-            onclick="window._switchArchTab('${id}', this)"
+    <button class="arch-tab-btn ${active ? 'active' : ''}" data-tab="${escapeHtml(id)}" 
+            onclick="window._switchArchTab('${escapeHtml(id)}', this)"
             style="flex: 1; padding: 16px; background: ${active ? 'hsla(220, 95%, 52%, 0.1)' : 'transparent'}; 
                    border: none; border-bottom: 2px solid ${active ? 'var(--brand-400)' : 'transparent'}; 
                    color: ${active ? 'white' : 'var(--text-tertiary)'}; cursor: pointer;
@@ -228,7 +229,7 @@ function renderTabButton(id, label, icon, active = false) {
                    display: flex; align-items: center; justify-content: center; gap: 8px;
                    transition: all 0.2s">
       <i class="fas ${icon}"></i>
-      ${label}
+      ${escapeHtml(label)}
     </button>
   `;
 }
@@ -244,23 +245,23 @@ function renderAssessmentTab(projectId, assessments = []) {
     <div class="arch-tab-panel" id="tab-assessment">
       <!-- Quick Actions -->
       <div class="grid-3-col" style="margin-bottom: var(--space-6)">
-        <div class="card-quartz clickable" onclick="window._newArchAssessment('${projectId}')" 
+        <div class="card-quartz clickable" onclick="window._newArchAssessment('${escapeHtml(projectId)}')" 
              style="padding: var(--space-4); text-align: center; background: hsla(158, 85%, 45%, 0.1)">
           <i class="fas fa-plus-circle" style="font-size: 1.5rem; color: var(--success-400); margin-bottom: 8px"></i>
           <div style="font-size: 0.75rem; font-weight: 700; color: white">Pemeriksaan Baru</div>
           <div style="font-size: 0.65rem; color: var(--text-tertiary)">Input data arsitektur</div>
         </div>
-        <div class="card-quartz clickable" onclick="window._uploadPlanFiles('${projectId}')" 
+        <div class="card-quartz clickable" onclick="window._uploadPlanFiles('${escapeHtml(projectId)}')" 
              style="padding: var(--space-4); text-align: center; background: hsla(220, 95%, 52%, 0.1)">
           <i class="fas fa-file-upload" style="font-size: 1.5rem; color: var(--brand-400); margin-bottom: 8px"></i>
           <div style="font-size: 0.75rem; font-weight: 700; color: white">Upload Denah</div>
           <div style="font-size: 0.65rem; color: var(--text-tertiary)">PDF/DWG</div>
         </div>
-        <div class="card-quartz clickable" onclick="window._viewArchHistory('${projectId}')" 
+        <div class="card-quartz clickable" onclick="window._viewArchHistory('${escapeHtml(projectId)}')" 
              style="padding: var(--space-4); text-align: center; background: hsla(220, 20%, 100%, 0.05)">
           <i class="fas fa-history" style="font-size: 1.5rem; color: var(--text-secondary); margin-bottom: 8px"></i>
           <div style="font-size: 0.75rem; font-weight: 700; color: white">Riwayat</div>
-          <div style="font-size: 0.65rem; color: var(--text-tertiary)">${assessments.length} pemeriksaan</div>
+          <div style="font-size: 0.65rem; color: var(--text-tertiary)">${escapeHtml(assessments.length)} pemeriksaan</div>
         </div>
       </div>
 
@@ -278,14 +279,14 @@ function renderLatestAssessment(assessment) {
       <div class="flex-between" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid hsla(220, 20%, 100%, 0.1)">
         <div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-bottom: 4px">BERITA ACARA TERAKHIR</div>
-          <div style="font-size: 1.1rem; font-weight: 800; color: white">${assessment.ba_number || 'BA/ARS/XXXX/XXX'}</div>
+          <div style="font-size: 1.1rem; font-weight: 800; color: white">${escapeHtml(assessment.ba_number || 'BA/ARS/XXXX/XXX')}</div>
           <div style="font-size: 0.75rem; color: var(--text-secondary)">
             ${new Date(assessment.assessment_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}
           </div>
         </div>
         <div style="text-align: right">
-          <div style="font-size: 3rem; font-weight: 800; color: ${statusColor}; line-height: 1">${assessment.grade || '-'}</div>
-          <div style="font-size: 0.75rem; color: ${statusColor}">${assessment.overall_status || '-'}</div>
+          <div style="font-size: 3rem; font-weight: 800; color: ${escapeHtml(statusColor)}; line-height: 1">${escapeHtml(assessment.grade || '-')}</div>
+          <div style="font-size: 0.75rem; color: ${escapeHtml(statusColor)}">${escapeHtml(assessment.overall_status || '-')}</div>
         </div>
       </div>
 
@@ -293,18 +294,18 @@ function renderLatestAssessment(assessment) {
       <div class="grid-3-col" style="margin-bottom: 20px">
         <div style="background: hsla(220, 20%, 100%, 0.03); padding: 16px; border-radius: 12px; text-align: center">
           <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-bottom: 8px">PENAMPILAN</div>
-          <div style="font-size: 2rem; font-weight: 800; color: ${assessment.penampilan_score >= 70 ? 'var(--success-400)' : 'var(--warning-400)'}">${assessment.penampilan_score?.toFixed(0) || 0}</div>
-          <div style="font-size: 0.65rem; color: ${assessment.penampilan_status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">${assessment.penampilan_status || '-'}</div>
+          <div style="font-size: 2rem; font-weight: 800; color: ${assessment.penampilan_score >= 70 ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(assessment.penampilan_score?.toFixed(0) || 0)}</div>
+          <div style="font-size: 0.65rem; color: ${assessment.penampilan_status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">${escapeHtml(assessment.penampilan_status || '-')}</div>
         </div>
         <div style="background: hsla(220, 20%, 100%, 0.03); padding: 16px; border-radius: 12px; text-align: center">
           <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-bottom: 8px">TATA RUANG</div>
-          <div style="font-size: 2rem; font-weight: 800; color: ${assessment.tata_ruang_score >= 70 ? 'var(--success-400)' : 'var(--warning-400)'}">${assessment.tata_ruang_score?.toFixed(0) || 0}</div>
-          <div style="font-size: 0.65rem; color: ${assessment.tata_ruang_status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">${assessment.tata_ruang_status || '-'}</div>
+          <div style="font-size: 2rem; font-weight: 800; color: ${assessment.tata_ruang_score >= 70 ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(assessment.tata_ruang_score?.toFixed(0) || 0)}</div>
+          <div style="font-size: 0.65rem; color: ${assessment.tata_ruang_status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">${escapeHtml(assessment.tata_ruang_status || '-')}</div>
         </div>
         <div style="background: hsla(220, 20%, 100%, 0.03); padding: 16px; border-radius: 12px; text-align: center">
           <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-bottom: 8px">KESELARASAN</div>
-          <div style="font-size: 2rem; font-weight: 800; color: ${assessment.keselarasan_score >= 70 ? 'var(--success-400)' : 'var(--warning-400)'}">${assessment.keselarasan_score?.toFixed(0) || 0}</div>
-          <div style="font-size: 0.65rem; color: ${assessment.keselarasan_status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">${assessment.keselarasan_status || '-'}</div>
+          <div style="font-size: 2rem; font-weight: 800; color: ${assessment.keselarasan_score >= 70 ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(assessment.keselarasan_score?.toFixed(0) || 0)}</div>
+          <div style="font-size: 0.65rem; color: ${assessment.keselarasan_status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">${escapeHtml(assessment.keselarasan_status || '-')}</div>
         </div>
       </div>
 
@@ -312,19 +313,19 @@ function renderLatestAssessment(assessment) {
       <div class="grid-4-col" style="margin-bottom: 20px">
         <div style="background: hsla(220, 20%, 100%, 0.03); padding: 12px; border-radius: 8px; text-align: center">
           <div style="font-size: 0.65rem; color: var(--text-tertiary)">Plan Efficiency</div>
-          <div style="font-size: 1.1rem; font-weight: 800; color: white">${assessment.plan_efficiency?.toFixed(1) || 0}%</div>
+          <div style="font-size: 1.1rem; font-weight: 800; color: white">${escapeHtml(assessment.plan_efficiency?.toFixed(1) || 0)}%</div>
         </div>
         <div style="background: hsla(220, 20%, 100%, 0.03); padding: 12px; border-radius: 8px; text-align: center">
           <div style="font-size: 0.65rem; color: var(--text-tertiary)">ETTV</div>
-          <div style="font-size: 1.1rem; font-weight: 800; color: ${assessment.ettv_value <= 45 ? 'var(--success-400)' : 'var(--danger-400)'}">${assessment.ettv_value?.toFixed(1) || 0}</div>
+          <div style="font-size: 1.1rem; font-weight: 800; color: ${assessment.ettv_value <= 45 ? 'var(--success-400)' : 'var(--danger-400)'}">${escapeHtml(assessment.ettv_value?.toFixed(1) || 0)}</div>
         </div>
         <div style="background: hsla(220, 20%, 100%, 0.03); padding: 12px; border-radius: 8px; text-align: center">
           <div style="font-size: 0.65rem; color: var(--text-tertiary)">KDH</div>
-          <div style="font-size: 1.1rem; font-weight: 800; color: ${assessment.kdh_percentage >= 30 ? 'var(--success-400)' : 'var(--warning-400)'}">${assessment.kdh_percentage?.toFixed(1) || 0}%</div>
+          <div style="font-size: 1.1rem; font-weight: 800; color: ${assessment.kdh_percentage >= 30 ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(assessment.kdh_percentage?.toFixed(1) || 0)}%</div>
         </div>
         <div style="background: hsla(220, 20%, 100%, 0.03); padding: 12px; border-radius: 8px; text-align: center">
           <div style="font-size: 0.65rem; color: var(--text-tertiary)">Golden Ratio</div>
-          <div style="font-size: 1.1rem; font-weight: 800; color: ${assessment.golden_ratio_score >= 80 ? 'var(--success-400)' : 'var(--warning-400)'}">${assessment.golden_ratio_score?.toFixed(0) || 0}</div>
+          <div style="font-size: 1.1rem; font-weight: 800; color: ${assessment.golden_ratio_score >= 80 ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(assessment.golden_ratio_score?.toFixed(0) || 0)}</div>
         </div>
       </div>
 
@@ -332,16 +333,16 @@ function renderLatestAssessment(assessment) {
         <div style="margin-top: 20px">
           <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: white; margin-bottom: 16px">
             <i class="fas fa-exclamation-triangle" style="margin-right: 8px; color: var(--danger-400)"></i>
-            Temuan (${assessment.violations.length})
+            Temuan (${escapeHtml(assessment.violations.length)})
           </h4>
           <div style="display: flex; flex-direction: column; gap: 8px">
             ${assessment.violations.map((v, i) => `
               <div style="padding: 12px 16px; background: hsla(0, 85%, 60%, 0.1); border-radius: 8px; border-left: 3px solid var(--danger-400)">
                 <div style="font-size: 0.8rem; font-weight: 700; color: var(--danger-400)">
-                  ${i + 1}. ${v.aspect || 'Pelanggaran'}
+                  ${i + 1}. ${escapeHtml(v.aspect || 'Pelanggaran')}
                 </div>
                 <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px">
-                  ${v.description || v.message || 'Detail pelanggaran'}
+                  ${escapeHtml(v.description || v.message || 'Detail pelanggaran')}
                 </div>
               </div>
             `).join('')}
@@ -362,7 +363,7 @@ function renderEmptyState(projectId) {
       <p style="font-size: 0.85rem; color: var(--text-tertiary); max-width: 400px; margin: 0 auto 24px">
         Mulai pemeriksaan untuk menilai penampilan bangunan, tata ruang dalam, dan keselarasan lingkungan
       </p>
-      <button class="btn btn-primary" onclick="window._newArchAssessment('${projectId}')">
+      <button class="btn btn-primary" onclick="window._newArchAssessment('${escapeHtml(projectId)}')">
         <i class="fas fa-plus" style="margin-right: 8px"></i> Pemeriksaan Baru
       </button>
     </div>
@@ -623,17 +624,17 @@ export function initArchitecturalHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="text-align: center; margin-bottom: 16px">
           <div style="font-size: 0.75rem; color: var(--text-tertiary)">Rasio Tinggi:Lebar</div>
-          <div style="font-size: 2.5rem; font-weight: 800; color: ${result.analysis.isGoldenRatio ? 'var(--success-400)' : 'var(--warning-400)'}">${result.proportions.heightToWidthFormatted}</div>
+          <div style="font-size: 2.5rem; font-weight: 800; color: ${result.analysis.isGoldenRatio ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(result.proportions.heightToWidthFormatted)}</div>
           <div style="font-size: 0.75rem; color: var(--text-tertiary)">Golden Ratio = 1.618</div>
         </div>
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px">
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Deviasi</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: white">${result.proportions.deviationPercent}</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: white">${escapeHtml(result.proportions.deviationPercent)}</div>
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Status</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: ${result.analysis.isGoldenRatio ? 'var(--success-400)' : 'var(--warning-400)'}">${result.analysis.status}</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: ${result.analysis.isGoldenRatio ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(result.analysis.status)}</div>
           </div>
         </div>
       `;
@@ -657,7 +658,7 @@ export function initArchitecturalHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="text-align: center; margin-bottom: 16px">
           <div style="font-size: 0.75rem; color: var(--text-tertiary)">ETTV Value</div>
-          <div style="font-size: 2.5rem; font-weight: 800; color: ${result.ettv.isCompliant ? 'var(--success-400)' : 'var(--danger-400)'}">${result.ettv.value}</div>
+          <div style="font-size: 2.5rem; font-weight: 800; color: ${result.ettv.isCompliant ? 'var(--success-400)' : 'var(--danger-400)'}">${escapeHtml(result.ettv.value)}</div>
           <div style="font-size: 0.75rem; color: var(--text-tertiary)">Max: 45 W/m²</div>
         </div>
         <div style="padding: 12px; background: ${result.ettv.isCompliant ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px">
@@ -665,7 +666,7 @@ export function initArchitecturalHandlers(projectId) {
             ${result.ettv.isCompliant ? '✓ MEMENUHI STANDAR' : '✗ MELEBIHI BATAS'}
           </div>
           <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px">
-            Rating: ${result.rating.grade} - ${result.rating.desc}
+            Rating: ${escapeHtml(result.rating.grade)} - ${escapeHtml(result.rating.desc)}
           </div>
         </div>
       `;
@@ -690,21 +691,21 @@ export function initArchitecturalHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="text-align: center; margin-bottom: 16px">
           <div style="font-size: 0.75rem; color: var(--text-tertiary)">Efisiensi Denah</div>
-          <div style="font-size: 2.5rem; font-weight: 800; color: ${result.efficiency.status === 'C' ? 'var(--success-400)' : 'var(--warning-400)'}">${result.efficiency.grossEfficiency}</div>
-          <div style="font-size: 0.75rem; color: var(--text-tertiary)">Grade: ${result.efficiency.grade} - ${result.efficiency.description}</div>
+          <div style="font-size: 2.5rem; font-weight: 800; color: ${result.efficiency.status === 'C' ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(result.efficiency.grossEfficiency)}</div>
+          <div style="font-size: 0.75rem; color: var(--text-tertiary)">Grade: ${escapeHtml(result.efficiency.grade)} - ${escapeHtml(result.efficiency.description)}</div>
         </div>
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px">
           <div style="padding: 10px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; text-align: center">
             <div style="font-size: 0.65rem; color: var(--text-tertiary)">Program</div>
-            <div style="font-size: 1rem; font-weight: 800; color: var(--brand-400)">${result.ratios.program}</div>
+            <div style="font-size: 1rem; font-weight: 800; color: var(--brand-400)">${escapeHtml(result.ratios.program)}</div>
           </div>
           <div style="padding: 10px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; text-align: center">
             <div style="font-size: 0.65rem; color: var(--text-tertiary)">Sirkulasi</div>
-            <div style="font-size: 1rem; font-weight: 800; color: var(--gold-400)">${result.ratios.circulation}</div>
+            <div style="font-size: 1rem; font-weight: 800; color: var(--gold-400)">${escapeHtml(result.ratios.circulation)}</div>
           </div>
           <div style="padding: 10px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; text-align: center">
             <div style="font-size: 0.65rem; color: var(--text-tertiary)">Service</div>
-            <div style="font-size: 1rem; font-weight: 800; color: var(--text-secondary)">${result.ratios.service}</div>
+            <div style="font-size: 1rem; font-weight: 800; color: var(--text-secondary)">${escapeHtml(result.ratios.service)}</div>
           </div>
         </div>
       `;
@@ -730,12 +731,12 @@ export function initArchitecturalHandlers(projectId) {
               <div style="font-size: 1rem; font-weight: 800; color: ${result.compliance.area === 'C' && result.compliance.height === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">
                 ${result.compliance.area === 'C' && result.compliance.height === 'C' ? 'SESUAI STANDAR' : 'TIDAK SESUAI'}
               </div>
-              <div style="font-size: 0.75rem; color: var(--text-tertiary)">${result.roomType}</div>
+              <div style="font-size: 0.75rem; color: var(--text-tertiary)">${escapeHtml(result.roomType)}</div>
             </div>
           </div>
           <div style="font-size: 0.8rem; color: var(--text-secondary)">
-            <div>Luas: ${result.actual.area} (Min: ${result.standards.minArea}m²)</div>
-            <div>Tinggi: ${result.actual.height} (Min: ${result.standards.minHeight}m)</div>
+            <div>Luas: ${escapeHtml(result.actual.area)} (Min: ${escapeHtml(result.standards.minArea)}m²)</div>
+            <div>Tinggi: ${escapeHtml(result.actual.height)} (Min: ${escapeHtml(result.standards.minHeight)}m)</div>
           </div>
         </div>
       `;
@@ -955,7 +956,7 @@ function renderKebakaranTab(projectId) {
             </p>
           </div>
           <div class="flex gap-3">
-            <button class="btn btn-outline btn-sm" onclick="window._openFireSimulator('${projectId}')">
+            <button class="btn btn-outline btn-sm" onclick="window._openFireSimulator('${escapeHtml(projectId)}')">
               <i class="fas fa-play" style="margin-right: 8px"></i> Buka Simulator
             </button>
             <button class="btn btn-primary btn-sm" onclick="window._openFireCompliance()">
@@ -1019,7 +1020,7 @@ function renderEvakuasiTab(projectId) {
             </p>
           </div>
           <div class="flex gap-3">
-            <button class="btn btn-outline btn-sm" onclick="window._openEvacuationSimulator('${projectId}')">
+            <button class="btn btn-outline btn-sm" onclick="window._openEvacuationSimulator('${escapeHtml(projectId)}')">
               <i class="fas fa-play" style="margin-right: 8px"></i> Buka Simulator
             </button>
             <button class="btn btn-primary btn-sm" onclick="window._generateEvacuationReport()">

@@ -11,6 +11,7 @@
 // ============================================================
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { uploadToGoogleDrive } from '../lib/drive.js';
@@ -555,7 +556,7 @@ function renderHeaderCard() {
           <span class="badge" style="background: hsla(200, 85%, 45%, 0.1); color: #0ea5e9; border: 1px solid hsla(200, 85%, 45%, 0.2); font-size: 10px;">
             <i class="fas fa-book" style="margin-right: 6px;"></i>SNI 03-2453
           </span>
-          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${currentProjectId}'})" style="color: var(--text-tertiary);">
+          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${escapeHtml(currentProjectId)}'})" style="color: var(--text-tertiary);">
             <i class="fas fa-arrow-left" style="margin-right: 6px;"></i> Kembali
           </button>
         </div>
@@ -679,7 +680,7 @@ function renderDashboardTab() {
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(200, 85%, 45%, 0.1); display: flex; align-items: center; justify-content: center; color: #0ea5e9; margin: 0 auto 12px;">
             <i class="fas fa-water" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${totalSystems}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(totalSystems)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Sistem Wastewater</div>
         </div>
         
@@ -687,7 +688,7 @@ function renderDashboardTab() {
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(280, 95%, 52%, 0.1); display: flex; align-items: center; justify-content: center; color: #a855f7; margin: 0 auto 12px;">
             <i class="fas fa-network-wired" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${totalPipes}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(totalPipes)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Segmen Pipa</div>
         </div>
         
@@ -695,7 +696,7 @@ function renderDashboardTab() {
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(158, 85%, 45%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--success-400); margin: 0 auto 12px;">
             <i class="fas fa-flask" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${totalTreatment}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(totalTreatment)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Unit Treatment</div>
         </div>
         
@@ -703,7 +704,7 @@ function renderDashboardTab() {
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(45, 90%, 60%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--gold-400); margin: 0 auto 12px;">
             <i class="fas fa-users" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${totalPE.toFixed(0)}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(totalPE.toFixed(0))}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Total PE</div>
         </div>
       </div>
@@ -718,14 +719,14 @@ function renderDashboardTab() {
           
           <div style="text-align: center; padding: 20px; background: hsla(220, 20%, 100%, 0.03); border-radius: 12px; margin-bottom: 16px;">
             <div style="font-size: 3rem; font-weight: 800; color: ${complianceRate >= 80 ? 'var(--success-400)' : complianceRate >= 60 ? 'var(--warning-400)' : 'var(--danger-400)'};">
-              ${complianceRate}%
+              ${escapeHtml(complianceRate)}%
             </div>
             <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px;">Tingkat Kepatuhan</div>
           </div>
           
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
             <div style="padding: 12px; background: hsla(158, 85%, 45%, 0.1); border-radius: 8px; text-align: center;">
-              <div style="font-size: 1.2rem; font-weight: 800; color: var(--success-400);">${compliantTests}</div>
+              <div style="font-size: 1.2rem; font-weight: 800; color: var(--success-400);">${escapeHtml(compliantTests)}</div>
               <div style="font-size: 0.65rem; color: var(--text-tertiary);">Tes Lulus</div>
             </div>
             <div style="padding: 12px; background: hsla(0, 85%, 60%, 0.1); border-radius: 8px; text-align: center;">
@@ -805,15 +806,15 @@ function renderDashboardTab() {
               <div class="card-quartz" style="padding: 16px; background: hsla(220, 20%, 100%, 0.03);">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                   <div>
-                    <div style="font-weight: 700; color: white;">${unit.unit_type || 'Unit'}</div>
-                    <div style="font-size: 0.7rem; color: var(--text-tertiary);">${unit.location || ''}</div>
+                    <div style="font-weight: 700; color: white;">${escapeHtml(unit.unit_type || 'Unit')}</div>
+                    <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(unit.location || '')}</div>
                   </div>
                   <span class="badge" style="background: ${unit.condition_rating >= 4 ? 'hsla(158, 85%, 45%, 0.1)' : unit.condition_rating >= 3 ? 'hsla(45, 90%, 60%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; color: ${unit.condition_rating >= 4 ? 'var(--success-400)' : unit.condition_rating >= 3 ? 'var(--warning-400)' : 'var(--danger-400)'}; font-size: 9px;">
-                    Rating: ${unit.condition_rating || 'N/A'}/5
+                    Rating: ${escapeHtml(unit.condition_rating || 'N/A')}/5
                   </span>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.7rem;">
-                  <div><span style="color: var(--text-tertiary);">Volume:</span> <span style="color: white;">${unit.volume_m3 || 0} m³</span></div>
+                  <div><span style="color: var(--text-tertiary);">Volume:</span> <span style="color: white;">${escapeHtml(unit.volume_m3 || 0)} m³</span></div>
                   <div><span style="color: var(--text-tertiary);">Pompa:</span> <span style="color: white;">${unit.next_pumping_date ? new Date(unit.next_pumping_date).toLocaleDateString('id-ID') : 'N/A'}</span></div>
                 </div>
               </div>
@@ -1044,18 +1045,18 @@ function renderFixturesTab() {
                 <div class="card-quartz" style="padding: 16px; background: hsla(220, 20%, 100%, 0.03);">
                   <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div>
-                      <div style="font-weight: 700; color: white;">${fixture.fixture_type || 'Fixture'}</div>
-                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${fixture.location || ''} - Lantai ${fixture.floor || '-'}</div>
+                      <div style="font-weight: 700; color: white;">${escapeHtml(fixture.fixture_type || 'Fixture')}</div>
+                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(fixture.location || '')} - Lantai ${escapeHtml(fixture.floor || '-')}</div>
                     </div>
                     <div style="display: flex; gap: 8px;">
                       <span class="badge" style="background: ${fixture.condition_rating >= 4 ? 'hsla(158, 85%, 45%, 0.1)' : fixture.condition_rating >= 3 ? 'hsla(45, 90%, 60%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; color: ${fixture.condition_rating >= 4 ? 'var(--success-400)' : fixture.condition_rating >= 3 ? 'var(--warning-400)' : 'var(--danger-400)'}; font-size: 9px;">
-                        ${fixture.condition_rating || 'N/A'}/5
+                        ${escapeHtml(fixture.condition_rating || 'N/A')}/5
                       </span>
                     </div>
                   </div>
                   <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 0.7rem;">
-                    <div><span style="color: var(--text-tertiary);">Trap:</span> <span style="color: white;">${fixture.trap_type || '-'}</span></div>
-                    <div><span style="color: var(--text-tertiary);">Flush:</span> <span style="color: white;">${fixture.flush_type || '-'}</span></div>
+                    <div><span style="color: var(--text-tertiary);">Trap:</span> <span style="color: white;">${escapeHtml(fixture.trap_type || '-')}</span></div>
+                    <div><span style="color: var(--text-tertiary);">Flush:</span> <span style="color: white;">${escapeHtml(fixture.flush_type || '-')}</span></div>
                     <div><span style="color: var(--text-tertiary);">Vent:</span> <span style="color: white;">${fixture.vent_connected ? 'Yes' : 'No'}</span></div>
                   </div>
                 </div>
@@ -1199,17 +1200,17 @@ function renderNetworkTab() {
                 <div class="card-quartz" style="padding: 16px; background: hsla(220, 20%, 100%, 0.03);">
                   <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                     <div>
-                      <div style="font-weight: 700; color: white;">${pipe.segment_name || 'Segment'}</div>
-                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${pipe.upstream_manhole || '-'} → ${pipe.downstream_manhole || '-'}</div>
+                      <div style="font-weight: 700; color: white;">${escapeHtml(pipe.segment_name || 'Segment')}</div>
+                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(pipe.upstream_manhole || '-')} → ${escapeHtml(pipe.downstream_manhole || '-')}</div>
                     </div>
                     <span class="badge" style="background: ${pipe.velocity_ms >= 0.6 && pipe.velocity_ms <= 3.0 ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; color: ${pipe.velocity_ms >= 0.6 && pipe.velocity_ms <= 3.0 ? 'var(--success-400)' : 'var(--danger-400)'}; font-size: 9px;">
                       ${pipe.velocity_ms ? pipe.velocity_ms.toFixed(2) : 'N/A'} m/s
                     </span>
                   </div>
                   <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; font-size: 0.7rem;">
-                    <div><span style="color: var(--text-tertiary);">D:</span> <span style="color: white;">${pipe.diameter_mm || '-'} mm</span></div>
-                    <div><span style="color: var(--text-tertiary);">L:</span> <span style="color: white;">${pipe.length_m || '-'} m</span></div>
-                    <div><span style="color: var(--text-tertiary);">S:</span> <span style="color: white;">${pipe.slope_percent || '-'}%</span></div>
+                    <div><span style="color: var(--text-tertiary);">D:</span> <span style="color: white;">${escapeHtml(pipe.diameter_mm || '-')} mm</span></div>
+                    <div><span style="color: var(--text-tertiary);">L:</span> <span style="color: white;">${escapeHtml(pipe.length_m || '-')} m</span></div>
+                    <div><span style="color: var(--text-tertiary);">S:</span> <span style="color: white;">${escapeHtml(pipe.slope_percent || '-')}%</span></div>
                     <div><span style="color: var(--text-tertiary);">Q:</span> <span style="color: white;">${pipe.flow_rate_ls ? pipe.flow_rate_ls.toFixed(2) : '-'} L/s</span></div>
                   </div>
                 </div>
@@ -1376,18 +1377,18 @@ function renderTreatmentTab() {
               <div class="card-quartz" style="padding: 20px; background: hsla(220, 20%, 100%, 0.03);">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
                   <div>
-                    <div style="font-weight: 700; color: white; font-size: 1.1rem;">${unit.unit_type || 'Unit'}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-tertiary);">${unit.location || ''}</div>
+                    <div style="font-weight: 700; color: white; font-size: 1.1rem;">${escapeHtml(unit.unit_type || 'Unit')}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-tertiary);">${escapeHtml(unit.location || '')}</div>
                   </div>
                   <span class="badge" style="background: ${unit.condition_rating >= 4 ? 'hsla(158, 85%, 45%, 0.1)' : unit.condition_rating >= 3 ? 'hsla(45, 90%, 60%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; color: ${unit.condition_rating >= 4 ? 'var(--success-400)' : unit.condition_rating >= 3 ? 'var(--warning-400)' : 'var(--danger-400)'}; font-size: 10px; padding: 4px 8px;">
-                    Rating ${unit.condition_rating || '-'}/5
+                    Rating ${escapeHtml(unit.condition_rating || '-')}/5
                   </span>
                 </div>
                 
                 <div style="margin-bottom: 16px;">
                   <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
                     <span style="color: var(--text-tertiary);">Volume:</span>
-                    <span style="color: white; font-weight: 600;">${unit.volume_m3 || 0} m³</span>
+                    <span style="color: white; font-weight: 600;">${escapeHtml(unit.volume_m3 || 0)} m³</span>
                   </div>
                   <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
                     <span style="color: var(--text-tertiary);">Dimensi:</span>
@@ -1487,16 +1488,16 @@ function renderQualityTab() {
                   <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                     <div>
                       <div style="font-weight: 700; color: white;">${new Date(test.test_date).toLocaleDateString('id-ID')}</div>
-                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${test.effluent_standard || '-'}</div>
+                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(test.effluent_standard || '-')}</div>
                     </div>
                     <span class="badge" style="background: ${test.compliance_status === 'COMPLIANT' ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; color: ${test.compliance_status === 'COMPLIANT' ? 'var(--success-400)' : 'var(--danger-400)'}; font-size: 9px;">
                       ${test.compliance_status === 'COMPLIANT' ? 'LULUS' : 'GAGAL'}
                     </span>
                   </div>
                   <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 0.7rem;">
-                    <div><span style="color: var(--text-tertiary);">BOD:</span> <span style="color: white;">${test.bod5_mg_l || '-'} mg/L</span></div>
-                    <div><span style="color: var(--text-tertiary);">COD:</span> <span style="color: white;">${test.cod_mg_l || '-'} mg/L</span></div>
-                    <div><span style="color: var(--text-tertiary);">TSS:</span> <span style="color: white;">${test.tss_mg_l || '-'} mg/L</span></div>
+                    <div><span style="color: var(--text-tertiary);">BOD:</span> <span style="color: white;">${escapeHtml(test.bod5_mg_l || '-')} mg/L</span></div>
+                    <div><span style="color: var(--text-tertiary);">COD:</span> <span style="color: white;">${escapeHtml(test.cod_mg_l || '-')} mg/L</span></div>
+                    <div><span style="color: var(--text-tertiary);">TSS:</span> <span style="color: white;">${escapeHtml(test.tss_mg_l || '-')} mg/L</span></div>
                   </div>
                 </div>
               `).join('')}
@@ -1666,7 +1667,7 @@ function initEventListeners() {
     const operatingHours = parseInt(document.getElementById('flow-operating-hours').value);
     const result = calculateWastewaterFlow(buildingType, { count, peakFactor, operatingHours });
     const resultDiv = document.getElementById('flow-calculation-result');
-    resultDiv.innerHTML = `<div class="calculation-result-box"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;"><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Debit Harian</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${result.avgDailyFlow.toFixed(2)} L/hari</div></div><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Debit Peak</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${result.peakFlow.toFixed(4)} L/s</div></div><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Debit Rata-rata</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${result.avgFlowLS.toFixed(4)} L/s</div></div><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Population Equivalent</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${result.populationEquivalent.toFixed(2)} PE</div></div></div></div>`;
+    resultDiv.innerHTML = `<div class="calculation-result-box"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;"><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Debit Harian</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(result.avgDailyFlow.toFixed(2))} L/hari</div></div><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Debit Peak</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(result.peakFlow.toFixed(4))} L/s</div></div><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Debit Rata-rata</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(result.avgFlowLS.toFixed(4))} L/s</div></div><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Population Equivalent</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(result.populationEquivalent.toFixed(2))} PE</div></div></div></div>`;
     resultDiv.style.display = 'block';
   };
 
@@ -1684,7 +1685,7 @@ function initEventListeners() {
     };
     const result = calculateFixtureUnits(fixtures);
     const resultDiv = document.getElementById('fu-calculation-result');
-    resultDiv.innerHTML = `<div class="calculation-result-box"><div style="text-align: center; margin-bottom: 16px;"><div style="font-size: 2rem; font-weight: 800; color: white;">${result.totalFU} FU</div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Total Fixture Unit</div></div><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;"><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Debit Estimasi</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${result.estimatedFlow} L/s</div></div><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Debit (L/menit)</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${result.estimatedFlowLPM} L/m</div></div></div></div>`;
+    resultDiv.innerHTML = `<div class="calculation-result-box"><div style="text-align: center; margin-bottom: 16px;"><div style="font-size: 2rem; font-weight: 800; color: white;">${escapeHtml(result.totalFU)} FU</div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Total Fixture Unit</div></div><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;"><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Debit Estimasi</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(result.estimatedFlow)} L/s</div></div><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Debit (L/menit)</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(result.estimatedFlowLPM)} L/m</div></div></div></div>`;
     resultDiv.style.display = 'block';
   };
 
@@ -1695,7 +1696,7 @@ function initEventListeners() {
     const roughness = parseFloat(document.getElementById('manning-roughness').value);
     const result = calculateManningFlow(diameter, slope, roughness);
     const resultDiv = document.getElementById('manning-calculation-result');
-    resultDiv.innerHTML = `<div class="calculation-result-box" style="border-left-color: ${result.status === 'OK' ? 'var(--success-400)' : 'var(--warning-400)'};"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;"><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Kecepatan</div><div style="font-size: 1.2rem; font-weight: 700; color: ${result.status === 'OK' ? 'var(--success-400)' : 'var(--warning-400)'};">${result.velocity} m/s</div></div><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Debit</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${result.flowRate} L/s</div></div><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Kapasitas</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">~${result.capacityPersons} org</div></div><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Status</div><div style="font-size: 0.9rem; font-weight: 600; color: ${result.status === 'OK' ? 'var(--success-400)' : 'var(--warning-400)'};">${result.statusText}</div></div></div></div>`;
+    resultDiv.innerHTML = `<div class="calculation-result-box" style="border-left-color: ${result.status === 'OK' ? 'var(--success-400)' : 'var(--warning-400)'};"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;"><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Kecepatan</div><div style="font-size: 1.2rem; font-weight: 700; color: ${result.status === 'OK' ? 'var(--success-400)' : 'var(--warning-400)'};">${escapeHtml(result.velocity)} m/s</div></div><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Debit</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(result.flowRate)} L/s</div></div><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Kapasitas</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">~${escapeHtml(result.capacityPersons)} org</div></div><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Status</div><div style="font-size: 0.9rem; font-weight: 600; color: ${result.status === 'OK' ? 'var(--success-400)' : 'var(--warning-400)'};">${escapeHtml(result.statusText)}</div></div></div></div>`;
     resultDiv.style.display = 'block';
   };
 
@@ -1706,7 +1707,7 @@ function initEventListeners() {
     const desludgingPeriod = parseInt(document.getElementById('septic-period').value);
     const result = calculateSepticTank(population, waterConsumption, desludgingPeriod);
     const resultDiv = document.getElementById('septic-calculation-result');
-    resultDiv.innerHTML = `<div class="calculation-result-box"><div style="text-align: center; margin-bottom: 16px;"><div style="font-size: 2rem; font-weight: 800; color: white;">${result.totalVolume} m³</div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Volume Total</div></div><div style="font-size: 0.75rem; margin-bottom: 12px;">V₁=${result.components.V1} | V₂=${result.components.V2} | V₃=${result.components.V3}</div><div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 0.7rem;"><div style="padding: 8px; background: hsla(220, 20%, 100%, 0.05); border-radius: 6px; text-align: center;"><div style="color: var(--text-tertiary);">Panjang</div><div style="color: white; font-weight: 600;">${result.dimensions.length} m</div></div><div style="padding: 8px; background: hsla(220, 20%, 100%, 0.05); border-radius: 6px; text-align: center;"><div style="color: var(--text-tertiary);">Lebar</div><div style="color: white; font-weight: 600;">${result.dimensions.width} m</div></div><div style="padding: 8px; background: hsla(220, 20%, 100%, 0.05); border-radius: 6px; text-align: center;"><div style="color: var(--text-tertiary);">Kedalaman</div><div style="color: white; font-weight: 600;">${result.dimensions.depth} m</div></div></div><div style="margin-top: 12px; padding: 8px; background: hsla(200, 85%, 45%, 0.1); border-radius: 6px; text-align: center;"><div style="font-size: 0.7rem; color: #0ea5e9;">Pengurasan: ${result.nextDesludgingDate}</div></div></div>`;
+    resultDiv.innerHTML = `<div class="calculation-result-box"><div style="text-align: center; margin-bottom: 16px;"><div style="font-size: 2rem; font-weight: 800; color: white;">${escapeHtml(result.totalVolume)} m³</div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Volume Total</div></div><div style="font-size: 0.75rem; margin-bottom: 12px;">V₁=${escapeHtml(result.components.V1)} | V₂=${escapeHtml(result.components.V2)} | V₃=${escapeHtml(result.components.V3)}</div><div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 0.7rem;"><div style="padding: 8px; background: hsla(220, 20%, 100%, 0.05); border-radius: 6px; text-align: center;"><div style="color: var(--text-tertiary);">Panjang</div><div style="color: white; font-weight: 600;">${escapeHtml(result.dimensions.length)} m</div></div><div style="padding: 8px; background: hsla(220, 20%, 100%, 0.05); border-radius: 6px; text-align: center;"><div style="color: var(--text-tertiary);">Lebar</div><div style="color: white; font-weight: 600;">${escapeHtml(result.dimensions.width)} m</div></div><div style="padding: 8px; background: hsla(220, 20%, 100%, 0.05); border-radius: 6px; text-align: center;"><div style="color: var(--text-tertiary);">Kedalaman</div><div style="color: white; font-weight: 600;">${escapeHtml(result.dimensions.depth)} m</div></div></div><div style="margin-top: 12px; padding: 8px; background: hsla(200, 85%, 45%, 0.1); border-radius: 6px; text-align: center;"><div style="font-size: 0.7rem; color: #0ea5e9;">Pengurasan: ${escapeHtml(result.nextDesludgingDate)}</div></div></div>`;
     resultDiv.style.display = 'block';
   };
 
@@ -1717,7 +1718,7 @@ function initEventListeners() {
     const flowRateLPM = (meals / 8) / 20 * 10;
     const result = calculateGreaseTrap(flowRateLPM, retention);
     const resultDiv = document.getElementById('grease-calculation-result');
-    resultDiv.innerHTML = `<div class="calculation-result-box"><div style="text-align: center; margin-bottom: 16px;"><div style="font-size: 2rem; font-weight: 800; color: white;">${result.requiredVolume} L</div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Volume Diperlukan</div></div><div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 0.7rem;"><div style="padding: 8px; background: hsla(220, 20%, 100%, 0.05); border-radius: 6px; text-align: center;"><div style="color: var(--text-tertiary);">Panjang</div><div style="color: white; font-weight: 600;">${result.dimensions.length} m</div></div><div style="padding: 8px; background: hsla(220, 20%, 100%, 0.05); border-radius: 6px; text-align: center;"><div style="color: var(--text-tertiary);">Lebar</div><div style="color: white; font-weight: 600;">${result.dimensions.width} m</div></div><div style="padding: 8px; background: hsla(220, 20%, 100%, 0.05); border-radius: 6px; text-align: center;"><div style="color: var(--text-tertiary);">Kedalaman</div><div style="color: white; font-weight: 600;">${result.dimensions.depth} m</div></div></div></div>`;
+    resultDiv.innerHTML = `<div class="calculation-result-box"><div style="text-align: center; margin-bottom: 16px;"><div style="font-size: 2rem; font-weight: 800; color: white;">${escapeHtml(result.requiredVolume)} L</div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Volume Diperlukan</div></div><div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 0.7rem;"><div style="padding: 8px; background: hsla(220, 20%, 100%, 0.05); border-radius: 6px; text-align: center;"><div style="color: var(--text-tertiary);">Panjang</div><div style="color: white; font-weight: 600;">${escapeHtml(result.dimensions.length)} m</div></div><div style="padding: 8px; background: hsla(220, 20%, 100%, 0.05); border-radius: 6px; text-align: center;"><div style="color: var(--text-tertiary);">Lebar</div><div style="color: white; font-weight: 600;">${escapeHtml(result.dimensions.width)} m</div></div><div style="padding: 8px; background: hsla(220, 20%, 100%, 0.05); border-radius: 6px; text-align: center;"><div style="color: var(--text-tertiary);">Kedalaman</div><div style="color: white; font-weight: 600;">${escapeHtml(result.dimensions.depth)} m</div></div></div></div>`;
     resultDiv.style.display = 'block';
   };
 
@@ -1727,7 +1728,7 @@ function initEventListeners() {
     const detention = parseInt(document.getElementById('wetwell-detention').value);
     const result = calculateWetWell(flow, detention, 6);
     const resultDiv = document.getElementById('wetwell-result');
-    resultDiv.innerHTML = `<div class="calculation-result-box"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;"><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Volume Wet Well</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${result.wetWellVolume} L</div></div><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Kapasitas Pompa</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${result.totalPumpCapacity} m³/h</div></div></div><div style="padding: 12px; background: hsla(220, 20%, 100%, 0.05); border-radius: 6px;"><div style="font-size: 0.7rem; color: var(--text-tertiary); margin-bottom: 4px;">Rekomendasi</div><div style="font-size: 0.9rem; color: white; font-weight: 600;">${result.pumpsNeeded} unit @ ${result.capacityPerPump} m³/h</div></div></div>`;
+    resultDiv.innerHTML = `<div class="calculation-result-box"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;"><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Volume Wet Well</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(result.wetWellVolume)} L</div></div><div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Kapasitas Pompa</div><div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(result.totalPumpCapacity)} m³/h</div></div></div><div style="padding: 12px; background: hsla(220, 20%, 100%, 0.05); border-radius: 6px;"><div style="font-size: 0.7rem; color: var(--text-tertiary); margin-bottom: 4px;">Rekomendasi</div><div style="font-size: 0.9rem; color: white; font-weight: 600;">${escapeHtml(result.pumpsNeeded)} unit @ ${escapeHtml(result.capacityPerPump)} m³/h</div></div></div>`;
     resultDiv.style.display = 'block';
   };
 
@@ -1738,7 +1739,7 @@ function initEventListeners() {
     const flowRateLPM = (vehicles * 100) / (8 * 60 / 10);
     const result = calculateOilSeparator(flowRateLPM, retention);
     const resultDiv = document.getElementById('oil-result');
-    resultDiv.innerHTML = `<div class="calculation-result-box"><div style="text-align: center; margin-bottom: 16px;"><div style="font-size: 2rem; font-weight: 800; color: white;">${result.totalVolume} L</div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Volume Total</div></div><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.7rem;"><div style="padding: 8px; background: hsla(45, 90%, 60%, 0.1); border-radius: 6px; text-align: center;"><div style="color: var(--gold-400);">Zona Minyak (50%)</div><div style="color: white; font-weight: 600;">${result.oilStorageVolume} L</div></div><div style="padding: 8px; background: hsla(220, 20%, 100%, 0.05); border-radius: 6px; text-align: center;"><div style="color: var(--text-tertiary);">Zona Lumpur (20%)</div><div style="color: white; font-weight: 600;">${result.sludgeVolume} L</div></div></div></div>`;
+    resultDiv.innerHTML = `<div class="calculation-result-box"><div style="text-align: center; margin-bottom: 16px;"><div style="font-size: 2rem; font-weight: 800; color: white;">${escapeHtml(result.totalVolume)} L</div><div style="font-size: 0.7rem; color: var(--text-tertiary);">Volume Total</div></div><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.7rem;"><div style="padding: 8px; background: hsla(45, 90%, 60%, 0.1); border-radius: 6px; text-align: center;"><div style="color: var(--gold-400);">Zona Minyak (50%)</div><div style="color: white; font-weight: 600;">${escapeHtml(result.oilStorageVolume)} L</div></div><div style="padding: 8px; background: hsla(220, 20%, 100%, 0.05); border-radius: 6px; text-align: center;"><div style="color: var(--text-tertiary);">Zona Lumpur (20%)</div><div style="color: white; font-weight: 600;">${escapeHtml(result.sludgeVolume)} L</div></div></div></div>`;
     resultDiv.style.display = 'block';
   };
 

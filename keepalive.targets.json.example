@@ -1,0 +1,12 @@
+[
+  {
+    "name": "SLF - Proyek Utama",
+    "url": "https://<project-ref>.supabase.co",
+    "key": "ISI_DENGAN_ANON_KEY_ATAU_SB_PUBLISHABLE_KEY"
+  },
+  {
+    "name": "Contoh proyek kedua",
+    "url": "https://xxxxxxxxxxxxxxxx.supabase.co",
+    "key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+]

@@ -14,6 +14,7 @@ import {
 } from '../lib/sanitation-data-manager.js';
 
 import { calculateSepticTankVolume, calculateTreatmentEfficiency, getStatusBadge } from '../lib/sanitation-calculator.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { generateFlowDiagram } from '../lib/sanitation-visualization.js';
 
 // ============================================================
@@ -125,7 +126,7 @@ export function renderSanitationCard(project, summary = {}) {
           </div>
         </div>
         <div style="display: flex; gap: 8px;">
-          <span class="badge" style="background: ${st.bg}; color: ${st.text}; border: 1px solid ${st.border}44; font-size: 10px;">
+          <span class="badge" style="background: ${escapeHtml(st.bg)}; color: ${escapeHtml(st.text)}; border: 1px solid ${escapeHtml(st.border)}44; font-size: 10px;">
             <i class="fas ${summary.overallStatus === 'C' ? 'fa-check-circle' : summary.overallStatus === 'NC' ? 'fa-circle-exclamation' : 'fa-circle-minus'}" style="margin-right: 6px;"></i>
             ${summary.overallStatus === 'C' ? 'COMPLIANT' : summary.overallStatus === 'NC' ? 'NON-COMPLIANT' : 'BELUM DINILAI'}
           </span>
@@ -170,7 +171,7 @@ export function renderSanitationCard(project, summary = {}) {
           <div style="background: hsla(0, 85%, 60%, 0.1); border: 1px solid hsla(0, 85%, 60%, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
             <div style="font-size: 12px; color: var(--danger-400);">
               <i class="fas fa-triangle-exclamation" style="margin-right: 8px;"></i>
-              Terdapat ${summary.criticalSludge} septic tank dengan tingkat lumpur kritis. Segera lakukan pengurasan!
+              Terdapat ${escapeHtml(summary.criticalSludge)} septic tank dengan tingkat lumpur kritis. Segera lakukan pengurasan!
             </div>
           </div>
         ` : ''}
@@ -237,7 +238,7 @@ export function renderSanitationCard(project, summary = {}) {
 
       <!-- Action Button -->
       <div style="margin-top: 24px;">
-        <button onclick="window.navigate('sanitation-inspection', {id: '${project.id}'})" 
+        <button onclick="window.navigate('sanitation-inspection', {id: '${escapeHtml(project.id)}'})" 
                 class="btn ${hasData ? 'btn-primary' : 'btn-outline'}" style="width: 100%;">
           <i class="fas ${hasData ? 'fa-pen-ruler' : 'fa-plus'}" style="margin-right: 8px;"></i>
           ${hasData ? 'Lanjutkan Pemeriksaan' : 'Mulai Pemeriksaan'}

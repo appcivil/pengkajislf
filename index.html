@@ -2,7 +2,16 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
+    <!-- Ikon.
+         Sebelumnya hanya favicon.svg berukuran 641 kB — dan berkas itu
+         ternyata tidak memuat ikon sama sekali (isinya duplikat icons.svg),
+         sehingga setiap halaman mengunduh 641 kB untuk sesuatu yang tidak
+         tampil. Sekarang: SVG 1,7 kB untuk peramban modern, PNG untuk
+         peramban lama, dan apple-touch-icon untuk iOS. -->
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
     <link rel="manifest" href="./manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     <meta name="theme-color" content="#0a0f1d" />
@@ -23,11 +32,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    <!-- Leaflet Map -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer crossorigin=""></script>
+    <!-- Font Awesome — disalin ke dalam aplikasi (public/vendor/).
+         Sebelumnya diambil dari CDN. Dua masalah yang diselesaikan:
+         (1) CSS dari CDN menghambat render — halaman menunggu koneksi ke
+             pihak ketiga sebelum dapat digambar;
+         (2) service worker aplikasi ini hanya menangani berkas satu asal,
+             sehingga saat offline seluruh ikon hilang. Untuk aplikasi
+             pemeriksaan lapangan, offline bukan keadaan luar biasa.
+         Yang diunduh hanya .woff2 (peramban modern mendukungnya); sumber .ttf
+         sengaja tidak disertakan agar tidak ada permintaan yang gagal. -->
+    <link rel="stylesheet" href="./vendor/fontawesome/all.min.css" />
+    <!-- Leaflet Map — alasan yang sama seperti Font Awesome.
+         Dipakai modul Stormwater (CatchmentMapper). -->
+    <link rel="stylesheet" href="./vendor/leaflet/leaflet.css" />
+    <script src="./vendor/leaflet/leaflet.js" defer></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
     

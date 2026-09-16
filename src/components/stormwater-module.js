@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError } from './toast.js';
 
@@ -85,14 +86,14 @@ export function renderStormwaterCard(project, summary = {}) {
   const hasData = summary.hasData;
 
   return `
-    <div class="card-quartz clickable" id="stormwater-card" onclick="window.navigate('stormwater',{id:'${project.id}'} )" 
-      style="padding: var(--space-6); background: ${st.bg}; border-color: ${st.border}44">
+    <div class="card-quartz clickable" id="stormwater-card" onclick="window.navigate('stormwater',{id:'${escapeHtml(project.id)}'} )" 
+      style="padding: var(--space-6); background: ${escapeHtml(st.bg)}; border-color: ${escapeHtml(st.border)}44">
       
       <div class="flex-between" style="margin-bottom: 20px">
-        <div style="width: 48px; height: 48px; border-radius: 14px; background: ${st.bg}; display: flex; align-items: center; justify-content: center; color: ${st.text}; border: 1px solid ${st.border}44">
+        <div style="width: 48px; height: 48px; border-radius: 14px; background: ${escapeHtml(st.bg)}; display: flex; align-items: center; justify-content: center; color: ${escapeHtml(st.text)}; border: 1px solid ${escapeHtml(st.border)}44">
           <i class="fas fa-cloud-showers-heavy" style="font-size: 1.4rem"></i>
         </div>
-        <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: ${st.text}">
+        <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: ${escapeHtml(st.text)}">
           ${summary.evaluationScore > 0 ? summary.evaluationScore + '%' : '-'}
         </div>
       </div>
@@ -109,13 +110,13 @@ export function renderStormwaterCard(project, summary = {}) {
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
             <div style="text-align: center; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 8px;">
               <div style="font-size: 0.65rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px;">Peak Flow</div>
-              <div style="font-size: 0.9rem; font-weight: 700; color: ${st.text}; font-family: var(--font-mono);">
+              <div style="font-size: 0.9rem; font-weight: 700; color: ${escapeHtml(st.text)}; font-family: var(--font-mono);">
                 ${(summary.peakRunoff || 0).toFixed(2)} m³/s
               </div>
             </div>
             <div style="text-align: center; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 8px;">
               <div style="font-size: 0.65rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px;">LID Capture</div>
-              <div style="font-size: 0.9rem; font-weight: 700; color: ${st.text}; font-family: var(--font-mono);">
+              <div style="font-size: 0.9rem; font-weight: 700; color: ${escapeHtml(st.text)}; font-family: var(--font-mono);">
                 ${((summary.volumeReduction || 0) * 100).toFixed(0)}%
               </div>
             </div>
@@ -124,12 +125,12 @@ export function renderStormwaterCard(project, summary = {}) {
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             ${summary.catchmentCount > 0 ? `
               <span style="font-size: 0.65rem; background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 3px 8px; border-radius: 4px;">
-                ${summary.catchmentCount} Catchments
+                ${escapeHtml(summary.catchmentCount)} Catchments
               </span>
             ` : ''}
             ${summary.lidCount > 0 ? `
               <span style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 3px 8px; border-radius: 4px;">
-                ${summary.lidCount} LID
+                ${escapeHtml(summary.lidCount)} LID
               </span>
             ` : ''}
           </div>
@@ -146,9 +147,9 @@ export function renderStormwaterCard(project, summary = {}) {
       <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05);">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <span style="font-size: 0.7rem; color: var(--text-tertiary);">
-            Status: <span style="color: ${st.text}; font-weight: 600;">${formatStatus(summary.overallStatus)}</span>
+            Status: <span style="color: ${escapeHtml(st.text)}; font-weight: 600;">${formatStatus(summary.overallStatus)}</span>
           </span>
-          <i class="fas fa-arrow-right" style="font-size: 0.75rem; color: ${st.text};"></i>
+          <i class="fas fa-arrow-right" style="font-size: 0.75rem; color: ${escapeHtml(st.text)};"></i>
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@
  * Quick Look, Command Palette, and Context Menus.
  */
 import { store } from '../../lib/store.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { escHtml } from '../../lib/utils.js';
 
 export function renderQuickLook(file) {
@@ -21,15 +22,15 @@ export function renderQuickLook(file) {
                 <span class="font-bold">${escHtml(file.subcategory)}</span>
                 <span class="text-xs text-tertiary">Quick Look</span>
              </div>
-             <button class="btn btn-ghost btn-xs" onclick="window._closeQuickLook()">
+             <button type="button" aria-label="Tutup" class="btn btn-ghost btn-xs" onclick="window._closeQuickLook()">
                 <i class="fas fa-times"></i>
              </button>
           </div>
 
           <div class="quicklook-content flex-center" style="height:500px; background:rgba(0,0,0,0.02)">
              ${isImage ? 
-               `<img src="${file.file_url}" style="max-width:100%; max-height:100%; object-fit:contain" />` : 
-               `<iframe src="${file.file_url}" style="width:100%; height:100%; border:none"></iframe>`
+               `<img alt="Pratinjau berkas gambar" src="${escapeHtml(file.file_url)}" style="max-width:100%; max-height:100%; object-fit:contain" />` : 
+               `<iframe src="${escapeHtml(file.file_url)}" style="width:100%; height:100%; border:none"></iframe>`
              }
           </div>
 
@@ -37,7 +38,7 @@ export function renderQuickLook(file) {
              <div class="text-xs text-secondary">
                 <i class="fas fa-info-circle"></i> Berkas ini diverifikasi secara otomatis oleh Smart AI.
              </div>
-             <button class="btn btn-primary btn-sm font-bold" onclick="window.open('${file.file_url}', '_blank')">
+             <button class="btn btn-primary btn-sm font-bold" onclick="window.open('${escapeHtml(file.file_url)}', '_blank')">
                 Open in New Tab
              </button>
           </div>
@@ -91,7 +92,7 @@ export function renderCompareModal(file1, file2) {
                 <i class="fas fa-columns text-brand-500"></i>
                 <span class="font-bold">Perbandingan Dokumen AI</span>
              </div>
-             <button class="btn btn-ghost btn-xs" onclick="window._closeCompare()">
+             <button type="button" aria-label="Tutup" class="btn btn-ghost btn-xs" onclick="window._closeCompare()">
                 <i class="fas fa-times"></i>
              </button>
           </div>
@@ -101,7 +102,7 @@ export function renderCompareModal(file1, file2) {
              <div class="flex-1 border-right flex-column">
                 <div class="p-3 bg-white border-bottom flex-between">
                    <span class="text-xs font-bold truncate">${escHtml(file1.name)}</span>
-                   <span class="badge badge-warning">Versi Lama (v${file1.version || 1.0})</span>
+                   <span class="badge badge-warning">Versi Lama (v${escapeHtml(file1.version || 1.0)})</span>
                 </div>
                 <div class="flex-1 bg-gray-100 p-4 overflow-y-auto">
                    <div style="background:white; padding:40px; min-height:100%; box-shadow:0 1px 3px rgba(0,0,0,0.1)">
@@ -123,7 +124,7 @@ export function renderCompareModal(file1, file2) {
              <div class="flex-1 flex-column">
                 <div class="p-3 bg-white border-bottom flex-between">
                    <span class="text-xs font-bold truncate">${escHtml(file2.name)}</span>
-                   <span class="badge badge-success">Versi Terbaru (v${file2.version || 2.0})</span>
+                   <span class="badge badge-success">Versi Terbaru (v${escapeHtml(file2.version || 2.0)})</span>
                 </div>
                 <div class="flex-1 bg-gray-50 p-4 overflow-y-auto">
                    <div style="background:white; padding:40px; min-height:100%; box-shadow:0 1px 3px rgba(0,0,0,0.1)">

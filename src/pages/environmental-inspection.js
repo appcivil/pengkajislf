@@ -5,6 +5,7 @@
 // ============================================================
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 
@@ -156,7 +157,7 @@ function renderHeaderCard() {
           <span class="badge" style="background: hsla(158, 85%, 45%, 0.1); color: var(--success-400); border: 1px solid hsla(158, 85%, 45%, 0.2); font-size: 10px;">
             <i class="fas fa-book" style="margin-right: 6px;"></i>AMDAL & SNI
           </span>
-          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${currentProjectId}'})" style="color: var(--text-tertiary);">
+          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${escapeHtml(currentProjectId)}'})" style="color: var(--text-tertiary);">
             <i class="fas fa-arrow-left" style="margin-right: 6px;"></i> Kembali
           </button>
         </div>
@@ -249,7 +250,7 @@ function renderDashboardTab() {
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(220, 95%, 52%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--brand-400); margin: 0 auto 12px;">
             <i class="fas fa-wind" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${envData.airQualityMeasurements.length}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(envData.airQualityMeasurements.length)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Air Quality Tests</div>
           <div style="font-size: 0.65rem; color: var(--text-tertiary); margin-top: 4px;">PM2.5, CO2, VOC</div>
         </div>
@@ -258,7 +259,7 @@ function renderDashboardTab() {
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(45, 90%, 60%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--gold-400); margin: 0 auto 12px;">
             <i class="fas fa-bolt" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${totalEnergy.toLocaleString()}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(totalEnergy.toLocaleString())}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">kWh/Month</div>
           <div style="font-size: 0.65rem; color: var(--text-tertiary); margin-top: 4px;">Energy consumption</div>
         </div>
@@ -267,7 +268,7 @@ function renderDashboardTab() {
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(158, 85%, 45%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--success-400); margin: 0 auto 12px;">
             <i class="fas fa-tint" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${totalWater.toFixed(1)}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(totalWater.toFixed(1))}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">m³/Month</div>
           <div style="font-size: 0.65rem; color: var(--text-tertiary); margin-top: 4px;">Water usage</div>
         </div>
@@ -276,7 +277,7 @@ function renderDashboardTab() {
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(0, 85%, 60%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--danger-400); margin: 0 auto 12px;">
             <i class="fas fa-recycle" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${totalWaste.toFixed(0)}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(totalWaste.toFixed(0))}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">kg Waste/Month</div>
           <div style="font-size: 0.65rem; color: var(--text-tertiary); margin-top: 4px;">Total generated</div>
         </div>
@@ -454,7 +455,7 @@ function renderAirTab() {
                   <div class="card-quartz" style="padding: 12px; border-left: 3px solid ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}; background: hsla(220, 20%, 100%, 0.03);">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                       <div>
-                        <div style="font-weight: 700; color: white;">${m.location || 'Lokasi'}</div>
+                        <div style="font-weight: 700; color: white;">${escapeHtml(m.location || 'Lokasi')}</div>
                         <div style="font-size: 0.7rem; color: var(--text-tertiary);">${new Date(m.measurement_date).toLocaleDateString('id-ID')}</div>
                       </div>
                       <span class="badge" style="background: ${isPass ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; color: ${isPass ? 'var(--success-400)' : 'var(--warning-400)'}; font-size: 9px;">
@@ -462,9 +463,9 @@ function renderAirTab() {
                       </span>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; font-size: 0.7rem;">
-                      <div><span style="color: var(--text-tertiary);">PM2.5:</span> <span style="color: white;">${m.pm25 || 'N/A'}</span></div>
-                      <div><span style="color: var(--text-tertiary);">CO2:</span> <span style="color: white;">${m.co2 || 'N/A'}</span></div>
-                      <div><span style="color: var(--text-tertiary);">VOC:</span> <span style="color: white;">${m.voc || 'N/A'}</span></div>
+                      <div><span style="color: var(--text-tertiary);">PM2.5:</span> <span style="color: white;">${escapeHtml(m.pm25 || 'N/A')}</span></div>
+                      <div><span style="color: var(--text-tertiary);">CO2:</span> <span style="color: white;">${escapeHtml(m.co2 || 'N/A')}</span></div>
+                      <div><span style="color: var(--text-tertiary);">VOC:</span> <span style="color: white;">${escapeHtml(m.voc || 'N/A')}</span></div>
                     </div>
                   </div>
                 `;
@@ -539,11 +540,11 @@ function renderEnergyTab() {
                 <div class="card-quartz" style="padding: 12px; background: hsla(220, 20%, 100%, 0.03);">
                   <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div>
-                      <div style="font-weight: 700; color: white;">${e.system_name || 'System'}</div>
-                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${e.system_type || 'Lainnya'}</div>
+                      <div style="font-weight: 700; color: white;">${escapeHtml(e.system_name || 'System')}</div>
+                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(e.system_type || 'Lainnya')}</div>
                     </div>
                     <div style="text-align: right;">
-                      <div style="font-weight: 800; color: var(--brand-400);">${e.monthly_kwh || 0} kWh</div>
+                      <div style="font-weight: 800; color: var(--brand-400);">${escapeHtml(e.monthly_kwh || 0)} kWh</div>
                       <div style="font-size: 0.65rem; color: var(--text-tertiary);">Rp ${(e.monthly_cost || 0).toLocaleString()}</div>
                     </div>
                   </div>
@@ -617,11 +618,11 @@ function renderWaterTab() {
                 <div class="card-quartz" style="padding: 12px; background: hsla(220, 20%, 100%, 0.03);">
                   <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div>
-                      <div style="font-weight: 700; color: white;">${w.usage_type || 'Penggunaan'}</div>
-                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${w.location || ''}</div>
+                      <div style="font-weight: 700; color: white;">${escapeHtml(w.usage_type || 'Penggunaan')}</div>
+                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(w.location || '')}</div>
                     </div>
                     <div style="text-align: right;">
-                      <div style="font-weight: 800; color: var(--success-400);">${w.monthly_m3 || 0} m³</div>
+                      <div style="font-weight: 800; color: var(--success-400);">${escapeHtml(w.monthly_m3 || 0)} m³</div>
                       <div style="font-size: 0.65rem; color: var(--text-tertiary);">Rp ${(w.monthly_cost || 0).toLocaleString()}</div>
                     </div>
                   </div>
@@ -703,12 +704,12 @@ function renderWasteTab() {
                 <div class="card-quartz" style="padding: 12px; background: hsla(220, 20%, 100%, 0.03);">
                   <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div>
-                      <div style="font-weight: 700; color: white;">${w.waste_type || 'Limbah'}</div>
-                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${w.collection_method || 'Campuran'}</div>
+                      <div style="font-weight: 700; color: white;">${escapeHtml(w.waste_type || 'Limbah')}</div>
+                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(w.collection_method || 'Campuran')}</div>
                     </div>
                     <div style="text-align: right;">
-                      <div style="font-weight: 800; color: var(--danger-400);">${w.amount_kg || 0} kg</div>
-                      <div style="font-size: 0.65rem; color: var(--text-tertiary);">${w.disposal_method || 'TPS'}</div>
+                      <div style="font-weight: 800; color: var(--danger-400);">${escapeHtml(w.amount_kg || 0)} kg</div>
+                      <div style="font-size: 0.65rem; color: var(--text-tertiary);">${escapeHtml(w.disposal_method || 'TPS')}</div>
                     </div>
                   </div>
                   <div style="margin-top: 8px; display: flex; gap: 8px;">

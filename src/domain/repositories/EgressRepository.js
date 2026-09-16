@@ -308,7 +308,13 @@ export class EgressSupabaseRepository extends IEgressRepository {
     const filePath = `${projectId}/egress/${Date.now()}_${file.name}`;
     const { data, error } = await this.supabase.storage
       .from('project-photos')
-      .upload(filePath, file);
+      .upload(filePath, file, {
+        // EGRESS: foto bukti bersifat tetap (nama file unik ber-timestamp).
+        // Tanpa cacheControl, objek dianggap berubah dan foto ditarik ulang
+        // dari origin setiap kali halaman dibuka.
+        cacheControl: '31536000',   // 1 tahun
+        upsert: true,
+      });
 
     if (error) throw error;
     return data.path;

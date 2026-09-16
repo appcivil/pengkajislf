@@ -4,6 +4,7 @@
  */
 import { CanvaAIStudio, canvaStyles } from '../components/chatbot/CanvaAIStudio.js';
 
+import { bindGlobal } from '../lib/global-listeners.js';
 /**
  * Canva Studio Page
  */
@@ -35,8 +36,16 @@ export async function canvaStudioPage(params = {}) {
  * Setup Canva event listeners
  */
 function setupCanvaEventListeners(canvaStudio) {
+  // Guard idempoten: fungsi ini dipanggil dari render yang bisa berjalan
+  // berkali-kali (setiap kunjungan halaman / render ulang). Listener pada
+  // `window`/`document` TIDAK ikut terhapus saat DOM halaman diganti,
+  // sehingga tanpa guard setiap kunjungan menambah satu set listener baru —
+  // handler berjalan berkali-kali dan memori terus tumbuh.
+  if (setupCanvaEventListeners._bound) return;
+  setupCanvaEventListeners._bound = true;
+
   // Generate design
-  document.addEventListener('canva-generate', async (e) => {
+  bindGlobal(document, 'canva-generate', async (e) => {
     const { prompt, style, format } = e.detail;
     
     try {
@@ -56,7 +65,7 @@ function setupCanvaEventListeners(canvaStudio) {
   });
 
   // Export design
-  document.addEventListener('canva-export', async (e) => {
+  bindGlobal(document, 'canva-export', async (e) => {
     const { format } = e.detail;
     
     try {

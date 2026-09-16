@@ -3,6 +3,7 @@
  * Modular architecture using Scoring Engine and Centralized Store.
  */
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { store, updateUI } from '../lib/store.js';
@@ -56,7 +57,7 @@ export async function analisisPage(params = {}) {
                 <h3 id="modal-item-name" style="font-family:'Outfit',sans-serif; margin:0">Detail Temuan</h3>
                 <p id="modal-item-aspek" style="font-size:10px; color:var(--brand-300); margin:0; text-transform:uppercase; letter-spacing:1px"></p>
              </div>
-             <button class="btn btn-ghost btn-sm" onclick="window._closeModularModal()">
+             <button type="button" aria-label="Tutup" class="btn btn-ghost btn-sm" onclick="window._closeModularModal()">
                 <i class="fas fa-times"></i>
              </button>
           </div>
@@ -127,22 +128,22 @@ function render(root) {
     <div class="page-header">
       <div class="flex-between flex-stack" style="gap: var(--space-4)">
         <div style="text-align: left">
-          <button class="btn btn-ghost btn-sm" onclick="window.navigate('proyek-detail',{id:'${currentProyek.id}'})" style="margin-bottom:8px">
+          <button class="btn btn-ghost btn-sm" onclick="window.navigate('proyek-detail',{id:'${escapeHtml(currentProyek.id)}'})" style="margin-bottom:8px">
             <i class="fas fa-arrow-left"></i> ${escHtml(currentProyek.nama_bangunan)}
           </button>
           <h1 class="page-title">Analisis AI — Kelaikan Fungsi</h1>
           <p class="page-subtitle">
             <span class="badge badge-success" style="font-size:10px; margin-right:8px; vertical-align:middle"><i class="fas fa-brain"></i> DEEP REASONING ACTIVE</span>
-            Engine modular berbasis SNI 9273:2025 — Status: ${hasChecklist ? `${checklistData.length} item checklist` : 'Belum diisi'}
+            Engine modular berbasis SNI 9273:2025 — Status: ${hasChecklist ? `${escapeHtml(checklistData.length)} item checklist` : 'Belum diisi'}
           </p>
         </div>
         <div class="flex gap-3" style="width: fit-content">
           ${hasChecklist ? `
-            <button class="btn btn-secondary" onclick="window.navigate('checklist',{id:'${currentProyek.id}'})">
+            <button class="btn btn-secondary" onclick="window.navigate('checklist',{id:'${escapeHtml(currentProyek.id)}'})">
               <i class="fas fa-clipboard-check"></i> Edit Checklist
             </button>
           ` : `
-            <button class="btn btn-primary" onclick="window.navigate('checklist',{id:'${currentProyek.id}'})">
+            <button class="btn btn-primary" onclick="window.navigate('checklist',{id:'${escapeHtml(currentProyek.id)}'})">
               <i class="fas fa-clipboard-check"></i> Isi Checklist
             </button>
           `}

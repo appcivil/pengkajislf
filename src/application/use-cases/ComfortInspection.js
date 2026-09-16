@@ -4,8 +4,10 @@
 // ============================================================
 
 import { BaseInspection } from './BaseInspection.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { InspectionWidgets } from '../../components/inspection/inspection-widgets.js';
 import { showSuccess, showError } from '../../components/toast.js';
+import { confirm } from '../../components/modal.js';
 
 /**
  * Kelas ComfortInspection mengextends BaseInspection.
@@ -204,19 +206,19 @@ export class ComfortInspection extends BaseInspection {
     return `
       <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
         <div style="padding: 16px; background: hsla(160, 100%, 45%, 0.1); border-radius: 10px; text-align: center;">
-          <div style="font-size: 1.5rem; font-weight: 800; color: var(--success-400);">${compliant}</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: var(--success-400);">${escapeHtml(compliant)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Lengkap</div>
         </div>
         <div style="padding: 16px; background: hsla(35, 100%, 50%, 0.1); border-radius: 10px; text-align: center;">
-          <div style="font-size: 1.5rem; font-weight: 800; color: var(--warning-400);">${partial}</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: var(--warning-400);">${escapeHtml(partial)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Sebagian</div>
         </div>
         <div style="padding: 16px; background: hsla(0, 80%, 60%, 0.1); border-radius: 10px; text-align: center;">
-          <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger-400);">${nonCompliant}</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: var(--danger-400);">${escapeHtml(nonCompliant)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Tidak Lengkap</div>
         </div>
         <div style="padding: 16px; background: hsla(220, 20%, 30%, 0.3); border-radius: 10px; text-align: center;">
-          <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-tertiary);">${pending}</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-tertiary);">${escapeHtml(pending)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">Belum Diisi</div>
         </div>
       </div>
@@ -244,11 +246,11 @@ export class ComfortInspection extends BaseInspection {
             <h5 style="font-family: 'Outfit', sans-serif; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 12px;">Daftar Ruang</h5>
             ${rooms.length > 0 
               ? rooms.map(room => `
-                <div onclick="window._inspectionControllers['comfort'].selectRoom('${room.id}')" 
+                <div onclick="window._inspectionControllers['comfort'].selectRoom('${escapeHtml(room.id)}')" 
                      class="room-list-item ${selectedRoom?.id === room.id ? 'active' : ''}"
                      style="padding: 12px; border-radius: 10px; cursor: pointer; margin-bottom: 8px; transition: all 0.2s; ${selectedRoom?.id === room.id ? 'background: var(--gradient-brand);' : 'background: hsla(220, 20%, 20%, 0.3);'}">
-                  <div style="font-weight: 600; font-size: 0.85rem; color: ${selectedRoom?.id === room.id ? 'white' : 'var(--text-primary)'};">${room.room_name}</div>
-                  <div style="font-size: 0.75rem; color: ${selectedRoom?.id === room.id ? 'rgba(255,255,255,0.8)' : 'var(--text-tertiary)'};">${room.room_type} • ${this._formatNumber(room.area, 1)} m²</div>
+                  <div style="font-weight: 600; font-size: 0.85rem; color: ${selectedRoom?.id === room.id ? 'white' : 'var(--text-primary)'};">${escapeHtml(room.room_name)}</div>
+                  <div style="font-size: 0.75rem; color: ${selectedRoom?.id === room.id ? 'rgba(255,255,255,0.8)' : 'var(--text-tertiary)'};">${escapeHtml(room.room_type)} • ${this._formatNumber(room.area, 1)} m²</div>
                 </div>
               `).join('')
               : InspectionWidgets.renderEmptyState({ icon: 'door-open', title: 'Tidak Ada Ruang', message: 'Tambahkan ruang pertama Anda.' })
@@ -283,15 +285,15 @@ export class ComfortInspection extends BaseInspection {
           </div>
           <div>
             <label style="font-size: 0.7rem; color: var(--text-tertiary); text-transform: uppercase;">Tipe Ruang</label>
-            <div style="font-size: 1.2rem; font-weight: 700; color: white;">${room.room_type}</div>
+            <div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(room.room_type)}</div>
           </div>
           <div>
             <label style="font-size: 0.7rem; color: var(--text-tertiary); text-transform: uppercase;">Standar (m²/orang)</label>
-            <div style="font-size: 1.2rem; font-weight: 700; color: white;">${standard}</div>
+            <div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(standard)}</div>
           </div>
           <div>
             <label style="font-size: 0.7rem; color: var(--text-tertiary); text-transform: uppercase;">Max Occupancy</label>
-            <div style="font-size: 1.2rem; font-weight: 700; color: white;">${maxOccupancy} orang</div>
+            <div style="font-size: 1.2rem; font-weight: 700; color: white;">${escapeHtml(maxOccupancy)} orang</div>
           </div>
         </div>
         
@@ -311,8 +313,8 @@ export class ComfortInspection extends BaseInspection {
         </div>
         
         ${InspectionWidgets.renderActionBar([
-          { icon: 'edit', label: 'Edit Ruang', variant: 'secondary', onclick: `window._inspectionControllers['comfort'].editRoom('${room.id}')` },
-          { icon: 'trash', label: 'Hapus', variant: 'danger', onclick: `window._inspectionControllers['comfort'].deleteRoom('${room.id}')` }
+          { icon: 'edit', label: 'Edit Ruang', variant: 'secondary', onclick: `window._inspectionControllers['comfort'].editRoom('${escapeHtml(room.id)}')` },
+          { icon: 'trash', label: 'Hapus', variant: 'danger', onclick: `window._inspectionControllers['comfort'].deleteRoom('${escapeHtml(room.id)}')` }
         ])}
       `
     });
@@ -477,7 +479,13 @@ export class ComfortInspection extends BaseInspection {
   }
 
   async deleteRoom(roomId) {
-    if (confirm('Apakah Anda yakin ingin menghapus ruang ini?')) {
+    const lanjut = await confirm({
+      title: 'Hapus Ruang',
+      message: 'Hapus ruang ini beserta seluruh data pengukurannya? Tindakan ini tidak dapat dibatalkan.',
+      confirmText: 'Hapus',
+      danger: true,
+    });
+    if (lanjut) {
       try {
         await this.repository.delete('comfort_rooms', roomId);
         showSuccess('Ruang berhasil dihapus');

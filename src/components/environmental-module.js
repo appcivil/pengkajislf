@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { openModal, confirm } from '../components/modal.js';
@@ -130,9 +131,9 @@ export function renderEnvironmentalCard(project, summary = {}) {
           </div>
         </div>
         <div style="display: flex; gap: 8px;">
-          <span class="badge" style="background: ${st.bg}; color: ${st.text}; border: 1px solid ${st.border}44; font-size: 10px;">
+          <span class="badge" style="background: ${escapeHtml(st.bg)}; color: ${escapeHtml(st.text)}; border: 1px solid ${escapeHtml(st.border)}44; font-size: 10px;">
             <i class="fas ${summary.grade === 'A' || summary.grade === 'B' ? 'fa-check-circle' : summary.grade === 'C' ? 'fa-circle-exclamation' : 'fa-circle-minus'}" style="margin-right: 6px;"></i>
-            ${summary.status}
+            ${escapeHtml(summary.status)}
           </span>
           <span class="badge" style="background: hsla(160, 100%, 45%, 0.1); color: hsla(160, 100%, 55%, 1); border: 1px solid hsla(160, 100%, 45%, 0.2); font-size: 10px;">
             <i class="fas fa-book" style="margin-right: 6px;"></i>PP 16/2021
@@ -148,15 +149,15 @@ export function renderEnvironmentalCard(project, summary = {}) {
         <!-- Stats Grid -->
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;">
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${summary.overallScore}</div>
-            <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">SCORE (${summary.grade})</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${escapeHtml(summary.overallScore)}</div>
+            <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">SCORE (${escapeHtml(summary.grade)})</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: ${summary.wastewaterCompliance === 'PASS' ? 'var(--success-400)' : 'var(--danger-400)'}">${summary.validDocuments}/${summary.totalDocuments}</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: ${summary.wastewaterCompliance === 'PASS' ? 'var(--success-400)' : 'var(--danger-400)'}">${escapeHtml(summary.validDocuments)}/${escapeHtml(summary.totalDocuments)}</div>
             <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">DOKUMEN</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: ${summary.wasteDiversion >= 60 ? 'var(--success-400)' : 'var(--warning-400)'}">${summary.wasteDiversion}%</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: ${summary.wasteDiversion >= 60 ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(summary.wasteDiversion)}%</div>
             <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">DIVERSION</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
@@ -169,15 +170,15 @@ export function renderEnvironmentalCard(project, summary = {}) {
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">
           <div class="flex-between" style="margin-bottom: 8px;">
             <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-tertiary);">ENVIRONMENTAL SCORE</span>
-            <span style="font-size: 0.7rem; font-weight: 800; color: ${summary.overallScore >= 80 ? 'var(--success-400)' : summary.overallScore >= 60 ? 'var(--warning-400)' : 'var(--danger-400)'}">${summary.overallScore}/100</span>
+            <span style="font-size: 0.7rem; font-weight: 800; color: ${summary.overallScore >= 80 ? 'var(--success-400)' : summary.overallScore >= 60 ? 'var(--warning-400)' : 'var(--danger-400)'}">${escapeHtml(summary.overallScore)}/100</span>
           </div>
           <div style="height: 6px; background: hsla(220, 20%, 100%, 0.05); border-radius: 10px;">
-            <div style="width: ${summary.overallScore}%; height: 100%; border-radius: 10px; background: ${summary.overallScore >= 80 ? 'var(--success-500)' : summary.overallScore >= 60 ? 'var(--warning-500)' : 'var(--danger-500)'}; box-shadow: 0 0 10px ${summary.overallScore >= 80 ? 'var(--success-500)' : summary.overallScore >= 60 ? 'var(--warning-500)' : 'var(--danger-500)'}66;"></div>
+            <div style="width: ${escapeHtml(summary.overallScore)}%; height: 100%; border-radius: 10px; background: ${summary.overallScore >= 80 ? 'var(--success-500)' : summary.overallScore >= 60 ? 'var(--warning-500)' : 'var(--danger-500)'}; box-shadow: 0 0 10px ${summary.overallScore >= 80 ? 'var(--success-500)' : summary.overallScore >= 60 ? 'var(--warning-500)' : 'var(--danger-500)'}66;"></div>
           </div>
           ${summary.nonCompliantItems > 0 ? `
             <div style="margin-top: 8px; font-size: 10px; color: var(--danger-400);">
               <i class="fas fa-triangle-exclamation" style="margin-right: 4px;"></i>
-              ${summary.nonCompliantItems} aspek perlu perhatian
+              ${escapeHtml(summary.nonCompliantItems)} aspek perlu perhatian
             </div>
           ` : ''}
         </div>
@@ -267,7 +268,7 @@ export function renderEnvironmentalCard(project, summary = {}) {
           <i class="fas fa-leaf" style="font-size: 2rem; color: var(--text-tertiary); margin-bottom: 12px;"></i>
           <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">Belum ada data pengendalian dampak lingkungan</p>
           <p style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 16px;">Mulai analisis dengan validasi dokumen lingkungan dan input parameter monitoring</p>
-          <button onclick="window._initEnvironmentalAnalysis('${project.id}')" class="btn btn-primary btn-sm">
+          <button onclick="window._initEnvironmentalAnalysis('${escapeHtml(project.id)}')" class="btn btn-primary btn-sm">
             <i class="fas fa-play" style="margin-right: 6px;"></i> Mulai Analisis
           </button>
         </div>
@@ -1126,10 +1127,10 @@ export function initEnvironmentalHandlers(projectId) {
       const statusColor = result.status === 'VALID' ? 'var(--success-400)' : result.status === 'EXPIRING_SOON' ? 'var(--warning-400)' : 'var(--danger-400)';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.status === 'VALID' ? 'hsla(160, 100%, 45%, 0.1)' : result.status === 'EXPIRING_SOON' ? 'hsla(45, 90%, 60%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.status === 'VALID' ? 'hsla(160, 100%, 45%, 0.2)' : result.status === 'EXPIRING_SOON' ? 'hsla(45, 90%, 60%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.85rem; color: var(--text-secondary);">Status: <strong style="color: ${statusColor};">${result.status}</strong></div>
-          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Masa Berlaku: ${result.validityPeriod}</div>
-          ${result.daysUntilExpiry ? `<div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Sisa: ${result.daysUntilExpiry} hari</div>` : ''}
-          <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px; padding-top: 8px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">${result.recommendation}</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">Status: <strong style="color: ${escapeHtml(statusColor)};">${escapeHtml(result.status)}</strong></div>
+          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Masa Berlaku: ${escapeHtml(result.validityPeriod)}</div>
+          ${result.daysUntilExpiry ? `<div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Sisa: ${escapeHtml(result.daysUntilExpiry)} hari</div>` : ''}
+          <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px; padding-top: 8px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">${escapeHtml(result.recommendation)}</div>
         </div>
       `;
     }
@@ -1154,8 +1155,8 @@ export function initEnvironmentalHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: hsla(220, 95%, 52%, 0.1); border-radius: 8px; border: 1px solid hsla(220, 95%, 52%, 0.2);">
-          <div style="font-size: 0.9rem; font-weight: 700; color: var(--brand-400);">${result.type}</div>
-          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">${result.description}</div>
+          <div style="font-size: 0.9rem; font-weight: 700; color: var(--brand-400);">${escapeHtml(result.type)}</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">${escapeHtml(result.description)}</div>
           <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px;">Referensi: Permen LHK 4/2021</div>
         </div>
       `;
@@ -1187,16 +1188,16 @@ export function initEnvironmentalHandlers(projectId) {
       for (const [param, data] of Object.entries(result.parameters)) {
         const paramColor = data.status === 'C' ? 'var(--success-400)' : 'var(--danger-400)';
         paramsHtml += `<div style="display: flex; justify-content: space-between; font-size: 0.75rem; padding: 4px 0; border-bottom: 1px solid hsla(220, 20%, 100%, 0.05);">
-          <span style="text-transform: uppercase;">${param}</span>
-          <span style="color: ${paramColor};">${data.value} ${data.unit} (${data.status})</span>
+          <span style="text-transform: uppercase;">${escapeHtml(param)}</span>
+          <span style="color: ${escapeHtml(paramColor)};">${escapeHtml(data.value)} ${escapeHtml(data.unit)} (${escapeHtml(data.status)})</span>
         </div>`;
       }
       
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.overallStatus === 'C' ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.overallStatus === 'C' ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.9rem; font-weight: 700; color: ${statusColor}; margin-bottom: 8px;">Status: ${result.overallStatus}</div>
+          <div style="font-size: 0.9rem; font-weight: 700; color: ${escapeHtml(statusColor)}; margin-bottom: 8px;">Status: ${escapeHtml(result.overallStatus)}</div>
           ${paramsHtml}
-          <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px; padding-top: 8px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">${result.recommendation}</div>
+          <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px; padding-top: 8px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">${escapeHtml(result.recommendation)}</div>
         </div>
       `;
     }
@@ -1220,11 +1221,11 @@ export function initEnvironmentalHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.status === 'GOOD' ? 'hsla(160, 100%, 45%, 0.1)' : result.status === 'MODERATE' ? 'hsla(45, 90%, 60%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.status === 'GOOD' ? 'hsla(160, 100%, 45%, 0.2)' : result.status === 'MODERATE' ? 'hsla(45, 90%, 60%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.85rem; color: var(--text-secondary);">Efisiensi: <strong>${result.efficiency}%</strong></div>
-          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Total Masuk: ${result.totalInflow} m³/bl</div>
-          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Total Keluar: ${result.totalOutflow} m³/bl</div>
-          <div style="font-size: 0.8rem; color: ${result.lossPercentage > 20 ? 'var(--danger-400)' : 'var(--text-tertiary)'}; margin-top: 4px;">Kehilangan: ${result.lossPercentage}%</div>
-          <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px; padding-top: 8px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">${result.recommendation}</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">Efisiensi: <strong>${escapeHtml(result.efficiency)}%</strong></div>
+          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Total Masuk: ${escapeHtml(result.totalInflow)} m³/bl</div>
+          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Total Keluar: ${escapeHtml(result.totalOutflow)} m³/bl</div>
+          <div style="font-size: 0.8rem; color: ${result.lossPercentage > 20 ? 'var(--danger-400)' : 'var(--text-tertiary)'}; margin-top: 4px;">Kehilangan: ${escapeHtml(result.lossPercentage)}%</div>
+          <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px; padding-top: 8px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">${escapeHtml(result.recommendation)}</div>
         </div>
       `;
     }
@@ -1245,10 +1246,10 @@ export function initEnvironmentalHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: hsla(200, 100%, 55%, 0.1); border-radius: 8px; border: 1px solid hsla(200, 100%, 55%, 0.2);">
-          <div style="font-size: 0.85rem; color: var(--text-secondary);">Potensi: <strong>${result.potentialVolumeFormatted}</strong></div>
-          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Rata-rata Bulanan: ${result.monthlyAverage} m³/bl</div>
-          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Rata-rata Harian: ${result.dailyAverage} m³/hari</div>
-          <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px; padding-top: 8px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">${result.recommendation}</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">Potensi: <strong>${escapeHtml(result.potentialVolumeFormatted)}</strong></div>
+          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Rata-rata Bulanan: ${escapeHtml(result.monthlyAverage)} m³/bl</div>
+          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Rata-rata Harian: ${escapeHtml(result.dailyAverage)} m³/hari</div>
+          <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px; padding-top: 8px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">${escapeHtml(result.recommendation)}</div>
         </div>
       `;
     }
@@ -1274,10 +1275,10 @@ export function initEnvironmentalHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.status === 'C' ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.status === 'C' ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.85rem; color: var(--text-secondary);">Diversion Rate: <strong style="color: ${result.status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">${result.diversionFormatted}</strong></div>
-          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Landfill Rate: ${result.landfillRate}%</div>
-          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Target Zero Waste: ${result.zeroWasteTarget}</div>
-          <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px; padding-top: 8px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">${result.recommendation}</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">Diversion Rate: <strong style="color: ${result.status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">${escapeHtml(result.diversionFormatted)}</strong></div>
+          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Landfill Rate: ${escapeHtml(result.landfillRate)}%</div>
+          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Target Zero Waste: ${escapeHtml(result.zeroWasteTarget)}</div>
+          <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px; padding-top: 8px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">${escapeHtml(result.recommendation)}</div>
         </div>
       `;
     }
@@ -1300,11 +1301,11 @@ export function initEnvironmentalHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${euiResult.status === 'C' ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${euiResult.status === 'C' ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.85rem; color: var(--text-secondary);">EUI: <strong>${euiResult.euiFormatted}</strong> (std: ${euiResult.standardEUI})</div>
-          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Efisiensi: ${euiResult.efficiencyFormatted} - ${euiResult.grade}</div>
-          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Emisi CO₂: ${carbonResult.totalEmission}</div>
-          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Pohon Dibutuhkan: ${carbonResult.treesNeeded}</div>
-          <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px; padding-top: 8px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">${euiResult.recommendation}</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">EUI: <strong>${escapeHtml(euiResult.euiFormatted)}</strong> (std: ${escapeHtml(euiResult.standardEUI)})</div>
+          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Efisiensi: ${escapeHtml(euiResult.efficiencyFormatted)} - ${escapeHtml(euiResult.grade)}</div>
+          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Emisi CO₂: ${escapeHtml(carbonResult.totalEmission)}</div>
+          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Pohon Dibutuhkan: ${escapeHtml(carbonResult.treesNeeded)}</div>
+          <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px; padding-top: 8px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">${escapeHtml(euiResult.recommendation)}</div>
         </div>
       `;
     }
@@ -1326,10 +1327,10 @@ export function initEnvironmentalHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.status === 'PASS' ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.status === 'PASS' ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.85rem; color: var(--text-secondary);">Debit Puncak: <strong>${result.peakDischargeFormatted}</strong></div>
-          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Volume/Jam: ${result.volumeHourlyFormatted}</div>
-          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Sumur Resapan: ${result.infiltrationWellsNeeded} unit</div>
-          <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px; padding-top: 8px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">${result.recommendation}</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">Debit Puncak: <strong>${escapeHtml(result.peakDischargeFormatted)}</strong></div>
+          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Volume/Jam: ${escapeHtml(result.volumeHourlyFormatted)}</div>
+          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Sumur Resapan: ${escapeHtml(result.infiltrationWellsNeeded)} unit</div>
+          <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px; padding-top: 8px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">${escapeHtml(result.recommendation)}</div>
         </div>
       `;
     }
@@ -1354,9 +1355,9 @@ export function initEnvironmentalHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${percentage >= 30 ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${percentage >= 30 ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.85rem; color: var(--text-secondary);">Total Volume Sumur: <strong>${totalVolume.toFixed(2)} m³</strong></div>
-          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Kapasitas Resapan: ${infiltrationRate.toFixed(2)} m³/hari</div>
-          <div style="font-size: 0.8rem; color: ${percentage >= 30 ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 4px;">Infiltrasi: ${percentage.toFixed(1)}% (target: 30%)</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">Total Volume Sumur: <strong>${escapeHtml(totalVolume.toFixed(2))} m³</strong></div>
+          <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 4px;">Kapasitas Resapan: ${escapeHtml(infiltrationRate.toFixed(2))} m³/hari</div>
+          <div style="font-size: 0.8rem; color: ${percentage >= 30 ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 4px;">Infiltrasi: ${escapeHtml(percentage.toFixed(1))}% (target: 30%)</div>
           <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 8px; padding-top: 8px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">${percentage >= 30 ? 'Memenuhi persyaratan Permen PU 20/2020' : `Tambah ${Math.ceil((30 - percentage) / 5)} sumur untuk mencapai target 30%`}</div>
         </div>
       `;

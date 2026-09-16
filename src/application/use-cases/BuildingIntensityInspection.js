@@ -3,6 +3,7 @@
 // ============================================================
 
 import { BaseInspection } from './BaseInspection.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { InspectionWidgets } from '../../components/inspection/inspection-widgets.js';
 import { showSuccess, showError, showInfo } from '../../components/toast.js';
 
@@ -147,8 +148,8 @@ export class BuildingIntensityInspection extends BaseInspection {
       accentColor: compliance ? 'var(--success-400)' : 'var(--danger-400)',
       content: `
         <div style="text-align: center; margin-bottom: 24px;">
-          <div style="font-size: 5rem; font-weight: 800; color: ${compliance ? 'var(--success-400)' : 'var(--danger-400)'};">${kdbValue.toFixed(2)}%</div>
-          <div style="font-size: 1rem; color: var(--text-tertiary);">dari ${kdbMax}% maksimum</div>
+          <div style="font-size: 5rem; font-weight: 800; color: ${compliance ? 'var(--success-400)' : 'var(--danger-400)'};">${escapeHtml(kdbValue.toFixed(2))}%</div>
+          <div style="font-size: 1rem; color: var(--text-tertiary);">dari ${escapeHtml(kdbMax)}% maksimum</div>
         </div>
         
         <div style="margin-bottom: 20px;">
@@ -157,8 +158,8 @@ export class BuildingIntensityInspection extends BaseInspection {
           </div>
           <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.75rem; color: var(--text-tertiary);">
             <span>0%</span>
-            <span style="color: ${compliance ? 'var(--success-400)' : 'var(--danger-400)'}; font-weight: 600;">Current: ${kdbValue.toFixed(2)}%</span>
-            <span>Max: ${kdbMax}%</span>
+            <span style="color: ${compliance ? 'var(--success-400)' : 'var(--danger-400)'}; font-weight: 600;">Current: ${escapeHtml(kdbValue.toFixed(2))}%</span>
+            <span>Max: ${escapeHtml(kdbMax)}%</span>
           </div>
         </div>
         
@@ -168,7 +169,7 @@ export class BuildingIntensityInspection extends BaseInspection {
             KDB = (Luas Bangunan Dasar / Luas Tapak) × 100%
           </code>
           <p style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 12px;">
-            ${this._formatNumber(intensity.base_building_area, 1)} m² / ${this._formatNumber(intensity.site_area, 1)} m² × 100% = ${kdbValue.toFixed(2)}%
+            ${this._formatNumber(intensity.base_building_area, 1)} m² / ${this._formatNumber(intensity.site_area, 1)} m² × 100% = ${escapeHtml(kdbValue.toFixed(2))}%
           </p>
         </div>
       `
@@ -187,8 +188,8 @@ export class BuildingIntensityInspection extends BaseInspection {
       accentColor: compliance ? 'var(--success-400)' : 'var(--danger-400)',
       content: `
         <div style="text-align: center; margin-bottom: 24px;">
-          <div style="font-size: 5rem; font-weight: 800; color: ${compliance ? 'var(--success-400)' : 'var(--danger-400)'};">${klbValue.toFixed(2)}</div>
-          <div style="font-size: 1rem; color: var(--text-tertiary);">maksimum ${klbMax}</div>
+          <div style="font-size: 5rem; font-weight: 800; color: ${compliance ? 'var(--success-400)' : 'var(--danger-400)'};">${escapeHtml(klbValue.toFixed(2))}</div>
+          <div style="font-size: 1rem; color: var(--text-tertiary);">maksimum ${escapeHtml(klbMax)}</div>
         </div>
         
         <div style="margin-bottom: 20px;">
@@ -197,8 +198,8 @@ export class BuildingIntensityInspection extends BaseInspection {
           </div>
           <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.75rem; color: var(--text-tertiary);">
             <span>0</span>
-            <span style="color: ${compliance ? 'var(--success-400)' : 'var(--danger-400)'}; font-weight: 600;">Current: ${klbValue.toFixed(2)}</span>
-            <span>Max: ${klbMax}</span>
+            <span style="color: ${compliance ? 'var(--success-400)' : 'var(--danger-400)'}; font-weight: 600;">Current: ${escapeHtml(klbValue.toFixed(2))}</span>
+            <span>Max: ${escapeHtml(klbMax)}</span>
           </div>
         </div>
         
@@ -208,7 +209,7 @@ export class BuildingIntensityInspection extends BaseInspection {
             KLB = Total Luas Lantai / Luas Tapak
           </code>
           <p style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 12px;">
-            ${this._formatNumber(intensity.total_floor_area, 1)} m² / ${this._formatNumber(intensity.site_area, 1)} m² = ${klbValue.toFixed(2)}
+            ${this._formatNumber(intensity.total_floor_area, 1)} m² / ${this._formatNumber(intensity.site_area, 1)} m² = ${escapeHtml(klbValue.toFixed(2))}
           </p>
         </div>
       `
@@ -227,8 +228,8 @@ export class BuildingIntensityInspection extends BaseInspection {
       accentColor: compliance ? 'var(--success-400)' : 'var(--danger-400)',
       content: `
         <div style="text-align: center; margin-bottom: 24px;">
-          <div style="font-size: 5rem; font-weight: 800; color: ${compliance ? 'var(--success-400)' : 'var(--danger-400)'};">${kdhValue.toFixed(2)}%</div>
-          <div style="font-size: 1rem; color: var(--text-tertiary);">minimum ${kdhMin}%</div>
+          <div style="font-size: 5rem; font-weight: 800; color: ${compliance ? 'var(--success-400)' : 'var(--danger-400)'};">${escapeHtml(kdhValue.toFixed(2))}%</div>
+          <div style="font-size: 1rem; color: var(--text-tertiary);">minimum ${escapeHtml(kdhMin)}%</div>
         </div>
         
         <div style="margin-bottom: 20px;">
@@ -237,8 +238,8 @@ export class BuildingIntensityInspection extends BaseInspection {
           </div>
           <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.75rem; color: var(--text-tertiary);">
             <span>0%</span>
-            <span style="color: ${compliance ? 'var(--success-400)' : 'var(--danger-400)'}; font-weight: 600;">Current: ${kdhValue.toFixed(2)}%</span>
-            <span>Target: ${kdhMin}%</span>
+            <span style="color: ${compliance ? 'var(--success-400)' : 'var(--danger-400)'}; font-weight: 600;">Current: ${escapeHtml(kdhValue.toFixed(2))}%</span>
+            <span>Target: ${escapeHtml(kdhMin)}%</span>
           </div>
         </div>
         
@@ -248,7 +249,7 @@ export class BuildingIntensityInspection extends BaseInspection {
             KDH = (Luas Ruang Terbuka Hijau / Luas Tapak) × 100%
           </code>
           <p style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 12px;">
-            ${this._formatNumber(intensity.open_green_space, 1)} m² / ${this._formatNumber(intensity.site_area, 1)} m² × 100% = ${kdhValue.toFixed(2)}%
+            ${this._formatNumber(intensity.open_green_space, 1)} m² / ${this._formatNumber(intensity.site_area, 1)} m² × 100% = ${escapeHtml(kdhValue.toFixed(2))}%
           </p>
         </div>
       `
@@ -286,7 +287,7 @@ export class BuildingIntensityInspection extends BaseInspection {
         ${height.max_allowed_height ? `
         <div style="margin-top: 20px; padding: 16px; background: ${height.building_height <= height.max_allowed_height ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 80%, 60%, 0.1)'}; border-radius: 12px; text-align: center;">
           <div style="font-size: 0.9rem; color: var(--text-tertiary);">Batas Maksimum Tinggi</div>
-          <div style="font-size: 1.8rem; font-weight: 700; color: ${height.building_height <= height.max_allowed_height ? 'var(--success-400)' : 'var(--danger-400)'};">${height.max_allowed_height} m</div>
+          <div style="font-size: 1.8rem; font-weight: 700; color: ${height.building_height <= height.max_allowed_height ? 'var(--success-400)' : 'var(--danger-400)'};">${escapeHtml(height.max_allowed_height)} m</div>
           <div style="font-size: 0.85rem; color: ${height.building_height <= height.max_allowed_height ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 8px;">
             ${height.building_height <= height.max_allowed_height ? '✓ Sesuai Batas Zonasi' : '✗ Melebihi Batas Zonasi'}
           </div>

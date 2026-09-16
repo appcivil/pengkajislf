@@ -3,6 +3,7 @@
 // ============================================================
 
 import { BaseInspection } from './BaseInspection.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { InspectionWidgets } from '../../components/inspection/inspection-widgets.js';
 import { showSuccess, showError, showInfo } from '../../components/toast.js';
 
@@ -79,7 +80,7 @@ export class WastewaterInspection extends BaseInspection {
               ${['Separate', 'Combined'].map(type => `
                 <div class="card-quartz" style="padding: 20px; text-align: center; ${assessment.system_type === type ? 'border: 2px solid var(--brand-400);' : ''}">
                   <i class="fas fa-${type === 'Separate' ? 'code-branch' : 'arrows-alt'}" style="font-size: 1.8rem; color: var(--brand-400); margin-bottom: 8px;"></i>
-                  <div style="font-size: 1rem; font-weight: 600; color: white;">${type} System</div>
+                  <div style="font-size: 1rem; font-weight: 600; color: white;">${escapeHtml(type)} System</div>
                   <div style="font-size: 0.75rem; color: var(--text-tertiary);">
                     ${type === 'Separate' ? 'Air kotor & hujan terpisah' : 'Air kotor & hujan bersama'}
                   </div>
@@ -148,15 +149,15 @@ export class WastewaterInspection extends BaseInspection {
                   </div>
                   <div>
                     <label style="font-size: 0.7rem; color: var(--text-tertiary);">Tipe Treatment</label>
-                    <div style="font-size: 1.2rem; font-weight: 600; color: white;">${stp.treatment_type || '-'}</div>
+                    <div style="font-size: 1.2rem; font-weight: 600; color: white;">${escapeHtml(stp.treatment_type || '-')}</div>
                   </div>
                   <div>
                     <label style="font-size: 0.7rem; color: var(--text-tertiary);">Efisiensi</label>
-                    <div style="font-size: 1.2rem; font-weight: 600; color: white;">${stp.efficiency || '-'}%</div>
+                    <div style="font-size: 1.2rem; font-weight: 600; color: white;">${escapeHtml(stp.efficiency || '-')}%</div>
                   </div>
                   <div>
                     <label style="font-size: 0.7rem; color: var(--text-tertiary);">Status</label>
-                    <div style="font-size: 1.2rem; font-weight: 600; color: ${stp.status === 'ACTIVE' ? 'var(--success-400)' : 'var(--warning-400)'};">${stp.status || 'N/A'}</div>
+                    <div style="font-size: 1.2rem; font-weight: 600; color: ${stp.status === 'ACTIVE' ? 'var(--success-400)' : 'var(--warning-400)'};">${escapeHtml(stp.status || 'N/A')}</div>
                   </div>
                 </div>
               `

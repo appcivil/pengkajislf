@@ -5,6 +5,7 @@
 //  DECOUPLED: Module cards moved to separate components
 // ============================================================
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml, escapeHtml as escHtml } from '../lib/safe-markdown.js';
 import { isAdmin }  from '../lib/auth.js';
 import { getAuditLogs, getReportVersions } from '../lib/audit-service.js';
 import { navigate, getParams }  from '../lib/router.js';
@@ -18,19 +19,18 @@ import { getSimulasiSummary, loadSimulasi } from '../lib/simulation-engine.js';
 // New decoupled components
 import { renderProyekDetailFullSkeleton } from '../components/proyek-detail/ModuleCardSkeleton.js';
 
+// ── OPTIMASI BUILD: 8 modul terberat (±630 KB kode) tidak lagi diimpor statis.
+// Modul-modul itu dimuat saat kartunya mendekati viewport, sehingga chunk
+// halaman ini tidak lagi ~990 KB. Registry-nya ada di proyek-detail-lazy.js.
+import './proyek-detail-lazy.js';
+import { lazyCardShell, hydrateLazyCards, resetLazyCards } from '../lib/lazy-card.js';
+import { TAB_TO_LAZY_KEY } from './proyek-detail-lazy.js';
+
 // Legacy component imports (existing implementation)
-import { renderStrukturBangunanCard, initStrukturBangunanHandlers } from '../components/struktur-bangunan-module.js';
 import { renderElectricalSystemCard, initElectricalSystemHandlers, fetchElectricalSummary } from '../components/electrical-system-module.js';
-import { renderLPSCard, initLPSHandlers, fetchLPSSummary } from '../components/lightning-protection-module.js';
-import { renderFireProtectionCard, initFireProtectionHandlers, fetchFireProtectionSummary } from '../components/fire-protection-module.js';
-import { renderArchitecturalCard, initArchitecturalHandlers, fetchArchitecturalSummary } from '../components/architectural-requirements-module.js';
-import { renderBuildingIntensityCard, initBuildingIntensityHandlers, fetchBuildingIntensitySummary } from '../components/building-intensity-module.js';
-import { renderEgressSystemCard, initEgressSystemHandlers, fetchEgressSummary } from '../components/egress-system-module.js';
-import { renderEnvironmentalCard, initEnvironmentalHandlers, fetchEnvironmentalSummary } from '../components/environmental-module.js';
 import { renderSanitationCard, initSanitationHandlers, fetchSanitationSummary } from '../components/sanitation-module.js';
 import { renderWaterSystemCard, initWaterSystemHandlers, fetchWaterSystemSummary } from '../components/water-system-module.js';
 import { renderStormwaterCard, initStormwaterHandlers, fetchStormwaterSummary } from '../components/stormwater-module.js';
-import { renderAccessibilityCard, fetchAccessibilitySummary, initAccessibilityHandlers } from '../components/accessibility-module.js';
 import { renderSimulationHubCard, fetchSimulationHubSummary, initSimulationHubHandlers } from '../components/simulation-hub-module.js';
 import { renderComfortCard, fetchComfortSummary, initComfortHandlers } from '../components/comfort-module.js';
 import { renderKondisiCard, fetchKondisiSummary, initKondisiHandlers } from '../components/kondisi-module.js';
@@ -40,6 +40,9 @@ import { renderWastewaterCard, fetchWastewaterSummary, initWastewaterHandlers } 
 export async function proyekDetailPage(params = {}) {
   const id = params.id;
   if (!id) { navigate('proyek'); return ''; }
+
+  // Setiap kali halaman dibangun ulang, kartu lazy harus bisa dihidrasi lagi
+  resetLazyCards();
 
   const root = document.getElementById('page-root');
   if (root) root.innerHTML = renderSkeleton();
@@ -57,15 +60,16 @@ export async function proyekDetailPage(params = {}) {
     getProjectPIC(id).catch(err => { console.warn('[ProyekDetail] PIC fetch failed:', err); return null; }),
     getSimulasiSummary(id).catch(err => { console.warn('[ProyekDetail] Simulasi fetch failed:', err); return {}; }),
     fetchElectricalSummary(id).catch(err => { console.warn('[ProyekDetail] Electrical fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data kelistrikan' }; }),
-    fetchLPSSummary(id).catch(err => { console.warn('[ProyekDetail] LPS fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data proteksi petir' }; }),
-    fetchFireProtectionSummary(id).catch(err => { console.warn('[ProyekDetail] Fire protection fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data proteksi kebakaran' }; }),
-    fetchBuildingIntensitySummary(id).catch(err => { console.warn('[ProyekDetail] Building intensity fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data intensitas bangunan' }; }),
-    fetchArchitecturalSummary(id).catch(err => { console.warn('[ProyekDetail] Architectural fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data persyaratan arsitektur' }; }),
-    fetchEgressSummary(id).catch(err => { console.warn('[ProyekDetail] Egress fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data jalur evakuasi' }; }),
-    fetchEnvironmentalSummary(id).catch(err => { console.warn('[ProyekDetail] Environmental fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data lingkungan' }; }),
+    // OPTIMASI: ringkasan LPS diambil saat kartunya terhidrasi (lihat proyek-detail-lazy.js)
+    Promise.resolve(),
+    Promise.resolve(),   // Fire protection → diambil saat kartu terhidrasi
+    Promise.resolve(),   // Building intensity → diambil saat kartu terhidrasi
+    Promise.resolve(),   // Architectural → diambil saat kartu terhidrasi
+    Promise.resolve(),   // Egress → diambil saat kartu terhidrasi
+    Promise.resolve(),   // Environmental → diambil saat kartu terhidrasi
     fetchSanitationSummary(id).catch(err => { console.warn('[ProyekDetail] Sanitation fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data sanitasi' }; }),
     fetchWaterSystemSummary(id).catch(err => { console.warn('[ProyekDetail] Water system fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data air bersih' }; }),
-    fetchAccessibilitySummary(id).catch(err => { console.warn('[ProyekDetail] Accessibility fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data aksesibilitas' }; }),
+    Promise.resolve(),   // Accessibility → diambil saat kartu terhidrasi
     fetchStormwaterSummary(id).catch(err => { console.warn('[ProyekDetail] Stormwater fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data air hujan' }; }),
     fetchSimulationHubSummary(id).catch(err => { console.warn('[ProyekDetail] SimulationHub fetch failed:', err); return {}; }),
     fetchComfortSummary(id).catch(err => { console.warn('[ProyekDetail] Comfort fetch failed:', err); return { overall_status: 'ERROR', error_message: 'Gagal memuat data kenyamanan' }; }),
@@ -120,24 +124,24 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
                  ${escHtml(p.nama_bangunan)}
                </h1>
                <div style="display:flex; gap:16px; margin-top:20px; align-items:center; flex-wrap:wrap">
-                  <span class="badge" style="background:${st.color}1a; border:1px solid ${st.color}44; color:${st.color}; font-weight:800; font-family:var(--font-mono); font-size:11px; padding:6px 12px">
-                    <i class="fas ${st.icon}" style="margin-right:6px"></i> ${st.label}
+                  <span class="badge" style="background:${escapeHtml(st.color)}1a; border:1px solid ${escapeHtml(st.color)}44; color:${escapeHtml(st.color)}; font-weight:800; font-family:var(--font-mono); font-size:11px; padding:6px 12px">
+                    <i class="fas ${st.icon}" style="margin-right:6px"></i> ${escapeHtml(st.label)}
                   </span>
                   <span class="badge" style="background:hsla(220, 20%, 100%, 0.05); border:1px solid hsla(220, 20%, 100%, 0.1); color:var(--text-secondary); font-weight:700; font-size:11px; padding:6px 12px">
                     <i class="fas fa-location-dot" style="margin-right:6px; color:var(--brand-400)"></i> ${escHtml(p.kota || 'INDONESIA')}
                   </span>
                   <div class="hide-mobile" style="width:1px; height:20px; background:hsla(220, 20%, 100%, 0.1)"></div>
                   <span style="font-family:var(--font-mono); font-size:11px; font-weight:800; color:var(--gold-400); letter-spacing:1px">
-                    ${p.nomor_pbg || 'NO REGISTRATION'}
+                    ${escapeHtml(p.nomor_pbg || 'NO REGISTRATION')}
                   </span>
                </div>
             </div>
             
             <div class="flex gap-3 flex-stack" style="width:auto">
-               <button class="btn btn-outline" style="height:48px; border-radius:14px; border-color:hsla(220, 20%, 100%, 0.1); color:white; padding: 0 20px" onclick="window.navigate('proyek-edit', {id:'${p.id}'})">
+               <button class="btn btn-outline" style="height:48px; border-radius:14px; border-color:hsla(220, 20%, 100%, 0.1); color:white; padding: 0 20px" onclick="window.navigate('proyek-edit', {id:'${escapeHtml(p.id)}'})">
                  <i class="fas fa-pen-nib" style="margin-right:8px"></i> Edit Manifest
                </button>
-               <button class="btn btn-ghost" style="height:48px; width:48px; padding:0; border-radius:14px; background:hsla(0, 85%, 60%, 0.1); color:var(--danger-400)" onclick="window._hapusProyek('${p.id}')">
+               <button type="button" aria-label="Hapus" class="btn btn-ghost" style="height:48px; width:48px; padding:0; border-radius:14px; background:hsla(0, 85%, 60%, 0.1); color:var(--danger-400)" onclick="window._hapusProyek('${escapeHtml(p.id)}')">
                  <i class="fas fa-trash-can"></i>
                </button>
             </div>
@@ -151,7 +155,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
                   <div style="width:36px; height:36px; border-radius:50%; background:${i <= currentStep ? 'var(--brand-500)' : 'hsla(220, 20%, 100%, 0.05)'}; margin:0 auto; display:flex; align-items:center; justify-content:center; color:white; border:4px solid ${i <= currentStep ? 'hsla(220, 95%, 52%, 0.2)' : 'transparent'}; z-index:2; position:relative; box-shadow: ${i === currentStep ? '0 0 20px var(--brand-500)' : 'none'}">
                     <i class="fas ${s.icon}" style="font-size:0.85rem"></i>
                   </div>
-                  <div style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:${i <= currentStep ? 'white' : 'var(--text-tertiary)'}; margin-top:12px; letter-spacing:1px">${s.label}</div>
+                  <div style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:${i <= currentStep ? 'white' : 'var(--text-tertiary)'}; margin-top:12px; letter-spacing:1px">${escapeHtml(s.label)}</div>
                   ${i < workflowSteps.length - 1 ? `<div style="position:absolute; top:18px; left:50%; width:100%; height:2px; background:${i < currentStep ? 'var(--brand-500)' : 'hsla(220, 20%, 100%, 0.05)'}; z-index:1"></div>` : ''}
                 </div>
               `).join('')}
@@ -169,7 +173,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
           <div class="grid-2-col">
             
             <!-- Checklist Card -->
-            <div class="card-quartz clickable" onclick="window.navigate('checklist',{id:'${p.id}'})" style="padding: var(--space-6)">
+            <div class="card-quartz clickable" onclick="window.navigate('checklist',{id:'${escapeHtml(p.id)}'})" style="padding: var(--space-6)">
               <div class="flex-between" style="margin-bottom:20px">
                 <div style="width:48px; height:48px; border-radius:14px; background:hsla(220, 95%, 52%, 0.1); display:flex; align-items:center; justify-content:center; color:var(--brand-400)">
                   <i class="fas fa-clipboard-list-check" style="font-size:1.4rem"></i>
@@ -182,37 +186,37 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
               <div style="margin-top:20px">
                 <div class="flex-between" style="margin-bottom:8px">
                   <span style="font-size:0.7rem; font-weight:700; color:var(--text-tertiary)">COMPLETION RATE</span>
-                  <span style="font-size:0.7rem; font-weight:800; color:var(--brand-400)">${stats.done}/${stats.total} ITEMS</span>
+                  <span style="font-size:0.7rem; font-weight:800; color:var(--brand-400)">${escapeHtml(stats.done)}/${escapeHtml(stats.total)} ITEMS</span>
                 </div>
                 <div style="height:6px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px">
-                  <div style="width:${stats.pct}%; height:100%; border-radius:10px; background:var(--gradient-brand); box-shadow: var(--shadow-sapphire)"></div>
+                  <div style="width:${escapeHtml(stats.pct)}%; height:100%; border-radius:10px; background:var(--gradient-brand); box-shadow: var(--shadow-sapphire)"></div>
                 </div>
               </div>
             </div>
 
             <!-- PEMERIKSAAN STRUKTUR BANGUNAN MODULE -->
-            ${renderStrukturBangunanCard(p, { tier1: stats.pct, tier2: 0, tier3: 0 })}
+            ${lazyCardShell('struktur', { minHeight: 280, label: 'Memuat modul struktur…' })}
 
             <!-- SISTEM KELISTRIKAN MODULE -->
             ${renderElectricalSystemCard(p, electricalSummary)}
 
             <!-- SISTEM PROTEKSI PETIR MODULE -->
-            ${renderLPSCard(p, lpsSummary)}
+            ${lazyCardShell('lps', { minHeight: 240, label: 'Memuat modul proteksi petir…' })}
 
             <!-- FIRE PROTECTION & LIFE SAFETY MODULE -->
-            ${renderFireProtectionCard(p, fireProtectionSummary)}
+            ${lazyCardShell('fire', { minHeight: 240, label: 'Memuat modul proteksi kebakaran…' })}
 
             <!-- INTENSITAS BANGUNAN & KESESUAIAN FUNGSI MODULE -->
-            ${renderBuildingIntensityCard(p, buildingIntensitySummary)}
+            ${lazyCardShell('intensity', { minHeight: 240, label: 'Memuat modul intensitas bangunan…' })}
 
             <!-- PERSYARATAN ARSITEKTUR MODULE -->
-            ${renderArchitecturalCard(p, architecturalSummary)}
+            ${lazyCardShell('architectural', { minHeight: 240, label: 'Memuat modul arsitektur…' })}
 
             <!-- SISTEM JALUR EVAKUASI MODULE -->
-            ${renderEgressSystemCard(p, egressSummary)}
+            ${lazyCardShell('egress', { minHeight: 240, label: 'Memuat modul jalur evakuasi…' })}
 
             <!-- PENGENDALIAN DAMPAK LINGKUNGAN MODULE -->
-            ${renderEnvironmentalCard(p, environmentalSummary)}
+            ${lazyCardShell('environmental', { minHeight: 240, label: 'Memuat modul lingkungan…' })}
 
             <!-- SISTEM PENGELOLAAN AIR HUJAN MODULE -->
             ${renderStormwaterCard(p, stormwaterSummary)}
@@ -221,7 +225,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
             ${renderSanitationCard(p, sanitationSummary)}
 
             <!-- AKSESIBILITAS MODULE -->
-            ${renderAccessibilityCard(p, accessibilitySummary)}
+            ${lazyCardShell('accessibility', { minHeight: 240, label: 'Memuat modul aksesibilitas…' })}
 
             <!-- SISTEM AIR BERSIH MODULE -->
             ${renderWaterSystemCard(p, waterSummary)}
@@ -233,7 +237,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
             ${renderSimulationHubCard(p, simulationHubSummary)}
 
             <!-- Analisis Card -->
-            <div class="card-quartz clickable" onclick="window.navigate('analisis',{id:'${p.id}'})" style="padding: var(--space-6)">
+            <div class="card-quartz clickable" onclick="window.navigate('analisis',{id:'${escapeHtml(p.id)}'})" style="padding: var(--space-6)">
               <div class="flex-between" style="margin-bottom:20px">
                 <div style="width:48px; height:48px; border-radius:14px; background:hsla(45, 90%, 60%, 0.1); display:flex; align-items:center; justify-content:center; color:var(--gold-400)">
                   <i class="fas fa-brain-circuit" style="font-size:1.4rem"></i>
@@ -257,7 +261,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
             ${renderWastewaterCard(p, wastewaterSummary)}
 
             <!-- Documents Card -->
-            <div class="card-quartz clickable" onclick="window.navigate('proyek-files',{id:'${p.id}'})" style="padding: var(--space-6)">
+            <div class="card-quartz clickable" onclick="window.navigate('proyek-files',{id:'${escapeHtml(p.id)}'})" style="padding: var(--space-6)">
               <div class="flex-between" style="margin-bottom:20px">
                 <div style="width:48px; height:48px; border-radius:14px; background:hsla(220, 20%, 100%, 0.05); display:flex; align-items:center; justify-content:center; color:var(--text-secondary)">
                   <i class="fas fa-folder-tree" style="font-size:1.4rem"></i>
@@ -265,11 +269,11 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
                 <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--text-tertiary)">PHASE 01</div>
               </div>
               <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--text-primary); margin-bottom:4px">Manajemen Berkas SIMBG</h3>
-              <p style="font-size:0.75rem; color:var(--text-tertiary); line-height:1.5">Synchronization with national SIMBG database for architectural & structural blueprints.</p>
+              <p style="font-size:0.75rem; color:var(--text-tertiary); line-height:1.5">Sinkronisasi dengan basis data SIMBG nasional untuk gambar arsitektur dan struktur.</p>
             </div>
 
             <!-- Report Card -->
-            <div class="card-quartz clickable" onclick="window.navigate('laporan',{id:'${p.id}'})" style="padding: var(--space-6)">
+            <div class="card-quartz clickable" onclick="window.navigate('laporan',{id:'${escapeHtml(p.id)}'})" style="padding: var(--space-6)">
               <div class="flex-between" style="margin-bottom:20px">
                 <div style="width:48px; height:48px; border-radius:14px; background:hsla(158, 85%, 45%, 0.1); display:flex; align-items:center; justify-content:center; color:var(--success-400)">
                   <i class="fas fa-file-invoice" style="font-size:1.4rem"></i>
@@ -283,15 +287,15 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
 
           <!-- Secondary Grid: Gallery, Surat, TODO -->
           <div class="grid-3-col">
-             <div class="card-quartz clickable" onclick="window.navigate('galeri', {id:'${p.id}'})" style="text-align:center; padding:var(--space-5)">
+             <div class="card-quartz clickable" onclick="window.navigate('galeri', {id:'${escapeHtml(p.id)}'})" style="text-align:center; padding:var(--space-5)">
                 <i class="fas fa-images" style="font-size:1.4rem; color:var(--brand-400); margin-bottom:12px"></i>
                 <div style="font-weight:700; font-size:0.85rem; color:white">Visual Gallery</div>
              </div>
-             <div class="card-quartz clickable" onclick="window.navigate('surat-pernyataan', {id:'${p.id}'})" style="text-align:center; padding:var(--space-5)">
+             <div class="card-quartz clickable" onclick="window.navigate('surat-pernyataan', {id:'${escapeHtml(p.id)}'})" style="text-align:center; padding:var(--space-5)">
                 <i class="fas fa-file-contract" style="font-size:1.4rem; color:var(--gold-400); margin-bottom:12px"></i>
                 <div style="font-weight:700; font-size:0.85rem; color:white">Statements</div>
              </div>
-             <div class="card-quartz clickable" onclick="window.navigate('todo', {proyekId:'${p.id}'})" style="text-align:center; padding:var(--space-5)">
+             <div class="card-quartz clickable" onclick="window.navigate('todo', {proyekId:'${escapeHtml(p.id)}'})" style="text-align:center; padding:var(--space-5)">
                 <i class="fas fa-list-check" style="font-size:1.4rem; color:var(--success-400); margin-bottom:12px"></i>
                 <div style="font-weight:700; font-size:0.85rem; color:white">Remedial Tasks</div>
              </div>
@@ -305,14 +309,14 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
             <div class="grid-3-col">
               ${[
                 ['BAHAN_MODUL',     p.jenis_bangunan   || '-', 'fa-tag', 'KATEGORI ASSET'],
-                ['STAIRS_LEVEL',    p.jumlah_lantai ? `${p.jumlah_lantai} LANTAI` : '-', 'fa-stairs', 'VOLUME VERTIKAL'],
+                ['STAIRS_LEVEL',    p.jumlah_lantai ? `${escapeHtml(p.jumlah_lantai)} LANTAI` : '-', 'fa-stairs', 'VOLUME VERTIKAL'],
                 ['SURFACE_AREA',    p.luas_bangunan ? `${Number(p.luas_bangunan).toLocaleString('id-ID')} M²` : '-', 'fa-ruler-combined', 'TOTAL AREA'],
                 ['CHRONO_YEAR',     p.tahun_dibangun || '-', 'fa-calendar', 'TAHUN KONSTRUKSI'],
                 ['CORE_FUNCTION',   p.fungsi_bangunan || '-', 'fa-building-columns', 'FUNGSI UTAMA'],
                 ['GOV_REGISTRY',    p.nomor_pbg || '-', 'fa-file-certificate', 'NOMOR PBG/REG'],
               ].map(([k, v, ic, lbl]) => `
                 <div style="background:hsla(220, 20%, 100%, 0.02); border:1px solid hsla(220, 20%, 100%, 0.05); border-radius:12px; padding:20px; text-align:center">
-                  <div style="font-family:var(--font-mono); font-size:8px; font-weight:800; color:var(--text-tertiary); letter-spacing:1px; margin-bottom:8px">${lbl}</div>
+                  <div style="font-family:var(--font-mono); font-size:8px; font-weight:800; color:var(--text-tertiary); letter-spacing:1px; margin-bottom:8px">${escapeHtml(lbl)}</div>
                   <div style="font-size:1rem; font-weight:800; color:white">${escHtml(v)}</div>
                 </div>
               `).join('')}
@@ -338,17 +342,17 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
             ${pic ? `
               <div style="display:flex; align-items:center; gap:16px">
                 <div style="width:56px; height:56px; border-radius:50%; background:var(--gradient-brand); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; border:2px solid hsla(220, 95%, 52%, 0.3)">
-                   ${pic.avatar_url ? `<img src="${pic.avatar_url}" style="width:100%;height:100%;border-radius:50%">` : `<span>${pic.full_name?.charAt(0)}</span>`}
+                   ${pic.avatar_url ? `<img alt="Foto profil pengguna" src="${escapeHtml(pic.avatar_url)}" style="width:100%;height:100%;border-radius:50%">` : `<span>${pic.full_name?.charAt(0)}</span>`}
                 </div>
                 <div style="overflow:hidden">
-                  <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1rem; color:white">${pic.full_name}</div>
-                  <div style="font-size:0.7rem; color:var(--brand-300); text-transform:uppercase; font-weight:700; letter-spacing:1px">${pic.role || 'Tenaga Ahli'}</div>
+                  <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1rem; color:white">${escapeHtml(pic.full_name)}</div>
+                  <div style="font-size:0.7rem; color:var(--brand-300); text-transform:uppercase; font-weight:700; letter-spacing:1px">${escapeHtml(pic.role || 'Tenaga Ahli')}</div>
                 </div>
               </div>
             ` : `
               <div class="text-center" style="padding:24px; background:hsla(220, 20%, 100%, 0.02); border:1px dashed hsla(220, 20%, 100%, 0.1); border-radius:12px">
                 <p style="font-size:0.75rem; color:var(--text-tertiary); margin-bottom:16px">No commander assigned.</p>
-                <button class="btn btn-outline btn-xs" onclick="window.navigate('proyek-edit', {id:'${p.id}'})">
+                <button class="btn btn-outline btn-xs" onclick="window.navigate('proyek-edit', {id:'${escapeHtml(p.id)}'})">
                   <i class="fas fa-user-plus" style="margin-right:8px"></i> Assign PIC
                 </button>
               </div>
@@ -403,34 +407,34 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
                    <div style="font-weight:800; font-size:0.85rem; color:white">ENGINEERING SIMULATION</div>
                 </div>
                 <div style="font-size:8px; font-family:var(--font-mono); color:var(--text-tertiary)">
-                   ${simulasiSummary.total_simulasi || 0} RUNS
+                   ${escapeHtml(simulasiSummary.total_simulasi || 0)} RUNS
                 </div>
              </div>
              
              <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; margin-bottom:16px">
                 <div style="background:hsla(220, 20%, 100%, 0.03); padding:8px; border-radius:8px; text-align:center">
-                   <div style="font-size:1.2rem; font-weight:800; color:${simulasiSummary.sim_pencahayaan ? 'var(--success-400)' : 'var(--text-tertiary)'}">${simulasiSummary.sim_pencahayaan || 0}</div>
+                   <div style="font-size:1.2rem; font-weight:800; color:${simulasiSummary.sim_pencahayaan ? 'var(--success-400)' : 'var(--text-tertiary)'}">${escapeHtml(simulasiSummary.sim_pencahayaan || 0)}</div>
                    <div style="font-size:9px; color:var(--text-tertiary)">Cahaya</div>
                 </div>
                 <div style="background:hsla(220, 20%, 100%, 0.03); padding:8px; border-radius:8px; text-align:center">
-                   <div style="font-size:1.2rem; font-weight:800; color:${simulasiSummary.sim_ventilasi ? 'var(--success-400)' : 'var(--text-tertiary)'}">${simulasiSummary.sim_ventilasi || 0}</div>
+                   <div style="font-size:1.2rem; font-weight:800; color:${simulasiSummary.sim_ventilasi ? 'var(--success-400)' : 'var(--text-tertiary)'}">${escapeHtml(simulasiSummary.sim_ventilasi || 0)}</div>
                    <div style="font-size:9px; color:var(--text-tertiary)">Angin</div>
                 </div>
                 <div style="background:hsla(220, 20%, 100%, 0.03); padding:8px; border-radius:8px; text-align:center">
-                   <div style="font-size:1.2rem; font-weight:800; color:${simulasiSummary.sim_evakuasi ? 'var(--success-400)' : 'var(--text-tertiary)'}">${simulasiSummary.sim_evakuasi || 0}</div>
+                   <div style="font-size:1.2rem; font-weight:800; color:${simulasiSummary.sim_evakuasi ? 'var(--success-400)' : 'var(--text-tertiary)'}">${escapeHtml(simulasiSummary.sim_evakuasi || 0)}</div>
                    <div style="font-size:9px; color:var(--text-tertiary)">Evakuasi</div>
                 </div>
                 <div style="background:hsla(220, 20%, 100%, 0.03); padding:8px; border-radius:8px; text-align:center">
-                   <div style="font-size:1.2rem; font-weight:800; color:${simulasiSummary.sim_ndt ? 'var(--success-400)' : 'var(--text-tertiary)'}">${simulasiSummary.sim_ndt || 0}</div>
+                   <div style="font-size:1.2rem; font-weight:800; color:${simulasiSummary.sim_ndt ? 'var(--success-400)' : 'var(--text-tertiary)'}">${escapeHtml(simulasiSummary.sim_ndt || 0)}</div>
                    <div style="font-size:9px; color:var(--text-tertiary)">NDT</div>
                 </div>
              </div>
 
              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px">
-                <button class="btn-presidential gold" style="width:100%; height:44px; border-radius:12px; font-size:10px" onclick="window._openSimulationModal('${p.id}')">
+                <button class="btn-presidential gold" style="width:100%; height:44px; border-radius:12px; font-size:10px" onclick="window._openSimulationModal('${escapeHtml(p.id)}')">
                    <i class="fas fa-play" style="margin-right:8px"></i> RUN NEW
                 </button>
-                <button class="btn btn-outline" style="width:100%; height:44px; border-radius:12px; font-size:10px; border-color:hsla(45, 90%, 60%, 0.2); color:white" onclick="window._viewSimulationHistory('${p.id}')">
+                <button class="btn btn-outline" style="width:100%; height:44px; border-radius:12px; font-size:10px; border-color:hsla(45, 90%, 60%, 0.2); color:white" onclick="window._viewSimulationHistory('${escapeHtml(p.id)}')">
                    <i class="fas fa-history" style="margin-right:8px"></i> HISTORY
                 </button>
              </div>
@@ -492,38 +496,18 @@ function initProyekDetailAfterRender(p, stats, analisis, simulasiSummary = {}, e
   renderAuditTrail(p.id);
   renderReportVersions(p.id);
 
-  // Initialize Struktur Bangunan Module
-  initStrukturBangunanHandlers(p.id);
+  // ── Modul lazy (struktur, LPS, fire, intensity, architectural, egress,
+  //    environmental, accessibility) TIDAK di-init di sini: handler-nya
+  //    dipasang otomatis begitu kartunya terhidrasi di hydrateLazyCards().
 
   // Initialize Electrical System Module
   initElectricalSystemHandlers(p.id, electricalSummary);
-
-  // Initialize LPS Module
-  initLPSHandlers(p.id);
-
-  // Initialize Fire Protection Module
-  initFireProtectionHandlers(p.id);
-
-  // Initialize Building Intensity Module
-  initBuildingIntensityHandlers(p.id);
-
-  // Initialize Architectural Requirements Module
-  initArchitecturalHandlers(p.id);
-
-  // Initialize Egress System Module
-  initEgressSystemHandlers(p.id);
-
-  // Initialize Environmental Module
-  initEnvironmentalHandlers(p.id);
 
   // Initialize Sanitation Module
   initSanitationHandlers(p.id);
 
   // Initialize Water System Module
   initWaterSystemHandlers(p.id, waterSummary);
-
-  // Initialize Accessibility Module
-  initAccessibilityHandlers(p.id, accessibilitySummary);
 
   // Initialize Stormwater Module
   initStormwaterHandlers(p.id, stormwaterSummary);
@@ -551,6 +535,10 @@ function initProyekDetailAfterRender(p, stats, analisis, simulasiSummary = {}, e
 
   // Handle tab parameter for direct module navigation
   const params = getParams();
+  // Hidrasi kartu lazy (termasuk yang jadi target ?tab=...) setelah DOM siap
+  const lazyCtx = { p, id: p.id, stats };
+  const forcedKeys = params.tab ? [TAB_TO_LAZY_KEY[params.tab]].filter(Boolean) : [];
+  hydrateLazyCards(lazyCtx, { force: forcedKeys });
   if (params.tab) {
     handleModuleTabNavigation(params.tab);
   }
@@ -580,15 +568,15 @@ function initProyekDetailAfterRender(p, stats, analisis, simulasiSummary = {}, e
         <p style="font-size:0.8rem; color:var(--text-tertiary); margin-bottom:20px">Kredensial ini digunakan untuk sinkronisasi otomatis dengan portal simbg.pu.go.id khusus untuk proyek ini.</p>
         <div class="form-group" style="margin-bottom:16px">
           <label style="display:block; margin-bottom:8px; font-size:0.75rem; font-weight:800; color:var(--text-secondary)">ID PERMOHONAN (SIMBG ID)</label>
-          <input type="text" id="simbg-id-input" class="form-control" value="${idPermohonan}" placeholder="SIMBG-XXXXXXXXX" style="width:100%; padding:12px; border-radius:8px; background:hsla(220, 20%, 100%, 0.05); border:1px solid hsla(220, 20%, 100%, 0.1); color:white; font-family:var(--font-mono)">
+          <input type="text" id="simbg-id-input" class="form-control" value="${escapeHtml(idPermohonan)}" placeholder="SIMBG-XXXXXXXXX" style="width:100%; padding:12px; border-radius:8px; background:hsla(220, 20%, 100%, 0.05); border:1px solid hsla(220, 20%, 100%, 0.1); color:white; font-family:var(--font-mono)">
         </div>
         <div class="form-group" style="margin-bottom:16px">
           <label style="display:block; margin-bottom:8px; font-size:0.75rem; font-weight:800; color:var(--text-secondary)">EMAIL AKUN SIMBG</label>
-          <input type="email" id="simbg-email-input" class="form-control" value="${email}" placeholder="example@outlook.co.id" style="width:100%; padding:12px; border-radius:8px; background:hsla(220, 20%, 100%, 0.05); border:1px solid hsla(220, 20%, 100%, 0.1); color:white">
+          <input type="email" id="simbg-email-input" class="form-control" value="${escapeHtml(email)}" placeholder="example@outlook.co.id" style="width:100%; padding:12px; border-radius:8px; background:hsla(220, 20%, 100%, 0.05); border:1px solid hsla(220, 20%, 100%, 0.1); color:white">
         </div>
         <div class="form-group">
           <label style="display:block; margin-bottom:8px; font-size:0.75rem; font-weight:800; color:var(--text-secondary)">KATA SANDI</label>
-          <input type="password" id="simbg-pass-input" class="form-control" value="${pass}" placeholder="••••••••" style="width:100%; padding:12px; border-radius:8px; background:hsla(220, 20%, 100%, 0.05); border:1px solid hsla(220, 20%, 100%, 0.1); color:white">
+          <input type="password" id="simbg-pass-input" class="form-control" value="${escapeHtml(pass)}" placeholder="••••••••" style="width:100%; padding:12px; border-radius:8px; background:hsla(220, 20%, 100%, 0.05); border:1px solid hsla(220, 20%, 100%, 0.1); color:white">
         </div>
       </div>
     `,
@@ -666,7 +654,7 @@ window._syncProjectWithSIMBG = async (proyekId) => {
 window._hapusProyek = async (id) => {
     const ok = await confirm({
       title: 'TERMINATE ASSET',
-      message: `Are you sure you want to permanently remove <strong>"${p.nama_bangunan}"</strong> from the presidential portfolio? This action is irreversible.`,
+      message: `Are you sure you want to permanently remove <strong>"${escapeHtml(p.nama_bangunan)}"</strong> from the presidential portfolio? This action is irreversible.`,
       confirmText: 'CONFIRM TERMINATION',
       danger: true,
     });
@@ -782,17 +770,17 @@ window._hapusProyek = async (id) => {
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
                   <div>
                     <div style="font-weight:800; font-size:0.85rem; color:white; margin-bottom:4px;">${typeLabels[sim.tipe_simulasi] || sim.tipe_simulasi}</div>
-                    <div style="font-size:0.7rem; color:var(--text-tertiary);">${date}</div>
+                    <div style="font-size:0.7rem; color:var(--text-tertiary);">${escapeHtml(date)}</div>
                   </div>
                   <div style="text-align:right;">
-                    <div style="font-size:1.5rem; font-weight:800; color:${skorColor};">${skor}%</div>
+                    <div style="font-size:1.5rem; font-weight:800; color:${escapeHtml(skorColor)};">${escapeHtml(skor)}%</div>
                     <div style="font-size:0.65rem; color:var(--text-tertiary);">KELAYAKAN</div>
                   </div>
                 </div>
                 ${sim.rekomendasi && sim.rekomendasi.length > 0 ? `
                   <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:8px; padding-top:8px; border-top:1px solid hsla(220, 20%, 100%, 0.05);">
                     <i class="fas fa-lightbulb" style="color:var(--gold-400); margin-right:6px;"></i>
-                    ${sim.rekomendasi[0]}
+                    ${escapeHtml(sim.rekomendasi[0])}
                   </div>
                 ` : ''}
               </div>
@@ -808,7 +796,7 @@ window._hapusProyek = async (id) => {
         `,
         footer: `
           <button class="btn btn-ghost" onclick="closeModal()">Tutup</button>
-          <button class="btn btn-primary" onclick="window._openSimulationModal('${proyekId}'); closeModal();">
+          <button class="btn btn-primary" onclick="window._openSimulationModal('${escapeHtml(proyekId)}'); closeModal();">
             <i class="fas fa-play"></i> Jalankan Simulasi Baru
           </button>
         `
@@ -898,8 +886,8 @@ async function renderAuditTrail(proyekId) {
             <i class="fas fa-fingerprint" style="font-size:0.8rem"></i>
           </div>
           <div style="overflow:hidden">
-            <div style="font-size:0.75rem; font-weight:800; color:white; text-transform:uppercase">${log.action.replace(/_/g, ' ')}</div>
-            <div style="font-size:0.65rem; color:var(--text-tertiary); opacity:0.6">${date}</div>
+            <div style="font-size:0.75rem; font-weight:800; color:white; text-transform:uppercase">${escapeHtml(log.action.replace(/_/g, ' '))}</div>
+            <div style="font-size:0.65rem; color:var(--text-tertiary); opacity:0.6">${escapeHtml(date)}</div>
           </div>
         </div>
       `;
@@ -928,10 +916,10 @@ async function renderReportVersions(proyekId) {
             <i class="fas fa-file-shield" style="font-size:1rem"></i>
           </div>
           <div style="flex:1; overflow:hidden">
-            <div style="font-size:0.75rem; font-weight:800; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${v.file_name}</div>
-            <div style="font-size:0.65rem; color:var(--text-tertiary)">VERIFIED ${date}</div>
+            <div style="font-size:0.75rem; font-weight:800; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${escapeHtml(v.file_name)}</div>
+            <div style="font-size:0.65rem; color:var(--text-tertiary)">VERIFIED ${escapeHtml(date)}</div>
           </div>
-          <button class="btn btn-ghost btn-xs" onclick="window.open('${v.file_url}', '_blank')"><i class="fas fa-download"></i></button>
+          <button type="button" aria-label="Unduh" class="btn btn-ghost btn-xs" onclick="window.open('${escapeHtml(v.file_url)}', '_blank')"><i class="fas fa-download"></i></button>
         </div>
       `;
     }).join('');
@@ -968,7 +956,7 @@ async function refreshProjectData(proyekId) {
     
     const locationBadge = document.querySelector('.badge .fa-location-dot')?.parentElement;
     if (locationBadge) {
-      locationBadge.innerHTML = `<i class="fas fa-location-dot" style="margin-right:6px; color:var(--brand-400)"></i> ${proyek.kota || 'INDONESIA'}`;
+      locationBadge.innerHTML = `<i class="fas fa-location-dot" style="margin-right:6px; color:var(--brand-400)"></i> ${escapeHtml(proyek.kota || 'INDONESIA')}`;
     }
     
     const nomorPbgEl = document.querySelector('[style*="font-family:var(--font-mono)"][style*="var(--gold-400)"]');
@@ -1007,10 +995,6 @@ async function fetchLastAnalisis(proyekId) {
 function renderSkeleton() {
   // Gunakan premium skeleton screen dari komponen terpisah
   return renderProyekDetailFullSkeleton();
-}
-
-function escHtml(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 // ── Module Tab Navigation Handler ─────────────────────────────────────

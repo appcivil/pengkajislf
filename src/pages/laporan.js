@@ -4,10 +4,12 @@
 //  Executive Document Orchestration System
 // ============================================================
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml, escapeHtml as escHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
+// XSS FIX: narasi laporan disanitasi sebelum masuk innerHTML
+import { safeMarkdown } from '../lib/safe-markdown.js';
 import { logActivity, saveReportVersion } from '../lib/audit-service.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
-import { marked } from 'marked';
 import { generateDocx, generateDocxBlob } from '../lib/docx-service.js';
 import { fetchElectricalSummary } from '../components/electrical-system-module.js';
 import { fetchStrukturBangunanSummary } from '../components/struktur-bangunan-summary.js';
@@ -27,6 +29,7 @@ import {
   getCachedDocId,
   checkGoogleIntegration
 } from '../lib/gdocs-template-service.js';
+import { confirm } from '../components/modal.js';
 
 export async function laporanPage(params = {}) {
   const id = params.id;
@@ -70,11 +73,11 @@ function buildHtml(proyek, analisis, checklist, settings, gdocStatus, cachedDoc,
           <div style="width:100px; height:100px; background:var(--gradient-dark); border:1px solid var(--glass-border); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 32px; font-size:2.5rem; color:var(--text-tertiary)">
             <i class="fas fa-file-circle-exclamation"></i>
           </div>
-          <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.4rem; color:white; margin-bottom:12px">Analytics Data Required</h3>
+          <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.4rem; color:white; margin-bottom:12px">Analisis AI Belum Tersedia</h3>
           <p style="color:var(--text-tertiary); max-width:460px; margin:0 auto 32px; line-height:1.6">
-            The executive report cannot be synthesized until the AI analysis is finalized. Please run the kelaikan check first.
+            Laporan eksekutif belum dapat disusun sebelum analisis AI selesai. Jalankan pemeriksaan kelaikan terlebih dahulu.
           </p>
-          <button class="btn-presidential gold" onclick="window.navigate('analisis',{id:'${proyek.id}'})">
+          <button class="btn-presidential gold" onclick="window.navigate('analisis',{id:'${escapeHtml(proyek.id)}'})">
             <i class="fas fa-brain-circuit" style="margin-right:10px"></i> OPEN AI ANALYTICS
           </button>
         </div>
@@ -89,7 +92,7 @@ function buildHtml(proyek, analisis, checklist, settings, gdocStatus, cachedDoc,
       <div class="page-header" style="margin-bottom:var(--space-8)">
         <div class="flex-between flex-stack" style="align-items: flex-start; gap:var(--space-6)">
           <div>
-            <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek-detail',{id:'${proyek.id}'})" style="margin-bottom:12px; padding:0; color:var(--brand-300); font-weight:700; letter-spacing:1px">
+            <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek-detail',{id:'${escapeHtml(proyek.id)}'})" style="margin-bottom:12px; padding:0; color:var(--brand-300); font-weight:700; letter-spacing:1px">
               <i class="fas fa-arrow-left" style="margin-right:8px"></i> ${escHtml(proyek.nama_bangunan)}
             </button>
             <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.2rem; letter-spacing:-0.02em; margin-bottom:4px">
@@ -106,7 +109,7 @@ function buildHtml(proyek, analisis, checklist, settings, gdocStatus, cachedDoc,
           </div>
           
           <div class="flex gap-3 flex-stack" style="width:auto">
-             <button class="btn btn-outline" onclick="window._printReport()" style="height:44px; width:44px; border-radius:12px; padding:0">
+             <button type="button" aria-label="Cetak" class="btn btn-outline" onclick="window._printReport()" style="height:44px; width:44px; border-radius:12px; padding:0">
                 <i class="fas fa-print"></i>
              </button>
              <button class="btn btn-primary" id="btn-deep-forensic" style="height:44px; padding:0 20px; border-radius:12px; background: #0f172a; color:white; border:none">
@@ -205,7 +208,7 @@ function renderDocxPreviewTab(proyek) {
             <i class="fas fa-signature"></i> TERAPKAN TTE
           </button>
 
-          <button onclick="window._downloadDocxFromPreview('${proyek.id}', '${escHtml(proyek.nama_bangunan)}')"
+          <button onclick="window._downloadDocxFromPreview('${escapeHtml(proyek.id)}', '${escHtml(proyek.nama_bangunan)}')"
             style="height:36px; padding:0 12px; border-radius:10px; border:none; background:hsla(210,95%,52%,0.1); color:#2b7cd3; font-family:var(--font-mono); font-size:9px; font-weight:800; letter-spacing:1px; cursor:pointer; display:flex; align-items:center; gap:6px">
             <i class="fas fa-file-export"></i> HASIL .docx
           </button>
@@ -214,19 +217,19 @@ function renderDocxPreviewTab(proyek) {
 
           <!-- Group Template -->
           <div class="flex gap-2">
-            <button onclick="window._downloadDocxTemplate('${proyek.id}')" id="btn-download-tpl"
+            <button onclick="window._downloadDocxTemplate('${escapeHtml(proyek.id)}')" id="btn-download-tpl"
               title="Download Template Word Aktif"
               style="height:36px; width:36px; border-radius:10px; border:1px solid hsla(160,80%,50%,0.15); background:hsla(160,80%,50%,0.05); color:#22c55e; cursor:pointer; display:flex; align-items:center; justify-content:center">
               <i class="fas fa-file-download"></i>
             </button>
-            <button onclick="window._uploadDocxTemplate('${proyek.id}')" id="btn-upload-tpl"
+            <button onclick="window._uploadDocxTemplate('${escapeHtml(proyek.id)}')" id="btn-upload-tpl"
               title="Upload Template Word Kustom (.docx)"
               style="height:36px; padding:0 12px; border-radius:10px; border:none; background:hsla(160,80%,50%,0.15); color:#22c55e; font-family:var(--font-mono); font-size:9px; font-weight:800; letter-spacing:1px; cursor:pointer; display:flex; align-items:center; gap:6px">
               <i class="fas fa-file-upload"></i> TEMPLATE
             </button>
           </div>
 
-          <button onclick="window._printDocxPreview()"
+          <button type="button" aria-label="Cetak" onclick="window._printDocxPreview()"
             style="height:36px; width:36px; border-radius:10px; border:none; background:hsla(0,0%,100%,0.05); color:white; cursor:pointer; display:flex; align-items:center; justify-content:center">
             <i class="fas fa-print"></i>
           </button>
@@ -366,7 +369,7 @@ function renderGDocsTab(proyek, gdocStatus, cachedDoc) {
             <i class="fas fa-sync-alt" style="margin-right:8px"></i> SYNC CORE DATA
           </button>
           
-          <button class="btn btn-outline btn-sm" onclick="window.open('${editUrl}','_blank')" style="border-radius:10px; font-weight:700">
+          <button class="btn btn-outline btn-sm" onclick="window.open('${escapeHtml(editUrl)}','_blank')" style="border-radius:10px; font-weight:700">
             <i class="fas fa-external-link" style="margin-right:8px"></i> OPEN EDITOR
           </button>
           
@@ -380,11 +383,11 @@ function renderGDocsTab(proyek, gdocStatus, cachedDoc) {
               <i class="fas fa-chevron-down" style="margin-left:8px; font-size:8px"></i>
             </button>
             <div id="menu-gdocs-export" class="card-quartz" style="display:none; position:absolute; top:44px; right:0; width:220px; z-index:100; padding:8px">
-               <button class="export-option" onclick="window._downloadGDocsWord('${docId}', '${proyek.id}', '${proyek.nama_bangunan}')" style="width:100%; text-align:left; padding:12px; border:none; background:transparent; border-radius:8px; display:flex; align-items:center; gap:12px; cursor:pointer" onmouseenter="this.style.background='hsla(220, 20%, 100%, 0.05)'" onmouseleave="this.style.background='transparent'">
+               <button class="export-option" onclick="window._downloadGDocsWord('${escapeHtml(docId)}', '${escapeHtml(proyek.id)}', '${escapeHtml(proyek.nama_bangunan)}')" style="width:100%; text-align:left; padding:12px; border:none; background:transparent; border-radius:8px; display:flex; align-items:center; gap:12px; cursor:pointer" onmouseenter="this.style.background='hsla(220, 20%, 100%, 0.05)'" onmouseleave="this.style.background='transparent'">
                   <i class="fas fa-file-word" style="color:var(--brand-400)"></i>
                   <span style="font-family:var(--font-mono); font-size:10px; font-weight:800; color:white; letter-spacing:1px">MICROSOFT WORD</span>
                </button>
-               <button class="export-option" onclick="window._downloadGDocsPdf('${docId}', '${proyek.id}', '${proyek.nama_bangunan}')" style="width:100%; text-align:left; padding:12px; border:none; background:transparent; border-radius:8px; display:flex; align-items:center; gap:12px; cursor:pointer" onmouseenter="this.style.background='hsla(220, 20%, 100%, 0.05)'" onmouseleave="this.style.background='transparent'">
+               <button class="export-option" onclick="window._downloadGDocsPdf('${escapeHtml(docId)}', '${escapeHtml(proyek.id)}', '${escapeHtml(proyek.nama_bangunan)}')" style="width:100%; text-align:left; padding:12px; border:none; background:transparent; border-radius:8px; display:flex; align-items:center; gap:12px; cursor:pointer" onmouseenter="this.style.background='hsla(220, 20%, 100%, 0.05)'" onmouseleave="this.style.background='transparent'">
                   <i class="fas fa-file-pdf" style="color:var(--danger-400)"></i>
                   <span style="font-family:var(--font-mono); font-size:10px; font-weight:800; color:white; letter-spacing:1px">ADOBE PDF</span>
                </button>
@@ -399,7 +402,7 @@ function renderGDocsTab(proyek, gdocStatus, cachedDoc) {
            <i class="fas fa-circle-notch fa-spin" style="font-size:2.5rem; color:var(--brand-400)"></i>
            <span style="font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:2px">INTERFACING GOOGLE CLOUD...</span>
          </div>
-         <iframe src="${embedUrl}" style="width:100%; height:100%; border:none; position:relative; z-index:1; background:transparent"></iframe>
+         <iframe src="${escapeHtml(embedUrl)}" style="width:100%; height:100%; border:none; position:relative; z-index:1; background:transparent"></iframe>
       </div>
       
       <!-- Signature Modal Root -->
@@ -434,7 +437,8 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
   const narasi = analisis ? analisis.narasi_teknis : '_Analysis narrative pending neural synthesis._';
   
   // Custom Styles untuk A4 Page Simulator
-  const styleInject = `
+  // Diberi akhiran "Html" secara sengaja: blok <style> ini MEMANG markah.
+  const styleInjectHtml = `
     <style id="doc-engine-styles">
       .doc-engine-wrapper {
         background: hsla(220, 20%, 95%, 0.1);
@@ -530,7 +534,7 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
       /* SIGNATURE PAD OVERLAY (ADAPTED FROM SURAT PERNYATAAN) */
       .sig-modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(20px); z-index:20000; display:none; align-items:center; justify-content:center; }
       .sig-modal-overlay.show { display: flex; animation: sig-fade-in 0.3s ease-out; }
-      .sig-modal-card { background:hsl(224, 25%, 4%); border:1px solid hsla(220, 20%, 100%, 0.1); border-radius:30px; width:540px; padding:32px; box-shadow:0 30px 80px rgba(0,0,0,0.8); }
+      .sig-modal-card { background:hsl(224, 25%, 4%); border:1px solid hsla(220, 20%, 100%, 0.1); border-radius:30px; width:100%; max-width:540px; box-sizing:border-box; padding:32px; box-shadow:0 30px 80px rgba(0,0,0,0.8); }
       .sig-modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
       .sig-modal-header h3 { font-family:'Outfit',sans-serif; font-weight:800; font-size:1.2rem; margin:0; color:white; }
       .btn-close-sig { background:none; border:none; font-size:1.8rem; cursor:pointer; color:var(--text-tertiary); }
@@ -579,7 +583,7 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
   `;
 
   return `
-    ${styleInject}
+    ${escapeHtml(styleInject)}
     <div class="grid-side-main">
       <!-- Left Anchor Nav -->
       <div class="no-print">
@@ -587,8 +591,8 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
           <div style="font-family:var(--font-mono); font-size:10px; font-weight:800; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:2px; margin-bottom:24px">STRUCTURE NAVIGATION</div>
           <div style="display:flex; flex-direction:column; gap:8px">
             ${sections.map((s) => `
-              <button class="btn btn-ghost" style="width:100%; justify-content:flex-start; height:40px; font-weight:700; font-size:0.85rem; padding:0 16px; border-radius:10px" onclick="document.getElementById('lap-${s.id}').scrollIntoView({ behavior: 'smooth', block: 'start' })">
-                <i class="fas ${s.icon}" style="margin-right:12px; width:20px; color:var(--brand-400)"></i> ${s.label}
+              <button class="btn btn-ghost" style="width:100%; justify-content:flex-start; height:40px; font-weight:700; font-size:0.85rem; padding:0 16px; border-radius:10px" onclick="document.getElementById('lap-${escapeHtml(s.id)}').scrollIntoView({ behavior: 'smooth', block: 'start' })">
+                <i class="fas ${s.icon}" style="margin-right:12px; width:20px; color:var(--brand-400)"></i> ${escapeHtml(s.label)}
               </button>
             `).join('')}
           </div>
@@ -644,7 +648,7 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
               <span class="cover-label">Pemilik</span> <span class="cover-value">: ${escHtml(proyek.pemilik)}</span>
               <span class="cover-label">Konsultan</span> <span class="cover-value">: ${escHtml(settings.consultant?.name || '-')}</span>
               <span class="cover-label">Tahun</span> <span class="cover-value">: ${new Date().getFullYear()}</span>
-              <span class="cover-label">Dokumen ID</span> <span class="cover-value">: SLF/${proyek.id.substring(0,8).toUpperCase()}/${new Date().getFullYear()}</span>
+              <span class="cover-label">Dokumen ID</span> <span class="cover-value">: SLF/${escapeHtml(proyek.id.substring(0,8).toUpperCase())}/${new Date().getFullYear()}</span>
             </div>
 
             <div style="border-top:1px solid #e2e8f0; padding-top:10mm; display:flex; justify-content:space-between; align-items:flex-end">
@@ -652,7 +656,7 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
                 ${escHtml(settings.consultant?.address || 'Alamat Kantor Konsultan Terdaftar')}
               </div>
               <div style="width:20mm; height:20mm; border:1px solid #1e3a8a; padding:2px">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent('VERIFY:'+proyek.id)}" style="width:100%">
+                <img alt="Kode QR dokumen" src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent('VERIFY:'+proyek.id)}" style="width:100%">
               </div>
             </div>
           </div>
@@ -672,7 +676,7 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
           </p>
           
           <div style="margin-left:auto; width:60mm; text-align:center; margin-top:20mm">
-            ${escHtml(proyek.kota || 'Jakarta')}, ${currentDateId}<br>
+            ${escHtml(proyek.kota || 'Jakarta')}, ${escapeHtml(currentDateId)}<br>
             <b>Direktur Utama</b><br><br><br><br>
             <u>${escHtml(settings.consultant?.director_name || 'Nama Direktur')}</u>
           </div>
@@ -708,16 +712,16 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
           </ul>
 
           <h2 style="font-size:14pt; margin-bottom:5mm">1.4. DATA BANGUNAN</h2>
-          <table style="margin-bottom:10mm">
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="margin-bottom:10mm">
              <tr><th style="width:35%">Faktor</th><th>Keterangan</th></tr>
              <tr><td>Nama Bangunan</td><td><b>${escHtml(proyek.nama_bangunan)}</b></td></tr>
              <tr><td>Fungsi Bangunan</td><td>${escHtml(proyek.fungsi_bangunan || '-')}</td></tr>
              <tr><td>Lokasi / Alamat</td><td>${escHtml(proyek.alamat)}, ${escHtml(proyek.kota)}, ${escHtml(proyek.provinsi)}</td></tr>
-             <tr><td>Posisi Geografis</td><td>Lat: ${proyek.lat || '-'} | Long: ${proyek.long || '-'}</td></tr>
+             <tr><td>Posisi Geografis</td><td>Lat: ${escapeHtml(proyek.lat || '-')} | Long: ${escapeHtml(proyek.long || '-')}</td></tr>
              <tr><td>Pemilik</td><td>${escHtml(proyek.pemilik)}</td></tr>
-             <tr><td>Luas / Lantai</td><td>${proyek.luas_bangunan} m² / ${proyek.jumlah_lantai || '-'} Lantai</td></tr>
-             <tr><td>Tahun Konstruksi</td><td>${proyek.tahun_pembangunan || '-'}</td></tr>
-          </table>
+             <tr><td>Luas / Lantai</td><td>${escapeHtml(proyek.luas_bangunan)} m² / ${escapeHtml(proyek.jumlah_lantai || '-')} Lantai</td></tr>
+             <tr><td>Tahun Konstruksi</td><td>${escapeHtml(proyek.tahun_pembangunan || '-')}</td></tr>
+          </table></div>
 
           <h2 style="font-size:14pt; margin-bottom:5mm">1.5. Urgensi Kelaikan Fungsi</h2>
           <p style="text-align:justify">
@@ -776,7 +780,7 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
              </div>
              <div style="text-align:center">
                 <div style="font-size:8pt; font-weight:800; color:#64748b; margin-bottom:5px">ITEMS AUDITED</div>
-                <div style="font-size:24pt; font-weight:900; color:#1e3a8a">${checklist.length}</div>
+                <div style="font-size:24pt; font-weight:900; color:#1e3a8a">${escapeHtml(checklist.length)}</div>
              </div>
           </div>
 
@@ -807,11 +811,11 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
           
           <div style="background:#f8fafc; border-left: 5px solid #1e3a8a; padding:20px; margin-bottom:20px">
              <div style="font-family:'Helvetica',sans-serif; font-size:11pt; font-weight:800; color:#1e3a8a; text-transform:uppercase; margin-bottom:5mm">Kewenangan Engine Analisis</div>
-             <p style="text-align:justify; margin:0">Sistem Kecerdasan Buatan (Smart AI Pengkaji) telah melakukan sintesis terhadap ${checklist.length} parameter pemeriksaan dengan metodologi 6-Langkah Forensik. Analisis ini mengintegrasikan korelasi antar sistem bangunan untuk menentukan tingkat reliabilitas gedung.</p>
+             <p style="text-align:justify; margin:0">Sistem Kecerdasan Buatan (Smart AI Pengkaji) telah melakukan sintesis terhadap ${escapeHtml(checklist.length)} parameter pemeriksaan dengan metodologi 6-Langkah Forensik. Analisis ini mengintegrasikan korelasi antar sistem bangunan untuk menentukan tingkat reliabilitas gedung.</p>
           </div>
 
           <div class="markdown-content" style="text-align:justify; margin-bottom:10mm">
-             ${marked.parse(narasi)}
+             ${safeMarkdown(narasi)}
           </div>
 
           <h2 style="font-size:14pt; margin-bottom:8mm; margin-top:15mm">4.2. Analisis Global & Distribusi Risiko</h2>
@@ -858,7 +862,7 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
           
           <div style="text-align:center; padding: 20mm; border: 4px double #1e3a8a; margin-bottom:25mm; background:#f8fafc; position:relative">
              <div style="font-size:10pt; color:#64748b; font-weight:800; margin-bottom:5mm; letter-spacing:2px">HASIL KEPUTUSAN KELAIKAN (VONIS)</div>
-             <h2 style="font-size:28pt; margin:0; letter-spacing:1px; color:${analisis?.status_slf?.includes('TIDAK') ? '#991b1b' : analisis?.status_slf?.includes('BERSYARAT') ? '#92400e' : '#065f46'}">${slfStatus}</h2>
+             <h2 style="font-size:28pt; margin:0; letter-spacing:1px; color:${analisis?.status_slf?.includes('TIDAK') ? '#991b1b' : analisis?.status_slf?.includes('BERSYARAT') ? '#92400e' : '#065f46'}">${escapeHtml(slfStatus)}</h2>
           </div>
 
           <h1 style="text-align:center; margin-bottom:15mm" id="lap-bab6">BAB VI<br>TEMUAN DAN REKOMENDASI</h1>
@@ -866,7 +870,7 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
           <p style="text-align:justify; margin-bottom:10mm">Secara teknis, perbaikan mendesak diprioritaskan pada sistem yang berkaitan langsung dengan keselamatan jiwa (Life Safety). Temuan kritikal harus diselesaikan sesuai jangka waktu yang ditetapkan.</p>
 
           <h2 style="font-size:14pt; margin-bottom:5mm">6.2. Matriks Rekomendasi Teknis</h2>
-          <table style="font-size:8pt; width:100%; border-collapse:collapse">
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="font-size:8pt; width:100%; border-collapse:collapse">
              <tr style="background:#f1f5f9">
                 <th style="width:10%; padding:8px; border:1px solid #000">Prioritas</th><th style="width:30%; padding:8px; border:1px solid #000">Temuan / Masalah</th><th style="width:40%; padding:8px; border:1px solid #000">Rekomendasi Tindakan</th><th style="width:20%; padding:8px; border:1px solid #000">Target Waktu</th>
              </tr>
@@ -879,7 +883,7 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
                </tr>
              `).join('')}
              ${checklist.filter(c => c.status !== 'Sesuai').length === 0 ? '<tr><td colspan="4" style="text-align:center; font-style:italic; padding:10px; border:1px solid #000">Tidak ditemukan temuan kritikal. Bangunan dalam kondisi prima.</td></tr>' : ''}
-          </table>
+          </table></div>
 
           <div class="page-footer">
             <span>Kajian Teknis SLF Professional v3.0</span>
@@ -894,13 +898,13 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
           
           <p style="text-align:justify; margin-bottom:15mm">Laporan kajian teknis kelaikan fungsi bangunan gedung <b>${escHtml(proyek.nama_bangunan)}</b> ini disusun secara profesional dan objektif sesuai dengan NSPK dan standar rekayasa. Anggota tim Tenaga Ahli Pengkaji Teknis:</p>
           
-          <table style="margin-bottom:25mm">
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="margin-bottom:25mm">
              <tr>
                 <th style="width:5%">No</th><th style="width:45%">Nama Tenaga Ahli</th><th style="width:50%">Tanda Tangan Elektronik (TTE)</th>
              </tr>
              ${Object.entries(settings.experts || {}).map(([type, exp], i) => {
                const sig = proyek.metadata?.signatures?.[type];
-               const verifyUrl = `${window.location.origin}${window.location.pathname}#/verify?id=${proyek.id}&expert=${type}`;
+               const verifyUrl = `${escapeHtml(window.location.origin)}${escapeHtml(window.location.pathname)}#/verify?id=${escapeHtml(proyek.id)}&expert=${escapeHtml(type)}`;
                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(verifyUrl)}`;
                
                return `
@@ -908,14 +912,14 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
                    <td style="text-align:center">${i+1}</td>
                    <td>
                      <b style="font-size:12pt">${escHtml(exp.name || 'NAMA AHLI')}</b><br>
-                     <span style="font-size:9pt; color:#6b7280">Aspek: ${type.toUpperCase()} | SKK: ${escHtml(exp.ska || exp.skk || '-')}</span>
+                     <span style="font-size:9pt; color:#6b7280">Aspek: ${escapeHtml(type.toUpperCase())} | SKK: ${escHtml(exp.ska || exp.skk || '-')}</span>
                    </td>
                    <td style="text-align:center; padding:15px">
                      <div style="position:relative; width:100px; height:100px; margin:0 auto; display:flex; align-items:center; justify-content:center">
-                       <img src="${qrUrl}" style="width:100%; height:100%; border:1px solid #1a365d; background:white; opacity:${sig ? 0.4 : 1}">
+                       <img alt="Kode QR dokumen" src="${escapeHtml(qrUrl)}" style="width:100%; height:100%; border:1px solid #1a365d; background:white; opacity:${sig ? 0.4 : 1}">
                        ${sig ? `
                          <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center">
-                            <img src="${sig.image}" style="width:110px; transform:rotate(-5deg); filter:contrast(1.2) drop-shadow(0 2px 4px rgba(0,0,0,0.1))">
+                            <img alt="Tanda tangan pengkaji" src="${escapeHtml(sig.image)}" style="width:110px; transform:rotate(-5deg); filter:contrast(1.2) drop-shadow(0 2px 4px rgba(0,0,0,0.1))">
                          </div>
                          <div style="position:absolute; bottom:-15px; left:50%; transform:translateX(-50%); width:max-content">
                             <div style="border: 1px solid #3b82f6; display:inline-block; padding: 2px 6px; border-radius:4px; background:#eff6ff">
@@ -924,7 +928,7 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
                          </div>
                        ` : `
                          <div class="no-print" style="position:absolute; bottom:-10px; left:50%; transform:translateX(-50%); width:max-content">
-                           <button class="btn-sign-here" onclick="window._openSigPad('${type}')">Tanda Tangani Digitas</button>
+                           <button class="btn-sign-here" onclick="window._openSigPad('${escapeHtml(type)}')">Tanda Tangani Digitas</button>
                          </div>
                        `}
                      </div>
@@ -932,23 +936,23 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
                  </tr>
                `;
              }).join('')}
-          </table>
+          </table></div>
 
           <div style="width:50%; margin-left:auto; text-align:center; font-family:'Helvetica', sans-serif">
              <div style="margin-bottom:10mm">
                 Ditetapkan di: <b>${escHtml(proyek.kota || 'Kota/Kab')}</b><br>
-                Tanggal: <b>${currentDateId}</b>
+                Tanggal: <b>${escapeHtml(currentDateId)}</b>
              </div>
              
              <div style="font-weight:bold; margin-bottom:5mm">${escHtml(settings.consultant?.name || 'Sistem Ahli')}</div>
              
              <div style="margin-bottom:10mm">
                <div style="position:relative; width:120px; height:120px; margin:0 auto; display:flex; align-items:center; justify-content:center">
-                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin + window.location.pathname + '#/verify?id=' + proyek.id + '&expert=director')}" 
+                 <img alt="Kode QR dokumen" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin + window.location.pathname + '#/verify?id=' + proyek.id + '&expert=director')}" 
                       style="width:100%; height:100%; border:1px solid #1a365d; background:white; opacity:${proyek.metadata?.signatures?.director ? 0.4 : 1}">
                  ${proyek.metadata?.signatures?.director ? `
                    <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center">
-                      <img src="${proyek.metadata.signatures.director.image}" style="width:130px; transform:rotate(-4deg); filter:contrast(1.2)">
+                      <img alt="Tanda tangan" src="${escapeHtml(proyek.metadata.signatures.director.image)}" style="width:130px; transform:rotate(-4deg); filter:contrast(1.2)">
                    </div>
                    <div style="position:absolute; bottom:-12px; left:50%; transform:translateX(-50%); width:max-content">
                       <div style="border: 1px solid #3b82f6; display:inline-block; padding: 3px 10px; border-radius:4px; background:#eff6ff">
@@ -982,7 +986,7 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
 function renderLegacyChecklistTable(items, proyekFiles = []) {
   if (!items || items.length === 0) return '<p style="font-style:italic; font-size:9pt; margin-bottom:10px">Data aspek ini belum terisi atau tidak tersedia dalam manifest.</p>';
   return `
-    <table style="width:100%; border-collapse:collapse; font-size:9pt; color:#000; margin-bottom:15px">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width:100%; border-collapse:collapse; font-size:9pt; color:#000; margin-bottom:15px">
       <thead>
         <tr style="background:#f1f5f9">
           <th style="padding:10px; border:1px solid #000; text-align:center; width:10%">KODE</th>
@@ -1001,7 +1005,7 @@ function renderLegacyChecklistTable(items, proyekFiles = []) {
 
           return `
             <tr>
-              <td style="padding:8px; border:1px solid #000; text-align:center; font-family:monospace; font-size:8pt">${i.kode || i.id.substring(0,5).toUpperCase()}</td>
+              <td style="padding:8px; border:1px solid #000; text-align:center; font-family:monospace; font-size:8pt">${escapeHtml(i.kode || i.id.substring(0,5).toUpperCase())}</td>
               <td style="padding:8px; border:1px solid #000">
                 <div style="font-weight:800; color:#1a365d">${escHtml(i.nama)}</div>
                 <div style="font-size:7.5pt; color:#475569; margin-top:4px; line-height:1.2">${escHtml(i.hasil || i.keterangan || '-')}</div>
@@ -1016,7 +1020,7 @@ function renderLegacyChecklistTable(items, proyekFiles = []) {
                   ${relevantEvidence.map(ev => `
                     <div style="text-align:center; width:65px">
                       <div style="width:65px; height:45px; border:1px solid #e2e8f0; border-radius:3px; overflow:hidden; background:#f8fafc; margin-bottom:2px">
-                        <img src="${ev.file_url}" style="width:100%; height:100%; object-fit:cover" onerror="this.src='https://placehold.co/100x70?text=DOC'">
+                        <img alt="Foto dokumentasi pemeriksaan" src="${escapeHtml(ev.file_url)}" style="width:100%; height:100%; object-fit:cover" onerror="this.src='https://placehold.co/100x70?text=DOC'">
                       </div>
                       <div style="font-size:5.5pt; color:#64748b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis" title="${escHtml(ev.name)}">
                         ${ev.category === 'nspk' ? '<b>[RGA]</b>' : '<b>[LAP]</b>'} ${escHtml(ev.name).substring(0,8)}
@@ -1030,7 +1034,7 @@ function renderLegacyChecklistTable(items, proyekFiles = []) {
           `;
         }).join('')}
       </tbody>
-    </table>
+    </table></div>
   `;
 }
 
@@ -1052,7 +1056,7 @@ function renderForensicAnalysisNarrative(items, proyekFiles = []) {
         <div style="background:#f8fafc; padding:12px 20px; border-bottom:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center">
           <div>
             <div style="font-size:11pt; font-weight:900; color:#1a365d; text-transform:uppercase; letter-spacing:0.5px">${escHtml(i.nama)}</div>
-            <div style="font-family:var(--font-mono); font-size:7pt; color:#64748b; margin-top:2px">ID: ${i.kode || i.id.substring(0,8).toUpperCase()} | Aspek: ${escHtml(i.aspek || 'Umum')}</div>
+            <div style="font-family:var(--font-mono); font-size:7pt; color:#64748b; margin-top:2px">ID: ${escapeHtml(i.kode || i.id.substring(0,8).toUpperCase())} | Aspek: ${escHtml(i.aspek || 'Umum')}</div>
           </div>
           <div style="padding:4px 12px; border-radius:6px; background:${isDeep ? '#ecfdf5' : '#f1f5f9'}; border:1px solid ${isDeep ? '#10b981' : '#cbd5e1'}">
              <span style="font-size:7pt; font-weight:800; color:${isDeep ? '#065f46' : '#64748b'}">${isDeep ? 'AUDITED: DEEP REASONING' : 'PRELIMINARY ANALYSIS'}</span>
@@ -1108,7 +1112,7 @@ function renderForensicAnalysisNarrative(items, proyekFiles = []) {
                  <div style="text-align:center">
                     <div style="width:100%; height:80px; border:1px solid #cbd5e1; border-radius:6px; overflow:hidden; background:white; box-shadow:0 2px 5px rgba(0,0,0,0.05); cursor:pointer" 
                          onclick="window.showAIOverlay('Membuka Berkas ${escHtml(ev.name)}')">
-                       <img src="${ev.file_url}" style="width:100%; height:100%; object-fit:cover" onerror="this.src='https://placehold.co/200x150?text=IMG'">
+                       <img alt="Foto dokumentasi pemeriksaan" src="${escapeHtml(ev.file_url)}" style="width:100%; height:100%; object-fit:cover" onerror="this.src='https://placehold.co/200x150?text=IMG'">
                     </div>
                     <div style="font-size:5.5pt; font-weight:900; color:#1e40af; margin-top:5px; text-transform:uppercase">${ev.category === 'nspk' ? '[RUK] ' : '[LAP] '}${escHtml(ev.name).substring(0,12)}</div>
                  </div>
@@ -1334,7 +1338,7 @@ function initLaporanActions(proyek, analisis, checklist, settings, gdocStatus, c
       
       btn.innerHTML = `
         <i class="fas ${isBab ? 'fa-bookmark' : 'fa-circle'}" style="font-size:0.6rem; opacity:0.6"></i>
-        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex:1">${text}</span>
+        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex:1">${escapeHtml(text)}</span>
       `;
 
       btn.onmouseenter = () => { btn.style.background = 'white'; btn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; };
@@ -1516,8 +1520,7 @@ function initLaporanActions(proyek, analisis, checklist, settings, gdocStatus, c
       return;
     }
     // Print hanya area docx-render-target
-    const printWin = window.open('', '_blank');
-    printWin.document.write(`
+    const printHtml = `
       <html>
         <head>
           <title>Laporan SLF — ${escHtml(proyek.nama_bangunan)}</title>
@@ -1526,21 +1529,44 @@ function initLaporanActions(proyek, analisis, checklist, settings, gdocStatus, c
             .docx-wrapper { box-shadow: none !important; }
             section { page-break-after: always; }
           </style>
-          <link rel="stylesheet" href="${location.origin}/docx-preview/dist/docx-preview.css" onerror="void(0)">
+          <link rel="stylesheet" href="${escapeHtml(location.origin)}/docx-preview/dist/docx-preview.css" onerror="void(0)">
         </head>
         <body>
           ${container.innerHTML}
         </body>
       </html>
-    `);
-    printWin.document.close();
+    `;
+
+    // Blob URL, bukan document.write().
+    //
+    // `window.open('', '_blank')` menghasilkan dokumen about:blank yang
+    // MEWARISI origin aplikasi: apa pun yang ditulis ke sana berjalan
+    // dengan hak akses penuh sesi pengguna. Dengan Blob URL, dokumen
+    // terpisah dibuat tanpa document.write — API yang secara desain bisa
+    // menimpa dokumen yang sedang tayang.
+    const printBlob = new Blob([printHtml], { type: 'text/html' });
+    const printUrl = URL.createObjectURL(printBlob);
+    const printWin = window.open(printUrl, '_blank');
+    if (!printWin) {
+      URL.revokeObjectURL(printUrl);
+      showError('Tab cetak diblokir peramban. Izinkan pop-up lalu coba lagi.');
+      return;
+    }
+    setTimeout(() => { URL.revokeObjectURL(printUrl); }, 60000);
     printWin.focus();
-    setTimeout(() => { printWin.print(); }, 800);
+    setTimeout(() => {
+      try { printWin.print(); } catch (e) { console.warn('[laporan] gagal memicu cetak:', e?.message || e); }
+    }, 800);
   };
   // ── END DOCX PREVIEW ENGINE ──────────────────────────────────
 
   window._runForensicAudit = async () => {
-    if (!confirm('Apakah Anda yakin ingin menjalankan Audit Forensik 6-Langkah (Deep Reasoning) pada semua temuan?')) return;
+    const lanjutAudit = await confirm({
+      title: 'Jalankan Audit Forensik',
+      message: 'Jalankan Audit Forensik 6-Langkah (Deep Reasoning) pada semua temuan? Proses ini memakai kuota AI dan dapat memerlukan waktu.',
+      confirmText: 'Jalankan',
+    });
+    if (!lanjutAudit) return;
     
     try {
       showProgress(5, 'Menyiapkan Mesin Audit Forensik...');
@@ -1618,7 +1644,7 @@ function initLaporanActions(proyek, analisis, checklist, settings, gdocStatus, c
       <div class="sig-modal-overlay show">
         <div class="sig-modal-card">
           <div class="sig-modal-header">
-             <h3>Tanda Tangani Laporan Kajian: ${roleName}</h3>
+             <h3>Tanda Tangani Laporan Kajian: ${escapeHtml(roleName)}</h3>
              <button class="btn-close-sig" onclick="this.closest('.sig-modal-overlay').classList.remove('show')">&times;</button>
           </div>
           <p style="color:var(--text-tertiary); font-size:0.8rem; margin-bottom:16px; font-family:var(--font-mono)">Silakan gambar tanda tangan Anda di dalam kotak di bawah ini.</p>
@@ -1695,7 +1721,13 @@ function initLaporanActions(proyek, analisis, checklist, settings, gdocStatus, c
   };
 
   window._signExpert = async (type) => {
-    if (!confirm(`Apakah Anda yakin ingin menandatangani laporan ini sebagai ${type.toUpperCase()}?`)) return;
+    const lanjutTanda = await confirm({
+      title: 'Tanda Tangan Laporan',
+      message: `Tandatangani laporan ini sebagai ${type.toUpperCase()}? Setelah ditandatangani, laporan tidak dapat diubah tanpa membatalkan tanda tangan.`,
+      confirmText: 'Tandatangani',
+      danger: true,
+    });
+    if (!lanjutTanda) return;
     try {
       showProgress(20, 'Authenticating Digital Identity...');
       const res = await signProject(proyek.id, type, supabase);
@@ -1728,6 +1760,14 @@ window._downloadGDocsPdf = async (docId, proyekId, nama) => {
 };
 
 function initExportDropdown() {
+  // Guard idempoten: fungsi ini dipanggil dari render yang bisa berjalan
+  // berkali-kali (setiap kunjungan halaman / render ulang). Listener pada
+  // `window`/`document` TIDAK ikut terhapus saat DOM halaman diganti,
+  // sehingga tanpa guard setiap kunjungan menambah satu set listener baru —
+  // handler berjalan berkali-kali dan memori terus tumbuh.
+  if (initExportDropdown._bound) return;
+  initExportDropdown._bound = true;
+
   document.addEventListener('click', (e) => {
     const btn = document.getElementById('btn-global-export');
     if (btn && !btn.contains(e.target)) {
@@ -1761,7 +1801,7 @@ window._openTemplateSetup = async function() {
            </div>
            <div class="card-quartz" style="padding:20px; background:hsla(220, 20%, 100%, 0.02); text-align:center">
               <div style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--gold-400); margin-bottom:12px">STEP 2: CUSTOMIZE</div>
-              <input type="file" id="project-template-file" accept=".docx" hidden onchange="window._handleProjectTemplateUpload('${proyek.id}', this)">
+              <input type="file" id="project-template-file" accept=".docx" hidden onchange="window._handleProjectTemplateUpload('${escapeHtml(proyek.id)}', this)">
               <button class="btn btn-primary btn-sm" onclick="document.getElementById('project-template-file').click()" style="width:100%; font-size:0.75rem">
                  <i class="fas fa-upload" style="margin-right:8px"></i> UPLOAD .DOCX
               </button>
@@ -1771,7 +1811,7 @@ window._openTemplateSetup = async function() {
         <div id="project-template-info">
            ${proyek.metadata?.report_template_name 
              ? `<div class="badge" style="background:var(--success-500); color:white; width:100%; justify-content:center; padding:12px; border-radius:10px">
-                  <i class="fas fa-check-circle" style="margin-right:10px"></i> ACTIVE: ${proyek.metadata.report_template_name.toUpperCase()}
+                  <i class="fas fa-check-circle" style="margin-right:10px"></i> ACTIVE: ${escapeHtml(proyek.metadata.report_template_name.toUpperCase())}
                 </div>`
              : `<p style="font-size:0.7rem; color:var(--text-tertiary); text-align:center; font-style:italic">Menggunakan template standar sistem.</p>`
            }
@@ -1837,7 +1877,12 @@ window._handleProjectTemplateUpload = async (proyekId, input) => {
         
         const { data, error: uploadError } = await supabase.storage
             .from('templates')
-            .upload(fileName, file, { upsert: true });
+            .upload(fileName, file, {
+                upsert: true,
+                // EGRESS: nama file memuat timestamp → unik & tidak berubah.
+                // Cache panjang = berkas tidak diunduh ulang dari origin terus-menerus.
+                cacheControl: '31536000'   // 1 tahun
+            });
             
         if (uploadError) throw uploadError;
         
@@ -1909,8 +1954,6 @@ function renderSkeleton() {
     <div class="card-quartz" style="height:600px"></div>
   `;
 }
-
-function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function formatTanggalwTime(d) {
   try { return new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); } 

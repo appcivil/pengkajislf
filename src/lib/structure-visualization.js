@@ -1,3 +1,4 @@
+import { escapeHtml } from './safe-markdown.js';
 /**
  * STRUCTURE VISUALIZATION & FLOOR PLAN TOOLS
  * Canvas-based annotation and visualization
@@ -339,20 +340,20 @@ export function generateDamageHeatmap(damageData, floorPlan, options = {}) {
   };
   
   return `
-    <div style="position: relative; width: ${width}px; height: ${height}px; background: hsla(220, 20%, 100%, 0.05); border-radius: 8px; overflow: hidden;">
-      <img src="${floorPlan}" style="width: 100%; height: 100%; object-fit: contain; opacity: 0.5;">
+    <div style="position: relative; width: ${escapeHtml(width)}px; height: ${escapeHtml(height)}px; background: hsla(220, 20%, 100%, 0.05); border-radius: 8px; overflow: hidden;">
+      <img alt="Diagram struktur bangunan" src="${escapeHtml(floorPlan)}" style="width: 100%; height: 100%; object-fit: contain; opacity: 0.5;">
       
       ${damageData.map(d => `
         <div style="position: absolute; 
-                    left: ${d.x}%; top: ${d.y}%; 
-                    width: ${d.radius || 20}px; height: ${d.radius || 20}px;
+                    left: ${escapeHtml(d.x)}%; top: ${escapeHtml(d.y)}%; 
+                    width: ${escapeHtml(d.radius || 20)}px; height: ${escapeHtml(d.radius || 20)}px;
                     background: ${severityColors[d.severity] || severityColors['Aman']};
                     border-radius: 50%;
                     transform: translate(-50%, -50%);
                     box-shadow: 0 0 10px ${severityColors[d.severity] || severityColors['Aman']};
                     opacity: 0.7;
                     cursor: pointer;"
-             title="${d.description || d.severity}">
+             title="${escapeHtml(d.description || d.severity)}">
         </div>
       `).join('')}
       
@@ -360,8 +361,8 @@ export function generateDamageHeatmap(damageData, floorPlan, options = {}) {
       <div style="position: absolute; bottom: 10px; right: 10px; background: hsla(220, 20%, 100%, 0.9); padding: 8px 12px; border-radius: 6px; backdrop-filter: blur(4px);">
         ${Object.entries(severityColors).map(([label, color]) => `
           <div style="display: flex; align-items: center; gap: 6px; margin: 2px 0;">
-            <div style="width: 10px; height: 10px; border-radius: 50%; background: ${color};"></div>
-            <span style="font-size: 10px; color: #1e293b;">${label}</span>
+            <div style="width: 10px; height: 10px; border-radius: 50%; background: ${escapeHtml(color)};"></div>
+            <span style="font-size: 10px; color: #1e293b;">${escapeHtml(label)}</span>
           </div>
         `).join('')}
       </div>

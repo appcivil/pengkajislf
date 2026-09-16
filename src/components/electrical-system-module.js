@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 
@@ -108,8 +109,8 @@ export function renderElectricalSystemCard(p, summary = {}) {
           </div>
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <span class="badge" style="background: ${statusColor}20; color: ${statusColor}; border: 1px solid ${statusColor}40; font-size: 10px;">
-            <i class="fas ${statusIcon}" style="margin-right: 6px;"></i>${statusText}
+          <span class="badge" style="background: ${escapeHtml(statusColor)}20; color: ${escapeHtml(statusColor)}; border: 1px solid ${escapeHtml(statusColor)}40; font-size: 10px;">
+            <i class="fas ${statusIcon}" style="margin-right: 6px;"></i>${escapeHtml(statusText)}
           </span>
           <span class="badge" style="background: hsla(220, 95%, 52%, 0.1); color: var(--brand-400); border: 1px solid hsla(220, 95%, 52%, 0.2); font-size: 10px;">
             <i class="fas fa-book" style="margin-right: 6px;"></i>PUIL 2020
@@ -125,7 +126,7 @@ export function renderElectricalSystemCard(p, summary = {}) {
         <!-- Stats Grid -->
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;">
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${summary.totalPanels}</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${escapeHtml(summary.totalPanels)}</div>
             <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">PANEL</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
@@ -137,7 +138,7 @@ export function renderElectricalSystemCard(p, summary = {}) {
             <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">HOTSPOT</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${summary.totalMeasurements}</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${escapeHtml(summary.totalMeasurements)}</div>
             <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">MEASUREMENTS</div>
           </div>
         </div>
@@ -147,18 +148,18 @@ export function renderElectricalSystemCard(p, summary = {}) {
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
         <button class="btn-presidential" 
                 style="width: 100%; height: 44px; border-radius: 12px; font-size: 10px; background: ${hasData ? 'var(--gradient-brand)' : 'var(--gradient-dark)'};"
-                onclick="window._openElectricalInspection('${p.id}')">
+                onclick="window._openElectricalInspection('${escapeHtml(p.id)}')">
           <i class="fas fa-ruler-combined" style="margin-right: 8px;"></i> ${hasData ? 'LANJUTKAN INSPEKSI' : 'MULAI INSPEKSI'}
         </button>
         ${hasData ? `
           <button class="btn btn-outline" 
                   style="width: 100%; height: 44px; border-radius: 12px; font-size: 10px; border-color: hsla(220, 95%, 52%, 0.2); color: white;"
-                  onclick="window._viewElectricalReport('${p.id}')">
+                  onclick="window._viewElectricalReport('${escapeHtml(p.id)}')">
             <i class="fas fa-file-pdf" style="margin-right: 8px;"></i> LAPORAN
           </button>
           <button class="btn btn-outline" 
                   style="width: 100%; height: 44px; border-radius: 12px; font-size: 10px; border-color: hsla(45, 90%, 60%, 0.2); color: var(--gold-400);"
-                  onclick="window._exportElectricalData('${p.id}')">
+                  onclick="window._exportElectricalData('${escapeHtml(p.id)}')">
             <i class="fas fa-download" style="margin-right: 8px;"></i> EXPORT DATA
           </button>
         ` : `

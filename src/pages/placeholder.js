@@ -4,21 +4,22 @@
 // ============================================================
 import { navigate } from '../lib/router.js';
 
+import { escapeHtml } from '../lib/safe-markdown.js';
 export function placeholderPage({ title, icon, description, links = [] }) {
   return `
     <div>
       <div class="page-header">
         <h1 class="page-title">
-          <i class="fas ${icon}" style="color:var(--brand-400);margin-right:10px"></i>${title}
+          <i class="fas ${icon}" style="color:var(--brand-400);margin-right:10px"></i>${escapeHtml(title)}
         </h1>
-        <p class="page-subtitle">${description}</p>
+        <p class="page-subtitle">${escapeHtml(description)}</p>
       </div>
 
       <div class="card" style="text-align:center;padding:var(--space-12)">
         <div style="width:80px;height:80px;background:var(--gradient-brand);border-radius:var(--radius-xl);display:flex;align-items:center;justify-content:center;font-size:2rem;color:white;margin:0 auto var(--space-5);animation:float 4s ease-in-out infinite">
           <i class="fas ${icon}"></i>
         </div>
-        <h2 style="font-size:1.4rem;font-weight:700;margin-bottom:var(--space-3)">${title}</h2>
+        <h2 style="font-size:1.4rem;font-weight:700;margin-bottom:var(--space-3)">${escapeHtml(title)}</h2>
         <p style="color:var(--text-secondary);max-width:440px;margin:0 auto var(--space-6)">
           Halaman ini sedang dalam pengembangan aktif. Fitur akan segera tersedia.
         </p>
@@ -26,8 +27,8 @@ export function placeholderPage({ title, icon, description, links = [] }) {
         ${links.length ? `
           <div class="flex gap-3" style="justify-content:center;flex-wrap:wrap">
             ${links.map(l => `
-              <button class="btn btn-secondary" onclick="window.navigate('${l.route}')">
-                <i class="fas ${l.icon}"></i> ${l.label}
+              <button class="btn btn-secondary" onclick="window.navigate('${escapeHtml(l.route)}')">
+                <i class="fas ${l.icon}"></i> ${escapeHtml(l.label)}
               </button>
             `).join('')}
           </div>
@@ -42,8 +43,8 @@ export function placeholderPage({ title, icon, description, links = [] }) {
           ${getFeaturesByPage(title).map(f => `
             <div style="background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:var(--space-4)">
               <i class="fas ${f.icon}" style="color:var(--brand-400);margin-bottom:8px;font-size:1.1rem"></i>
-              <div style="font-size:0.8rem;font-weight:600;color:var(--text-primary);margin-bottom:4px">${f.title}</div>
-              <div style="font-size:0.75rem;color:var(--text-tertiary)">${f.desc}</div>
+              <div style="font-size:0.8rem;font-weight:600;color:var(--text-primary);margin-bottom:4px">${escapeHtml(f.title)}</div>
+              <div style="font-size:0.75rem;color:var(--text-tertiary)">${escapeHtml(f.desc)}</div>
             </div>
           `).join('')}
         </div>

@@ -4,6 +4,7 @@
  * Executive Control Center for System Configuration
  */
 import { getSettings, saveSettings } from '../lib/settings.js';
+import { escapeHtml, escapeHtml as escHtml } from '../lib/safe-markdown.js';
 import { updateProfile } from '../lib/team-service.js';
 import { getUserInfo } from '../lib/auth.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
@@ -119,7 +120,7 @@ export async function pengaturanPage() {
                    ${['Checklist update on Hotel Quartz', 'AI Synthesis for Building B', 'Executive Report Exported'].map(log => `
                      <div style="display:flex; align-items:center; gap:12px; font-size:0.75rem; color:var(--text-tertiary)">
                         <div style="width:6px; height:6px; border-radius:50%; background:var(--brand-500)"></div>
-                        ${log}
+                        ${escapeHtml(log)}
                      </div>
                    `).join('')}
                 </div>
@@ -186,7 +187,7 @@ export async function pengaturanPage() {
                 <div class="form-group mb-8">
                   <label class="form-label">LETTERHEAD HEADER (DPI OPTIMIZED)</label>
                   <div id="kop-preview-container" class="card-quartz" style="height:120px; display:flex; align-items:center; justify-content:center; background:hsla(220, 20%, 100%, 0.02); padding:10px">
-                    ${settings.consultant?.kop_image ? `<img src="${settings.consultant.kop_image}" style="max-height:100%; max-width:100%; object-fit:contain">` : '<i class="fas fa-image" style="font-size:2rem; opacity:0.1"></i>'}
+                    ${settings.consultant?.kop_image ? `<img alt="Pratinjau kop surat" src="${escapeHtml(settings.consultant.kop_image)}" style="max-height:100%; max-width:100%; object-fit:contain">` : '<i class="fas fa-image" style="font-size:2rem; opacity:0.1"></i>'}
                   </div>
                   <input type="file" accept="image/*" onchange="window.handleKopUpload(this)" class="mt-4 text-xs" style="color:var(--text-tertiary)">
                   <input type="hidden" name="consultant_kop_image" id="consultant-kop-val" value="${settings.consultant?.kop_image || ''}">
@@ -196,7 +197,7 @@ export async function pengaturanPage() {
                   <div class="form-group">
                     <label class="form-label">OFFICIAL LOGO</label>
                     <div id="logo-preview-container" class="card-quartz" style="height:100px; display:flex; align-items:center; justify-content:center; background:hsla(220, 20%, 100%, 0.02); padding:10px">
-                      ${settings.consultant?.logo ? `<img src="${settings.consultant.logo}" style="max-height:100%; max-width:100%; object-fit:contain">` : '<i class="fas fa-image" style="opacity:0.1"></i>'}
+                      ${settings.consultant?.logo ? `<img alt="Logo instansi" src="${escapeHtml(settings.consultant.logo)}" style="max-height:100%; max-width:100%; object-fit:contain">` : '<i class="fas fa-image" style="opacity:0.1"></i>'}
                     </div>
                     <input type="file" accept="image/*" onchange="window.handleLogoUpload(this)" class="mt-2 text-xs" style="width:100%">
                     <input type="hidden" name="consultant_logo" id="consultant-logo-val" value="${settings.consultant?.logo || ''}">
@@ -204,7 +205,7 @@ export async function pengaturanPage() {
                   <div class="form-group">
                     <label class="form-label">CORPORATE SEAL</label>
                     <div id="stamp-preview-container" class="card-quartz" style="height:100px; display:flex; align-items:center; justify-content:center; background:hsla(220, 20%, 100%, 0.02); padding:10px">
-                      ${settings.consultant?.stamp ? `<img src="${settings.consultant.stamp}" style="max-height:100%; max-width:100%; object-fit:contain">` : '<i class="fas fa-stamp" style="opacity:0.1"></i>'}
+                      ${settings.consultant?.stamp ? `<img alt="Pratinjau stempel instansi" src="${escapeHtml(settings.consultant.stamp)}" style="max-height:100%; max-width:100%; object-fit:contain">` : '<i class="fas fa-stamp" style="opacity:0.1"></i>'}
                     </div>
                     <input type="file" accept="image/*" onchange="window.handleStampUpload(this)" class="mt-2 text-xs" style="width:100%">
                     <input type="hidden" name="consultant_stamp" id="consultant-stamp-val" value="${settings.consultant?.stamp || ''}">
@@ -212,7 +213,7 @@ export async function pengaturanPage() {
                   <div class="form-group">
                     <label class="form-label">DIRECTOR SIG</label>
                     <div id="sig-preview-container" class="card-quartz" style="height:100px; display:flex; align-items:center; justify-content:center; background:hsla(220, 20%, 100%, 0.02); padding:10px">
-                      ${settings.consultant?.signature ? `<img src="${settings.consultant.signature}" style="max-height:100%; max-width:100%; object-fit:contain">` : '<i class="fas fa-signature" style="opacity:0.1"></i>'}
+                      ${settings.consultant?.signature ? `<img alt="Tanda tangan" src="${escapeHtml(settings.consultant.signature)}" style="max-height:100%; max-width:100%; object-fit:contain">` : '<i class="fas fa-signature" style="opacity:0.1"></i>'}
                     </div>
                     <input type="file" accept="image/*" onchange="window.handleSigUpload(this)" class="mt-2 text-xs" style="width:100%">
                     <input type="hidden" name="consultant_sig" id="consultant-sig-val" value="${settings.consultant?.signature || ''}">
@@ -226,7 +227,7 @@ export async function pengaturanPage() {
                 <div class="form-group mb-10">
                   <label class="form-label">QUANTUM REASONING MODEL (CLOUD)</label>
                   <select class="form-select" name="default_model" style="height:48px; border-radius:12px">
-                    ${Object.values(AI_MODELS).map(m => `<option value="${m.id}" ${settings.ai?.defaultModel === m.id ? 'selected' : ''}>${m.name.toUpperCase()}</option>`).join('')}
+                    ${Object.values(AI_MODELS).map(m => `<option value="${escapeHtml(m.id)}" ${settings.ai?.defaultModel === m.id ? 'selected' : ''}>${escapeHtml(m.name.toUpperCase())}</option>`).join('')}
                   </select>
                 </div>
 
@@ -257,7 +258,7 @@ export async function pengaturanPage() {
                     <select class="form-select" name="ollama_model" id="ollama-model-select" style="height:48px; border-radius:12px">
                       <option value="">-- PILIH MODEL (KLIK SCAN) --</option>
                       ${(settings.ai?.availableLocalModels || []).map(m => `
-                        <option value="${m}" ${settings.ai?.ollamaModel === m ? 'selected' : ''}>${m.toUpperCase()}</option>
+                        <option value="${escapeHtml(m)}" ${settings.ai?.ollamaModel === m ? 'selected' : ''}>${escapeHtml(m.toUpperCase())}</option>
                       `).join('')}
                     </select>
                     <p style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); margin-top:12px; line-height:1.4">
@@ -297,21 +298,21 @@ export async function pengaturanPage() {
                   { id: 'mep', label: 'MEP & FIRE SYSTEMS',     color: 'var(--gold-400)', expert: settings.experts?.mep }
                 ].map(p => `
                   <div style="margin-bottom:24px; padding:20px; background:hsla(220, 20%, 100%, 0.02); border:1px solid hsla(220, 20%, 100%, 0.05); border-radius:16px">
-                    <div style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:${p.color}; letter-spacing:1.5px; margin-bottom:16px">${p.label}</div>
+                    <div style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:${escapeHtml(p.color)}; letter-spacing:1.5px; margin-bottom:16px">${escapeHtml(p.label)}</div>
                     <div class="grid-2-col" style="margin-bottom:16px">
-                      <input type="text" class="form-input text-xs" name="exp_${p.id}_name" value="${p.expert?.name || ''}" placeholder="Name & Legal Title" style="background:transparent">
-                      <input type="text" class="form-input text-xs" name="exp_${p.id}_skk" value="${p.expert?.skk || ''}" placeholder="Certificate No. (SKK)" style="background:transparent">
+                      <input type="text" class="form-input text-xs" name="exp_${escapeHtml(p.id)}_name" value="${p.expert?.name || ''}" placeholder="Name & Legal Title" style="background:transparent">
+                      <input type="text" class="form-input text-xs" name="exp_${escapeHtml(p.id)}_skk" value="${p.expert?.skk || ''}" placeholder="Certificate No. (SKK)" style="background:transparent">
                     </div>
                     <div class="grid-2-col">
                       <div>
                         <label style="font-size:0.65rem; color:var(--text-tertiary); text-transform:uppercase; font-weight:700">Digital ID (Signature)</label>
-                        <input type="file" onchange="window.handleExpertSigUpload(this, '${p.id}')" class="text-xs mt-2" style="width:100%; color:var(--text-tertiary)">
-                        <input type="hidden" name="exp_${p.id}_sig" id="exp-${p.id}-sig-val" value="${p.expert?.signature || ''}">
+                        <input type="file" onchange="window.handleExpertSigUpload(this, '${escapeHtml(p.id)}')" class="text-xs mt-2" style="width:100%; color:var(--text-tertiary)">
+                        <input type="hidden" name="exp_${escapeHtml(p.id)}_sig" id="exp-${escapeHtml(p.id)}-sig-val" value="${p.expert?.signature || ''}">
                       </div>
                       <div>
                         <label style="font-size:0.65rem; color:var(--text-tertiary); text-transform:uppercase; font-weight:700">QR Registry Key</label>
-                        <input type="file" onchange="window.handleExpertQrUpload(this, '${p.id}')" class="text-xs mt-2" style="width:100%; color:var(--text-tertiary)">
-                        <input type="hidden" name="exp_${p.id}_qr" id="exp-${p.id}-qr-val" value="${p.expert?.qr_code || ''}">
+                        <input type="file" onchange="window.handleExpertQrUpload(this, '${escapeHtml(p.id)}')" class="text-xs mt-2" style="width:100%; color:var(--text-tertiary)">
+                        <input type="hidden" name="exp_${escapeHtml(p.id)}_qr" id="exp-${escapeHtml(p.id)}-qr-val" value="${p.expert?.qr_code || ''}">
                       </div>
                     </div>
                   </div>
@@ -349,7 +350,7 @@ export async function pengaturanPage() {
               <div class="form-group mb-8">
                 <label class="form-label">CALIBRATION LOGO (TRANSPARENT PNG)</label>
                 <div id="wm-logo-preview-container" class="card-quartz" style="height:120px; display:flex; align-items:center; justify-content:center; background:hsla(220, 20%, 100%, 0.02)">
-                  ${settings.watermark?.company_logo ? `<img src="${settings.watermark.company_logo}" style="max-height:100%; object-fit:contain">` : '<i class="fas fa-image" style="opacity:0.1; font-size:2rem"></i>'}
+                  ${settings.watermark?.company_logo ? `<img alt="Watermark dokumen" src="${escapeHtml(settings.watermark.company_logo)}" style="max-height:100%; object-fit:contain">` : '<i class="fas fa-image" style="opacity:0.1; font-size:2rem"></i>'}
                 </div>
                 <input type="file" accept="image/*" onchange="window.handleWmLogoUpload(this)" class="mt-4 text-xs" style="color:var(--text-tertiary)">
                 <input type="hidden" name="wm_company_logo" id="wm-company-logo-val" value="${settings.watermark?.company_logo || ''}">
@@ -373,8 +374,8 @@ export async function pengaturanPage() {
                      { name: 'wm_show_time', label: 'INJECT ATOMIC TIMESTAMP', checked: settings.watermark?.show_time }
                    ].map(opt => `
                      <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; background:hsla(220, 20%, 100%, 0.02); border:1px solid hsla(220, 20%, 100%, 0.05); border-radius:12px">
-                        <label style="font-family:var(--font-mono); font-size:0.7rem; font-weight:800; color:white">${opt.label}</label>
-                        <input type="checkbox" name="${opt.name}" ${opt.checked ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--brand-500)">
+                        <label style="font-family:var(--font-mono); font-size:0.7rem; font-weight:800; color:white">${escapeHtml(opt.label)}</label>
+                        <input type="checkbox" name="${escapeHtml(opt.name)}" ${opt.checked ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--brand-500)">
                      </div>
                    `).join('')}
                 </div>
@@ -394,7 +395,7 @@ export async function pengaturanPage() {
 
               <div class="card-quartz" style="padding:32px; background:hsla(220, 95%, 52%, 0.03); border:1px dashed hsla(220, 95%, 52%, 0.2)">
                  <div style="font-size:0.8rem; color:var(--brand-300); line-height:1.6; font-weight:600">
-                    <i class="fas fa-microchip" style="margin-right:10px"></i> Calibration engine will process high-frequency image artifacts during final render. Ensure camera hardware is calibrated to local timezone.
+                    <i class="fas fa-microchip" style="margin-right:10px"></i> Calibration engine will process high-frequency image artifacts during final render. Pastikan perangkat kamera dikalibrasi sesuai zona waktu setempat.
                  </div>
               </div>
             </div>
@@ -415,7 +416,7 @@ export async function pengaturanPage() {
                <!-- Download Reference -->
                <div class="card-quartz" style="padding:32px; background:hsla(220, 20%, 100%, 0.02)">
                   <h4 style="color:white; font-size:1rem; margin-bottom:12px; font-weight:800">1. Reference Template</h4>
-                  <p style="font-size:0.8rem; color:var(--text-tertiary); margin-bottom:24px; line-height:1.6">Download a template containing all available placeholders (Tags) that can be used in your document.</p>
+                  <p style="font-size:0.8rem; color:var(--text-tertiary); margin-bottom:24px; line-height:1.6">Unduh templat berisi seluruh penanda (tag) yang tersedia untuk dipakai di dokumen Anda.</p>
                   <button type="button" onclick="window.downloadDocxReference()" class="btn btn-outline" style="width:100%; height:48px; border-radius:12px; font-weight:700; color:white; border-color:var(--brand-400)">
                     <i class="fas fa-download" style="margin-right:10px"></i> DOWNLOAD REFERENCE TAGS
                   </button>
@@ -424,7 +425,7 @@ export async function pengaturanPage() {
                <!-- Upload Custom -->
                <div class="card-quartz" style="padding:32px; background:hsla(220, 20%, 100%, 0.02)">
                   <h4 style="color:white; font-size:1rem; margin-bottom:12px; font-weight:800">2. Custom Template</h4>
-                  <p style="font-size:0.8rem; color:var(--text-tertiary); margin-bottom:24px; line-height:1.6">Upload your corporate-branded .docx file. The system will auto-fill the tags upon exporting reports.</p>
+                  <p style="font-size:0.8rem; color:var(--text-tertiary); margin-bottom:24px; line-height:1.6">Unggah berkas .docx berlogo instansi Anda. Sistem akan mengisi penanda secara otomatis saat laporan diekspor.</p>
                   
                   <div id="template-status" style="margin-bottom:16px">
                      <div class="badge" style="background:var(--text-tertiary); color:white; padding:8px 16px; border-radius:8px; font-size:10px">
@@ -446,9 +447,9 @@ export async function pengaturanPage() {
                <h4 style="color:var(--gold-400); font-size:0.9rem; font-weight:800; margin-bottom:16px"><i class="fas fa-triangle-exclamation"></i> Templating Rules</h4>
                <ul style="font-size:0.8rem; color:var(--text-tertiary); padding-left:20px; line-height:1.8">
                   <li>Use double curly braces for tags: <code style="color:var(--brand-400)">{{NAMA_BANGUNAN}}</code>, <code style="color:var(--brand-400)">{{ALAMAT}}</code>, etc.</li>
-                  <li>For tables, use the looping syntax: <code style="color:var(--gold-400)">{#_checklistTeknis}</code> ... <code style="color:var(--gold-400)">{/_checklistTeknis}</code>.</li>
+                  <li>Untuk tabel, gunakan sintaks pengulangan: <code style="color:var(--gold-400)">{#_checklistTeknis}</code> ... <code style="color:var(--gold-400)">{/_checklistTeknis}</code>.</li>
                   <li>Recommended fonts: Calibri or Arial for cross-platform compatibility.</li>
-                  <li>Ensure your file is a pure <code style="color:white">.docx</code> (not .doc or .rtf).</li>
+                  <li>Pastikan berkas Anda benar-benar berformat <code style="color:white">.docx</code> (bukan .doc atau .rtf).</li>
                </ul>
             </div>
           </div>
@@ -504,7 +505,7 @@ function handleFileToHidden(input, containerId, hiddenId) {
     const reader = new FileReader();
     reader.onload = (e) => {
       if (containerId) {
-        document.getElementById(containerId).innerHTML = `<img src="${e.target.result}" style="max-height:100%; max-width:100%; object-fit:contain">`;
+        document.getElementById(containerId).innerHTML = `<img alt="Pratinjau logo instansi" src="${escapeHtml(e.target.result)}" style="max-height:100%; max-width:100%; object-fit:contain">`;
       }
       document.getElementById(hiddenId).value = e.target.result;
     };
@@ -550,7 +551,7 @@ window.handleTemplateUpload = async function(input) {
         showSuccess('Template berhasil diperbarui.');
         document.getElementById('template-status').innerHTML = `
           <div class="badge" style="background:var(--success-500); color:white; padding:8px 16px; border-radius:8px; font-size:10px">
-            <i class="fas fa-check-circle" style="margin-right:8px"></i> SUCCESS: ${file.name.toUpperCase()}
+            <i class="fas fa-check-circle" style="margin-right:8px"></i> SUCCESS: ${escapeHtml(file.name.toUpperCase())}
           </div>
         `;
     };
@@ -709,7 +710,7 @@ window.syncOllamaModels = async function(btn) {
     
     if (select) {
       select.innerHTML = models.map(m => `
-        <option value="${m.name}">${m.name.toUpperCase()}</option>
+        <option value="${escapeHtml(m.name)}">${escapeHtml(m.name.toUpperCase())}</option>
       `).join('');
       
       // Auto-select gemma3:27b if it exists
@@ -730,8 +731,6 @@ window.syncOllamaModels = async function(btn) {
 function renderSkeleton() {
   return `<div class="card-quartz" style="height:200px; margin-bottom:40px"></div><div class="card-quartz" style="height:600px"></div>`;
 }
-
-function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function formatTanggalwTime(d) {
   try { return new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); } 

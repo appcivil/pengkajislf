@@ -4,6 +4,7 @@
 // ============================================================
 
 import { BaseInspection } from './BaseInspection.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { InspectionWidgets } from '../../components/inspection/inspection-widgets.js';
 import { showSuccess, showError, showInfo } from '../../components/toast.js';
 
@@ -29,6 +30,7 @@ import {
   MEASUREMENT_POINT_TYPES,
   PUIL_DATABASE
 } from '../../lib/electrical-constants.js';
+import { confirm } from '../../components/modal.js';
 
 /**
  * Kelas ElectricalInspection mengextends BaseInspection.
@@ -206,7 +208,7 @@ export class ElectricalInspection extends BaseInspection {
           })}
           
           ${selectedPanel ? InspectionWidgets.renderSectionCard({
-            title: `Panel Aktif: ${selectedPanel.name}`,
+            title: `Panel Aktif: ${escapeHtml(selectedPanel.name)}`,
             icon: 'bolt',
             accentColor: 'var(--warning-400)',
             content: this.renderSelectedPanelSummary(selectedPanel)
@@ -246,7 +248,7 @@ export class ElectricalInspection extends BaseInspection {
         panel.panel_type || '-',
         `${panel.mcb_rating || 0}A`,
         `${loading.toFixed(1)}%`,
-        `<span style="color: ${statusColor}; font-weight: 600;">${status}</span>`
+        `<span style="color: ${escapeHtml(statusColor)}; font-weight: 600;">${escapeHtml(status)}</span>`
       ];
     });
 
@@ -277,13 +279,13 @@ export class ElectricalInspection extends BaseInspection {
         </div>
         <div style="padding: 16px; background: ${loading > this.LOADING_LIMITS.critical ? 'hsla(0, 80%, 60%, 0.15)' : loading > this.LOADING_LIMITS.normal ? 'hsla(35, 100%, 50%, 0.15)' : 'hsla(160, 100%, 45%, 0.15)'}; border-radius: 10px;">
           <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-bottom: 4px;">Loading</div>
-          <div style="font-size: 1.5rem; font-weight: 700; color: ${loading > this.LOADING_LIMITS.critical ? 'var(--danger-400)' : loading > this.LOADING_LIMITS.normal ? 'var(--warning-400)' : 'var(--success-400)'};">${loading.toFixed(1)}%</div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: ${loading > this.LOADING_LIMITS.critical ? 'var(--danger-400)' : loading > this.LOADING_LIMITS.normal ? 'var(--warning-400)' : 'var(--success-400)'};">${escapeHtml(loading.toFixed(1))}%</div>
         </div>
       </div>
       
       ${InspectionWidgets.renderActionBar([
-        { icon: 'edit', label: 'Edit Panel', variant: 'secondary', onclick: `window._inspectionControllers['electrical'].editPanel('${panel.id}')` },
-        { icon: 'plus', label: 'Tambah Pengukuran', variant: 'primary', onclick: `window._inspectionControllers['electrical'].showAddMeasurementModal('${panel.id}')` }
+        { icon: 'edit', label: 'Edit Panel', variant: 'secondary', onclick: `window._inspectionControllers['electrical'].editPanel('${escapeHtml(panel.id)}')` },
+        { icon: 'plus', label: 'Tambah Pengukuran', variant: 'primary', onclick: `window._inspectionControllers['electrical'].showAddMeasurementModal('${escapeHtml(panel.id)}')` }
       ])}
     `;
   }
@@ -313,12 +315,12 @@ export class ElectricalInspection extends BaseInspection {
                                       loading > this.LOADING_LIMITS.normal ? 'var(--warning-400)' : 'var(--success-400)';
                   
                   return `
-                    <div onclick="window._inspectionControllers['electrical'].selectPanel('${panel.id}')" 
+                    <div onclick="window._inspectionControllers['electrical'].selectPanel('${escapeHtml(panel.id)}')" 
                          class="panel-list-item ${selectedPanel?.id === panel.id ? 'active' : ''}"
                          style="padding: 12px; border-radius: 10px; cursor: pointer; margin-bottom: 8px; transition: all 0.2s; ${selectedPanel?.id === panel.id ? 'background: var(--gradient-brand);' : 'background: hsla(220, 20%, 20%, 0.3);'}">
-                      <div style="font-weight: 600; font-size: 0.85rem; color: ${selectedPanel?.id === panel.id ? 'white' : 'var(--text-primary)'};">${panel.name}</div>
+                      <div style="font-weight: 600; font-size: 0.85rem; color: ${selectedPanel?.id === panel.id ? 'white' : 'var(--text-primary)'};">${escapeHtml(panel.name)}</div>
                       <div style="font-size: 0.75rem; color: ${selectedPanel?.id === panel.id ? 'rgba(255,255,255,0.8)' : 'var(--text-tertiary)'};">
-                        ${panel.panel_type} • ${panel.mcb_rating}A • <span style="color: ${selectedPanel?.id === panel.id ? 'white' : statusColor};">${loading.toFixed(0)}%</span>
+                        ${escapeHtml(panel.panel_type)} • ${escapeHtml(panel.mcb_rating)}A • <span style="color: ${selectedPanel?.id === panel.id ? 'white' : statusColor};">${escapeHtml(loading.toFixed(0))}%</span>
                       </div>
                     </div>
                   `;
@@ -347,25 +349,25 @@ export class ElectricalInspection extends BaseInspection {
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px;">
           <div>
             <label style="font-size: 0.7rem; color: var(--text-tertiary); text-transform: uppercase;">Nama Panel</label>
-            <div style="font-size: 1rem; font-weight: 600; color: white;">${panel.name || '-'}</div>
+            <div style="font-size: 1rem; font-weight: 600; color: white;">${escapeHtml(panel.name || '-')}</div>
           </div>
           <div>
             <label style="font-size: 0.7rem; color: var(--text-tertiary); text-transform: uppercase;">Tipe Panel</label>
-            <div style="font-size: 1rem; font-weight: 600; color: white;">${panel.panel_type || '-'}</div>
+            <div style="font-size: 1rem; font-weight: 600; color: white;">${escapeHtml(panel.panel_type || '-')}</div>
           </div>
           <div>
             <label style="font-size: 0.7rem; color: var(--text-tertiary); text-transform: uppercase;">Lokasi</label>
-            <div style="font-size: 1rem; font-weight: 600; color: white;">${panel.location || '-'}</div>
+            <div style="font-size: 1rem; font-weight: 600; color: white;">${escapeHtml(panel.location || '-')}</div>
           </div>
           <div>
             <label style="font-size: 0.7rem; color: var(--text-tertiary); text-transform: uppercase;">MCB Rating</label>
-            <div style="font-size: 1rem; font-weight: 600; color: white;">${panel.mcb_rating || '-'} A</div>
+            <div style="font-size: 1rem; font-weight: 600; color: white;">${escapeHtml(panel.mcb_rating || '-')} A</div>
           </div>
         </div>
         
         ${InspectionWidgets.renderActionBar([
-          { icon: 'edit', label: 'Edit Panel', variant: 'secondary', onclick: `window._inspectionControllers['electrical'].editPanel('${panel.id}')` },
-          { icon: 'trash', label: 'Hapus', variant: 'danger', onclick: `window._inspectionControllers['electrical'].deletePanel('${panel.id}')` }
+          { icon: 'edit', label: 'Edit Panel', variant: 'secondary', onclick: `window._inspectionControllers['electrical'].editPanel('${escapeHtml(panel.id)}')` },
+          { icon: 'trash', label: 'Hapus', variant: 'danger', onclick: `window._inspectionControllers['electrical'].deletePanel('${escapeHtml(panel.id)}')` }
         ])}
       `
     });
@@ -438,10 +440,10 @@ export class ElectricalInspection extends BaseInspection {
                   <div style="aspect-ratio: 4/3; background: hsla(220, 20%, 15%, 0.5); border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-tertiary);">
                     <i class="fas fa-image" style="font-size: 2rem;"></i>
                   </div>
-                  <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">${t.panelName}</div>
+                  <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">${escapeHtml(t.panelName)}</div>
                   <div style="font-size: 0.75rem; color: var(--text-tertiary);">${this._formatDate(t.captured_at)}</div>
                   <div style="font-size: 0.75rem; color: ${t.max_temp > 70 ? 'var(--danger-400)' : t.max_temp > 50 ? 'var(--warning-400)' : 'var(--success-400)'}; margin-top: 4px;">
-                    Max: ${t.max_temp}°C
+                    Max: ${escapeHtml(t.max_temp)}°C
                   </div>
                 </div>
               `).join('')}
@@ -537,8 +539,8 @@ export class ElectricalInspection extends BaseInspection {
                       <i class="fas fa-${check.passed ? 'check' : 'times'}"></i>
                     </div>
                     <div style="flex: 1;">
-                      <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">${check.name}</div>
-                      <div style="font-size: 0.75rem; color: var(--text-tertiary);">${check.description}</div>
+                      <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">${escapeHtml(check.name)}</div>
+                      <div style="font-size: 0.75rem; color: var(--text-tertiary);">${escapeHtml(check.description)}</div>
                     </div>
                   </div>
                 `).join('')}
@@ -680,7 +682,13 @@ export class ElectricalInspection extends BaseInspection {
   }
 
   async deletePanel(panelId) {
-    if (confirm('Apakah Anda yakin ingin menghapus panel ini? Semua pengukuran terkait akan ikut terhapus.')) {
+    const lanjut = await confirm({
+      title: 'Hapus Panel',
+      message: 'Hapus panel ini? Semua pengukuran yang terkait akan ikut terhapus dan tidak dapat dikembalikan.',
+      confirmText: 'Hapus',
+      danger: true,
+    });
+    if (lanjut) {
       try {
         await this.repository.delete('electrical_panels', panelId);
         showSuccess('Panel berhasil dihapus');

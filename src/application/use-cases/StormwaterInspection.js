@@ -3,6 +3,7 @@
 // ============================================================
 
 import { BaseInspection } from './BaseInspection.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { InspectionWidgets } from '../../components/inspection/inspection-widgets.js';
 import { showSuccess, showError, showInfo } from '../../components/toast.js';
 
@@ -96,19 +97,19 @@ export class StormwaterInspection extends BaseInspection {
               <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
                 <div>
                   <label style="font-size: 0.7rem; color: var(--text-tertiary);">Intensitas (mm/jam)</label>
-                  <div style="font-size: 1.2rem; font-weight: 600; color: white;">${assessment.rainfall_intensity || '-'}</div>
+                  <div style="font-size: 1.2rem; font-weight: 600; color: white;">${escapeHtml(assessment.rainfall_intensity || '-')}</div>
                 </div>
                 <div>
                   <label style="font-size: 0.7rem; color: var(--text-tertiary);">Return Period</label>
-                  <div style="font-size: 1.2rem; font-weight: 600; color: white;">${assessment.return_period || '-'} Tahun</div>
+                  <div style="font-size: 1.2rem; font-weight: 600; color: white;">${escapeHtml(assessment.return_period || '-')} Tahun</div>
                 </div>
                 <div>
                   <label style="font-size: 0.7rem; color: var(--text-tertiary);">Durasi (menit)</label>
-                  <div style="font-size: 1.2rem; font-weight: 600; color: white;">${assessment.duration || '-'}</div>
+                  <div style="font-size: 1.2rem; font-weight: 600; color: white;">${escapeHtml(assessment.duration || '-')}</div>
                 </div>
                 <div>
                   <label style="font-size: 0.7rem; color: var(--text-tertiary);">Koefisien Limpasan</label>
-                  <div style="font-size: 1.2rem; font-weight: 600; color: white;">${runoffCoeff}</div>
+                  <div style="font-size: 1.2rem; font-weight: 600; color: white;">${escapeHtml(runoffCoeff)}</div>
                 </div>
               </div>
             `
@@ -121,11 +122,11 @@ export class StormwaterInspection extends BaseInspection {
             content: `
               <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
                 <div style="padding: 12px; background: hsla(220, 20%, 15%, 0.5); border-radius: 8px; text-align: center;">
-                  <div style="font-size: 1.5rem; font-weight: 700; color: var(--brand-400);">${drainage.length}</div>
+                  <div style="font-size: 1.5rem; font-weight: 700; color: var(--brand-400);">${escapeHtml(drainage.length)}</div>
                   <div style="font-size: 0.75rem; color: var(--text-tertiary);">Saluran Drainase</div>
                 </div>
                 <div style="padding: 12px; background: hsla(220, 20%, 15%, 0.5); border-radius: 8px; text-align: center;">
-                  <div style="font-size: 1.5rem; font-weight: 700; color: var(--success-400);">${infiltration.length}</div>
+                  <div style="font-size: 1.5rem; font-weight: 700; color: var(--success-400);">${escapeHtml(infiltration.length)}</div>
                   <div style="font-size: 0.75rem; color: var(--text-tertiary);">Sumur Resapan</div>
                 </div>
                 <div style="padding: 12px; background: hsla(220, 20%, 15%, 0.5); border-radius: 8px; text-align: center;">
@@ -153,10 +154,10 @@ export class StormwaterInspection extends BaseInspection {
       accentColor: 'var(--brand-400)',
       content: `
         <div style="text-align: center; margin-bottom: 24px;">
-          <div style="font-size: 5rem; font-weight: 800; color: var(--brand-400);">${assessment.rainfall_intensity || '-'}</div>
+          <div style="font-size: 5rem; font-weight: 800; color: var(--brand-400);">${escapeHtml(assessment.rainfall_intensity || '-')}</div>
           <div style="font-size: 1rem; color: var(--text-tertiary);">mm/jam</div>
           <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 12px;">
-            Periode Ulang: ${assessment.return_period || '-'} Tahun
+            Periode Ulang: ${escapeHtml(assessment.return_period || '-')} Tahun
           </div>
         </div>
         
@@ -274,11 +275,11 @@ export class StormwaterInspection extends BaseInspection {
                   </div>
                   <div>
                     <label style="font-size: 0.7rem; color: var(--text-tertiary);">Kedalaman</label>
-                    <div style="font-size: 1.2rem; font-weight: 600; color: white;">${retention.depth || '-'} m</div>
+                    <div style="font-size: 1.2rem; font-weight: 600; color: white;">${escapeHtml(retention.depth || '-')} m</div>
                   </div>
                   <div>
                     <label style="font-size: 0.7rem; color: var(--text-tertiary);">Status</label>
-                    <div style="font-size: 1.2rem; font-weight: 600; color: ${retention.status === 'ACTIVE' ? 'var(--success-400)' : 'var(--warning-400)'};">${retention.status || 'N/A'}</div>
+                    <div style="font-size: 1.2rem; font-weight: 600; color: ${retention.status === 'ACTIVE' ? 'var(--success-400)' : 'var(--warning-400)'};">${escapeHtml(retention.status || 'N/A')}</div>
                   </div>
                 </div>
               `
@@ -314,7 +315,7 @@ export class StormwaterInspection extends BaseInspection {
         
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px;">
           <div style="padding: 16px; background: ${infiltrationOk ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 80%, 60%, 0.1)'}; border-radius: 10px; text-align: center;">
-            <div style="font-size: 1.5rem; font-weight: 700; color: ${infiltrationOk ? 'var(--success-400)' : 'var(--danger-400)'};">${infiltration.length}/${requiredInfiltration}</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: ${infiltrationOk ? 'var(--success-400)' : 'var(--danger-400)'};">${escapeHtml(infiltration.length)}/${escapeHtml(requiredInfiltration)}</div>
             <div style="font-size: 0.75rem; color: var(--text-tertiary);">Sumur Resapan (1 per 100m²)</div>
           </div>
           <div style="padding: 16px; background: ${assessment.has_reuse ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(35, 100%, 50%, 0.1)'}; border-radius: 10px; text-align: center;">

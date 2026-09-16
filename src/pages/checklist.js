@@ -44,6 +44,7 @@ import {
   FULL_CHECKLIST_SCHEMA, 
   CHECKLIST_SECTIONS 
 } from '../lib/checklist-full-schema.js';
+import { confirm } from '../components/modal.js';
 
 export async function checklistPage(params) {
   const proyekId = params.id;
@@ -246,8 +247,14 @@ window._fetchItemData = (kode, nama) => {
     fetchItemData(kode, nama).then(() => renderTabContent());
 };
 
-window._removeFile = (kode, url) => {
-    if (!confirm("Hapus lampiran ini dari daftar simak?")) return;
+window._removeFile = async (kode, url) => {
+    const lanjut = await confirm({
+      title: 'Hapus Lampiran',
+      message: 'Hapus lampiran ini dari daftar simak? Berkas yang sudah diunggah tidak lagi terhubung ke butir ini.',
+      confirmText: 'Hapus',
+      danger: true,
+    });
+    if (!lanjut) return;
     
     const { checklist } = store.get();
     const item = checklist.dataMap[kode];

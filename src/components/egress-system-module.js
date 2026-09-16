@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { openModal, confirm } from '../components/modal.js';
@@ -159,7 +160,7 @@ export function renderEgressSystemCard(project, summary = {}) {
           </div>
         </div>
         <div style="display: flex; gap: 8px;">
-          <span class="badge" style="background: ${st.bg}; color: ${st.text}; border: 1px solid ${st.border}44; font-size: 10px;">
+          <span class="badge" style="background: ${escapeHtml(st.bg)}; color: ${escapeHtml(st.text)}; border: 1px solid ${escapeHtml(st.border)}44; font-size: 10px;">
             <i class="fas ${summary.status === 'COMPLIANT' || summary.status === 'PASS' ? 'fa-check-circle' : summary.status === 'NOT_STARTED' ? 'fa-circle-minus' : 'fa-triangle-exclamation'}" style="margin-right: 6px;"></i>
             ${summary.status === 'COMPLIANT' || summary.status === 'PASS' ? 'LAIK' : summary.status === 'NOT_STARTED' ? 'BELUM DINILAI' : 'PERLU PERHATIAN'}
           </span>
@@ -177,19 +178,19 @@ export function renderEgressSystemCard(project, summary = {}) {
         <!-- Stats Grid -->
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;">
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${summary.totalOccupantLoad}</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${escapeHtml(summary.totalOccupantLoad)}</div>
             <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">OCCUPANT LOAD</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: ${summary.nonCompliantItems > 0 ? 'var(--danger-400)' : 'var(--success-400)'}">${summary.totalRoutes}</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: ${summary.nonCompliantItems > 0 ? 'var(--danger-400)' : 'var(--success-400)'}">${escapeHtml(summary.totalRoutes)}</div>
             <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">ROUTES</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: ${summary.nonCompliantItems > 0 ? 'var(--danger-400)' : 'var(--success-400)'}">${summary.totalComponents}</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: ${summary.nonCompliantItems > 0 ? 'var(--danger-400)' : 'var(--success-400)'}">${escapeHtml(summary.totalComponents)}</div>
             <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">COMPONENTS</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${summary.totalLighting}</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${escapeHtml(summary.totalLighting)}</div>
             <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">LIGHTING</div>
           </div>
         </div>
@@ -198,15 +199,15 @@ export function renderEgressSystemCard(project, summary = {}) {
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">
           <div class="flex-between" style="margin-bottom: 8px;">
             <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-tertiary);">COMPLIANCE SCORE</span>
-            <span style="font-size: 0.7rem; font-weight: 800; color: ${summary.complianceScore >= 80 ? 'var(--success-400)' : summary.complianceScore >= 50 ? 'var(--warning-400)' : 'var(--danger-400)'}">${summary.complianceScore}/100</span>
+            <span style="font-size: 0.7rem; font-weight: 800; color: ${summary.complianceScore >= 80 ? 'var(--success-400)' : summary.complianceScore >= 50 ? 'var(--warning-400)' : 'var(--danger-400)'}">${escapeHtml(summary.complianceScore)}/100</span>
           </div>
           <div style="height: 6px; background: hsla(220, 20%, 100%, 0.05); border-radius: 10px;">
-            <div style="width: ${summary.complianceScore}%; height: 100%; border-radius: 10px; background: ${summary.complianceScore >= 80 ? 'var(--success-500)' : summary.complianceScore >= 50 ? 'var(--warning-500)' : 'var(--danger-500)'}; box-shadow: 0 0 10px ${summary.complianceScore >= 80 ? 'var(--success-500)' : summary.complianceScore >= 50 ? 'var(--warning-500)' : 'var(--danger-500)'}66;"></div>
+            <div style="width: ${escapeHtml(summary.complianceScore)}%; height: 100%; border-radius: 10px; background: ${summary.complianceScore >= 80 ? 'var(--success-500)' : summary.complianceScore >= 50 ? 'var(--warning-500)' : 'var(--danger-500)'}; box-shadow: 0 0 10px ${summary.complianceScore >= 80 ? 'var(--success-500)' : summary.complianceScore >= 50 ? 'var(--warning-500)' : 'var(--danger-500)'}66;"></div>
           </div>
           ${summary.nonCompliantItems > 0 ? `
             <div style="margin-top: 8px; font-size: 10px; color: var(--danger-400);">
               <i class="fas fa-triangle-exclamation" style="margin-right: 4px;"></i>
-              ${summary.nonCompliantItems} item tidak laik
+              ${escapeHtml(summary.nonCompliantItems)} item tidak laik
             </div>
           ` : ''}
         </div>
@@ -274,7 +275,7 @@ export function renderEgressSystemCard(project, summary = {}) {
           <i class="fas fa-person-walking-arrow-right" style="font-size: 2rem; color: var(--text-tertiary); margin-bottom: 12px;"></i>
           <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">Belum ada data jalur evakuasi</p>
           <p style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 16px;">Mulai analisis dengan mengisi occupant load dan komponen evakuasi</p>
-          <button onclick="window._initEgressAnalysis('${project.id}')" class="btn btn-primary btn-sm">
+          <button onclick="window._initEgressAnalysis('${escapeHtml(project.id)}')" class="btn btn-primary btn-sm">
             <i class="fas fa-play" style="margin-right: 6px;"></i> Mulai Analisis
           </button>
         </div>
@@ -313,7 +314,7 @@ function renderScreeningTab() {
           <label style="font-family: var(--font-mono); font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Fungsi Ruang</label>
           <select id="egress-room-function" class="form-select" style="width: 100%; background: hsla(220, 20%, 100%, 0.03); border-color: hsla(220, 20%, 100%, 0.1); color: white;">
             ${Object.entries(OCCUPANT_FACTORS).map(([key, val]) => `
-              <option value="${key}">${val.label}</option>
+              <option value="${escapeHtml(key)}">${escapeHtml(val.label)}</option>
             `).join('')}
           </select>
         </div>
@@ -388,7 +389,7 @@ function renderScreeningTab() {
             <label style="font-family: var(--font-mono); font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Tipe Komponen</label>
             <select id="egress-component-type" class="form-select" style="width: 100%; background: hsla(220, 20%, 100%, 0.03); border-color: hsla(220, 20%, 100%, 0.1); color: white;">
               ${Object.entries(CAPACITY_FACTORS).map(([key, val]) => `
-                <option value="${key}">${val.label}</option>
+                <option value="${escapeHtml(key)}">${escapeHtml(val.label)}</option>
               `).join('')}
             </select>
           </div>
@@ -451,7 +452,7 @@ function renderHorizontalTab() {
           <label style="font-family: var(--font-mono); font-size: 9px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Kelas Bangunan</label>
           <select id="egress-travel-class" class="form-select" style="width: 100%; background: hsla(220, 20%, 100%, 0.03); border-color: hsla(220, 20%, 100%, 0.1); color: white;">
             ${Object.entries(TRAVEL_DISTANCE_LIMITS).map(([key, val]) => `
-              <option value="${key}">${val.label} (${val.base}m)</option>
+              <option value="${escapeHtml(key)}">${escapeHtml(val.label)} (${escapeHtml(val.base)}m)</option>
             `).join('')}
           </select>
         </div>
@@ -991,9 +992,9 @@ export function initEgressSystemHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.occupantLoad > 0 ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.occupantLoad > 0 ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
           <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 4px;">Occupant Load:</div>
-          <div style="font-size: 1.5rem; font-weight: 800; color: ${result.occupantLoad > 0 ? 'var(--success-400)' : 'var(--danger-400)'};">${result.occupantLoad} orang</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: ${result.occupantLoad > 0 ? 'var(--success-400)' : 'var(--danger-400)'};">${escapeHtml(result.occupantLoad)} orang</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 4px;">
-            Faktor: ${result.occupantFactor} m²/orang | Kategori: ${result.category}
+            Faktor: ${escapeHtml(result.occupantFactor)} m²/orang | Kategori: ${escapeHtml(result.category)}
           </div>
         </div>
       `;
@@ -1020,9 +1021,9 @@ export function initEgressSystemHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: hsla(220, 95%, 52%, 0.1); border-radius: 8px; border: 1px solid hsla(220, 95%, 52%, 0.2);">
           <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 4px;">Klasifikasi:</div>
-          <div style="font-size: 1.2rem; font-weight: 800; color: var(--brand-400);">${result.name}</div>
-          <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 4px;">${result.description}</div>
-          <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 4px;">Stringensi: ${result.stringency}</div>
+          <div style="font-size: 1.2rem; font-weight: 800; color: var(--brand-400);">${escapeHtml(result.name)}</div>
+          <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 4px;">${escapeHtml(result.description)}</div>
+          <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 4px;">Stringensi: ${escapeHtml(result.stringency)}</div>
         </div>
       `;
     }
@@ -1049,10 +1050,10 @@ export function initEgressSystemHandlers(projectId) {
       const statusColor = result.status === 'PASS' ? 'var(--success-400)' : result.status === 'FAIL' ? 'var(--danger-400)' : 'var(--text-tertiary)';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.status === 'PASS' ? 'hsla(160, 100%, 45%, 0.1)' : result.status === 'FAIL' ? 'hsla(0, 85%, 60%, 0.1)' : 'hsla(220, 20%, 100%, 0.05)'}; border-radius: 8px; border: 1px solid ${result.status === 'PASS' ? 'hsla(160, 100%, 45%, 0.2)' : result.status === 'FAIL' ? 'hsla(0, 85%, 60%, 0.2)' : 'hsla(220, 20%, 100%, 0.1)'};">
-          <div style="font-size: 0.85rem; color: var(--text-secondary);">Lebar yang Dibutuhkan: <strong>${result.compliantWidth} m</strong></div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">Lebar yang Dibutuhkan: <strong>${escapeHtml(result.compliantWidth)} m</strong></div>
           ${measuredWidth ? `
-            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Lebar Terukur: <strong>${result.measuredWidth} m</strong></div>
-            <div style="font-size: 0.9rem; font-weight: 800; color: ${statusColor}; margin-top: 8px;">Status: ${result.status}</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Lebar Terukur: <strong>${escapeHtml(result.measuredWidth)} m</strong></div>
+            <div style="font-size: 0.9rem; font-weight: 800; color: ${escapeHtml(statusColor)}; margin-top: 8px;">Status: ${escapeHtml(result.status)}</div>
           ` : ''}
         </div>
       `;
@@ -1081,10 +1082,10 @@ export function initEgressSystemHandlers(projectId) {
       const statusColor = result.status === 'COMPLIANT' ? 'var(--success-400)' : 'var(--danger-400)';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.status === 'COMPLIANT' ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.status === 'COMPLIANT' ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.85rem; color: var(--text-secondary);">Jarak Terukur: <strong>${result.measured} m</strong></div>
-          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Batas Maksimum: <strong>${result.allowed} m</strong></div>
-          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Utilisasi: <strong>${result.utilization}%</strong></div>
-          <div style="font-size: 0.9rem; font-weight: 800; color: ${statusColor}; margin-top: 8px;">Status: ${result.status}</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">Jarak Terukur: <strong>${escapeHtml(result.measured)} m</strong></div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Batas Maksimum: <strong>${escapeHtml(result.allowed)} m</strong></div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Utilisasi: <strong>${escapeHtml(result.utilization)}%</strong></div>
+          <div style="font-size: 0.9rem; font-weight: 800; color: ${escapeHtml(statusColor)}; margin-top: 8px;">Status: ${escapeHtml(result.status)}</div>
         </div>
       `;
     }
@@ -1110,10 +1111,10 @@ export function initEgressSystemHandlers(projectId) {
       const statusColor = result.status === 'COMPLIANT' ? 'var(--success-400)' : 'var(--danger-400)';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.status === 'COMPLIANT' ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.status === 'COMPLIANT' ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.85rem; color: var(--text-secondary);">Jarak: <strong>${result.measured} m</strong></div>
-          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Batas: <strong>${result.allowed} m</strong></div>
-          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Utilisasi: <strong>${result.utilization}%</strong></div>
-          <div style="font-size: 0.9rem; font-weight: 800; color: ${statusColor}; margin-top: 8px;">Status: ${result.status}</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">Jarak: <strong>${escapeHtml(result.measured)} m</strong></div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Batas: <strong>${escapeHtml(result.allowed)} m</strong></div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Utilisasi: <strong>${escapeHtml(result.utilization)}%</strong></div>
+          <div style="font-size: 0.9rem; font-weight: 800; color: ${escapeHtml(statusColor)}; margin-top: 8px;">Status: ${escapeHtml(result.status)}</div>
         </div>
       `;
     }
@@ -1140,8 +1141,8 @@ export function initEgressSystemHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${isCompliant ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${isCompliant ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.85rem; color: var(--text-secondary);">Lebar Terukur: <strong>${width} m</strong></div>
-          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Minimum: <strong>${minWidth} m</strong></div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">Lebar Terukur: <strong>${escapeHtml(width)} m</strong></div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Minimum: <strong>${escapeHtml(minWidth)} m</strong></div>
           <div style="font-size: 0.9rem; font-weight: 800; color: ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 8px;">Status: ${isCompliant ? 'COMPLIANT' : 'NON-COMPLIANT'}</div>
         </div>
       `;
@@ -1167,8 +1168,8 @@ export function initEgressSystemHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${isCompliant ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${isCompliant ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.85rem; color: var(--text-secondary);">Occupant Load: <strong>${occupantLoad} orang</strong></div>
-          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Arah Buka: <strong>${swingDirection}</strong></div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">Occupant Load: <strong>${escapeHtml(occupantLoad)} orang</strong></div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Arah Buka: <strong>${escapeHtml(swingDirection)}</strong></div>
           <div style="font-size: 0.9rem; font-weight: 800; color: ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 8px;">Status: ${isCompliant ? 'COMPLIANT' : 'NON-COMPLIANT'}</div>
         </div>
       `;
@@ -1195,9 +1196,9 @@ export function initEgressSystemHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.overallOk ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.overallOk ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.8rem; color: var(--text-secondary);">Riser (O): ${result.riserOk ? '✓' : '✗'} ${result.riserHeight}mm</div>
-          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Tread (A): ${result.treadOk ? '✓' : '✗'} ${result.treadDepth}mm</div>
-          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">2O + A: ${result.comfortOk ? '✓' : '✗'} ${result.comfortValue}mm</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary);">Riser (O): ${result.riserOk ? '✓' : '✗'} ${escapeHtml(result.riserHeight)}mm</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Tread (A): ${result.treadOk ? '✓' : '✗'} ${escapeHtml(result.treadDepth)}mm</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">2O + A: ${result.comfortOk ? '✓' : '✗'} ${escapeHtml(result.comfortValue)}mm</div>
           <div style="font-size: 0.9rem; font-weight: 800; color: ${result.overallOk ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 8px;">Status: ${result.overallOk ? 'COMPLIANT' : 'NON-COMPLIANT'}</div>
         </div>
       `;
@@ -1226,8 +1227,8 @@ export function initEgressSystemHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${isCompliant ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${isCompliant ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.85rem; color: var(--text-secondary);">Lebar Efektif: <strong>${clearWidth.toFixed(2)} m</strong></div>
-          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Kapasitas: <strong>${capacity} orang</strong></div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">Lebar Efektif: <strong>${escapeHtml(clearWidth.toFixed(2))} m</strong></div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Kapasitas: <strong>${escapeHtml(capacity)} orang</strong></div>
           <div style="font-size: 0.9rem; font-weight: 800; color: ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 8px;">Status: ${isCompliant ? 'COMPLIANT' : 'NON-COMPLIANT'}</div>
         </div>
       `;
@@ -1253,9 +1254,9 @@ export function initEgressSystemHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.status === 'PASS' ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.status === 'PASS' ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.85rem; color: var(--text-secondary);">Tinggi Terukur: <strong>${result.measured} mm</strong></div>
-          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Minimum: <strong>${result.required} mm</strong></div>
-          <div style="font-size: 0.9rem; font-weight: 800; color: ${result.status === 'PASS' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 8px;">Status: ${result.status}</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">Tinggi Terukur: <strong>${escapeHtml(result.measured)} mm</strong></div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Minimum: <strong>${escapeHtml(result.required)} mm</strong></div>
+          <div style="font-size: 0.9rem; font-weight: 800; color: ${result.status === 'PASS' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 8px;">Status: ${escapeHtml(result.status)}</div>
         </div>
       `;
     }
@@ -1280,9 +1281,9 @@ export function initEgressSystemHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.status === 'PASS' ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.status === 'PASS' ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.85rem; color: var(--text-secondary);">Lux Terukur: <strong>${result.measured} lux</strong></div>
-          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Minimum: <strong>${result.required} lux</strong></div>
-          <div style="font-size: 0.9rem; font-weight: 800; color: ${result.status === 'PASS' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 8px;">Status: ${result.status}</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">Lux Terukur: <strong>${escapeHtml(result.measured)} lux</strong></div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Minimum: <strong>${escapeHtml(result.required)} lux</strong></div>
+          <div style="font-size: 0.9rem; font-weight: 800; color: ${result.status === 'PASS' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 8px;">Status: ${escapeHtml(result.status)}</div>
         </div>
       `;
     }
@@ -1308,8 +1309,8 @@ export function initEgressSystemHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${isCompliant ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${isCompliant ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.8rem; color: var(--text-secondary);">Jarak Pandang: ${distanceOk ? '✓' : '✗'} ${visibilityDistance}m</div>
-          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Tinggi Sign: ${heightOk ? '✓' : '✗'} ${signHeight}mm</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary);">Jarak Pandang: ${distanceOk ? '✓' : '✗'} ${escapeHtml(visibilityDistance)}m</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Tinggi Sign: ${heightOk ? '✓' : '✗'} ${escapeHtml(signHeight)}mm</div>
           <div style="font-size: 0.9rem; font-weight: 800; color: ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 8px;">Status: ${isCompliant ? 'COMPLIANT' : 'NON-COMPLIANT'}</div>
         </div>
       `;
@@ -1335,8 +1336,8 @@ export function initEgressSystemHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.overallOk ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.overallOk ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.8rem; color: var(--text-secondary);">Luas: ${result.areaOk ? '✓' : '✗'} ${result.area}m²</div>
-          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Smoke Layer: ${result.smokeLayerOk ? '✓' : '✗'} ${result.smokeLayerHeight}m</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary);">Luas: ${result.areaOk ? '✓' : '✗'} ${escapeHtml(result.area)}m²</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Smoke Layer: ${result.smokeLayerOk ? '✓' : '✗'} ${escapeHtml(result.smokeLayerHeight)}m</div>
           <div style="font-size: 0.9rem; font-weight: 800; color: ${result.overallOk ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 8px;">Status: ${result.overallOk ? 'COMPLIANT' : 'NON-COMPLIANT'}</div>
         </div>
       `;
@@ -1359,8 +1360,8 @@ export function initEgressSystemHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${isCompliant ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${isCompliant ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.8rem; color: var(--text-secondary);">Pressure: ${pressureOk ? '✓' : '✗'} ${pressureDiff} Pa</div>
-          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Velocity: ${velocityOk ? '✓' : '✗'} ${escapeVelocity} m/s</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary);">Pressure: ${pressureOk ? '✓' : '✗'} ${escapeHtml(pressureDiff)} Pa</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Velocity: ${velocityOk ? '✓' : '✗'} ${escapeHtml(escapeVelocity)} m/s</div>
           <div style="font-size: 0.9rem; font-weight: 800; color: ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 8px;">Status: ${isCompliant ? 'COMPLIANT' : 'NON-COMPLIANT'}</div>
         </div>
       `;
@@ -1386,9 +1387,9 @@ export function initEgressSystemHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.status === 'PASS' ? 'hsla(160, 100%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.status === 'PASS' ? 'hsla(160, 100%, 45%, 0.2)' : 'hsla(0, 85%, 60%, 0.2)'};">
-          <div style="font-size: 0.85rem; color: var(--text-secondary);">Luas Dibutuhkan: <strong>${result.requiredArea} m²</strong></div>
-          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Luas Tersedia: <strong>${result.providedArea} m²</strong></div>
-          <div style="font-size: 0.9rem; font-weight: 800; color: ${result.status === 'PASS' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 8px;">Status: ${result.status}</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">Luas Dibutuhkan: <strong>${escapeHtml(result.requiredArea)} m²</strong></div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">Luas Tersedia: <strong>${escapeHtml(result.providedArea)} m²</strong></div>
+          <div style="font-size: 0.9rem; font-weight: 800; color: ${result.status === 'PASS' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 8px;">Status: ${escapeHtml(result.status)}</div>
         </div>
       `;
     }
@@ -1413,8 +1414,8 @@ export function initEgressSystemHandlers(projectId) {
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: hsla(220, 95%, 52%, 0.1); border-radius: 8px; border: 1px solid hsla(220, 95%, 52%, 0.2);">
-          <div style="font-size: 0.8rem; color: var(--text-secondary);">Travel Time: <strong>${result.travelTime} detik</strong></div>
-          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">RSET Total: <strong>${result.rset} detik</strong></div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary);">Travel Time: <strong>${escapeHtml(result.travelTime)} detik</strong></div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">RSET Total: <strong>${escapeHtml(result.rset)} detik</strong></div>
         </div>
       `;
     }

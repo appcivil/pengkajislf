@@ -7,6 +7,7 @@
  */
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 
 // ============================================================
@@ -74,12 +75,12 @@ export function renderComfortCard(project, summary = {}) {
   
   return `
     <div class="card-quartz clickable" id="comfort-card" 
-         onclick="window.navigate('comfort-inspection', {id:'${project.id}'})">
+         onclick="window.navigate('comfort-inspection', {id:'${escapeHtml(project.id)}'})">
       <div class="card-header">
-        <div class="card-icon" style="background: ${st.bg}; color: ${st.text}; border-color: ${st.border}44">
+        <div class="card-icon" style="background: ${escapeHtml(st.bg)}; color: ${escapeHtml(st.text)}; border-color: ${escapeHtml(st.border)}44">
           <i class="fas fa-couch" style="font-size: 1.4rem"></i>
         </div>
-        <div class="card-phase" style="color: ${st.text}">PHASE 02D</div>
+        <div class="card-phase" style="color: ${escapeHtml(st.text)}">PHASE 02D</div>
       </div>
       
       <h3 class="card-title">Aspek Kenyamanan</h3>
@@ -90,26 +91,26 @@ export function renderComfortCard(project, summary = {}) {
       ${hasError ? `
         <div class="card-error-state">
           <i class="fas fa-exclamation-triangle"></i>
-          <span>${summary.error_message || 'Terjadi kesalahan saat memuat data'}</span>
+          <span>${escapeHtml(summary.error_message || 'Terjadi kesalahan saat memuat data')}</span>
         </div>
       ` : hasData ? `
         <div class="card-metrics-grid">
           <div class="metric-item">
-            <div class="metric-value" style="color: ${st.text}">${summary.room_count}</div>
+            <div class="metric-value" style="color: ${escapeHtml(st.text)}">${escapeHtml(summary.room_count)}</div>
             <div class="metric-label">Ruang</div>
           </div>
           <div class="metric-item">
-            <div class="metric-value" style="color: var(--brand-400)">${summary.climate_data_count}</div>
+            <div class="metric-value" style="color: var(--brand-400)">${escapeHtml(summary.climate_data_count)}</div>
             <div class="metric-label">Iklim</div>
           </div>
           <div class="metric-item">
-            <div class="metric-value" style="color: var(--gold-400)">${summary.noise_data_count}</div>
+            <div class="metric-value" style="color: var(--gold-400)">${escapeHtml(summary.noise_data_count)}</div>
             <div class="metric-label">Kebisingan</div>
           </div>
         </div>
         
         ${summary.has_summary ? `
-          <div class="card-status-badge" style="background: ${st.bg}; color: ${st.text}; border-color: ${st.border}44">
+          <div class="card-status-badge" style="background: ${escapeHtml(st.bg)}; color: ${escapeHtml(st.text)}; border-color: ${escapeHtml(st.border)}44">
             <i class="fas fa-check-circle"></i>
             Analisis Lengkap
           </div>

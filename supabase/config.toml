@@ -1,2 +1,8 @@
 [functions.ai-proxy]
 verify_jwt = true
+
+# Keepalive: dipanggil oleh GitHub Actions, cron eksternal, dan klien.
+# verify_jwt = true → pemanggil wajib mengirim anon key/JWT (standar Supabase),
+# sehingga endpoint tidak terbuka bebas. Isi fungsinya hanya ping DB kecil.
+[functions.keepalive]
+verify_jwt = true

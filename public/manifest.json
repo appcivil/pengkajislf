@@ -2,25 +2,37 @@
   "name": "Smart AI Pengkaji SLF",
   "short_name": "SLF Kajian",
   "description": "Sistem berbasis AI untuk pengkajian teknis bangunan gedung - Sertifikat Laik Fungsi (SLF) berdasarkan ASCE 41-17 dan SNI 9274:2024",
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
-  "background_color": "#0a0f1a",
-  "theme_color": "#0a0f1a",
+  "background_color": "#0a0f1d",
+  "theme_color": "#0a0f1d",
   "orientation": "any",
-  "scope": "/",
+  "scope": ".",
   "icons": [
     {
-      "src": "logo-app.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "logo-app.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
-  "categories": ["productivity", "utilities", "business"],
+  "categories": [
+    "productivity",
+    "utilities",
+    "business"
+  ],
   "lang": "id",
   "dir": "ltr",
   "prefer_related_applications": false,

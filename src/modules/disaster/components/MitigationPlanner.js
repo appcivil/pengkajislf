@@ -1,5 +1,6 @@
 import { MitigationOptimizer } from '../core/MitigationOptimizer.js';
 
+import { escapeHtml } from '../../../lib/safe-markdown.js';
 export class MitigationPlanner extends HTMLElement {
   constructor() {
     super();
@@ -152,18 +153,18 @@ export class MitigationPlanner extends HTMLElement {
     
     container.innerHTML = measures.map(m => `
       <div class="measure-card ${this.selectedMeasures.includes(m.id) ? 'selected' : ''}" 
-           data-id="${m.id}">
+           data-id="${escapeHtml(m.id)}">
         <div class="measure-header">
           <div>
-            <div class="measure-name">${m.name}</div>
-            <div class="measure-category">${m.category}</div>
+            <div class="measure-name">${escapeHtml(m.name)}</div>
+            <div class="measure-category">${escapeHtml(m.category)}</div>
           </div>
           <input type="checkbox" class="checkbox" ${this.selectedMeasures.includes(m.id) ? 'checked' : ''}>
         </div>
         <div class="measure-stats">
           <span>💰 Rp ${(m.totalCost / 1000000000).toFixed(2)} M</span>
           <span>⚡ ${(m.effectiveness * 100).toFixed(0)}% efektif</span>
-          <span>📅 ${m.lifespan} tahun</span>
+          <span>📅 ${escapeHtml(m.lifespan)} tahun</span>
         </div>
         <div class="efficiency-bar">
           <div class="efficiency-fill" style="width: ${m.effectiveness * 100}%"></div>

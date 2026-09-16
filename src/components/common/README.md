@@ -460,7 +460,7 @@ LoadingLogo({ size: 200 }); // Super large logo
 Pastikan path logo benar:
 ```javascript
 // Check path
-'/Logo SMART AI Pengkaji SLF (Small).png'
+'logo-small.png'
 ```
 
 ### Animasi tidak smooth

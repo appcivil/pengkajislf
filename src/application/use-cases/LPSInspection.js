@@ -3,6 +3,7 @@
 // ============================================================
 
 import { BaseInspection } from './BaseInspection.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { InspectionWidgets } from '../../components/inspection/inspection-widgets.js';
 import { showSuccess, showError, showInfo } from '../../components/toast.js';
 
@@ -96,7 +97,7 @@ export class LPSInspection extends BaseInspection {
               <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
                 <div>
                   <label style="font-size: 0.7rem; color: var(--text-tertiary);">Ng (Thunder Days/Year)</label>
-                  <div style="font-size: 1.2rem; font-weight: 600; color: white;">${assessment.thunder_days || '-'}</div>
+                  <div style="font-size: 1.2rem; font-weight: 600; color: white;">${escapeHtml(assessment.thunder_days || '-')}</div>
                 </div>
                 <div>
                   <label style="font-size: 0.7rem; color: var(--text-tertiary);">Collection Area (Ae)</label>
@@ -104,11 +105,11 @@ export class LPSInspection extends BaseInspection {
                 </div>
                 <div>
                   <label style="font-size: 0.7rem; color: var(--text-tertiary);">Risk Level</label>
-                  <div style="font-size: 1.2rem; font-weight: 600; color: ${assessment.risk_level === 'HIGH' ? 'var(--danger-400)' : assessment.risk_level === 'MEDIUM' ? 'var(--warning-400)' : 'var(--success-400)'};">${assessment.risk_level || '-'}</div>
+                  <div style="font-size: 1.2rem; font-weight: 600; color: ${assessment.risk_level === 'HIGH' ? 'var(--danger-400)' : assessment.risk_level === 'MEDIUM' ? 'var(--warning-400)' : 'var(--success-400)'};">${escapeHtml(assessment.risk_level || '-')}</div>
                 </div>
                 <div>
                   <label style="font-size: 0.7rem; color: var(--text-tertiary);">Rolling Sphere</label>
-                  <div style="font-size: 1.2rem; font-weight: 600; color: white;">${levelConfig.rolling_sphere}</div>
+                  <div style="font-size: 1.2rem; font-weight: 600; color: white;">${escapeHtml(levelConfig.rolling_sphere)}</div>
                 </div>
               </div>
             `
@@ -125,7 +126,7 @@ export class LPSInspection extends BaseInspection {
                   <li>External LPS: Air terminal, down conductor, earth termination</li>
                   <li>Internal LPS: Equipotential bonding, SPD</li>
                 </ul>
-                <p><strong>Resistansi Grounding:</strong> Maksimum ${this.GROUNDING_MAX_RESISTANCE} Ω</p>
+                <p><strong>Resistansi Grounding:</strong> Maksimum ${escapeHtml(this.GROUNDING_MAX_RESISTANCE)} Ω</p>
               </div>
             `
           })}
@@ -152,11 +153,11 @@ export class LPSInspection extends BaseInspection {
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
           <div class="card-quartz" style="padding: 16px;">
             <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-bottom: 4px;">Probability of Damage (Pd)</div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: white;">${assessment.pd || '-'}</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: white;">${escapeHtml(assessment.pd || '-')}</div>
           </div>
           <div class="card-quartz" style="padding: 16px;">
             <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-bottom: 4px;">Loss Due to Lightning (Lf)</div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: white;">${assessment.lf || '-'}</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: white;">${escapeHtml(assessment.lf || '-')}</div>
           </div>
         </div>
       `
@@ -224,11 +225,11 @@ export class LPSInspection extends BaseInspection {
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
                   <div>
                     <label style="font-size: 0.7rem; color: var(--text-tertiary);">Jenis Elektroda</label>
-                    <div style="font-size: 1rem; font-weight: 600; color: white;">${grounding.electrode_type || '-'}</div>
+                    <div style="font-size: 1rem; font-weight: 600; color: white;">${escapeHtml(grounding.electrode_type || '-')}</div>
                   </div>
                   <div>
                     <label style="font-size: 0.7rem; color: var(--text-tertiary);">Jumlah Elektroda</label>
-                    <div style="font-size: 1rem; font-weight: 600; color: white;">${grounding.electrode_count || '-'}</div>
+                    <div style="font-size: 1rem; font-weight: 600; color: white;">${escapeHtml(grounding.electrode_count || '-')}</div>
                   </div>
                   <div>
                     <label style="font-size: 0.7rem; color: var(--text-tertiary);">Kedalaman</label>
@@ -318,9 +319,9 @@ export class LPSInspection extends BaseInspection {
                       <i class="fas fa-${check.passed ? 'check' : 'times'}"></i>
                     </div>
                     <div style="flex: 1;">
-                      <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">${check.name}</div>
+                      <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">${escapeHtml(check.name)}</div>
                     </div>
-                    <div style="font-size: 1rem; font-weight: 700; color: ${check.passed ? 'var(--success-400)' : 'var(--danger-400)'};">${check.value}</div>
+                    <div style="font-size: 1rem; font-weight: 700; color: ${check.passed ? 'var(--success-400)' : 'var(--danger-400)'};">${escapeHtml(check.value)}</div>
                   </div>
                 `).join('')}
               </div>

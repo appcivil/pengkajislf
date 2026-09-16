@@ -5,6 +5,7 @@
  */
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { openModal, confirm } from '../components/modal.js';
@@ -140,9 +141,9 @@ export function renderAccessibilityCard(project, summary = {}) {
           </div>
         </div>
         <div style="display: flex; gap: 8px;">
-          <span class="badge" style="background: ${st.bg}; color: ${st.text}; border: 1px solid ${st.border}44; font-size: 10px;">
+          <span class="badge" style="background: ${escapeHtml(st.bg)}; color: ${escapeHtml(st.text)}; border: 1px solid ${escapeHtml(st.border)}44; font-size: 10px;">
             <i class="fas ${summary.grade === 'A' || summary.grade === 'B' ? 'fa-check-circle' : summary.grade === 'C' ? 'fa-circle-exclamation' : 'fa-circle-minus'}" style="margin-right: 6px;"></i>
-            ${summary.status}
+            ${escapeHtml(summary.status)}
           </span>
           <span class="badge" style="background: hsla(280, 70%, 50%, 0.1); color: hsla(280, 70%, 60%, 1); border: 1px solid hsla(280, 70%, 50%, 0.2); font-size: 10px;">
             <i class="fas fa-book" style="margin-right: 6px;"></i>PP 16/2021
@@ -159,23 +160,23 @@ export function renderAccessibilityCard(project, summary = {}) {
         <!-- Stats Grid -->
         <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px;">
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${summary.overallScore}</div>
-            <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">SCORE (${summary.grade})</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${escapeHtml(summary.overallScore)}</div>
+            <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">SCORE (${escapeHtml(summary.grade)})</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: ${summary.complianceRate >= 80 ? 'var(--success-400)' : summary.complianceRate >= 60 ? 'var(--warning-400)' : 'var(--danger-400)'}">${summary.complianceRate}%</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: ${summary.complianceRate >= 80 ? 'var(--success-400)' : summary.complianceRate >= 60 ? 'var(--warning-400)' : 'var(--danger-400)'}">${escapeHtml(summary.complianceRate)}%</div>
             <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">COMPLIANCE</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${summary.corridorCount}</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${escapeHtml(summary.corridorCount)}</div>
             <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">KORIDOR</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${summary.elevatorCount}</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: white;">${escapeHtml(summary.elevatorCount)}</div>
             <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">LIFT</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.02); border: 1px solid hsla(220, 20%, 100%, 0.05); border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: ${summary.parkingSlots >= summary.requiredParking ? 'var(--success-400)' : 'var(--warning-400)'}">${summary.parkingSlots}/${summary.requiredParking}</div>
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 800; color: ${summary.parkingSlots >= summary.requiredParking ? 'var(--success-400)' : 'var(--warning-400)'}">${escapeHtml(summary.parkingSlots)}/${escapeHtml(summary.requiredParking)}</div>
             <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 4px;">PARKIR DIFABEL</div>
           </div>
         </div>
@@ -184,10 +185,10 @@ export function renderAccessibilityCard(project, summary = {}) {
         <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid hsla(220, 20%, 100%, 0.1);">
           <div class="flex-between" style="margin-bottom: 8px;">
             <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-tertiary);">ACCESSIBILITY SCORE</span>
-            <span style="font-size: 0.7rem; font-weight: 800; color: ${summary.overallScore >= 80 ? 'var(--success-400)' : summary.overallScore >= 60 ? 'var(--warning-400)' : 'var(--danger-400)'}">${summary.overallScore}/100</span>
+            <span style="font-size: 0.7rem; font-weight: 800; color: ${summary.overallScore >= 80 ? 'var(--success-400)' : summary.overallScore >= 60 ? 'var(--warning-400)' : 'var(--danger-400)'}">${escapeHtml(summary.overallScore)}/100</span>
           </div>
           <div style="height: 6px; background: hsla(220, 20%, 100%, 0.05); border-radius: 10px;">
-            <div style="width: ${summary.overallScore}%; height: 100%; border-radius: 10px; background: ${summary.overallScore >= 80 ? 'var(--success-500)' : summary.overallScore >= 60 ? 'var(--warning-500)' : 'var(--danger-500)'}; box-shadow: 0 0 10px ${summary.overallScore >= 80 ? 'var(--success-500)' : summary.overallScore >= 60 ? 'var(--warning-500)' : 'var(--danger-500)'}66;"></div>
+            <div style="width: ${escapeHtml(summary.overallScore)}%; height: 100%; border-radius: 10px; background: ${summary.overallScore >= 80 ? 'var(--success-500)' : summary.overallScore >= 60 ? 'var(--warning-500)' : 'var(--danger-500)'}; box-shadow: 0 0 10px ${summary.overallScore >= 80 ? 'var(--success-500)' : summary.overallScore >= 60 ? 'var(--warning-500)' : 'var(--danger-500)'}66;"></div>
           </div>
           ${summary.totalItems - summary.compliantItems > 0 ? `
             <div style="margin-top: 8px; font-size: 10px; color: var(--danger-400);">
@@ -276,7 +277,7 @@ export function renderAccessibilityCard(project, summary = {}) {
           <i class="fas fa-wheelchair" style="font-size: 2rem; color: var(--text-tertiary); margin-bottom: 12px;"></i>
           <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">Belum ada data pemeriksaan aksesibilitas</p>
           <p style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 16px;">Mulai analisis dengan input data koridor, ramp, tangga, dan fasilitas</p>
-          <button onclick="window._initAccessibilityAnalysis('${project.id}')" class="btn btn-primary btn-sm">
+          <button onclick="window._initAccessibilityAnalysis('${escapeHtml(project.id)}')" class="btn btn-primary btn-sm">
             <i class="fas fa-play" style="margin-right: 6px;"></i> Mulai Analisis
           </button>
         </div>
@@ -610,8 +611,8 @@ function renderFacilitiesTab() {
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;">
           ${INFRASTRUCTURE_CHECKLIST.prasarana.map(item => `
             <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); padding: 8px; background: hsla(220, 20%, 100%, 0.02); border-radius: 6px;">
-              <input type="checkbox" id="acc-infra-${item.id}" class="acc-infra-check" data-type="prasarana" style="accent-color: var(--brand-400);">
-              <span>${item.name} ${item.required ? '<span style="color: var(--danger-400);">*</span>' : ''}</span>
+              <input type="checkbox" id="acc-infra-${escapeHtml(item.id)}" class="acc-infra-check" data-type="prasarana" style="accent-color: var(--brand-400);">
+              <span>${escapeHtml(item.name)} ${item.required ? '<span style="color: var(--danger-400);">*</span>' : ''}</span>
             </label>
           `).join('')}
         </div>
@@ -638,8 +639,8 @@ function renderFacilitiesTab() {
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;">
           ${INFRASTRUCTURE_CHECKLIST.sarana.map(item => `
             <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); padding: 8px; background: hsla(220, 20%, 100%, 0.02); border-radius: 6px;">
-              <input type="checkbox" id="acc-sarana-${item.id}" class="acc-sarana-check" data-type="sarana" style="accent-color: var(--success-400);">
-              <span>${item.name} ${item.required ? '<span style="color: var(--danger-400);">*</span>' : ''}</span>
+              <input type="checkbox" id="acc-sarana-${escapeHtml(item.id)}" class="acc-sarana-check" data-type="sarana" style="accent-color: var(--success-400);">
+              <span>${escapeHtml(item.name)} ${item.required ? '<span style="color: var(--danger-400);">*</span>' : ''}</span>
             </label>
           `).join('')}
         </div>
@@ -918,10 +919,10 @@ function renderReportTab() {
           <div style="font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); margin-bottom: 12px;">REFERENSI REGULASI</div>
           ${Object.entries(LEGAL_REFERENCES).map(([key, refs]) => `
             <div style="margin-bottom: 8px;">
-              <div style="font-size: 11px; font-weight: 700; color: var(--brand-400); margin-bottom: 4px;">${key.toUpperCase()}</div>
+              <div style="font-size: 11px; font-weight: 700; color: var(--brand-400); margin-bottom: 4px;">${escapeHtml(key.toUpperCase())}</div>
               ${Object.entries(refs).map(([sub, desc]) => `
                 <div style="font-size: 10px; color: var(--text-secondary); padding-left: 12px;">
-                  • ${desc}
+                  • ${escapeHtml(desc)}
                 </div>
               `).join('')}
             </div>
@@ -1052,12 +1053,12 @@ export function initAccessibilityHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.status === 'C' ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}33;">
           <div style="font-weight: 700; color: ${result.status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-bottom: 8px;">
-            Status: ${result.status} | ${result.wheelchairAccessible ? 'Wheelchair Accessible' : 'Tidak Aksesibel'}
+            Status: ${escapeHtml(result.status)} | ${result.wheelchairAccessible ? 'Wheelchair Accessible' : 'Tidak Aksesibel'}
           </div>
           <div style="font-size: 11px; color: var(--text-secondary);">
-            <div>Lebar Efektif: ${result.effectiveWidth}</div>
+            <div>Lebar Efektif: ${escapeHtml(result.effectiveWidth)}</div>
             <div>Two-Way Traffic: ${result.twoWayTraffic ? 'Yes' : 'No'}</div>
-            ${result.bottleneck ? `<div>${result.bottleneck}</div>` : ''}
+            ${result.bottleneck ? `<div>${escapeHtml(result.bottleneck)}</div>` : ''}
           </div>
           <button onclick="window._saveCorridorData()" class="btn btn-primary btn-sm" style="margin-top: 12px; width: 100%;">
             <i class="fas fa-save" style="margin-right: 6px;"></i> Simpan ke Database
@@ -1106,10 +1107,10 @@ export function initAccessibilityHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.status === 'C' ? 'hsla(45, 90%, 60%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.status === 'C' ? 'var(--gold-400)' : 'var(--danger-400)'}33;">
           <div style="font-weight: 700; color: ${result.status === 'C' ? 'var(--gold-400)' : 'var(--danger-400)'}; margin-bottom: 8px;">
-            Status: ${result.status} | Kemiringan: ${result.slope}
+            Status: ${escapeHtml(result.status)} | Kemiringan: ${escapeHtml(result.slope)}
           </div>
           <div style="font-size: 11px; color: var(--text-secondary);">
-            <div>Rasio: ${result.ratio}</div>
+            <div>Rasio: ${escapeHtml(result.ratio)}</div>
             <div>Landing Dibutuhkan: ${result.landingRequired ? 'Ya (' + result.landingCount + ')' : 'Tidak'}</div>
             <div>Handrail: ${result.handrailRequired ? 'Wajib' : 'Opsional'}</div>
           </div>
@@ -1160,11 +1161,11 @@ export function initAccessibilityHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.overallStatus === 'C' ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.overallStatus === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}33;">
           <div style="font-weight: 700; color: ${result.overallStatus === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-bottom: 8px;">
-            Status: ${result.overallStatus}
+            Status: ${escapeHtml(result.overallStatus)}
           </div>
           <div style="font-size: 11px; color: var(--text-secondary);">
-            <div>Lebar: ${result.clearOpening} (min: ${result.requiredWidth})</div>
-            <div>Ambang: ${result.thresholdHeight} (max: ${result.thresholdMax})</div>
+            <div>Lebar: ${escapeHtml(result.clearOpening)} (min: ${escapeHtml(result.requiredWidth)})</div>
+            <div>Ambang: ${escapeHtml(result.thresholdHeight)} (max: ${escapeHtml(result.thresholdMax)})</div>
           </div>
         </div>
       `;
@@ -1184,11 +1185,11 @@ export function initAccessibilityHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.overallStatus === 'C' ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.overallStatus === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}33;">
           <div style="font-weight: 700; color: ${result.overallStatus === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-bottom: 8px;">
-            Status: ${result.overallStatus} | Risk: ${result.riskLevel}
+            Status: ${escapeHtml(result.overallStatus)} | Risk: ${escapeHtml(result.riskLevel)}
           </div>
           <div style="font-size: 11px; color: var(--text-secondary);">
-            <div>Slip Resistance: ${result.slipCoefficient}/${result.slipStandard}</div>
-            <div>Evenness: ${result.evenness} (max: ${result.evennessStandard})</div>
+            <div>Slip Resistance: ${escapeHtml(result.slipCoefficient)}/${escapeHtml(result.slipStandard)}</div>
+            <div>Evenness: ${escapeHtml(result.evenness)} (max: ${escapeHtml(result.evennessStandard)})</div>
           </div>
         </div>
       `;
@@ -1210,11 +1211,11 @@ export function initAccessibilityHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.status === 'C' ? 'hsla(220, 95%, 52%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.status === 'C' ? 'var(--brand-400)' : 'var(--danger-400)'}33;">
           <div style="font-weight: 700; color: ${result.status === 'C' ? 'var(--brand-400)' : 'var(--danger-400)'}; margin-bottom: 8px;">
-            Status: ${result.status} | ${result.comfortStatus}
+            Status: ${escapeHtml(result.status)} | ${escapeHtml(result.comfortStatus)}
           </div>
           <div style="font-size: 11px; color: var(--text-secondary);">
-            <div>Formula: ${result.formula2RT}</div>
-            <div>Handrail: ${result.handrail} sisi</div>
+            <div>Formula: ${escapeHtml(result.formula2RT)}</div>
+            <div>Handrail: ${escapeHtml(result.handrail)} sisi</div>
             ${result.issues.length > 0 ? `<div style="color: var(--danger-400);">Issues: ${result.issues.join(', ')}</div>` : ''}
           </div>
         </div>
@@ -1242,11 +1243,11 @@ export function initAccessibilityHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.overallStatus === 'C' ? 'hsla(158, 85%, 45%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.overallStatus === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}33;">
           <div style="font-weight: 700; color: ${result.overallStatus === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-bottom: 8px;">
-            Status: ${result.overallStatus} | Fitur: ${result.featureScore}
+            Status: ${escapeHtml(result.overallStatus)} | Fitur: ${escapeHtml(result.featureScore)}
           </div>
           <div style="font-size: 11px; color: var(--text-secondary);">
-            <div>Ukuran: ${result.cabinSize} (min: ${result.cabinRequired})</div>
-            <div>Feature Score: ${result.featurePercentage}%</div>
+            <div>Ukuran: ${escapeHtml(result.cabinSize)} (min: ${escapeHtml(result.cabinRequired)})</div>
+            <div>Feature Score: ${escapeHtml(result.featurePercentage)}%</div>
           </div>
         </div>
       `;
@@ -1267,11 +1268,11 @@ export function initAccessibilityHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.status === 'C' ? 'hsla(45, 90%, 60%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.status === 'C' ? 'var(--gold-400)' : 'var(--danger-400)'}33;">
           <div style="font-weight: 700; color: ${result.status === 'C' ? 'var(--gold-400)' : 'var(--danger-400)'}; margin-bottom: 8px;">
-            Status: ${result.status} | ${result.description}
+            Status: ${escapeHtml(result.status)} | ${escapeHtml(result.description)}
           </div>
           <div style="font-size: 11px; color: var(--text-secondary);">
-            <div>Ukuran: ${result.actualSize}</div>
-            <div>Standar: ${result.requiredSize}</div>
+            <div>Ukuran: ${escapeHtml(result.actualSize)}</div>
+            <div>Standar: ${escapeHtml(result.requiredSize)}</div>
           </div>
         </div>
       `;
@@ -1291,11 +1292,11 @@ export function initAccessibilityHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.overallStatus === 'C' ? 'hsla(280, 70%, 50%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.overallStatus === 'C' ? 'hsla(280, 70%, 60%, 1)' : 'var(--danger-400)'}33;">
           <div style="font-weight: 700; color: ${result.overallStatus === 'C' ? 'hsla(280, 70%, 60%, 1)' : 'var(--danger-400)'}; margin-bottom: 8px;">
-            Status: ${result.overallStatus}
+            Status: ${escapeHtml(result.overallStatus)}
           </div>
           <div style="font-size: 11px; color: var(--text-secondary);">
-            <div>Sudut: ${result.angle} (max: ${result.maxAngle})</div>
-            <div>Kecepatan: ${result.speed} (range: ${result.speedRange})</div>
+            <div>Sudut: ${escapeHtml(result.angle)} (max: ${escapeHtml(result.maxAngle)})</div>
+            <div>Kecepatan: ${escapeHtml(result.speed)} (range: ${escapeHtml(result.speedRange)})</div>
           </div>
         </div>
       `;
@@ -1323,12 +1324,12 @@ export function initAccessibilityHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.overallStatus === 'C' ? 'hsla(45, 90%, 60%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.overallStatus === 'C' ? 'var(--gold-400)' : 'var(--danger-400)'}33;">
           <div style="font-weight: 700; color: ${result.overallStatus === 'C' ? 'var(--gold-400)' : 'var(--danger-400)'}; margin-bottom: 8px;">
-            Status: ${result.overallStatus} | ${result.turningSpace}
+            Status: ${escapeHtml(result.overallStatus)} | ${escapeHtml(result.turningSpace)}
           </div>
           <div style="font-size: 11px; color: var(--text-secondary);">
-            <div>Kloset: ${result.wcHeight} (${result.wcHeightRange})</div>
-            <div>Kolong: ${result.lavatoryClearance}</div>
-            <div>Handrail: ${result.grabBars} | Alarm: ${result.emergencyCord}</div>
+            <div>Kloset: ${escapeHtml(result.wcHeight)} (${escapeHtml(result.wcHeightRange)})</div>
+            <div>Kolong: ${escapeHtml(result.lavatoryClearance)}</div>
+            <div>Handrail: ${escapeHtml(result.grabBars)} | Alarm: ${escapeHtml(result.emergencyCord)}</div>
           </div>
         </div>
       `;
@@ -1347,12 +1348,12 @@ export function initAccessibilityHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: hsla(0, 85%, 60%, 0.1); border-radius: 8px; border: 1px solid var(--danger-400)33;">
           <div style="font-weight: 700; color: var(--danger-400); margin-bottom: 8px;">
-            Kebutuhan: ${result.requiredAccessible} slot
+            Kebutuhan: ${escapeHtml(result.requiredAccessible)} slot
           </div>
           <div style="font-size: 11px; color: var(--text-secondary);">
-            <div>Total: ${result.totalSlots} slot</div>
-            <div>Dimensi: ${result.dimensions}</div>
-            <div>Aisle: ${result.aisleToBuilding}</div>
+            <div>Total: ${escapeHtml(result.totalSlots)} slot</div>
+            <div>Dimensi: ${escapeHtml(result.dimensions)}</div>
+            <div>Aisle: ${escapeHtml(result.aisleToBuilding)}</div>
           </div>
         </div>
       `;
@@ -1376,12 +1377,12 @@ export function initAccessibilityHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.grade === 'A' || result.grade === 'B' ? 'hsla(158, 85%, 45%, 0.1)' : result.grade === 'C' ? 'hsla(45, 90%, 60%, 0.1)' : 'hsla(0, 85%, 60%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.grade === 'A' || result.grade === 'B' ? 'var(--success-400)' : result.grade === 'C' ? 'var(--gold-400)' : 'var(--danger-400)'}33;">
           <div style="font-weight: 700; color: ${result.grade === 'A' || result.grade === 'B' ? 'var(--success-400)' : result.grade === 'C' ? 'var(--gold-400)' : 'var(--danger-400)'}; margin-bottom: 8px; font-size: 1.2rem;">
-            Score: ${result.overallScore}/100 | Grade: ${result.grade}
+            Score: ${escapeHtml(result.overallScore)}/100 | Grade: ${escapeHtml(result.grade)}
           </div>
           <div style="font-size: 11px; color: var(--text-secondary);">
-            <div>Status: ${result.status}</div>
-            <div>Horizontal: ${scores.horizontal} | Vertical: ${scores.vertical}</div>
-            <div>Facilities: ${scores.facilities} | Signage: ${scores.signage}</div>
+            <div>Status: ${escapeHtml(result.status)}</div>
+            <div>Horizontal: ${escapeHtml(scores.horizontal)} | Vertical: ${escapeHtml(scores.vertical)}</div>
+            <div>Facilities: ${escapeHtml(scores.facilities)} | Signage: ${escapeHtml(scores.signage)}</div>
           </div>
         </div>
       `;
@@ -1404,7 +1405,7 @@ export function initAccessibilityHandlers(projectId) {
             ${result.feasible ? 'Jalur FEASIBLE' : 'Jalur TIDAK FEASIBLE'}
           </div>
           <div style="font-size: 11px; color: var(--text-secondary);">
-            <div>Wheelchair: ${result.wheelchair.width}cm x ${result.wheelchair.length}cm</div>
+            <div>Wheelchair: ${escapeHtml(result.wheelchair.width)}cm x ${escapeHtml(result.wheelchair.length)}cm</div>
             <div>Koridor: ${result.corridorPass ? 'PASS' : 'FAIL'}</div>
             <div>Pintu: ${result.doorPass ? 'PASS' : 'FAIL'}</div>
           </div>
@@ -1431,11 +1432,11 @@ export function initAccessibilityHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: hsla(45, 90%, 60%, 0.1); border-radius: 8px; border: 1px solid var(--gold-400)33;">
           <div style="font-weight: 700; color: var(--gold-400); margin-bottom: 8px;">
-            ${result.scenario}
+            ${escapeHtml(result.scenario)}
           </div>
           <div style="font-size: 11px; color: var(--text-secondary);">
             ${Object.entries(result).filter(([k]) => k !== 'scenario').map(([k, v]) => `
-              <div>${k}: ${v}</div>
+              <div>${escapeHtml(k)}: ${escapeHtml(v)}</div>
             `).join('')}
           </div>
         </div>
@@ -1457,12 +1458,12 @@ export function initAccessibilityHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="padding: 12px; background: ${result.priority === 'CRITICAL' ? 'hsla(0, 85%, 60%, 0.2)' : result.priority === 'HIGH' ? 'hsla(0, 85%, 60%, 0.1)' : result.priority === 'MEDIUM' ? 'hsla(45, 90%, 60%, 0.1)' : 'hsla(158, 85%, 45%, 0.1)'}; border-radius: 8px; border: 1px solid ${result.priority === 'CRITICAL' || result.priority === 'HIGH' ? 'var(--danger-400)' : result.priority === 'MEDIUM' ? 'var(--gold-400)' : 'var(--success-400)'}33;">
           <div style="font-weight: 700; color: ${result.priority === 'CRITICAL' || result.priority === 'HIGH' ? 'var(--danger-400)' : result.priority === 'MEDIUM' ? 'var(--gold-400)' : 'var(--success-400)'}; margin-bottom: 8px; font-size: 1.1rem;">
-            Priority: ${result.priority}
+            Priority: ${escapeHtml(result.priority)}
           </div>
           <div style="font-size: 11px; color: var(--text-secondary);">
-            <div>Quadrant: ${result.quadrant}</div>
-            <div>Score: ${result.score}</div>
-            <div style="margin-top: 4px; color: var(--text-tertiary);">${result.recommendation}</div>
+            <div>Quadrant: ${escapeHtml(result.quadrant)}</div>
+            <div>Score: ${escapeHtml(result.score)}</div>
+            <div style="margin-top: 4px; color: var(--text-tertiary);">${escapeHtml(result.recommendation)}</div>
           </div>
         </div>
       `;

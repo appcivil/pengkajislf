@@ -5,6 +5,7 @@
  */
 
 import { IOutputEngine } from '../../../core/smart-ai/engine-interface.js';
+import { escapeHtml } from '../../../lib/safe-markdown.js';
 import { Document, Packer, Paragraph, TextRun, Table, TableCell, TableRow, HeadingLevel, AlignmentType } from 'docx';
 import * as XLSX from 'xlsx';
 
@@ -360,7 +361,7 @@ export class OutputEngine extends IOutputEngine {
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>${data.title || 'Report'}</title>
+  <title>${escapeHtml(data.title || 'Report')}</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 40px; }
     h1 { color: #333; border-bottom: 2px solid #333; }
@@ -398,7 +399,7 @@ export class OutputEngine extends IOutputEngine {
    * @private
    */
   _generateHTMLTable(data, headers) {
-    let html = '<table>';
+    let html = '<div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table>';
     
     if (headers) {
       html += '<thead><tr>';
@@ -416,7 +417,7 @@ export class OutputEngine extends IOutputEngine {
       });
       html += '</tr>';
     });
-    html += '</tbody></table>';
+    html += '</tbody></table></div>';
     
     return html;
   }
@@ -426,9 +427,7 @@ export class OutputEngine extends IOutputEngine {
    * @private
    */
   _escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    return escapeHtml(text);
   }
 
   // ============================================================================

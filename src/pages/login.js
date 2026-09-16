@@ -4,6 +4,7 @@
  * Entry Gateway to the Strategic AI Audit Ecosystem
  */
 import { signInWithGoogle, signInWithEmail, signUpWithEmail, devModeBypass } from '../lib/auth.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { APP_CONFIG } from '../lib/config.js';
 import { showError, showInfo } from '../components/toast.js';
 
@@ -21,11 +22,14 @@ export async function loginPage() {
   const html = `
     <div id="login-portal" style="min-height:100vh; background:#020408; position:relative; overflow:hidden; font-family:var(--font-sans)">
       
-      <!-- Immersive Architectural Backsplash -->
-      <div style="position:fixed; inset:0; z-index:0; overflow:hidden">
-         <img src="./presidential_architecture_login_1775021702654.png" style="width:100%; height:100%; object-fit:cover; opacity:0.6; filter: grayscale(0.2) contrast(1.1) brightness(0.7)">
-         <div style="position:absolute; inset:0; background:radial-gradient(circle at center, transparent 0%, #020408 100%); mix-blend-mode: multiply"></div>
-      </div>
+      <!-- Latar arsitektural.
+           Sebelumnya ini sebuah <img> yang menunjuk
+           presidential_architecture_login_*.png — berkas itu tidak pernah ada
+           di repositori, sehingga halaman login yang dilihat SETIAP pengguna
+           selalu menampilkan latar kosong (404) pada kunjungan pertama.
+           Diganti latar CSS: tidak ada permintaan jaringan, tidak ada 404,
+           tidak ada 500 kB yang harus diunduh sebelum halaman terlihat. -->
+      <div class="login-backdrop" aria-hidden="true"></div>
 
       <!-- Floating Quartz Panel -->
       <div style="position:relative; z-index:1; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px">
@@ -52,14 +56,14 @@ export async function loginPage() {
                        <div style="width:32px; height:32px; background:hsla(220, 20%, 100%, 0.03); border:1px solid hsla(220, 20%, 100%, 0.1); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--brand-400); font-size:0.9rem">
                           <i class="fas ${f.icon}"></i>
                        </div>
-                       <span style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--brand-300); letter-spacing:1px; text-transform:uppercase">${f.text}</span>
+                       <span style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--brand-300); letter-spacing:1px; text-transform:uppercase">${escapeHtml(f.text)}</span>
                     </div>
                  `).join('')}
               </div>
 
               <div style="display:flex; gap:10px; margin-top:40px; flex-wrap:wrap">
                  ${['SNI 1726', 'SNI 2847', 'ASCE 41-17', 'PP 16/2021'].map(s => `
-                    <div style="background:hsla(220, 20%, 100%, 0.03); border:1px solid hsla(220, 20%, 100%, 0.1); padding:6px 12px; border-radius:100px; font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); letter-spacing:1px">${s}</div>
+                    <div style="background:hsla(220, 20%, 100%, 0.03); border:1px solid hsla(220, 20%, 100%, 0.1); padding:6px 12px; border-radius:100px; font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); letter-spacing:1px">${escapeHtml(s)}</div>
                  `).join('')}
               </div>
            </div>
@@ -68,7 +72,7 @@ export async function loginPage() {
            <div class="login-interaction">
               <div id="login-view" class="route-fade">
                  <h2 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.8rem; color:white; margin-bottom:12px">Consortium Entry</h2>
-                 <p style="color:var(--text-tertiary); font-size:0.85rem; margin-bottom:40px">Verify your identity to access the strategic registry.</p>
+                 <p style="color:var(--text-tertiary); font-size:0.85rem; margin-bottom:40px">Verifikasi identitas Anda untuk masuk ke sistem.</p>
                  
                  <button class="btn btn-outline" id="btn-google-signin" style="width:100%; height:56px; border-radius:14px; background:white; color:#020408; font-weight:800; border:none; display:flex; align-items:center; justify-content:center; gap:12px; transition:transform 0.2s" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                     <svg style="width:20px; height:20px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -108,7 +112,7 @@ export async function loginPage() {
 
                  <div style="margin-top:40px; text-align:center">
                     <p style="font-size:0.8rem; color:hsla(220, 20%, 100%, 0.4); line-height:1.6">
-                       System version v${APP_CONFIG.version} &bull; © ${year} Consortium.<br>
+                       System version v${escapeHtml(APP_CONFIG.version)} &bull; © ${escapeHtml(year)} Consortium.<br>
                        Encrypted by <span style="color:var(--brand-400); font-weight:800">Smart AI Pengkaji</span>
                     </p>
                  </div>

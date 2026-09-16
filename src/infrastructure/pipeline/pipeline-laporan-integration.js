@@ -383,12 +383,6 @@ export class PipelineLaporanIntegration {
     const headings = structure.filter(s => s.level > 0 || s.type === 'heading');
 
     // Escape HTML untuk mencegah XSS
-    const escapeHtml = (text) => {
-      if (!text) return '';
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    };
 
     navContainer.innerHTML = `
       <div class="pipeline-docx-nav">

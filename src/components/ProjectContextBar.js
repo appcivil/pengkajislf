@@ -4,6 +4,7 @@
  * across different pages (Checklist, Analysis, Reports).
  */
 import { store } from '../lib/store.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { escHtml } from '../lib/utils.js';
 
@@ -25,7 +26,7 @@ export function renderProjectContextBar() {
   return `
     <div class="project-context-bar animate-fade-in">
       <div class="context-left">
-        <div class="context-project-info" onclick="window.navigate('proyek-detail', {id:'${currentProyekId}'})" role="button">
+        <div class="context-project-info" onclick="window.navigate('proyek-detail', {id:'${escapeHtml(currentProyekId)}'})" role="button">
           <div class="context-icon">
             <i class="fas fa-building"></i>
           </div>
@@ -37,21 +38,21 @@ export function renderProjectContextBar() {
         
         <div class="divider-v"></div>
         
-        <div class="context-status-pill ${s.cls}">
+        <div class="context-status-pill ${escapeHtml(s.cls)}">
           <div class="status-dot"></div>
-          <span>${s.label}</span>
+          <span>${escapeHtml(s.label)}</span>
         </div>
       </div>
 
       <div class="context-right">
         <div class="context-actions">
-          <button class="ctx-btn" onclick="window.navigate('checklist', {id:'${currentProyekId}'})" title="Checklist Pemeriksaan">
+          <button class="ctx-btn" onclick="window.navigate('checklist', {id:'${escapeHtml(currentProyekId)}'})" title="Checklist Pemeriksaan">
             <i class="fas fa-clipboard-check"></i>
           </button>
-          <button class="ctx-btn" onclick="window.navigate('analisis', {id:'${currentProyekId}'})" title="Analisis AI">
+          <button class="ctx-btn" onclick="window.navigate('analisis', {id:'${escapeHtml(currentProyekId)}'})" title="Analisis AI">
             <i class="fas fa-brain"></i>
           </button>
-          <button class="ctx-btn primary" onclick="window.navigate('laporan', {id:'${currentProyekId}'})" title="Export Laporan">
+          <button class="ctx-btn primary" onclick="window.navigate('laporan', {id:'${escapeHtml(currentProyekId)}'})" title="Export Laporan">
             <i class="fas fa-file-export"></i>
           </button>
         </div>

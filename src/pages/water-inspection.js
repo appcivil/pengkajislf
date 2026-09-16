@@ -5,6 +5,7 @@
 // ============================================================
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { globalEventBus } from '../core/EventBus.js';
@@ -129,7 +130,7 @@ function renderPage() {
           <div>
             <h1 style="margin: 0; font-size: 18px; font-weight: 700; color: white;">Sistem Air Bersih</h1>
             <div style="font-size: 12px; color: rgba(255,255,255,0.7);">
-              ${currentProjectName} • Pasal 224 ayat (2) Permen PUPR 14/2017
+              ${escapeHtml(currentProjectName)} • Pasal 224 ayat (2) Permen PUPR 14/2017
             </div>
           </div>
         </div>
@@ -576,12 +577,12 @@ function calculateDemand() {
     document.getElementById('result-grid').innerHTML = `
       <div class="result-item">
         <div class="result-label">Kebutuhan Harian</div>
-        <div class="result-value">${results.dailyDemandM3}</div>
+        <div class="result-value">${escapeHtml(results.dailyDemandM3)}</div>
         <div class="result-unit">m³/hari</div>
       </div>
       <div class="result-item">
         <div class="result-label">Peak Flow Rate</div>
-        <div class="result-value">${results.peakFlowRate.toFixed(2)}</div>
+        <div class="result-value">${escapeHtml(results.peakFlowRate.toFixed(2))}</div>
         <div class="result-unit">L/s</div>
       </div>
       <div class="result-item">
@@ -591,7 +592,7 @@ function calculateDemand() {
       </div>
       <div class="result-item">
         <div class="result-label">Peak Factor</div>
-        <div class="result-value">${results.peakFactor}</div>
+        <div class="result-value">${escapeHtml(results.peakFactor)}</div>
         <div class="result-unit">x average</div>
       </div>
     `;
@@ -644,18 +645,18 @@ function calculatePipeSize() {
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
         <div>
           <div style="font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Diameter Rekomendasi</div>
-          <div style="font-size: 28px; font-weight: 800; color: #3b82f6; margin-top: 8px;">${size.recommended} mm</div>
-          <div style="font-size: 12px; color: #64748b;">${size.recommendedInch}</div>
+          <div style="font-size: 28px; font-weight: 800; color: #3b82f6; margin-top: 8px;">${escapeHtml(size.recommended)} mm</div>
+          <div style="font-size: 12px; color: #64748b;">${escapeHtml(size.recommendedInch)}</div>
         </div>
         <div>
           <div style="font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Kecepatan Aliran</div>
-          <div style="font-size: 28px; font-weight: 800; color: ${headLoss.velocityOk ? '#10b981' : '#f59e0b'}; margin-top: 8px;">${headLoss.velocity} m/s</div>
+          <div style="font-size: 28px; font-weight: 800; color: ${headLoss.velocityOk ? '#10b981' : '#f59e0b'}; margin-top: 8px;">${escapeHtml(headLoss.velocity)} m/s</div>
           <div style="font-size: 12px; color: ${headLoss.velocityOk ? '#10b981' : '#f59e0b'};">${headLoss.velocityOk ? '✓ OK' : '⚠️ Check'}</div>
         </div>
         <div>
           <div style="font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Head Loss</div>
-          <div style="font-size: 28px; font-weight: 800; color: ${headLoss.headLoss > 10 ? '#ef4444' : '#3b82f6'}; margin-top: 8px;">${headLoss.headLoss.toFixed(2)} m</div>
-          <div style="font-size: 12px; color: #64748b;">per ${length}m</div>
+          <div style="font-size: 28px; font-weight: 800; color: ${headLoss.headLoss > 10 ? '#ef4444' : '#3b82f6'}; margin-top: 8px;">${escapeHtml(headLoss.headLoss.toFixed(2))} m</div>
+          <div style="font-size: 12px; color: #64748b;">per ${escapeHtml(length)}m</div>
         </div>
       </div>
     </div>

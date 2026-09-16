@@ -7,6 +7,7 @@
 const env = import.meta.env;
 import { getSmartAIIntegration } from '../infrastructure/ai/deep-reasoning-integration.js';
 
+import { escapeHtml } from './safe-markdown.js';
 const MODELS = {
   GROQ_VISION: {
     id: 'llama-3.2-11b-vision-preview',
@@ -95,7 +96,7 @@ export async function analyzeChecklistImage(filesData, componentName, kategori =
   let systemPrompt = '';
   if (kategori === 'administrasi') {
     systemPrompt = bahasaDirective + `Anda adalah seorang Auditor Administrasi Tingkat Lanjut untuk Sertifikat Laik Fungsi (SLF) Bangunan Gedung di Indonesia.
-Gunakan mekanisme "Deep Reasoning Engineering" untuk menelaah secara komprehensif terhadap ${filesData.length} sampel dokumen pada komponen: "${componentName}".
+Gunakan mekanisme "Deep Reasoning Engineering" untuk menelaah secara komprehensif terhadap ${escapeHtml(filesData.length)} sampel dokumen pada komponen: "${escapeHtml(componentName)}".
 Verifikasi kesesuaian berdasarkan PP No. 16 Tahun 2021.
 Format JSON wajib: { 
   "status": "ada_sesuai|ada_tidak_sesuai|tidak_ada", 
@@ -105,7 +106,7 @@ Format JSON wajib: {
 PENTING: Isi 'catatan' meskipun status 'ada_sesuai' (jelaskan apa yang ada).`;
   } else {
     systemPrompt = bahasaDirective + `Anda adalah seorang Insinyur Sipil/Struktur Ahli Audit Keandalan Bangunan (SNI 9273:2025).
-Gunakan "Deep Reasoning Engineering" untuk mendiagnosa ${filesData.length} sampel visual dari komponen: "${componentName}".
+Gunakan "Deep Reasoning Engineering" untuk mendiagnosa ${escapeHtml(filesData.length)} sampel visual dari komponen: "${escapeHtml(componentName)}".
 Analisis patologi material, risiko kegagalan, dan integritas struktur.
 Format JSON wajib: { 
   "status": "baik|sedang|buruk|kritis", 

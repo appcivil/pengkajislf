@@ -4,6 +4,12 @@
  */
 
 export class RoomBuilder extends HTMLElement {
+  /** Lepas listener `window` saat komponen dilepas dari DOM. */
+  disconnectedCallback() {
+    if (this._onResize) window.removeEventListener('resize', this._onResize);
+    this._onResize = null;
+  }
+
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
@@ -256,7 +262,10 @@ export class RoomBuilder extends HTMLElement {
     });
     
     // Window resize
-    window.addEventListener('resize', () => this.drawGrid());
+    // Simpan referensi agar bisa dilepas di disconnectedCallback();
+    // listener `window` tidak hilang sendiri saat komponen dilepas.
+    this._onResize = () => this.drawGrid();
+    window.addEventListener('resize', this._onResize);
   }
 
   getMousePos(e) {

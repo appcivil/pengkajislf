@@ -1,3 +1,4 @@
+import { escapeHtml } from './safe-markdown.js';
 // ============================================================
 // ELECTRICAL SYSTEM INSPECTION - VISUALIZATION COMPONENTS
 // Charts, Single Line Diagrams, Heatmaps, Dashboard
@@ -222,7 +223,7 @@ export function generateSingleLineDiagram(panel, measurements = []) {
   const height = 500;
   
   return `
-    <svg viewBox="0 0 ${width} ${height}" class="single-line-diagram">
+    <svg viewBox="0 0 ${escapeHtml(width)} ${escapeHtml(height)}" class="single-line-diagram">
       <defs>
         <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
           <polygon points="0 0, 10 3.5, 0 7" fill="#22c55e" />
@@ -242,7 +243,7 @@ export function generateSingleLineDiagram(panel, measurements = []) {
       <g transform="translate(50, 80)">
         <text x="0" y="-10" fill="#9ca3af" font-size="11">Incoming Supply</text>
         <rect x="0" y="0" width="80" height="60" rx="4" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
-        <text x="40" y="25" text-anchor="middle" fill="#fff" font-size="10">${panel.voltage || 380}V</text>
+        <text x="40" y="25" text-anchor="middle" fill="#fff" font-size="10">${escapeHtml(panel.voltage || 380)}V</text>
         <text x="40" y="45" text-anchor="middle" fill="#9ca3af" font-size="9">3-Phase</text>
       </g>
       
@@ -250,15 +251,15 @@ export function generateSingleLineDiagram(panel, measurements = []) {
       <g transform="translate(180, 80)">
         <text x="30" y="-10" fill="#9ca3af" font-size="11">Main MCB</text>
         <rect x="0" y="0" width="60" height="60" rx="4" fill="#1e293b" stroke="${loading > 100 ? '#ef4444' : loading > 80 ? '#eab308' : '#22c55e'}" stroke-width="2"/>
-        <text x="30" y="25" text-anchor="middle" fill="#fff" font-size="10">${panel.mcbRating || 100}A</text>
-        <text x="30" y="45" text-anchor="middle" fill="#9ca3af" font-size="9">${panel.mcbType || 'MCCB'}</text>
-        <text x="30" y="85" text-anchor="middle" fill="${loading > 100 ? '#ef4444' : '#22c55e'}" font-size="10">${loading}%</text>
+        <text x="30" y="25" text-anchor="middle" fill="#fff" font-size="10">${escapeHtml(panel.mcbRating || 100)}A</text>
+        <text x="30" y="45" text-anchor="middle" fill="#9ca3af" font-size="9">${escapeHtml(panel.mcbType || 'MCCB')}</text>
+        <text x="30" y="85" text-anchor="middle" fill="${loading > 100 ? '#ef4444' : '#22c55e'}" font-size="10">${escapeHtml(loading)}%</text>
       </g>
       
       <!-- Busbar -->
       <g transform="translate(280, 100)">
         <rect x="0" y="0" width="400" height="20" rx="2" fill="url(#busbarGradient)"/>
-        <text x="200" y="-8" text-anchor="middle" fill="#9ca3af" font-size="10">Busbar ${panel.busbarRating || 200}A</text>
+        <text x="200" y="-8" text-anchor="middle" fill="#9ca3af" font-size="10">Busbar ${escapeHtml(panel.busbarRating || 200)}A</text>
       </g>
       
       <!-- Phase R -->
@@ -311,11 +312,11 @@ function generateBranchMCBs(branches, offsetX, phase) {
     const statusColor = loading > 100 ? '#ef4444' : loading > 80 ? '#eab308' : '#22c55e';
     
     return `
-      <g transform="translate(-30, ${y})">
-        <line x1="30" y1="0" x2="30" y2="20" stroke="${color}" stroke-width="1"/>
-        <rect x="0" y="20" width="60" height="40" rx="2" fill="#1e293b" stroke="${statusColor}" stroke-width="1"/>
-        <text x="30" y="35" text-anchor="middle" fill="#fff" font-size="8">${branch.rating || 16}A</text>
-        <text x="30" y="52" text-anchor="middle" fill="${statusColor}" font-size="8">${loading}%</text>
+      <g transform="translate(-30, ${escapeHtml(y)})">
+        <line x1="30" y1="0" x2="30" y2="20" stroke="${escapeHtml(color)}" stroke-width="1"/>
+        <rect x="0" y="20" width="60" height="40" rx="2" fill="#1e293b" stroke="${escapeHtml(statusColor)}" stroke-width="1"/>
+        <text x="30" y="35" text-anchor="middle" fill="#fff" font-size="8">${escapeHtml(branch.rating || 16)}A</text>
+        <text x="30" y="52" text-anchor="middle" fill="${escapeHtml(statusColor)}" font-size="8">${escapeHtml(loading)}%</text>
         <text x="30" y="75" text-anchor="middle" fill="#9ca3af" font-size="7">${escapeHtml(branch.name || `MCB ${idx + 1}`)}</text>
       </g>
     `;
@@ -325,15 +326,6 @@ function generateBranchMCBs(branches, offsetX, phase) {
 function calculatePanelLoading(current, rating) {
   if (!rating || rating === 0) return 0;
   return Math.round((current / rating) * 100);
-}
-
-function escapeHtml(text) {
-  if (!text) return '';
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 // ============================================================
@@ -357,14 +349,14 @@ export function generateThermalHeatmap(hotspots) {
           
           return `
             <div class="heatmap-cell" 
-                 style="--heat-color: ${grade.color}; --intensity: ${intensity}"
-                 data-temp="${spot.temp.toFixed(1)}°C"
-                 data-component="${spot.component}">
+                 style="--heat-color: ${escapeHtml(grade.color)}; --intensity: ${escapeHtml(intensity)}"
+                 data-temp="${escapeHtml(spot.temp.toFixed(1))}°C"
+                 data-component="${escapeHtml(spot.component)}">
               <div class="cell-content">
-                <span class="temp-value">${spot.temp.toFixed(0)}°C</span>
-                <span class="component">${spot.component}</span>
+                <span class="temp-value">${escapeHtml(spot.temp.toFixed(0))}°C</span>
+                <span class="component">${escapeHtml(spot.component)}</span>
               </div>
-              <div class="cell-status ${grade.class}">${grade.grade}</div>
+              <div class="cell-status ${escapeHtml(grade.class)}">${escapeHtml(grade.grade)}</div>
             </div>
           `;
         }).join('')}
@@ -401,19 +393,19 @@ export function generateLoadingIndicator(percentage) {
   const color = colors[status];
   
   return `
-    <div class="loading-indicator ${status}">
-      <div class="loading-ring" style="--progress: ${Math.min(percentage, 100)}; --color: ${color}">
+    <div class="loading-indicator ${escapeHtml(status)}">
+      <div class="loading-ring" style="--progress: ${Math.min(percentage, 100)}; --color: ${escapeHtml(color)}">
         <svg viewBox="0 0 100 100">
           <circle class="bg" cx="50" cy="50" r="45"/>
           <circle class="progress" cx="50" cy="50" r="45" 
                   stroke-dasharray="${Math.min(percentage, 100) * 2.83} 283"/>
         </svg>
         <div class="loading-value">
-          <span class="percentage">${percentage.toFixed(1)}</span>
+          <span class="percentage">${escapeHtml(percentage.toFixed(1))}</span>
           <span class="unit">%</span>
         </div>
       </div>
-      <div class="loading-label">${status.toUpperCase()}</div>
+      <div class="loading-label">${escapeHtml(status.toUpperCase())}</div>
     </div>
   `;
 }
@@ -434,20 +426,20 @@ export function generatePanelStatusCard(panel) {
     : 'Belum diukur';
   
   return `
-    <div class="panel-card ${status}" onclick="viewPanel('${panel.id}')">
+    <div class="panel-card ${escapeHtml(status)}" onclick="viewPanel('${escapeHtml(panel.id)}')">
       <div class="panel-header">
         <div class="panel-icon" style="background:${statusColors[status]}20; color:${statusColors[status]}">
           <i class="fas fa-bolt"></i>
         </div>
         <div class="panel-status-badge" style="background:${statusColors[status]}20; color:${statusColors[status]}">
-          ${status.toUpperCase()}
+          ${escapeHtml(status.toUpperCase())}
         </div>
       </div>
       <h4 class="panel-name">${escapeHtml(panel.name || 'Unnamed Panel')}</h4>
       <p class="panel-location">${escapeHtml(panel.location || 'Unknown Location')}</p>
       <div class="panel-metrics">
         <div class="metric">
-          <span class="metric-value">${loading.toFixed(1)}%</span>
+          <span class="metric-value">${escapeHtml(loading.toFixed(1))}%</span>
           <span class="metric-label">Loading</span>
         </div>
         <div class="metric">
@@ -455,12 +447,12 @@ export function generatePanelStatusCard(panel) {
           <span class="metric-label">Ampere</span>
         </div>
         <div class="metric">
-          <span class="metric-value">${panel.mcbRating || '-'}</span>
+          <span class="metric-value">${escapeHtml(panel.mcbRating || '-')}</span>
           <span class="metric-label">MCB (A)</span>
         </div>
       </div>
       <div class="panel-footer">
-        <span class="last-updated">${lastUpdated}</span>
+        <span class="last-updated">${escapeHtml(lastUpdated)}</span>
         <span class="measurement-count">${panel.measurements?.length || 0} pengukuran</span>
       </div>
     </div>
@@ -478,20 +470,20 @@ export function generateComplianceSummary(compliance) {
   
   return `
     <div class="compliance-summary">
-      <div class="compliance-score" style="--score-color: ${statusColor}">
+      <div class="compliance-score" style="--score-color: ${escapeHtml(statusColor)}">
         <div class="score-ring">
           <svg viewBox="0 0 100 100">
             <circle class="bg" cx="50" cy="50" r="45"/>
             <circle class="progress" cx="50" cy="50" r="45" 
                     stroke-dasharray="${score * 2.83} 283"/>
           </svg>
-          <div class="score-value">${score.toFixed(0)}%</div>
+          <div class="score-value">${escapeHtml(score.toFixed(0))}%</div>
         </div>
         <div class="score-label">Compliance Score</div>
       </div>
       <div class="compliance-details">
         <div class="detail-item">
-          <span class="detail-value" style="color:#22c55e">${compliance.passedCount || 0}</span>
+          <span class="detail-value" style="color:#22c55e">${escapeHtml(compliance.passedCount || 0)}</span>
           <span class="detail-label">Pass</span>
         </div>
         <div class="detail-item">
@@ -499,7 +491,7 @@ export function generateComplianceSummary(compliance) {
           <span class="detail-label">Fail</span>
         </div>
         <div class="detail-item">
-          <span class="detail-value">${compliance.totalCount || 0}</span>
+          <span class="detail-value">${escapeHtml(compliance.totalCount || 0)}</span>
           <span class="detail-label">Total Checks</span>
         </div>
       </div>
@@ -522,7 +514,7 @@ export function generateMeasurementTable(measurements) {
   }
   
   return `
-    <table class="data-table measurement-table">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table class="data-table measurement-table">
       <thead>
         <tr>
           <th>No</th>
@@ -549,19 +541,19 @@ export function generateMeasurementTable(measurements) {
               <td>${idx + 1}</td>
               <td>${new Date(m.timestamp).toLocaleString('id-ID')}</td>
               <td>${escapeHtml(m.location || '-')}</td>
-              <td>${m.phase || '3P'}</td>
-              <td>${m.voltage?.toFixed(1) || '-'}</td>
-              <td>${m.current?.toFixed(2) || '-'}</td>
+              <td>${escapeHtml(m.phase || '3P')}</td>
+              <td>${escapeHtml(m.voltage?.toFixed(1) || '-')}</td>
+              <td>${escapeHtml(m.current?.toFixed(2) || '-')}</td>
               <td>${m.power ? (m.power / 1000).toFixed(2) : '-'}</td>
-              <td>${m.powerFactor?.toFixed(2) || '-'}</td>
-              <td>${loading}</td>
-              <td>${m.temperature?.toFixed(1) || '-'}</td>
-              <td><span class="status-badge ${statusClass}">${status}</span></td>
+              <td>${escapeHtml(m.powerFactor?.toFixed(2) || '-')}</td>
+              <td>${escapeHtml(loading)}</td>
+              <td>${escapeHtml(m.temperature?.toFixed(1) || '-')}</td>
+              <td><span class="status-badge ${escapeHtml(statusClass)}">${escapeHtml(status)}</span></td>
             </tr>
           `;
         }).join('')}
       </tbody>
-    </table>
+    </table></div>
   `;
 }
 

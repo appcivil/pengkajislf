@@ -8,6 +8,7 @@
  */
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import * as IntensityCalc from '../lib/building-intensity-calculators.js';
 import { showSuccess, showError, showInfo } from './toast.js';
 import { openModal, confirm } from './modal.js';
@@ -58,13 +59,13 @@ export function renderBuildingIntensityCard(project, summary = {}) {
   const hasData = summary.kdb_value > 0 || summary.klb_value > 0;
   
   return `
-    <div class="card-quartz clickable" id="building-intensity-card" onclick="window.navigate('building-intensity', {id:'${project.id}'})" style="padding: var(--space-6); background: ${st.bg}; border-color: ${st.border}44">
+    <div class="card-quartz clickable" id="building-intensity-card" onclick="window.navigate('building-intensity', {id:'${escapeHtml(project.id)}'})" style="padding: var(--space-6); background: ${escapeHtml(st.bg)}; border-color: ${escapeHtml(st.border)}44">
       <div class="flex-between" style="margin-bottom: 20px">
-        <div style="width: 48px; height: 48px; border-radius: 14px; background: ${st.bg}; display: flex; align-items: center; justify-content: center; color: ${st.text}; border: 1px solid ${st.border}44">
+        <div style="width: 48px; height: 48px; border-radius: 14px; background: ${escapeHtml(st.bg)}; display: flex; align-items: center; justify-content: center; color: ${escapeHtml(st.text)}; border: 1px solid ${escapeHtml(st.border)}44">
           <i class="fas fa-ruler-combined" style="font-size: 1.4rem"></i>
         </div>
-        <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: ${st.text}">
-          ${summary.overall_status?.replace('_', ' ') || 'NOT STARTED'}
+        <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: ${escapeHtml(st.text)}">
+          ${escapeHtml(summary.overall_status?.replace('_', ' ') || 'NOT STARTED')}
         </div>
       </div>
       
@@ -78,19 +79,19 @@ export function renderBuildingIntensityCard(project, summary = {}) {
       ${hasData ? `
         <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px">
           <div style="background: hsla(220, 20%, 100%, 0.03); padding: 8px; border-radius: 8px; text-align: center">
-            <div style="font-size: 0.9rem; font-weight: 800; color: ${summary.kdb_status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">${summary.kdb_value?.toFixed(1) || 0}%</div>
+            <div style="font-size: 0.9rem; font-weight: 800; color: ${summary.kdb_status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">${escapeHtml(summary.kdb_value?.toFixed(1) || 0)}%</div>
             <div style="font-size: 9px; color: var(--text-tertiary)">KDB</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.03); padding: 8px; border-radius: 8px; text-align: center">
-            <div style="font-size: 0.9rem; font-weight: 800; color: ${summary.klb_status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">${summary.klb_value?.toFixed(2) || 0}</div>
+            <div style="font-size: 0.9rem; font-weight: 800; color: ${summary.klb_status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">${escapeHtml(summary.klb_value?.toFixed(2) || 0)}</div>
             <div style="font-size: 9px; color: var(--text-tertiary)">KLB</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.03); padding: 8px; border-radius: 8px; text-align: center">
-            <div style="font-size: 0.9rem; font-weight: 800; color: ${summary.kdh_status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">${summary.kdh_value?.toFixed(1) || 0}%</div>
+            <div style="font-size: 0.9rem; font-weight: 800; color: ${summary.kdh_status === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">${escapeHtml(summary.kdh_value?.toFixed(1) || 0)}%</div>
             <div style="font-size: 9px; color: var(--text-tertiary)">KDH</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.03); padding: 8px; border-radius: 8px; text-align: center">
-            <div style="font-size: 0.9rem; font-weight: 800; color: var(--brand-400)">${summary.floor_count || '-'}</div>
+            <div style="font-size: 0.9rem; font-weight: 800; color: var(--brand-400)">${escapeHtml(summary.floor_count || '-')}</div>
             <div style="font-size: 9px; color: var(--text-tertiary)">Lantai</div>
           </div>
         </div>
@@ -99,7 +100,7 @@ export function renderBuildingIntensityCard(project, summary = {}) {
           <div style="margin-top: 12px; padding: 8px 12px; background: hsla(0, 85%, 60%, 0.1); border-radius: 8px">
             <span style="font-size: 10px; color: var(--danger-400)">
               <i class="fas fa-triangle-exclamation" style="margin-right: 4px"></i>
-              ${summary.violation_count} pelanggaran ketentuan
+              ${escapeHtml(summary.violation_count)} pelanggaran ketentuan
             </span>
           </div>
         ` : ''}
@@ -108,7 +109,7 @@ export function renderBuildingIntensityCard(project, summary = {}) {
           <p style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 12px">
             Belum ada data pemeriksaan intensitas
           </p>
-          <span class="badge" style="background: ${st.bg}; color: ${st.text}; border: 1px solid ${st.border}44; font-size: 10px">
+          <span class="badge" style="background: ${escapeHtml(st.bg)}; color: ${escapeHtml(st.text)}; border: 1px solid ${escapeHtml(st.border)}44; font-size: 10px">
             KLIK UNTUK MEMULAI
           </span>
         </div>
@@ -141,10 +142,10 @@ export async function renderBuildingIntensityModule(projectId) {
             </p>
           </div>
           <div class="flex gap-3">
-            <button class="btn btn-outline btn-sm" onclick="window._exportIntensityData('${projectId}')">
+            <button class="btn btn-outline btn-sm" onclick="window._exportIntensityData('${escapeHtml(projectId)}')">
               <i class="fas fa-download" style="margin-right: 8px"></i> Export
             </button>
-            <button class="btn btn-primary btn-sm" onclick="window._generateBAReport('${projectId}')">
+            <button class="btn btn-primary btn-sm" onclick="window._generateBAReport('${escapeHtml(projectId)}')">
               <i class="fas fa-file-contract" style="margin-right: 8px"></i> Buat BA
             </button>
           </div>
@@ -198,8 +199,8 @@ export async function renderBuildingIntensityModule(projectId) {
 
 function renderTabButton(id, label, icon, active = false) {
   return `
-    <button class="intensity-tab-btn ${active ? 'active' : ''}" data-tab="${id}" 
-            onclick="window._switchIntensityTab('${id}', this)"
+    <button class="intensity-tab-btn ${active ? 'active' : ''}" data-tab="${escapeHtml(id)}" 
+            onclick="window._switchIntensityTab('${escapeHtml(id)}', this)"
             style="flex: 1; padding: 16px; background: ${active ? 'hsla(220, 95%, 52%, 0.1)' : 'transparent'}; 
                    border: none; border-bottom: 2px solid ${active ? 'var(--brand-400)' : 'transparent'}; 
                    color: ${active ? 'white' : 'var(--text-tertiary)'}; cursor: pointer;
@@ -207,7 +208,7 @@ function renderTabButton(id, label, icon, active = false) {
                    display: flex; align-items: center; justify-content: center; gap: 8px;
                    transition: all 0.2s">
       <i class="fas ${icon}"></i>
-      ${label}
+      ${escapeHtml(label)}
     </button>
   `;
 }
@@ -223,23 +224,23 @@ function renderAssessmentTab(projectId, assessments = []) {
     <div class="intensity-tab-panel" id="tab-assessment">
       <!-- Quick Actions -->
       <div class="grid-3-col" style="margin-bottom: var(--space-6)">
-        <div class="card-quartz clickable" onclick="window._newAssessment('${projectId}')" 
+        <div class="card-quartz clickable" onclick="window._newAssessment('${escapeHtml(projectId)}')" 
              style="padding: var(--space-4); text-align: center; background: hsla(158, 85%, 45%, 0.1)">
           <i class="fas fa-plus-circle" style="font-size: 1.5rem; color: var(--success-400); margin-bottom: 8px"></i>
           <div style="font-size: 0.75rem; font-weight: 700; color: white">Pemeriksaan Baru</div>
           <div style="font-size: 0.65rem; color: var(--text-tertiary)">Buat BA baru</div>
         </div>
-        <div class="card-quartz clickable" onclick="window._importKKPR('${projectId}')" 
+        <div class="card-quartz clickable" onclick="window._importKKPR('${escapeHtml(projectId)}')" 
              style="padding: var(--space-4); text-align: center; background: hsla(220, 95%, 52%, 0.1)">
           <i class="fas fa-file-import" style="font-size: 1.5rem; color: var(--brand-400); margin-bottom: 8px"></i>
           <div style="font-size: 0.75rem; font-weight: 700; color: white">Import KKPR</div>
           <div style="font-size: 0.65rem; color: var(--text-tertiary)">Data dari ATR/BPN</div>
         </div>
-        <div class="card-quartz clickable" onclick="window._viewHistory('${projectId}')" 
+        <div class="card-quartz clickable" onclick="window._viewHistory('${escapeHtml(projectId)}')" 
              style="padding: var(--space-4); text-align: center; background: hsla(220, 20%, 100%, 0.05)">
           <i class="fas fa-history" style="font-size: 1.5rem; color: var(--text-secondary); margin-bottom: 8px"></i>
           <div style="font-size: 0.75rem; font-weight: 700; color: white">Riwayat</div>
-          <div style="font-size: 0.65rem; color: var(--text-tertiary)">${assessments.length} pemeriksaan</div>
+          <div style="font-size: 0.65rem; color: var(--text-tertiary)">${escapeHtml(assessments.length)} pemeriksaan</div>
         </div>
       </div>
 
@@ -260,16 +261,16 @@ function renderLatestAssessment(assessment) {
       <div class="flex-between" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid hsla(220, 20%, 100%, 0.1)">
         <div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-bottom: 4px">BERITA ACARA TERAKHIR</div>
-          <div style="font-size: 1.1rem; font-weight: 800; color: white">${assessment.ba_number || 'BA/KF/XXXX/XXX'}</div>
+          <div style="font-size: 1.1rem; font-weight: 800; color: white">${escapeHtml(assessment.ba_number || 'BA/KF/XXXX/XXX')}</div>
           <div style="font-size: 0.75rem; color: var(--text-secondary)">
             ${new Date(assessment.assessment_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}
           </div>
         </div>
         <div style="text-align: right">
           <div style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; 
-                      background: ${complianceStatus.color}22; border-radius: 12px; border: 1px solid ${complianceStatus.color}44">
-            <i class="fas ${complianceStatus.icon}" style="font-size: 1.5rem; color: ${complianceStatus.color}"></i>
-            <span style="font-size: 1rem; font-weight: 800; color: ${complianceStatus.color}">${complianceStatus.text}</span>
+                      background: ${escapeHtml(complianceStatus.color)}22; border-radius: 12px; border: 1px solid ${escapeHtml(complianceStatus.color)}44">
+            <i class="fas ${complianceStatus.icon}" style="font-size: 1.5rem; color: ${escapeHtml(complianceStatus.color)}"></i>
+            <span style="font-size: 1rem; font-weight: 800; color: ${escapeHtml(complianceStatus.color)}">${escapeHtml(complianceStatus.text)}</span>
           </div>
         </div>
       </div>
@@ -299,21 +300,21 @@ function renderLatestAssessment(assessment) {
           <div style="background: hsla(220, 20%, 100%, 0.03); padding: 16px; border-radius: 12px">
             <div style="margin-bottom: 12px">
               <div style="font-size: 0.7rem; color: var(--text-tertiary)">KODE ZONA</div>
-              <div style="font-size: 1.2rem; font-weight: 800; color: white">${assessment.zone_code || '-'}</div>
+              <div style="font-size: 1.2rem; font-weight: 800; color: white">${escapeHtml(assessment.zone_code || '-')}</div>
             </div>
             <div style="margin-bottom: 12px">
               <div style="font-size: 0.7rem; color: var(--text-tertiary)">NAMA ZONA</div>
-              <div style="font-size: 0.9rem; color: var(--text-secondary)">${assessment.zone_name || '-'}</div>
+              <div style="font-size: 0.9rem; color: var(--text-secondary)">${escapeHtml(assessment.zone_name || '-')}</div>
             </div>
             <div style="margin-bottom: 12px">
               <div style="font-size: 0.7rem; color: var(--text-tertiary)">FUNGSI RENCANA</div>
-              <div style="font-size: 0.9rem; color: var(--text-secondary)">${assessment.planned_function || '-'}</div>
+              <div style="font-size: 0.9rem; color: var(--text-secondary)">${escapeHtml(assessment.planned_function || '-')}</div>
             </div>
             <div>
               <div style="font-size: 0.7rem; color: var(--text-tertiary)">KESESUAIAN FUNGSI</div>
               <div style="font-size: 0.9rem; font-weight: 600; 
                           color: ${assessment.function_compliance === 'SESUAI' ? 'var(--success-400)' : 'var(--danger-400)'}">
-                ${assessment.function_compliance || '-'}
+                ${escapeHtml(assessment.function_compliance || '-')}
               </div>
             </div>
           </div>
@@ -324,16 +325,16 @@ function renderLatestAssessment(assessment) {
         <div style="margin-top: 20px">
           <h4 style="font-family: 'Outfit', sans-serif; font-weight: 700; color: white; margin-bottom: 16px">
             <i class="fas fa-exclamation-triangle" style="margin-right: 8px; color: var(--danger-400)"></i>
-            Temuan Pelanggaran (${assessment.violations.length})
+            Temuan Pelanggaran (${escapeHtml(assessment.violations.length)})
           </h4>
           <div style="display: flex; flex-direction: column; gap: 8px">
             ${assessment.violations.map((v, i) => `
               <div style="padding: 12px 16px; background: hsla(0, 85%, 60%, 0.1); border-radius: 8px; border-left: 3px solid var(--danger-400)">
                 <div style="font-size: 0.8rem; font-weight: 700; color: var(--danger-400); margin-bottom: 4px">
-                  ${i + 1}. ${v.parameter || 'Pelanggaran'}
+                  ${i + 1}. ${escapeHtml(v.parameter || 'Pelanggaran')}
                 </div>
                 <div style="font-size: 0.75rem; color: var(--text-secondary)">
-                  ${v.description || v.message || 'Detail pelanggaran'}
+                  ${escapeHtml(v.description || v.message || 'Detail pelanggaran')}
                 </div>
               </div>
             `).join('')}
@@ -349,12 +350,12 @@ function renderIntensityGauge(label, value, status, unit = '', isRatio = false) 
   const bgColor = status === 'C' ? 'hsla(158, 85%, 45%, 0.1)' : status === 'NC' ? 'hsla(0, 85%, 60%, 0.1)' : 'hsla(220, 20%, 100%, 0.05)';
   
   return `
-    <div style="padding: 12px; background: ${bgColor}; border-radius: 8px; text-align: center">
-      <div style="font-size: 0.65rem; color: var(--text-tertiary); margin-bottom: 4px">${label}</div>
-      <div style="font-size: 1.3rem; font-weight: 800; color: ${color}">
-        ${isRatio ? value.toFixed(2) : value.toFixed(1)}${unit}
+    <div style="padding: 12px; background: ${escapeHtml(bgColor)}; border-radius: 8px; text-align: center">
+      <div style="font-size: 0.65rem; color: var(--text-tertiary); margin-bottom: 4px">${escapeHtml(label)}</div>
+      <div style="font-size: 1.3rem; font-weight: 800; color: ${escapeHtml(color)}">
+        ${isRatio ? value.toFixed(2) : value.toFixed(1)}${escapeHtml(unit)}
       </div>
-      <div style="font-size: 0.65rem; color: ${color}; margin-top: 2px">${status === 'C' ? '✓' : status === 'NC' ? '✗' : '-'}</div>
+      <div style="font-size: 0.65rem; color: ${escapeHtml(color)}; margin-top: 2px">${status === 'C' ? '✓' : status === 'NC' ? '✗' : '-'}</div>
     </div>
   `;
 }
@@ -369,7 +370,7 @@ function renderEmptyState(projectId) {
       <p style="font-size: 0.85rem; color: var(--text-tertiary); max-width: 400px; margin: 0 auto 24px">
         Mulai pemeriksaan intensitas bangunan untuk menilai kesesuaian fungsi dan parameter KDB, KLB, KDH, KTB
       </p>
-      <button class="btn btn-primary" onclick="window._newAssessment('${projectId}')">
+      <button class="btn btn-primary" onclick="window._newAssessment('${escapeHtml(projectId)}')">
         <i class="fas fa-plus" style="margin-right: 8px"></i> Pemeriksaan Baru
       </button>
     </div>
@@ -942,16 +943,16 @@ export function initBuildingIntensityHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="text-align: center; margin-bottom: 16px">
           <div style="font-size: 0.75rem; color: var(--text-tertiary)">KDB (Koefisien Dasar Bangunan)</div>
-          <div style="font-size: 2.5rem; font-weight: 800; color: var(--brand-400)">${result.percentage}</div>
+          <div style="font-size: 2.5rem; font-weight: 800; color: var(--brand-400)">${escapeHtml(result.percentage)}</div>
         </div>
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px">
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Footprint</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: white">${footprint} m²</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: white">${escapeHtml(footprint)} m²</div>
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Sisa Lahan</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: white">${result.remainingArea} m²</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: white">${escapeHtml(result.remainingArea)} m²</div>
           </div>
         </div>
       `;
@@ -970,12 +971,12 @@ export function initBuildingIntensityHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="text-align: center; margin-bottom: 16px">
           <div style="font-size: 0.75rem; color: var(--text-tertiary)">KLB / FAR (Floor Area Ratio)</div>
-          <div style="font-size: 2.5rem; font-weight: 800; color: var(--gold-400)">${result.ratio}</div>
+          <div style="font-size: 2.5rem; font-weight: 800; color: var(--gold-400)">${escapeHtml(result.ratio)}</div>
         </div>
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px">
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Total Floor Area</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: white">${total} m²</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: white">${escapeHtml(total)} m²</div>
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Est. Floors</div>
@@ -998,16 +999,16 @@ export function initBuildingIntensityHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="text-align: center; margin-bottom: 16px">
           <div style="font-size: 0.75rem; color: var(--text-tertiary)">KDH (Koefisien Daerah Hijau)</div>
-          <div style="font-size: 2.5rem; font-weight: 800; color: var(--success-400)">${result.percentage}</div>
+          <div style="font-size: 2.5rem; font-weight: 800; color: var(--success-400)">${escapeHtml(result.percentage)}</div>
         </div>
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px">
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Green Area</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: white">${green} m²</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: white">${escapeHtml(green)} m²</div>
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">Non-Green</div>
-            <div style="font-size: 1.2rem; font-weight: 800; color: white">${result.nonGreenArea} m²</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: white">${escapeHtml(result.nonGreenArea)} m²</div>
           </div>
         </div>
       `;
@@ -1036,32 +1037,32 @@ export function initBuildingIntensityHandlers(projectId) {
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px">
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; text-align: center">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">KDB</div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: var(--brand-400)">${result.summary.buildingCoverage}</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--brand-400)">${escapeHtml(result.summary.buildingCoverage)}</div>
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; text-align: center">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">KLB</div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: var(--gold-400)">${result.summary.floorRatio}</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--gold-400)">${escapeHtml(result.summary.floorRatio)}</div>
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; text-align: center">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">KDH</div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: var(--success-400)">${result.summary.greenCoverage}</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--success-400)">${escapeHtml(result.summary.greenCoverage)}</div>
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; text-align: center">
             <div style="font-size: 0.7rem; color: var(--text-tertiary)">KTB</div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-secondary)">${result.summary.basementCoverage}</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-secondary)">${escapeHtml(result.summary.basementCoverage)}</div>
           </div>
         </div>
         <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
           <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 8px">Land Use Composition</div>
           <div style="display: flex; gap: 8px; flex-wrap: wrap">
             <span class="badge" style="background: hsla(158, 85%, 45%, 0.2); color: var(--success-400); border: 1px solid var(--success-400)44; font-size: 10px">
-              Hijau: ${result.summary.greenCoverage}
+              Hijau: ${escapeHtml(result.summary.greenCoverage)}
             </span>
             <span class="badge" style="background: hsla(220, 95%, 52%, 0.2); color: var(--brand-400); border: 1px solid var(--brand-400)44; font-size: 10px">
-              Bangunan: ${result.summary.buildingCoverage}
+              Bangunan: ${escapeHtml(result.summary.buildingCoverage)}
             </span>
             <span class="badge" style="background: hsla(220, 20%, 100%, 0.1); color: var(--text-secondary); border: 1px solid var(--text-tertiary)44; font-size: 10px">
-              Paving: ${result.summary.hardscapeCoverage}
+              Paving: ${escapeHtml(result.summary.hardscapeCoverage)}
             </span>
           </div>
         </div>
@@ -1089,12 +1090,12 @@ export function initBuildingIntensityHandlers(projectId) {
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px">
             <i class="fas ${result.compliance.level === 'C' ? 'fa-check-circle' : 'fa-times-circle'}" style="font-size: 2rem; color: ${result.compliance.level === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}"></i>
             <div>
-              <div style="font-size: 1.2rem; font-weight: 800; color: ${result.compliance.level === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">${result.compliance.status}</div>
-              <div style="font-size: 0.75rem; color: var(--text-tertiary)">${result.zoneName}</div>
+              <div style="font-size: 1.2rem; font-weight: 800; color: ${result.compliance.level === 'C' ? 'var(--success-400)' : 'var(--danger-400)'}">${escapeHtml(result.compliance.status)}</div>
+              <div style="font-size: 0.75rem; color: var(--text-tertiary)">${escapeHtml(result.zoneName)}</div>
             </div>
           </div>
-          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px">${result.recommendation}</div>
-          <div style="font-size: 0.75rem; color: var(--text-tertiary)">Jenis Izin: ${result.permitType}</div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px">${escapeHtml(result.recommendation)}</div>
+          <div style="font-size: 0.75rem; color: var(--text-tertiary)">Jenis Izin: ${escapeHtml(result.permitType)}</div>
         </div>
       `;
     }

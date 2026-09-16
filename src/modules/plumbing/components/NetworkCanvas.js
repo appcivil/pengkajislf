@@ -5,6 +5,7 @@
 
 import { HydraulicEngine } from '../core/HydraulicEngine.js';
 import { globalEventBus } from '../../../core/EventBus.js';
+import { confirm } from '../../../components/modal.js';
 
 export class NetworkCanvas extends HTMLElement {
   constructor() {
@@ -605,8 +606,14 @@ export class NetworkCanvas extends HTMLElement {
     }
   }
 
-  clearNetwork() {
-    if (confirm('Clear all nodes and pipes?')) {
+  async clearNetwork() {
+    const lanjut = await confirm({
+      title: 'Bersihkan Denah',
+      message: 'Hapus seluruh titik dan pipa pada denah ini? Tindakan ini tidak dapat dibatalkan.',
+      confirmText: 'Bersihkan',
+      danger: true,
+    });
+    if (lanjut) {
       this.nodes = [];
       this.pipes = [];
       this.engine.nodes.clear();

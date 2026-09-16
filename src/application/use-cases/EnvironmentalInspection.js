@@ -3,6 +3,7 @@
 // ============================================================
 
 import { BaseInspection } from './BaseInspection.js';
+import { escapeHtml } from '../../lib/safe-markdown.js';
 import { InspectionWidgets } from '../../components/inspection/inspection-widgets.js';
 import { showSuccess, showError, showInfo } from '../../components/toast.js';
 
@@ -90,7 +91,7 @@ export class EnvironmentalInspection extends BaseInspection {
                     : 'Bangunan cukup dengan Upaya Pengelolaan Lingkungan (UKL-UPL)'}
                 </p>
                 <div style="font-size: 0.8rem; color: var(--text-tertiary);">
-                  Status: <strong style="color: var(--text-primary);">${assessment.amdal_status || 'Belum diajukan'}</strong>
+                  Status: <strong style="color: var(--text-primary);">${escapeHtml(assessment.amdal_status || 'Belum diajukan')}</strong>
                 </div>
               </div>
             `
@@ -103,19 +104,19 @@ export class EnvironmentalInspection extends BaseInspection {
             content: `
               <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
                 <div style="padding: 12px; background: hsla(220, 20%, 15%, 0.5); border-radius: 8px; text-align: center;">
-                  <div style="font-size: 1.5rem; font-weight: 700; color: ${assessment.air_impact === 'LOW' ? 'var(--success-400)' : assessment.air_impact === 'MEDIUM' ? 'var(--warning-400)' : 'var(--danger-400)'};">${assessment.air_impact || '-'}</div>
+                  <div style="font-size: 1.5rem; font-weight: 700; color: ${assessment.air_impact === 'LOW' ? 'var(--success-400)' : assessment.air_impact === 'MEDIUM' ? 'var(--warning-400)' : 'var(--danger-400)'};">${escapeHtml(assessment.air_impact || '-')}</div>
                   <div style="font-size: 0.75rem; color: var(--text-tertiary);">Dampak Udara</div>
                 </div>
                 <div style="padding: 12px; background: hsla(220, 20%, 15%, 0.5); border-radius: 8px; text-align: center;">
-                  <div style="font-size: 1.5rem; font-weight: 700; color: ${assessment.water_impact === 'LOW' ? 'var(--success-400)' : assessment.water_impact === 'MEDIUM' ? 'var(--warning-400)' : 'var(--danger-400)'};">${assessment.water_impact || '-'}</div>
+                  <div style="font-size: 1.5rem; font-weight: 700; color: ${assessment.water_impact === 'LOW' ? 'var(--success-400)' : assessment.water_impact === 'MEDIUM' ? 'var(--warning-400)' : 'var(--danger-400)'};">${escapeHtml(assessment.water_impact || '-')}</div>
                   <div style="font-size: 0.75rem; color: var(--text-tertiary);">Dampak Air</div>
                 </div>
                 <div style="padding: 12px; background: hsla(220, 20%, 15%, 0.5); border-radius: 8px; text-align: center;">
-                  <div style="font-size: 1.5rem; font-weight: 700; color: ${assessment.noise_impact === 'LOW' ? 'var(--success-400)' : assessment.noise_impact === 'MEDIUM' ? 'var(--warning-400)' : 'var(--danger-400)'};">${assessment.noise_impact || '-'}</div>
+                  <div style="font-size: 1.5rem; font-weight: 700; color: ${assessment.noise_impact === 'LOW' ? 'var(--success-400)' : assessment.noise_impact === 'MEDIUM' ? 'var(--warning-400)' : 'var(--danger-400)'};">${escapeHtml(assessment.noise_impact || '-')}</div>
                   <div style="font-size: 0.75rem; color: var(--text-tertiary);">Dampak Kebisingan</div>
                 </div>
                 <div style="padding: 12px; background: hsla(220, 20%, 15%, 0.5); border-radius: 8px; text-align: center;">
-                  <div style="font-size: 1.5rem; font-weight: 700; color: ${assessment.waste_impact === 'LOW' ? 'var(--success-400)' : assessment.waste_impact === 'MEDIUM' ? 'var(--warning-400)' : 'var(--danger-400)'};">${assessment.waste_impact || '-'}</div>
+                  <div style="font-size: 1.5rem; font-weight: 700; color: ${assessment.waste_impact === 'LOW' ? 'var(--success-400)' : assessment.waste_impact === 'MEDIUM' ? 'var(--warning-400)' : 'var(--danger-400)'};">${escapeHtml(assessment.waste_impact || '-')}</div>
                   <div style="font-size: 0.75rem; color: var(--text-tertiary);">Dampak Sampah</div>
                 </div>
               </div>
@@ -163,7 +164,7 @@ export class EnvironmentalInspection extends BaseInspection {
 
   renderAirStatus(status) {
     const colors = { GOOD: 'var(--success-400)', MODERATE: 'var(--warning-400)', UNHEALTHY: 'var(--danger-400)' };
-    return `<span style="color: ${colors[status] || 'var(--text-tertiary)'}; font-weight: 600;">${status || '-'}</span>`;
+    return `<span style="color: ${colors[status] || 'var(--text-tertiary)'}; font-weight: 600;">${escapeHtml(status || '-')}</span>`;
   }
 
   renderWaterTab() {
@@ -228,15 +229,15 @@ export class EnvironmentalInspection extends BaseInspection {
             </div>
             <div>
               <label style="font-size: 0.7rem; color: var(--text-tertiary);">Persentase Reduce</label>
-              <div style="font-size: 1.5rem; font-weight: 700; color: white;">${wastePlan.reduce_percentage || 0}%</div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: white;">${escapeHtml(wastePlan.reduce_percentage || 0)}%</div>
             </div>
             <div>
               <label style="font-size: 0.7rem; color: var(--text-tertiary);">Persentase Reuse</label>
-              <div style="font-size: 1.5rem; font-weight: 700; color: white;">${wastePlan.reuse_percentage || 0}%</div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: white;">${escapeHtml(wastePlan.reuse_percentage || 0)}%</div>
             </div>
             <div>
               <label style="font-size: 0.7rem; color: var(--text-tertiary);">Persentase Recycle</label>
-              <div style="font-size: 1.5rem; font-weight: 700; color: white;">${wastePlan.recycle_percentage || 0}%</div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: white;">${escapeHtml(wastePlan.recycle_percentage || 0)}%</div>
             </div>
           </div>
         `
@@ -266,7 +267,7 @@ export class EnvironmentalInspection extends BaseInspection {
           ${permits.map(p => `
             <div style="display: flex; align-items: center; gap: 12px; padding: 16px; background: hsla(220, 20%, 15%, 0.5); border-radius: 10px;">
               <div style="flex: 1;">
-                <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">${p.name}</div>
+                <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">${escapeHtml(p.name)}</div>
                 <div style="font-size: 0.75rem; color: var(--text-tertiary);">${p.required ? 'Wajib' : 'Opsional'}</div>
               </div>
               <div style="padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; 

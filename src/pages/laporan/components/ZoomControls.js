@@ -1,3 +1,4 @@
+import { escapeHtml } from '../../../lib/safe-markdown.js';
 // ============================================================
 //  COMPONENT: ZoomControls
 //  Kontrol zoom floating untuk DOCX preview
@@ -10,7 +11,7 @@ export function renderZoomControls(zoom = 100) {
         <i class="fas fa-minus"></i>
       </button>
       
-      <span class="zoom-level" id="zoom-display">${zoom}%</span>
+      <span class="zoom-level" id="zoom-display">${escapeHtml(zoom)}%</span>
       
       <button class="zoom-btn zoom-in" onclick="window._zoomIn()" title="Zoom In">
         <i class="fas fa-plus"></i>

@@ -5,6 +5,7 @@
 // ============================================================
 
 import { supabase } from '../lib/supabase.js';
+import { escapeHtml } from '../lib/safe-markdown.js';
 import { navigate } from '../lib/router.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 
@@ -159,7 +160,7 @@ function renderHeaderCard() {
           <span class="badge" style="background: hsla(158, 85%, 45%, 0.1); color: var(--success-400); border: 1px solid hsla(158, 85%, 45%, 0.2); font-size: 10px;">
             <i class="fas fa-book" style="margin-right: 6px;"></i>Perda / KDBK
           </span>
-          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${currentProjectId}'})" style="color: var(--text-tertiary);">
+          <button class="btn-ghost btn-xs" onclick="window.navigate('proyek-detail', {id: '${escapeHtml(currentProjectId)}'})" style="color: var(--text-tertiary);">
             <i class="fas fa-arrow-left" style="margin-right: 6px;"></i> Kembali
           </button>
         </div>
@@ -254,25 +255,25 @@ function renderDashboardTab() {
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(220, 95%, 52%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--brand-400); margin: 0 auto 12px;">
             <i class="fas fa-chart-pie" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: ${kdbStatus === 'COMPLIANT' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-bottom: 4px;">${kdb.toFixed(2)}%</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: ${kdbStatus === 'COMPLIANT' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-bottom: 4px;">${escapeHtml(kdb.toFixed(2))}%</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">KDB (Koefisien Dasar)</div>
-          <div style="font-size: 0.65rem; color: ${kdbStatus === 'COMPLIANT' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 4px;">${kdbStatus}</div>
+          <div style="font-size: 0.65rem; color: ${kdbStatus === 'COMPLIANT' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 4px;">${escapeHtml(kdbStatus)}</div>
         </div>
         
         <div class="card-quartz" style="padding: 20px; text-align: center;">
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(220, 95%, 52%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--brand-400); margin: 0 auto 12px;">
             <i class="fas fa-layer-group" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: ${klbStatus === 'COMPLIANT' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-bottom: 4px;">${klb.toFixed(2)}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: ${klbStatus === 'COMPLIANT' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-bottom: 4px;">${escapeHtml(klb.toFixed(2))}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">KLB (Koefisien Lantai)</div>
-          <div style="font-size: 0.65rem; color: ${klbStatus === 'COMPLIANT' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 4px;">${klbStatus}</div>
+          <div style="font-size: 0.65rem; color: ${klbStatus === 'COMPLIANT' ? 'var(--success-400)' : 'var(--danger-400)'}; margin-top: 4px;">${escapeHtml(klbStatus)}</div>
         </div>
         
         <div class="card-quartz" style="padding: 20px; text-align: center;">
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(220, 95%, 52%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--brand-400); margin: 0 auto 12px;">
             <i class="fas fa-ruler-vertical" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${hsb.toFixed(1)}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(hsb.toFixed(1))}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">HSB (Jumlah Lantai)</div>
           <div style="font-size: 0.65rem; color: var(--text-tertiary); margin-top: 4px;">Max: ${hsbMax > 0 ? hsbMax : 'Sesuai Zona'}</div>
         </div>
@@ -281,7 +282,7 @@ function renderDashboardTab() {
           <div style="width: 48px; height: 48px; border-radius: 14px; background: hsla(220, 95%, 52%, 0.1); display: flex; align-items: center; justify-content: center; color: var(--brand-400); margin: 0 auto 12px;">
             <i class="fas fa-ruler-horizontal" style="font-size: 1.4rem;"></i>
           </div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${intensityData.setbacks.length}</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 4px;">${escapeHtml(intensityData.setbacks.length)}</div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">GSB Checkpoints</div>
           <div style="font-size: 0.65rem; color: var(--text-tertiary); margin-top: 4px;">Jarak ke batas</div>
         </div>
@@ -425,7 +426,7 @@ function renderKdbTab() {
           </h4>
           
           <div style="max-height: 400px; overflow-y: auto;">
-            <table style="width: 100%; font-size: 0.75rem;">
+            <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width: 100%; font-size: 0.75rem;">
               <thead>
                 <tr style="border-bottom: 1px solid hsla(220, 20%, 100%, 0.1);">
                   <th style="text-align: left; padding: 8px; color: var(--text-tertiary);">Zona / Fungsi</th>
@@ -454,7 +455,7 @@ function renderKdbTab() {
                   <td style="padding: 8px; color: white; text-align: right; font-weight: 600;">10-20%</td>
                 </tr>
               </tbody>
-            </table>
+            </table></div>
           </div>
           
           <div style="margin-top: 20px; padding: 16px; background: hsla(45, 90%, 60%, 0.1); border-radius: 8px; border: 1px solid hsla(45, 90%, 60%, 0.2);">
@@ -538,12 +539,12 @@ function renderKlbTab() {
                 <div class="card-quartz" style="padding: 12px; background: hsla(220, 20%, 100%, 0.03);">
                   <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                      <div style="font-weight: 700; color: white;">Lantai ${f.floor_number} ${f.floor_name ? '- ' + f.floor_name : ''}</div>
-                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${f.function || 'Tidak ditentukan'}</div>
+                      <div style="font-weight: 700; color: white;">Lantai ${escapeHtml(f.floor_number)} ${f.floor_name ? '- ' + f.floor_name : ''}</div>
+                      <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(f.function || 'Tidak ditentukan')}</div>
                     </div>
                     <div style="text-align: right;">
-                      <div style="font-weight: 700; color: var(--brand-400);">${f.area_m2 || 0} m²</div>
-                      <div style="font-size: 0.65rem; color: var(--text-tertiary);">Height: ${f.height_m || 0}m</div>
+                      <div style="font-weight: 700; color: var(--brand-400);">${escapeHtml(f.area_m2 || 0)} m²</div>
+                      <div style="font-size: 0.65rem; color: var(--text-tertiary);">Height: ${escapeHtml(f.height_m || 0)}m</div>
                     </div>
                   </div>
                 </div>
@@ -734,12 +735,12 @@ function renderGsbTab() {
                   <div class="card-quartz" style="padding: 12px; border-left: 3px solid ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'}; background: hsla(220, 20%, 100%, 0.03);">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                       <div>
-                        <div style="font-weight: 700; color: white;">${s.side || 'Sisi'}</div>
-                        <div style="font-size: 0.7rem; color: var(--text-tertiary);">${s.location_note || ''}</div>
+                        <div style="font-weight: 700; color: white;">${escapeHtml(s.side || 'Sisi')}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-tertiary);">${escapeHtml(s.location_note || '')}</div>
                       </div>
                       <div style="text-align: right;">
                         <div style="font-weight: 700; color: ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'};">
-                          ${s.actual_distance || 0}m / ${s.required_distance || 0}m
+                          ${escapeHtml(s.actual_distance || 0)}m / ${escapeHtml(s.required_distance || 0)}m
                         </div>
                         <div style="font-size: 0.65rem; color: var(--text-tertiary);">
                           ${isCompliant ? '✓ Compliant' : '✗ Non-compliant'}
@@ -756,7 +757,7 @@ function renderGsbTab() {
             <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 8px;">
               <i class="fas fa-road" style="margin-right: 6px;"></i>GSB Berdasarkan Lebar Jalan
             </div>
-            <table style="width: 100%; font-size: 0.7rem;">
+            <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width: 100%; font-size: 0.7rem;">
               <tbody>
                 <tr style="border-bottom: 1px solid hsla(220, 20%, 100%, 0.05);">
                   <td style="padding: 6px; color: var(--text-secondary);">Jalan &lt; 8m</td>
@@ -775,7 +776,7 @@ function renderGsbTab() {
                   <td style="padding: 6px; color: white; text-align: right;">10.0 - 15.0 m</td>
                 </tr>
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       </div>
@@ -1098,15 +1099,15 @@ function calculateQuickIntensity(e) {
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: center;">
         <div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">KDB</div>
-          <div style="font-size: 1.5rem; font-weight: 800; color: var(--brand-400);">${kdb.toFixed(2)}%</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: var(--brand-400);">${escapeHtml(kdb.toFixed(2))}%</div>
         </div>
         <div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">KLB</div>
-          <div style="font-size: 1.5rem; font-weight: 800; color: var(--brand-400);">${klb.toFixed(2)}</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: var(--brand-400);">${escapeHtml(klb.toFixed(2))}</div>
         </div>
         <div>
           <div style="font-size: 0.7rem; color: var(--text-tertiary);">HSB</div>
-          <div style="font-size: 1.5rem; font-weight: 800; color: var(--brand-400);">${floors}</div>
+          <div style="font-size: 1.5rem; font-weight: 800; color: var(--brand-400);">${escapeHtml(floors)}</div>
         </div>
       </div>
     </div>
@@ -1129,12 +1130,12 @@ function calculateKDB(e) {
     <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; border: 1px solid ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'};">
       <div style="text-align: center; margin-bottom: 12px;">
         <div style="font-size: 0.75rem; color: var(--text-tertiary);">KDB (Koefisien Dasar Bangunan)</div>
-        <div style="font-size: 2rem; font-weight: 800; color: ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'};">${kdb.toFixed(2)}%</div>
+        <div style="font-size: 2rem; font-weight: 800; color: ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'};">${escapeHtml(kdb.toFixed(2))}%</div>
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.7rem; text-align: center;">
         <div>
           <div style="color: var(--text-tertiary);">Max Allowed</div>
-          <div style="color: white; font-weight: 600;">${maxKdb}%</div>
+          <div style="color: white; font-weight: 600;">${escapeHtml(maxKdb)}%</div>
         </div>
         <div>
           <div style="color: var(--text-tertiary);">Status</div>
@@ -1163,12 +1164,12 @@ function calculateKLB(e) {
     <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; border: 1px solid ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'};">
       <div style="text-align: center; margin-bottom: 12px;">
         <div style="font-size: 0.75rem; color: var(--text-tertiary);">KLB (Koefisien Lantai Bangunan)</div>
-        <div style="font-size: 2rem; font-weight: 800; color: ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'};">${klb.toFixed(2)}</div>
+        <div style="font-size: 2rem; font-weight: 800; color: ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'};">${escapeHtml(klb.toFixed(2))}</div>
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.7rem; text-align: center;">
         <div>
           <div style="color: var(--text-tertiary);">Max Allowed</div>
-          <div style="color: white; font-weight: 600;">${maxKlb}</div>
+          <div style="color: white; font-weight: 600;">${escapeHtml(maxKlb)}</div>
         </div>
         <div>
           <div style="color: var(--text-tertiary);">Status</div>
@@ -1196,13 +1197,13 @@ function calculateHSB(e) {
     <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; border: 1px solid ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'};">
       <div style="text-align: center; margin-bottom: 12px;">
         <div style="font-size: 0.75rem; color: var(--text-tertiary);">HSB (Height Storey Building)</div>
-        <div style="font-size: 2rem; font-weight: 800; color: ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'};">${floors} Lantai</div>
-        ${height > 0 ? `<div style="font-size: 0.9rem; color: var(--text-secondary);">Tinggi: ${height.toFixed(1)} m</div>` : ''}
+        <div style="font-size: 2rem; font-weight: 800; color: ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'};">${escapeHtml(floors)} Lantai</div>
+        ${height > 0 ? `<div style="font-size: 0.9rem; color: var(--text-secondary);">Tinggi: ${escapeHtml(height.toFixed(1))} m</div>` : ''}
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.7rem; text-align: center;">
         <div>
           <div style="color: var(--text-tertiary);">Max Allowed</div>
-          <div style="color: white; font-weight: 600;">${maxHsb} Lantai</div>
+          <div style="color: white; font-weight: 600;">${escapeHtml(maxHsb)} Lantai</div>
         </div>
         <div>
           <div style="color: var(--text-tertiary);">Status</div>
@@ -1230,7 +1231,7 @@ function calculateGSB(e) {
   resultDiv.innerHTML = `
     <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; border: 1px solid ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'};">
       <div style="text-align: center; margin-bottom: 12px;">
-        <div style="font-size: 0.75rem; color: var(--text-tertiary);">GSB - ${side}</div>
+        <div style="font-size: 0.75rem; color: var(--text-tertiary);">GSB - ${escapeHtml(side)}</div>
         <div style="font-size: 1.5rem; font-weight: 800; color: ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'};">
           ${isCompliant ? '✓ COMPLIANT' : '✗ NON-COMPLIANT'}
         </div>
@@ -1238,15 +1239,15 @@ function calculateGSB(e) {
       <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 0.7rem; text-align: center;">
         <div>
           <div style="color: var(--text-tertiary);">Required</div>
-          <div style="color: white; font-weight: 600;">${required} m</div>
+          <div style="color: white; font-weight: 600;">${escapeHtml(required)} m</div>
         </div>
         <div>
           <div style="color: var(--text-tertiary);">Actual</div>
-          <div style="color: white; font-weight: 600;">${actual} m</div>
+          <div style="color: white; font-weight: 600;">${escapeHtml(actual)} m</div>
         </div>
         <div>
           <div style="color: var(--text-tertiary);">Margin</div>
-          <div style="color: ${margin >= 0 ? 'var(--success-400)' : 'var(--danger-400)'}; font-weight: 600;">${margin.toFixed(1)} m</div>
+          <div style="color: ${margin >= 0 ? 'var(--success-400)' : 'var(--danger-400)'}; font-weight: 600;">${escapeHtml(margin.toFixed(1))} m</div>
         </div>
       </div>
     </div>

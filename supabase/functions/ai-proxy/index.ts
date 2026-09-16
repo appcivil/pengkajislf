@@ -6,6 +6,7 @@
 // ============================================================
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,13 +15,14 @@ const corsHeaders = {
 };
 
 interface AIRequest {
-  provider: "gemini" | "openai" | "claude" | "groq" | "openrouter" | "mistral" | "huggingface" | "ollama";
+  provider: "gemini" | "openai" | "claude" | "groq" | "openrouter" | "mistral" | "huggingface" | "ollama" | "kimi";
   model: string;
   prompt: string;
   systemPrompt?: string;
   base64Data?: string;
   mimeType?: string;
   maxTokens?: number;
+  temperature?: number;
 }
 
 serve(async (req: Request) => {
@@ -30,17 +32,70 @@ serve(async (req: Request) => {
   }
 
   try {
-    // Validate authorization — hanya user Supabase yang authenticated
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    // ── OTORISASI ───────────────────────────────────────────────
+    // Fungsi ini memegang kunci API berbayar, jadi pemanggilnya WAJIB
+    // diverifikasi sebagai pengguna yang benar-benar login.
+    //
+    // SEBELUMNYA hanya diperiksa "apakah header Authorization ada". Itu
+    // tidak cukup: anon key Supabase ikut ter-bundle ke berkas JS publik,
+    // dan anon key adalah JWT yang sah — jadi siapa pun yang membuka situs
+    // bisa menyalinnya lalu memanggil fungsi ini dan menghabiskan kuota AI
+    // pemilik proyek. Pemindahan kunci ke sisi server menjadi tidak berarti
+    // tanpa pemeriksaan di bawah ini.
+    const authHeader = req.headers.get("authorization") ?? "";
+    const token = authHeader.toLowerCase().startsWith("bearer ")
+      ? authHeader.slice(7).trim()
+      : "";
+
+    const unauthorized = (reason: string) =>
+      new Response(JSON.stringify({ error: `Unauthorized: ${reason}` }), {
         status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+
+    if (!token) return unauthorized("header Authorization tidak ada");
+
+    // (a) Tolak lebih awal token ber-role anon / service_role. Payload JWT
+    //     boleh dibaca tanpa verifikasi di sini — ini penyaring cepat,
+    //     bukan pengganti pemeriksaan tanda tangan di langkah (b).
+    let tokenRole: string | null = null;
+    try {
+      const b64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+      tokenRole = JSON.parse(atob(b64))?.role ?? null;
+    } catch {
+      return unauthorized("token tidak dapat dibaca");
+    }
+    if (tokenRole !== "authenticated") {
+      return unauthorized(
+        `token ber-role '${tokenRole ?? "tidak dikenal"}' bukan sesi pengguna. ` +
+        "Gunakan access_token dari hasil login, bukan anon key."
+      );
+    }
+
+    // (b) Verifikasi tanda tangan token ke GoTrue. Ini yang menentukan.
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      console.error("[AI Proxy] SUPABASE_URL / SUPABASE_ANON_KEY tidak tersedia");
+      return new Response(JSON.stringify({ error: "Konfigurasi server tidak lengkap" }), {
+        status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data: { user }, error: authError } = await authClient.auth.getUser(token);
+    if (authError || !user) {
+      return unauthorized("sesi tidak valid atau sudah kedaluwarsa");
+    }
+
     const body: AIRequest = await req.json();
     const { provider, model, prompt, systemPrompt, base64Data, mimeType, maxTokens = 8192 } = body;
+    // Terima `temperature` dari klien; 0.1 adalah default yang aman untuk
+    // keluaran teknis (deterministik, tidak mengarang angka).
+    const temperature = typeof body.temperature === "number" ? body.temperature : 0.1;
 
     if (!provider || !prompt) {
       return new Response(JSON.stringify({ error: "provider and prompt are required" }), {
@@ -77,7 +132,7 @@ serve(async (req: Request) => {
             body: JSON.stringify({
               contents: [{ parts }],
               generationConfig: { 
-                temperature: 0.1, 
+                temperature, 
                 maxOutputTokens: maxTokens,
                 ...(isVisionRequest ? {} : { topP: 0.95 }) // Flash optimized params
               },
@@ -117,7 +172,7 @@ serve(async (req: Request) => {
         const oaiRes = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-          body: JSON.stringify({ model, messages, temperature: 0.1, max_tokens: maxTokens }),
+          body: JSON.stringify({ model, messages, temperature, max_tokens: maxTokens }),
         });
         const oaiData = await oaiRes.json();
         if (!oaiRes.ok) throw new Error(`${provider} Error ${oaiRes.status}: ${JSON.stringify(oaiData)}`);
@@ -164,7 +219,7 @@ serve(async (req: Request) => {
           body: JSON.stringify({
             model,
             messages: [{ role: "user", content: prompt }],
-            temperature: 0.1,
+            temperature,
           }),
         });
         const orData = await orRes.json();
@@ -183,7 +238,7 @@ serve(async (req: Request) => {
           body: JSON.stringify({
             model,
             messages: [{ role: "user", content: prompt }],
-            temperature: 0.1,
+            temperature,
             max_tokens: maxTokens,
           }),
         });
@@ -206,7 +261,7 @@ serve(async (req: Request) => {
               { role: "developer", content: "Anda adalah AI Ahli Pengkaji SLF Bangunan Gedung." },
               { role: "user", content: prompt },
             ],
-            parameters: { max_new_tokens: 4096, temperature: 0.1, return_full_text: false },
+            parameters: { max_new_tokens: maxTokens, temperature, return_full_text: false },
           }),
         });
         const hfData = await hfRes.json();
@@ -223,7 +278,8 @@ serve(async (req: Request) => {
         });
     }
 
-    return new Response(JSON.stringify({ result }), {
+    return new Response(JSON.stringify({ result, provider, model }), {
+      status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
