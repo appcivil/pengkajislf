@@ -999,6 +999,64 @@ body {
 }
 .sync-label { color: var(--text-secondary); }
 
+/* Indikator sinkronisasi mandiri — #sync-indicator-root di index.html.
+   Kelas .sync-badge/.sync-dot/.sync-text sebelumnya TIDAK punya aturan CSS
+   sama sekali, sehingga isinya ("Terhubung" / "Mode Offline") tergambar sebagai
+   teks polos di bawah halaman: tinggi halaman jadi 926 px pada layar 900 px
+   (muncul gulir kosong 26 px) dan siapa pun yang menggulir melihat tulisan
+   tanpa gaya di sudut kiri bawah. Sekarang diposisikan tetap sehingga tidak
+   lagi menambah tinggi halaman. */
+#sync-indicator-root {
+  position: fixed;
+  left: var(--space-4);
+  bottom: 14px;
+  z-index: 60;
+  pointer-events: none;
+}
+.sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+}
+.sync-badge.online .sync-dot {
+  background: var(--success-400);
+  box-shadow: 0 0 10px var(--success-400);
+}
+.sync-badge.offline .sync-dot {
+  background: var(--danger-400);
+  box-shadow: 0 0 10px var(--danger-400);
+}
+.sync-badge.pending .sync-dot {
+  background: var(--warning-400);
+  box-shadow: 0 0 10px var(--warning-400);
+}
+.sync-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--brand-300);
+}
+/* Di dalam aplikasi status sinkronisasi sudah tampil di header — jangan ganda.
+   (:has() hanya penyempurnaan; peramban lama tetap menampilkan pilnya.) */
+body:has(.app-header) #sync-indicator-root {
+  display: none;
+}
+
 .divider-v {
   width: 1px;
   height: 24px;
