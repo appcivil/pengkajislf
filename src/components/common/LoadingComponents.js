@@ -414,7 +414,7 @@ export function PageTransitionLoader({ theme = 'auto' }) {
     <div class="page-transition-bar" data-theme="${escapeHtml(effectiveTheme)}"></div>
     <div class="page-transition-progress" data-theme="${escapeHtml(effectiveTheme)}"></div>
     <div class="page-transition-logo" data-theme="${escapeHtml(effectiveTheme)}">
-      <img src="logo-small.png" alt="Loading" />
+      <img src="logo-small.png" alt="Memuat" width="256" height="256" />
     </div>
   `;
   

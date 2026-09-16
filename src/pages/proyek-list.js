@@ -231,7 +231,7 @@ window.sortProyek = function(field) {
 window.deleteProyek = async function(id, name) {
   const ok = await confirm({
     title: 'Archive Project',
-    message: `Are you sure you want to archive <strong>${escapeHtml(name)}</strong>? This action will remove the asset from the current portfolio.`,
+    message: `Yakin ingin mengarsipkan <strong>${escapeHtml(name)}</strong>? Aset akan dikeluarkan dari portofolio saat ini.`,
     confirmText: 'Confirm Archive',
     danger: true,
   });

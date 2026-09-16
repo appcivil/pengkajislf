@@ -788,7 +788,7 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
           content = await this._extractPPTXContent(file);
         } else {
           // For other files, note the type
-          content = `[File: ${file.name}, Type: ${file.type || 'unknown'}, Size: ${this._formatFileSize(file.size)}]\nNote: File content extraction not supported for this file type.`;
+          content = `[File: ${file.name}, Type: ${file.type || 'unknown'}, Size: ${this._formatFileSize(file.size)}]\nCatatan: Ekstraksi isi berkas tidak didukung untuk jenis berkas ini.`;
         }
 
         contents.push(`--- ${file.name} ---\n${content}`);
@@ -825,7 +825,7 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
       } else {
         // Fallback to base64 if no text extracted
         const base64 = await this._fileToBase64(file);
-        return `[Image: ${file.name}]\nBase64: ${base64.substring(0, 100)}... (truncated)\nNote: No text could be extracted from this image.`;
+        return `[Image: ${file.name}]\nBase64: ${base64.substring(0, 100)}... (truncated)\nCatatan: Tidak ada teks yang dapat diekstraksi dari gambar ini.`;
       }
     } catch (error) {
       console.error(`[ChatbotService] OCR error for ${file.name}:`, error);
@@ -872,7 +872,7 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
 
         return content;
       } else {
-        return `[PDF: ${file.name}]\nNote: Could not extract text from this PDF. It may be a scanned image without OCR layer.`;
+        return `[PDF: ${file.name}]\nCatatan: Teks tidak dapat diekstraksi dari PDF ini. Kemungkinan hasil pindaian tanpa lapisan OCR.`;
       }
     } catch (error) {
       console.error(`[ChatbotService] PDF extraction error for ${file.name}:`, error);
@@ -894,7 +894,7 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
     if (totalPages) content += `, Pages: ${totalPages}`;
     content += `]\n`;
     content += `Total Chunks: ${totalChunks}\n`;
-    content += `Note: Document is split into ${totalChunks} parts due to size. AI will process all parts.\n\n`;
+    content += `Catatan: Dokumen dipecah menjadi ${totalChunks} bagian karena ukurannya. AI memproses seluruh bagian.\n\n`;
 
     if (hasTables) {
       content += `[Tables detected in document]\n\n`;

@@ -948,32 +948,32 @@ function handleGenerateReport(e) {
       <h4 style="margin: 0 0 12px 0; color: #60a5fa; font-size: 13px;">Calculation Results</h4>
       <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width: 100%; font-size: 12px; border-collapse: collapse;">
         <tr style="border-bottom: 1px solid rgba(59, 130, 246, 0.2);">
-          <td style="padding: 8px 0; color: #94a3b8;">Average Illuminance</td>
+          <th scope="row" style="padding: 8px 0; color: #94a3b8; font-weight: 400; text-align: left">Average Illuminance</th>
           <td style="padding: 8px 0; text-align: right; color: #f1f5f9; font-weight: 500;">${escapeHtml(results.average.toFixed(1))} lux</td>
           <td style="padding: 8px 0; text-align: right; color: #64748b;">Target: ${std?.min}-${std?.max} lux</td>
         </tr>
         <tr style="border-bottom: 1px solid rgba(59, 130, 246, 0.2);">
-          <td style="padding: 8px 0; color: #94a3b8;">Minimum Illuminance</td>
+          <th scope="row" style="padding: 8px 0; color: #94a3b8; font-weight: 400; text-align: left">Minimum Illuminance</th>
           <td style="padding: 8px 0; text-align: right; color: #f1f5f9; font-weight: 500;">${escapeHtml(results.minimum.toFixed(1))} lux</td>
           <td style="padding: 8px 0; text-align: right;"></td>
         </tr>
         <tr style="border-bottom: 1px solid rgba(59, 130, 246, 0.2);">
-          <td style="padding: 8px 0; color: #94a3b8;">Maximum Illuminance</td>
+          <th scope="row" style="padding: 8px 0; color: #94a3b8; font-weight: 400; text-align: left">Maximum Illuminance</th>
           <td style="padding: 8px 0; text-align: right; color: #f1f5f9; font-weight: 500;">${escapeHtml(results.maximum.toFixed(1))} lux</td>
           <td style="padding: 8px 0; text-align: right;"></td>
         </tr>
         <tr style="border-bottom: 1px solid rgba(59, 130, 246, 0.2);">
-          <td style="padding: 8px 0; color: #94a3b8;">Uniformity U0 (Min/Avg)</td>
+          <th scope="row" style="padding: 8px 0; color: #94a3b8; font-weight: 400; text-align: left">Uniformity U0 (Min/Avg)</th>
           <td style="padding: 8px 0; text-align: right; color: ${(results.uniformityU0 || 0) >= (std?.u0 || 0) ? '#34d399' : '#f87171'}; font-weight: 500;">${(results.uniformityU0 || 0).toFixed(2)}</td>
           <td style="padding: 8px 0; text-align: right; color: #64748b;">≥ ${std?.u0 || 0.7}</td>
         </tr>
         <tr style="border-bottom: 1px solid rgba(59, 130, 246, 0.2);">
-          <td style="padding: 8px 0; color: #94a3b8;">Uniformity U1 (Min/Max)</td>
+          <th scope="row" style="padding: 8px 0; color: #94a3b8; font-weight: 400; text-align: left">Uniformity U1 (Min/Max)</th>
           <td style="padding: 8px 0; text-align: right; color: #f1f5f9; font-weight: 500;">${(results.uniformityU1 || 0).toFixed(2)}</td>
           <td style="padding: 8px 0; text-align: right;"></td>
         </tr>
         <tr>
-          <td style="padding: 8px 0; color: #94a3b8;">Power Density (LPD)</td>
+          <th scope="row" style="padding: 8px 0; color: #94a3b8; font-weight: 400; text-align: left">Power Density (LPD)</th>
           <td style="padding: 8px 0; text-align: right; color: #f1f5f9; font-weight: 500;">${(results.powerDensity || 0).toFixed(2)} W/m²</td>
           <td style="padding: 8px 0; text-align: right; color: #64748b;">SNI Limit: 15 W/m²</td>
         </tr>

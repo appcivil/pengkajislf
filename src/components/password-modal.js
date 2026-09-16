@@ -41,7 +41,7 @@ export function renderPasswordChangeModal(userInfo) {
       
       <div class="modal-body">
         <p style="margin-bottom:20px; color:var(--text-secondary); font-size:14px; line-height:1.6;">
-          Hi <b>${escapeHtml(userInfo.name)}</b>, for security reasons, you are required to change your temporary access password before proceeding to the Consortium Dashboard.
+          Halo <b>${escapeHtml(userInfo.name)}</b>, demi alasan keamanan Anda diwajibkan mengganti kata sandi akses sementara sebelum masuk ke Dasbor.
         </p>
 
         <form id="form-change-password">

@@ -366,7 +366,7 @@ function formatAsHTML(chapter) {
     
     if (section.visualUrl) {
       html += `<figure>`;
-      html += `<img src="${escapeHtml(section.visualUrl)}" alt="Visualisasi ${escapeHtml(section.title)}"/>`;
+      html += `<img src="${escapeHtml(section.visualUrl)}" alt="Visualisasi ${escapeHtml(section.title)}" style="max-width:100%; height:auto"/>`;
       html += `<figcaption>Gambar 6.${chapter.sections.indexOf(section) + 1}: Hasil ${escapeHtml(section.title)}</figcaption>`;
       html += `</figure>`;
     }

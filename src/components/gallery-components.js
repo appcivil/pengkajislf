@@ -93,7 +93,7 @@ export function renderLightbox(photo) {
   return `
     <div id="galeri-lightbox" class="lightbox-overlay" onclick="window._closeLightbox()">
       <div class="lightbox-content" onclick="event.stopPropagation()">
-        <img id="lightbox-img" src="${escapeHtml(photo.url)}" alt="${escHtml(photo.nama || photo.name)}">
+        <img id="lightbox-img" src="${escapeHtml(photo.url)}" alt="${escHtml(photo.nama || photo.name)}" style="max-width:92vw; max-height:86vh; height:auto">
         <div class="lightbox-footer">
           <div style="flex:1">
              <div class="text-sm font-bold">${escHtml(photo.nama || photo.name)}</div>

@@ -749,8 +749,8 @@ function renderFEMA356Tab() {
             <span style="font-size: 0.7rem; padding: 4px 8px; background: #eab308; border-radius: 4px; color: white;">CP - Collapse Prevention</span>
           </div>
           <div style="font-size: 0.75rem; color: var(--text-tertiary); line-height: 1.5;">
-            Pushover analysis evaluates structural performance under increasing lateral loads, 
-            tracking hinge formation and capacity curve to FEMA 356 acceptance criteria.
+            Analisis Pushover menilai kinerja struktur di bawah beban lateral yang meningkat, 
+            menelusuri pembentukan sendi plastis dan kurva kapasitas sesuai kriteria penerimaan FEMA 356.
           </div>
         </div>
 

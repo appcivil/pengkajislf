@@ -760,19 +760,19 @@ function renderGsbTab() {
             <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width: 100%; font-size: 0.7rem;">
               <tbody>
                 <tr style="border-bottom: 1px solid hsla(220, 20%, 100%, 0.05);">
-                  <td style="padding: 6px; color: var(--text-secondary);">Jalan &lt; 8m</td>
+                  <th scope="row" style="padding: 6px; color: var(--text-secondary); font-weight: 400; text-align: left">Jalan &lt; 8m</th>
                   <td style="padding: 6px; color: white; text-align: right;">3.0 - 4.5 m</td>
                 </tr>
                 <tr style="border-bottom: 1px solid hsla(220, 20%, 100%, 0.05);">
-                  <td style="padding: 6px; color: var(--text-secondary);">Jalan 8-15m</td>
+                  <th scope="row" style="padding: 6px; color: var(--text-secondary); font-weight: 400; text-align: left">Jalan 8-15m</th>
                   <td style="padding: 6px; color: white; text-align: right;">4.5 - 6.0 m</td>
                 </tr>
                 <tr style="border-bottom: 1px solid hsla(220, 20%, 100%, 0.05);">
-                  <td style="padding: 6px; color: var(--text-secondary);">Jalan 15-30m</td>
+                  <th scope="row" style="padding: 6px; color: var(--text-secondary); font-weight: 400; text-align: left">Jalan 15-30m</th>
                   <td style="padding: 6px; color: white; text-align: right;">6.0 - 10.0 m</td>
                 </tr>
                 <tr>
-                  <td style="padding: 6px; color: var(--text-secondary);">Jalan &gt; 30m</td>
+                  <th scope="row" style="padding: 6px; color: var(--text-secondary); font-weight: 400; text-align: left">Jalan &gt; 30m</th>
                   <td style="padding: 6px; color: white; text-align: right;">10.0 - 15.0 m</td>
                 </tr>
               </tbody>

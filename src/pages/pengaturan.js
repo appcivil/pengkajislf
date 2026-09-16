@@ -80,7 +80,7 @@ export async function pengaturanPage() {
                    <span class="badge" style="background:hsla(45, 90%, 60%, 0.1); color:var(--gold-400); border:1px solid hsla(45, 90%, 60%, 0.2); font-weight:800; letter-spacing:1px; font-size:9px"><i class="fas fa-crown" style="margin-right:6px"></i> ${user?.role || 'PENGKAJI UTAMA'}</span>
                    <span style="font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">ID: REG-${(user?.id || '001').substring(0,8).toUpperCase()}</span>
                 </div>
-                <p style="font-size:0.85rem; color:var(--text-tertiary); line-height:1.6">Technical Director with high-level clearance for structural integrity auditing and neural synthesis protocols.</p>
+                <p style="font-size:0.85rem; color:var(--text-tertiary); line-height:1.6">Direktur Teknis dengan kewenangan tinggi untuk audit integritas struktur dan protokol sintesis neural.</p>
               </div>
             </div>
 
@@ -106,7 +106,7 @@ export async function pengaturanPage() {
                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:white; margin-bottom:16px; display:flex; align-items:center; gap:12px">
                    <i class="fas fa-shield-halved" style="color:var(--gold-400)"></i> Security Protocol
                 </div>
-                <p style="font-size:0.8rem; color:var(--text-tertiary); margin-bottom:24px; line-height:1.6">Your account is secured with 256-bit encryption. Multi-factor authentication is active for all document sealing operations.</p>
+                <p style="font-size:0.8rem; color:var(--text-tertiary); margin-bottom:24px; line-height:1.6">Akun Anda dilindungi enkripsi 256-bit. Autentikasi multifaktor aktif untuk seluruh operasi penyegelan dokumen.</p>
                 <button class="btn btn-outline" style="width:100%; height:44px; border-radius:12px; font-weight:700; color:white; border-color:hsla(220, 20%, 100%, 0.1)">
                   <i class="fas fa-key" style="margin-right:10px"></i> REGENERATE ACCESS KEY
                 </button>

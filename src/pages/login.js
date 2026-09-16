@@ -47,7 +47,7 @@ export async function loginPage() {
               </h1>
               
               <p style="color:var(--text-tertiary); font-size:0.95rem; line-height:1.6; margin-bottom:48px; max-width:400px">
-                 The elite ecosystem for architectural compliance, technical auditing, and structural integrity modeling. Sealed for government-grade operations.
+                 Ekosistem terpadu untuk kepatuhan arsitektur, audit teknis, dan pemodelan integritas struktur. Disiapkan untuk operasi setingkat pemerintahan.
               </p>
 
               <div style="display:flex; flex-direction:column; gap:20px; flex:1">

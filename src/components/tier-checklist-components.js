@@ -219,10 +219,10 @@ function renderTier1Item(item, data = {}) {
           ` : ''}
           
           <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-            <a href="#" onclick="window._showPasalRef('${escapeHtml(item.pasal)}'); return false;" 
-               style="font-size: 0.7rem; color: var(--brand-400); text-decoration: none;">
+            <button type="button" onclick="window._showPasalRef('${escapeHtml(item.pasal)}')" 
+               style="font-size: 0.7rem; color: var(--brand-400); text-decoration: none; background: none; border: 0; padding: 0; font-family: inherit; cursor: pointer; ">
               <i class="fas fa-book" style="margin-right: 4px;"></i>${escapeHtml(item.pasal)}
-            </a>
+            </button>
             ${needsTier2 ? `
               <span class="status-badge" style="background: hsla(0, 85%, 60%, 0.15); color: #ef4444;">
                 <i class="fas fa-exclamation-triangle"></i> Lanjut Tier 2
@@ -378,10 +378,10 @@ function renderTier2Item(item, data = {}) {
             <span style="font-size: 0.75rem; color: var(--text-tertiary);">
               Batas DCR: <strong style="color: white;">${escapeHtml(item.batas || 2.0)}</strong>
             </span>
-            <a href="#" onclick="window._showPasalRef('${escapeHtml(item.pasal)}'); return false;" 
-               style="font-size: 0.7rem; color: var(--brand-400); text-decoration: none;">
+            <button type="button" onclick="window._showPasalRef('${escapeHtml(item.pasal)}')" 
+               style="font-size: 0.7rem; color: var(--brand-400); text-decoration: none; background: none; border: 0; padding: 0; font-family: inherit; cursor: pointer; ">
               <i class="fas fa-book" style="margin-right: 4px;"></i>${escapeHtml(item.pasal)}
-            </a>
+            </button>
             ${item.tier3Required ? `
               <span class="status-badge" style="background: hsla(258, 70%, 65%, 0.15); color: hsla(258, 70%, 65%, 1);">
                 <i class="fas fa-layer-group"></i> Tier 3 Required

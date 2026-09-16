@@ -147,7 +147,7 @@ function buildHtml(workload, members) {
 
 function renderMemberRow(m) {
   return `
-    <tr style="border-bottom:1px solid hsla(220, 20%, 100%, 0.03); transition:background 0.2s" onmouseover="this.style.background='hsla(220, 20%, 100%, 0.02)'" onmouseout="this.style.background='transparent'">
+    <tr class="baris-anggota">
       <td style="padding:20px 32px">
          <div style="display:flex; align-items:center; gap:16px">
             <div style="width:40px; height:40px; border-radius:12px; background:var(--gradient-dark); border:1px solid hsla(220, 20%, 100%, 0.1); display:flex; align-items:center; justify-content:center; color:white; font-size:1.1rem; font-weight:800">
@@ -215,7 +215,7 @@ function initEvents() {
   window._deleteMember = async (id, name) => {
     const ok = await confirm({
       title: 'Remove Authorized Personnel',
-      message: `De-authorize <strong>${escapeHtml(name)}</strong>? This action will revoke all registry access and re-route active delegations.`,
+      message: `De-authorize <strong>${escapeHtml(name)}</strong>? Seluruh akses registri akan dicabut dan delegasi aktif dialihkan.`,
       confirmText: 'DE-AUTHORIZE',
       danger: true
     });
@@ -262,7 +262,7 @@ function renderMemberModal(member = null) {
             <label class="form-label">TEMPORARY ACCESS PASSWORD</label>
             <input type="password" name="password" class="form-input" placeholder="••••••••" value="${isEdit ? '' : '@skpslf123'}" ${isEdit ? 'disabled placeholder="Stored in Auth Module"' : 'required'}>
             <p style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); margin-top:8px">
-              <i class="fas fa-info-circle"></i> NOTE: This password is used for the Auth account setup.
+              <i class="fas fa-info-circle"></i> CATATAN: Kata sandi ini dipakai untuk pembuatan akun Auth.
             </p>
           </div>
 

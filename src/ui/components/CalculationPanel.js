@@ -217,7 +217,7 @@ export class CalculationPanel extends HTMLElement {
 
       <div class="section">
         <div class="info-box">
-          <strong style="color:#60a5fa;">💡 Tip:</strong> Set workplane height to 0.85m for desk-level calculations.
+          <strong style="color:#60a5fa;">💡 Tip:</strong> Setel tinggi bidang kerja ke 0,85 m untuk perhitungan setinggi meja kerja.
         </div>
         <h3>⚙️ Calculation Settings</h3>
         <div class="grid-settings">

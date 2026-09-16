@@ -75,6 +75,30 @@ const lineAt = (code, idx) => code.slice(0, idx).split('\n').length;
  * Masker kode: 1 = kode, 0 = komentar / isi string.
  * Dipakai supaya pola di dalam komentar dan teks tampilan tidak dihitung.
  */
+/**
+ * Menandai setiap karakter berkas JS: kode, komentar, atau isi string.
+ *
+ *   MASKA   1 = kode biasa
+ *           2 = isi string / template literal
+ *           0 = komentar atau literal regex
+ *
+ * KENAPA TIGA NILAI, BUKAN DUA
+ * ----------------------------
+ * Versi sebelumnya memakai 1 = kode dan 0 = "bukan kode", sehingga KOMENTAR dan
+ * ISI STRING bernilai sama. Akibatnya penjaga "berada di dalam komentar"
+ * (`mask[idx] === 0`) juga membuang setiap kemunculan di dalam string — padahal
+ * di dalam string itulah HTML dinamis aplikasi ini dibuat (`innerHTML = \`...\``).
+ *
+ * Kerugiannya terukur: dari 4.097 template literal di src, 2.892 (71%) gugur
+ * pada penjaga tersebut. Yang paling sering gugur justru template PANJANG —
+ * yaitu markup yang paling mungkin berisi teks antarmuka. Contoh nyata:
+ * seluruh template halaman login (2.089 karakter) dianggap komentar, sehingga
+ * teks Inggris di layar pertama aplikasi tak pernah terlihat oleh aturan
+ * bahasa dan dilaporkan sebagai "0 temuan".
+ *
+ * Dengan pemisahan ini: "di dalam komentar" berarti 0, "di dalam string"
+ * berarti 2 — dua pertanyaan yang berbeda, dijawab tepat.
+ */
 function codeMask(code) {
   const m = new Uint8Array(code.length).fill(1);
   let i = 0;
@@ -101,10 +125,10 @@ function codeMask(code) {
       }
     } else if (c === '"' || c === "'" || c === '`') {
       const quote = c;
-      m[i++] = 0;
+      m[i++] = 2;
       while (i < n) {
-        if (code[i] === '\\') { m[i++] = 0; m[i++] = 0; continue; }
-        if (code[i] === quote) { m[i++] = 0; break; }
+        if (code[i] === '\\') { m[i++] = 2; m[i++] = 2; continue; }
+        if (code[i] === quote) { m[i++] = 2; break; }
         // Interpolasi ${...} di dalam template tetap dianggap kode.
         if (quote === '`' && code[i] === '$' && code[i + 1] === '{') {
           m[i++] = 1; m[i++] = 1;
@@ -112,11 +136,11 @@ function codeMask(code) {
           while (i < n && depth > 0) {
             if (code[i] === '{') depth++;
             else if (code[i] === '}') depth--;
-            if (depth > 0) m[i++] = 1; else m[i++] = 0;
+            if (depth > 0) m[i++] = 1; else m[i++] = 2;
           }
           continue;
         }
-        m[i++] = 0;
+        m[i++] = 2;
       }
     } else {
       i++;
@@ -128,12 +152,36 @@ function codeMask(code) {
 /** Heuristik sederhana: apakah `/` di posisi ini awal regex, bukan pembagian. */
 function regexAllowed(code, i, mask) {
   for (let j = i - 1; j >= 0; j--) {
-    if (!mask[j]) continue;
+    // Lewati komentar DAN isi string (nilai 0 dan 2). Inilah perilaku versi
+    // lama, dipertahankan apa adanya: yang dicari adalah karakter KODE
+    // terakhir sebelum `/`. Bila isi string ikut dihitung, maka
+    // `const a = 'x'; /re/` akan salah dibaca sebagai pembagian.
+    if (mask[j] !== 1) continue;
     const ch = code[j];
     if (/[\s]/.test(ch)) continue;
     return /[=(,:;[!&|?{}+\-*%<>~^]/.test(ch) || code.startsWith('return', Math.max(0, j - 5));
   }
   return true;
+}
+
+/**
+ * Apakah posisi ini berada di dalam komentar HTML (`<!-- ... -->`).
+ *
+ * Diperlukan karena markah aplikasi ini hidup di dalam template literal, dan
+ * di sana komentar HTML sah dipakai untuk menonaktifkan potongan markup —
+ * mis. di login.js ada penjelasan panjang yang memuat contoh `<img>` lama.
+ * Komentar JS (mask 0) tidak menangkap ini, sebab dari sudut pandang JS
+ * seluruh template adalah STRING. Akibatnya aturan aksesibilitas melaporkan
+ * gambar yang sudah dinonaktifkan sebagai "gambar tanpa alt" — temuan palsu.
+ *
+ * Cara kerja: cari `<!--` terakhir sebelum posisi, lalu `-->` terakhir.
+ * Bila pembuka lebih dekat daripada penutup, posisinya di dalam komentar.
+ */
+function inHtmlComment(code, idx) {
+  const buka = code.lastIndexOf('<!--', idx);
+  if (buka < 0) return false;
+  const tutup = code.lastIndexOf('-->', idx);
+  return tutup < buka;
 }
 
 const SECTION_LABEL = {
@@ -166,7 +214,7 @@ function auditA11y(sec, files, globalA11y = { keyboard: false }) {
     const mask = f.mask;
     const isCss = f.ext === 'css';
     const isHtml = f.ext === 'html';
-    const inComment = (idx) => !mask[idx] && !isCss;
+        const inComment = (idx) => (mask[idx] === 0 && !isCss) || inHtmlComment(code, idx);
 
     // A1. <img> tanpa alt
     if (!isCss) {
@@ -369,6 +417,14 @@ function auditA11y(sec, files, globalA11y = { keyboard: false }) {
       for (const m of code.matchAll(/<table\b[^>]*>([\s\S]{0,4000}?)<\/table>/gi)) {
         if (inComment(m.index)) continue;
         const body = m[1];
+        // Tabel yang sel kepalanya dibangkitkan saat berjalan tidak dapat
+        // dinilai secara statis. Contoh nyata: document-engine.js memakai
+        //     const tag = i === 0 ? 'th' : 'td';
+        // sehingga <th> tidak pernah muncul sebagai teks di berkas ini —
+        // padahal tabelnya SUDAH punya sel kepala. Tanpa pengecualian ini
+        // tabel tersebut dilaporkan "tanpa <th>" secara keliru.
+        if (/\?\s*['"`]th['"`]\s*:\s*['"`]td['"`]/.test(body)) continue;
+        if (/['"`]th['"`]\s*:\s*['"`]td['"`]/.test(body)) continue;
         if (/<td\b/i.test(body) && !/<th\b/i.test(body)) {
           add(sec, 'sedang', 'Tabel tanpa sel kepala (<th>)',
             'Pembaca layar tidak dapat mengaitkan nilai dengan nama kolomnya.',
@@ -511,12 +567,78 @@ function documentRegions(code) {
 }
 
 /** B. Operabilitas keyboard & dialog */
+/**
+ * Mencari letak DEFINISI sebuah fungsi di dalam satu berkas.
+ *
+ * Versi lama memakai satu pola yang hanya mengenali `function nama(` dan
+ * `async function nama(`. Aplikasi ini justru paling banyak memakai bentuk
+ * lain, sehingga definisinya tidak pernah ketemu dan aturan B3 jatuh ke
+ * jendela ±800 karakter di sekitar onclick — yang memang tidak memuat
+ * konfirmasi apa pun. Akibatnya lima tombol hapus yang SUDAH memakai dialog
+ * konfirmasi tetap dilaporkan sebagai tanpa konfirmasi.
+ *
+ * Bentuk yang dikenali sekarang:
+ *   function nama(a) {            async function nama(a) {
+ *   const nama = async (a) => {   var nama = function (a) {
+ *   window.nama = async (a) => {  nama: async (a) => {
+ *   nama(a) {                     ← metode kelas
+ */
+function cariDefinisi(code, nama) {
+  const aman = nama.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`\\b${aman}\\b`, 'g');
+  let terakhir = -1;
+  for (const m of code.matchAll(re)) {
+    const sesudah = code.slice(m.index + nama.length, m.index + nama.length + 80);
+    if (/^\s*(=\s*(async\s+)?(function\s*)?|:\s*(async\s+)?(function\s*)?)?\([^()]*\)\s*(=>\s*)?\{/.test(sesudah)) {
+      terakhir = m.index;
+    }
+  }
+  return terakhir;
+}
+
+/**
+ * Pola nama fungsi penghapusan. `[_$]?` di depan PENTING:
+ * tanpa itu, `\b` gagal cocok di dalam `window._deletePageFile` (karakter
+ * sebelum `delete` adalah `_`, yang juga karakter kata), sehingga nama yang
+ * terpetakan menjadi `deletePageFile` tanpa garis bawah — dan pencarian
+ * definisi selalu meleset.
+ */
+const RE_HAPUS_PANGGIL = /\b[_$]?(?:hapus|delete)[A-Za-z_$]*\s*\(/gi;
+const RE_HAPUS_NAMA = /\b[_$]?(?:hapus|delete)[A-Za-z_$]*/i;
+const RE_HAPUS_NAMA_G = /\b[_$]?(?:hapus|delete)[A-Za-z_$]*/gi;
+
+/**
+ * Indeks lintas berkas: nama fungsi penghapusan → apakah badannya memakai
+ * konfirmasi. Dibangun sekali, lalu dipakai ulang.
+ *
+ * Diperlukan karena tombol dan fungsinya sering berada di berkas BERBEDA:
+ * tombol di src/components/file-manager-components.js memanggil
+ * window._deletePageFile yang didefinisikan di src/pages/proyek-files.js.
+ */
+let indeksHapusCache = null;
+function indeksDefinisiHapus(files) {
+  if (indeksHapusCache) return indeksHapusCache;
+  indeksHapusCache = new Map();
+  for (const f of files) {
+    if (f.ext !== 'js') continue;
+    for (const m of f.code.matchAll(RE_HAPUS_NAMA_G)) {
+      const nama = m[0];
+      if (indeksHapusCache.has(nama)) continue;
+      const idx = cariDefinisi(f.code, nama);
+      if (idx < 0) continue;
+      const badan = f.code.slice(idx, idx + 3000);
+      indeksHapusCache.set(nama, /confirm|konfirmasi|sweet|dialog/i.test(badan));
+    }
+  }
+  return indeksHapusCache;
+}
+
 function auditKeyboard(sec, files, globalA11y = { keyboard: false, escape: false }) {
   for (const f of files) {
     const code = f.code;
     if (f.ext === 'css') continue;
-    const mask = f.mask;
-    const inComment = (idx) => !mask[idx];
+        const mask = f.mask;
+        const inComment = (idx) => mask[idx] === 0 || inHtmlComment(code, idx);
 
     // B1. Modal tanpa role="dialog"
     for (const m of code.matchAll(/createElement\(\s*['"]div['"]\s*\)[\s\S]{0,180}?class(?:Name)?\s*=\s*[^\n]*modal/gi)) {
@@ -608,7 +730,7 @@ function auditKeyboard(sec, files, globalA11y = { keyboard: false, escape: false
     //     el.classList.remove('x')  → menghapus kelas CSS
     // Memasukkan ketiganya membuat audit melaporkan 7 dari 10 temuan sebagai
     // "penghapusan tanpa konfirmasi" padahal tidak ada data yang dihapus.
-    for (const m of code.matchAll(/(?:hapus|delete)[A-Za-z_$]*\s*\(/gi)) {
+    for (const m of code.matchAll(RE_HAPUS_PANGGIL)) {
       if (inComment(m.index)) continue;
       // Hanya laporan bila pemanggilan ini menempel pada sebuah aksi pengguna.
       const snip = code.slice(Math.max(0, m.index - 80), m.index + 40);
@@ -618,16 +740,18 @@ function auditKeyboard(sec, files, globalA11y = { keyboard: false, escape: false
         // sekitar onclick — padahal tombolnya sering didefinisikan ratusan
         // baris sebelum fungsi handler-nya. Akibatnya tiga fungsi yang SUDAH
         // memakai confirm() tetap dilaporkan sebagai tanpa konfirmasi.
-        const fnName = (m[0].match(/(?:hapus|delete)[A-Za-z_$]*/i) || [''])[0];
-        const defRe = new RegExp(
-          `(?:async\\s+)?(?:function\\s+)?${fnName}\\s*\\([^)]*\\)\\s*\\{`, 'g'
-        );
-        let defIdx = -1;
-        for (const d of code.matchAll(defRe)) { defIdx = d.index; }
+        const fnName = (m[0].match(RE_HAPUS_NAMA) || [''])[0];
+        // (a) Definisi di berkas yang sama — memakai pengenal bentuk yang
+        //     lebih luas (lihat cariDefinisi).
+        const defIdx = cariDefinisi(code, fnName);
         const scope = defIdx >= 0
           ? code.slice(defIdx, defIdx + 2500)
           : code.slice(Math.max(0, m.index - 800), m.index + 800);
-        if (!/confirm|konfirmasi|sweet|dialog/i.test(scope)) {
+        // (b) Definisi di berkas LAIN. Tombolnya sering di komponen, sedangkan
+        //     fungsinya di halaman — jadi pencarian dalam satu berkas saja
+        //     tidak cukup dan menghasilkan temuan palsu.
+        const lintasBerkas = indeksDefinisiHapus(files).get(fnName);
+        if (!/confirm|konfirmasi|sweet|dialog/i.test(scope) && lintasBerkas !== true) {
           add(sec, 'sedang', 'Penghapusan tanpa konfirmasi',
             'Aksi yang menghapus data dijalankan langsung dari klik, tanpa langkah konfirmasi.',
             f.rel, lineAt(code, m.index),
@@ -869,8 +993,8 @@ function auditVisual(sec, files) {
   const literalByFile = new Map();
   for (const f of files) {
     if (f.ext !== 'js') continue;
-    const matches = [...f.code.matchAll(/#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b/g)]
-      .filter(m => f.mask[m.index] === 0); // hanya di dalam string (gaya inline)
+        const matches = [...f.code.matchAll(/#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b/g)]
+          .filter(m => f.mask[m.index] === 2); // hanya di dalam string (gaya inline)
     if (matches.length >= 6) literalByFile.set(f.rel, matches.length);
   }
   const totalLiterals = [...literalByFile.values()].reduce((a, b) => a + b, 0);
@@ -926,22 +1050,26 @@ function auditVisual(sec, files) {
   for (const f of files) {
     if (f.ext !== 'js') continue;
     if (isPromptLibrary(f.rel)) continue;
+    // Posisi setiap string diambil dari matchAll — BUKAN dari
+    // f.code.indexOf(raw.slice(0, 24)). Versi lama mencari kemunculan PERTAMA
+    // potongan teks itu di seluruh berkas, yang bisa saja berada di komentar
+    // atau di string lain; penjaga di bawah lalu memutuskan berdasarkan tempat
+    // yang salah. Untuk template panjang (teks antarmuka), salah posisi ini
+    // berarti seluruh template dianggap komentar dan tidak pernah diperiksa.
     const strings = [
       ...f.code.matchAll(/`(?:[^`\\]|\\.)*`/g),
       ...f.code.matchAll(/'[^'\n]{12,}'/g),
       ...f.code.matchAll(/"[^"\n]{12,}"/g),
-    ].map((m) => m[0].slice(1, -1));
+    ].map((m) => ({ isi: m[0].slice(1, -1), index: m.index }));
 
-    for (const raw of strings) {
+    for (const { isi: raw, index } of strings) {
       // Lewati teks yang bukan untuk pengguna:
-      const rawIdx = f.code.indexOf(raw.slice(0, 24));
-      if (rawIdx > 0) {
-        const before = f.code.slice(Math.max(0, rawIdx - 60), rawIdx);
-        // (1) argumen console.* — diagnostik pengembang
-        if (/console\s*\.\s*\w+\s*\(\s*[`'"]?$/.test(before)) continue;
-        // (2) berada di dalam komentar
-        if (f.mask && f.mask[rawIdx] === 0) continue;
-      }
+      const before = f.code.slice(Math.max(0, index - 60), index);
+      // (1) argumen console.* — diagnostik pengembang
+      if (/console\s*\.\s*\w+\s*\(\s*[`'"]?$/.test(before)) continue;
+      // (2) berada di dalam komentar (mask 0). Isi string kini bernilai 2,
+      //     sehingga tidak lagi tertukar dengan komentar.
+      if (f.mask && f.mask[index] === 0) continue;
 
       const visible = raw
         .replace(/\$\{[\s\S]*?\}/g, ' ')
@@ -963,6 +1091,18 @@ function auditVisual(sec, files) {
         if (/[{};]\s*(\/\/|#)?$/.test(t) && /[;{}]/.test(t)) continue;
         const words = t.split(' ').filter((w) => /[A-Za-z]/.test(w));
         if (words.length < 5) continue;
+        // Bukan kalimat untuk pengguna — dua jenis yang pernah muncul sebagai
+        // positif palsu dan BERBAHAYA bila "diterjemahkan":
+        //
+        // (1) Fragmen kueri API / URL. Contoh nyata: "and and ' ' in parents
+        //     and trashed=false" — itu kueri Google Drive API. Menerjemahkannya
+        //     merusak sinkronisasi berkas, bukan memperbaiki tampilan.
+        if (/^https?:\/\//i.test(t)) continue;
+        if (/[=]/.test(t) && /(trashed=|parents\s+in|select=|order=|limit=|\?[a-z_]+=|&[a-z_]+=)/i.test(t)) continue;
+        // (2) Judul standar/regulasi. Contoh nyata: "NFPA 13: Standard for the
+        //     Installation of Sprinkler Systems" — nama resmi dokumen rujukan.
+        //     Menerjemahkannya mengaburkan rujukan yang dipakai profesi.
+        if (/^(NFPA|SNI|ASHRAE|ASCE|ASTM|ACI|AISC|AISI|IEC|ISO|EN|BS|DIN|JIS|FEMA|PP|UU|Permen|Kepmen|SE)\s+[\dIVX]/i.test(t)) continue;
         // Kata fungsi Indonesia yang kuat menandakan kalimat sudah campur —
         // itu kalimat Indonesia, bukan kalimat Inggris yang lupa diterjemahkan.
         if (/\b(yang|dan|dengan|untuk|tidak|adalah|akan|dari|pada|ini|itu|atau|sudah|belum)\b/i.test(t)) continue;

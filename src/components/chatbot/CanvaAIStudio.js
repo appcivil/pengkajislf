@@ -25,7 +25,7 @@ export class CanvaAIStudio {
             <span>AI Design Studio</span>
           </div>
           <div class="canva-actions">
-            <button class="btn btn-icon" id="canva-help-btn">
+            <button type="button" aria-label="Bantuan" title="Bantuan" class="btn btn-icon" id="canva-help-btn">
               <i class="fas fa-question-circle"></i>
             </button>
             <button type="button" aria-label="Tutup" class="btn btn-icon" id="canva-close-btn">
@@ -333,7 +333,7 @@ export class CanvaAIStudio {
     const canvas = this.element.querySelector('#design-canvas');
     canvas.innerHTML = `
       <div class="generated-result">
-        <img src="${escapeHtml(result.url)}" alt="Generated design" />
+        <img src="${escapeHtml(result.url)}" alt="Hasil rancangan" style="max-width:100%; height:auto; border-radius:12px" />
         <div class="result-actions">
           <button type="button" aria-label="Tutup" class="btn btn-secondary" onclick="this.closest('.generated-result').querySelector('img').download">
             <i class="fas fa-download"></i>

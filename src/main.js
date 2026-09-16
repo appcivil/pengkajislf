@@ -1109,12 +1109,25 @@ async function bootstrap() {
   updateProgress(100, 'Sistem Siap.');
   setTimeout(hideLoading, 400);
 
-  // Register Service Worker for PWA
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then((reg) => console.log('[SW] Registered:', reg))
-      .catch((err) => console.log('[SW] Registration failed:', err));
-  }
+    // Register Service Worker for PWA.
+    //
+    // Jalurnya mengikuti BASE_URL, bukan absolut '/'. Alasan: di produksi
+    // aplikasi ini disajikan dari subfolder GitHub Pages
+    // (https://appcivil.github.io/pengkajislf/), sehingga '/service-worker.js'
+    // menunjuk ke akar domain yang bukan milik aplikasi ini → HTTP 404 →
+    // service worker TIDAK PERNAH terdaftar di produksi.
+    //
+    // Akibatnya seluruh kemampuan offline tidak pernah aktif, dan cache
+    // egress Supabase (masa simpan 30 hari) juga tidak pernah bekerja —
+    // padahal keduanya sudah ditulis lengkap di public/service-worker.js.
+    // Saat pengembangan (base '/') nilainya sama saja, jadi tidak ada
+    // perbedaan perilaku.
+    if ('serviceWorker' in navigator) {
+      const swUrl = `${import.meta.env.BASE_URL}service-worker.js`;
+      navigator.serviceWorker.register(swUrl)
+        .then((reg) => console.log('[SW] Terdaftar:', swUrl, '· cakupan:', reg.scope))
+        .catch((err) => console.warn('[SW] Pendaftaran gagal:', err));
+    }
 
   // Sync hanya setelah UI stabil
   setTimeout(() => {

@@ -654,7 +654,7 @@ window._syncProjectWithSIMBG = async (proyekId) => {
 window._hapusProyek = async (id) => {
     const ok = await confirm({
       title: 'TERMINATE ASSET',
-      message: `Are you sure you want to permanently remove <strong>"${escapeHtml(p.nama_bangunan)}"</strong> from the presidential portfolio? This action is irreversible.`,
+      message: `Yakin ingin menghapus <strong>"${escapeHtml(p.nama_bangunan)}"</strong> secara permanen dari portofolio? Tindakan ini tidak dapat dibatalkan.`,
       confirmText: 'CONFIRM TERMINATION',
       danger: true,
     });
@@ -675,7 +675,7 @@ window._hapusProyek = async (id) => {
     btnSync.onclick = async () => {
       const ok = await confirm({
         title: 'SIMBG SYNC INITIALIZATION',
-        message: 'System will access SIMBG portal to extract technical blueprints and regulatory data. Proceed?',
+        message: 'Sistem akan mengakses portal SIMBG untuk mengambil gambar teknik dan data regulasi. Lanjutkan?',
         confirmText: 'INITIATE SYNC',
       });
       if (!ok) return;
@@ -704,7 +704,7 @@ window._hapusProyek = async (id) => {
     btnPush.onclick = async () => {
       const ok = await confirm({
         title: 'REVERSE SYNC INITIALIZATION',
-        message: 'System will push project parameters and verified audits to SIMBG portal. This action is tracked in the ministry registry. Proceed?',
+        message: 'Sistem akan mengirim parameter proyek dan audit terverifikasi ke portal SIMBG. Tindakan ini tercatat pada registri kementerian. Lanjutkan?',
         confirmText: 'INITIATE PUSH',
       });
       if (!ok) return;

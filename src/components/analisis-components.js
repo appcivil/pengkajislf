@@ -40,7 +40,7 @@ export function renderNoDataPanel(proyekId) {
       </div>
       <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.4rem; color:white; margin-bottom:12px">Checklist Manifest Missing</h3>
       <p style="color:var(--text-tertiary); max-width:460px; margin:0 auto 32px; line-height:1.6">
-        The AI Strategic Engine requires a completed technical manifest to generate risk analytics. Please finalize the building inspection checklists first.
+        Mesin AI Strategis memerlukan manifes teknis yang lengkap untuk menghasilkan analitik risiko. Selesaikan dahulu daftar periksa inspeksi bangunan.
       </p>
       <button class="btn-presidential gold" onclick="window.navigate('checklist',{id:'${escapeHtml(proyekId)}'})" style="height:48px; padding:0 32px; border-radius:14px">
         <i class="fas fa-clipboard-check" style="margin-right:10px"></i> INITIALIZE AUDIT CHECKLIST
@@ -72,7 +72,7 @@ export function renderReadyPanel(proyekId) {
         </div>
         <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.8rem; color:white; margin-bottom:12px">Strategic AI Engine v7.4</h3>
         <p style="color:var(--brand-300); max-width:600px; margin:0 auto 40px; font-weight:600; font-size:0.9rem">
-          Initialize target-specific neural audit modules. Engine will utilize Fuzzy Logic & Bayesian inferences to determine building safety status.
+          Menginisialisasi modul audit neural khusus target. Mesin menggunakan inferensi Fuzzy Logic & Bayesian untuk menentukan status keamanan bangunan.
         </p>
         
         <div class="grid-4-col" style="gap:16px; max-width:1100px; margin:0 auto">

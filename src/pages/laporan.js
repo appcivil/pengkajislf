@@ -336,7 +336,7 @@ function renderGDocsTab(proyek, gdocStatus, cachedDoc) {
         </div>
         <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.6rem; color:white; margin-bottom:12px">Generate Intelligent Executive Report</h3>
         <p style="color:var(--brand-300); max-width:640px; margin:0 auto 40px; line-height:1.6; font-weight:600">
-          Neural engine will replicate the master template and auto-populate all field findings, risk matrices, and visual evidence logs into a legally compliant Google Document.
+          Mesin neural menyalin templat induk dan mengisi otomatis seluruh temuan lapangan, matriks risiko, dan catatan bukti visual ke dalam Google Document yang sesuai ketentuan hukum.
         </p>
         <button class="btn-presidential gold" onclick="window._generateGDoc()" id="btn-generate-gdoc" style="height:56px; padding:0 40px; font-size:1rem">
           <i class="fas fa-wand-magic-sparkles" style="margin-right:12px"></i> INITIATE TEMPLATE BINDING
@@ -1789,7 +1789,7 @@ window._openTemplateSetup = async function() {
     body: `
       <div style="padding:10px 0">
         <p style="font-size:0.8rem; color:var(--text-tertiary); margin-bottom:24px; line-height:1.6">
-           Configure a custom .docx template specifically for this project. This will override the global system template.
+           Atur templat .docx khusus untuk proyek ini. Pengaturan ini menggantikan templat sistem global.
         </p>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px">

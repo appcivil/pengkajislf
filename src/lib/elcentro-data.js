@@ -13,7 +13,7 @@ export const EL_CENTRO_1940_NS = {
   dt: 0.02,
   pga: 0.313,
   units: "g",
-  description: "Imperial Valley Earthquake, recorded at El Centro Array #9, North-South component. One of the most commonly used ground motion records for seismic analysis.",
+  description: "Gempa Imperial Valley, terekam di El Centro Array #9, komponen Utara-Selatan. Salah satu rekaman gerak tanah yang paling umum dipakai untuk analisis seismik.",
   
   // First 500 points (10 seconds) of acceleration data in g
   accelerations: [

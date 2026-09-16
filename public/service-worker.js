@@ -35,26 +35,44 @@ const STORAGE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 /**
  * Aset yang memang ada di build. Sengaja KONSERVATIF: hanya file
  * yang dijamin ada. Kegagalan satu file tidak boleh menggagalkan install.
+ *
+ * ── MENGAPA JALURNYA RELATIF ('./…'), BUKAN ABSOLUT ('/…') ────────────────
+ * Aplikasi ini tidak selalu berada di akar domain. Di GitHub Pages ia
+ * disajikan dari subfolder: https://appcivil.github.io/pengkajislf/
+ *
+ * Dengan jalur absolut, setiap entri di bawah menunjuk ke AKAR domain —
+ * https://appcivil.github.io/index.html, /vendor/…, dan seterusnya — yang
+ * bukan milik aplikasi ini dan tidak ada. Seluruh precache gagal (diam-diam,
+ * karena kegagalannya memang ditoleransi), sehingga:
+ *   • aplikasi tidak pernah dapat dibuka offline (justru di lapangan inilah
+ *     kemampuan itu paling dibutuhkan), dan
+ *   • Font Awesome serta Leaflet tidak pernah masuk cache.
+ *
+ * Di dalam service worker, jalur relatif diresolusi terhadap URL berkas
+ * service worker ini — jadi './vendor/…' menjadi
+ * /pengkajislf/vendor/… di produksi dan /vendor/… saat pengembangan.
+ * Satu bentuk yang benar di kedua tempat.
  */
 const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
-  '/favicon-32.png',
-  '/manifest.json',
-  '/logo-app.png',
+  './',
+  './index.html',
+  './favicon-32.png',
+  './manifest.json',
+  './logo-app.png',
   // Pustaka tampilan yang disalin ke dalam aplikasi (dulu dari CDN).
   // Tanpa keduanya di cache, aplikasi offline tampil tanpa ikon sama sekali
   // dan peta tidak bergaya — padahal justru saat offline-lah aplikasi ini
   // paling dibutuhkan di lapangan.
-  '/vendor/fontawesome/all.min.css',
-  '/vendor/fontawesome/webfonts/fa-solid-900.woff2',
-  '/vendor/fontawesome/webfonts/fa-regular-400.woff2',
-  '/vendor/fontawesome/webfonts/fa-brands-400.woff2',
-  '/vendor/leaflet/leaflet.css',
-  '/vendor/leaflet/leaflet.js',
-  '/vendor/leaflet/images/marker-icon.png',
-  '/vendor/leaflet/images/marker-shadow.png',
-  '/vendor/leaflet/images/layers.png',
+  './vendor/fontawesome/all.min.css',
+  './vendor/fontawesome/webfonts/fa-solid-900.woff2',
+  './vendor/fontawesome/webfonts/fa-regular-400.woff2',
+  './vendor/fontawesome/webfonts/fa-brands-400.woff2',
+  './vendor/fontawesome/webfonts/fa-v4compatibility.woff2',
+  './vendor/leaflet/leaflet.css',
+  './vendor/leaflet/leaflet.js',
+  './vendor/leaflet/images/marker-icon.png',
+  './vendor/leaflet/images/marker-shadow.png',
+  './vendor/leaflet/images/layers.png',
 ];
 
 // ------------------------------------------------------------
@@ -200,7 +218,8 @@ async function staleWhileRevalidate(request) {
   if (fresh) return fresh;
 
   if (request.destination === 'document' || request.mode === 'navigate') {
-    const shell = await caches.match('/index.html');
+    // Jalur relatif — lihat penjelasan pada PRECACHE_ASSETS.
+    const shell = (await caches.match('./index.html')) || (await caches.match('./'));
     if (shell) return shell;
   }
 
@@ -259,8 +278,8 @@ self.addEventListener('push', (event) => {
   const data = event.data?.json() || {};
   const options = {
     body: data.body || 'Notifikasi Smart AI Pengkaji SLF',
-    icon: '/logo-app.png',        // ikon lama /icons/icon-192x192.png tidak ada di build
-    badge: '/favicon-32.png',
+    icon: new URL('logo-app.png', self.registration.scope).href,
+    badge: new URL('favicon-32.png', self.registration.scope).href,
     data: data.data || {},
   };
   event.waitUntil(
@@ -270,5 +289,6 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  event.waitUntil(self.clients.openWindow('/'));
+  // Buka akar APLIKASI (mengikuti scope), bukan akar domain.
+  event.waitUntil(self.clients.openWindow(self.registration.scope));
 });

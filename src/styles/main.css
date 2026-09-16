@@ -1565,10 +1565,26 @@ body {
     grid-template-columns: 1fr;
     max-width: 480px;
     min-height: auto;
-    margin: 20px;
+    /* `width:100%` dari aturan dasar digabung dengan `margin:20px` membuat
+       lebar kotak melebihi layar: 100% dihitung dari ruang yang tersedia,
+       lalu margin 20px ditambahkan DI LUAR-nya. Di layar 390px, isi kartu
+       keluar ~28px dari sisi kanan. Karena #login-portal memakai
+       overflow:hidden, kelebihannya TERPOTONG tanpa tanda apa pun —
+       pengguna ponsel melihat tombol masuk terpangkas dan tidak dapat
+       menggulir untuk melihatnya.
+
+       Pembungkus kartu (div di login.js) sudah memberi padding:20px, jadi
+       margin di sini hanya menggandakan jarak. Dihilangkan, dan ditambah
+       min-width:0 supaya kartu boleh menyusut sebagai flex item (tanpa itu
+       isinya yang menentukan lebar minimum dan tetap meluber). */
+    margin: 0;
+    min-width: 0;
   }
   .login-narrative { display: none; }
-  .login-interaction { padding: 40px 30px; }
+  .login-interaction {
+    padding: 40px 24px;
+    min-width: 0;
+  }
 }
 
 .form-input::placeholder,
@@ -4077,6 +4093,22 @@ button[disabled] {
 
 .table-wrap > table {
     min-width: 100%;
+}
+
+/* ── 7. Baris tabel yang menyorot saat disorot ────────────────── */
+/* Sorotan baris dulu dibuat dengan onmouseover/onmouseout inline. Akibatnya
+   hanya pengguna tetikus yang mendapat umpan balik posisi baris. Dipindahkan
+   ke CSS agar pengguna keyboard mendapat sorotan yang sama ketika salah satu
+   kontrol di dalam baris itu difokus (:focus-within) — tanpa menambah
+   perhentian Tab baru, karena barisnya sendiri tidak dijadikan fokus. */
+.baris-anggota {
+    border-bottom: 1px solid hsla(220, 20%, 100%, 0.03);
+    transition: background 0.2s;
+}
+
+.baris-anggota:hover,
+.baris-anggota:focus-within {
+    background: hsla(220, 20%, 100%, 0.02);
 }
 
 /* Petunjuk visual bahwa tabel masih bisa digulir ke samping. */

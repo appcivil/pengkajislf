@@ -282,7 +282,7 @@ export class RoomBuilder extends HTMLElement {
     
     if (this.points.length === 0) {
       this.points.push(pos);
-      this.updateInfo('Click to add corners, double-click or click near start to finish');
+      this.updateInfo('Klik untuk menambah sudut, klik ganda atau klik di dekat titik awal untuk mengakhiri');
     } else {
       // Check if closing (near start)
       const first = this.points[0];
