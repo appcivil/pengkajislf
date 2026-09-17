@@ -269,3 +269,49 @@ Ringkasan yang penting:
 | dihapus | `src/style.css` (1.963 baris, sisa template Vite), `public/icons.svg` (641 kB), `public/Logo SMART AI Pengkaji SLF.png` (228 kB) |
 
 Seluruh pekerjaan **belum di-commit**.
+
+---
+
+## 7. Pembaruan — pemeriksaan situs live (16 September 2026)
+
+Setelah dokumen ini ditulis, situs yang sudah terpasang
+(<https://appcivil.github.io/pengkajislf/>) diperiksa sebagai **pengunjung biasa**
+memakai peramban sungguhan. Pemeriksaan itu menemukan **7 kelas cacat yang tidak
+terlihat dari kode** — semuanya sudah diperbaiki. Dua di antaranya kemudian
+dijadikan aturan audit baru supaya tidak terulang:
+
+| Aturan baru | Yang diperiksa | Kenapa perlu |
+|---|---|---|
+| **E4 — Ikon tidak tersedia di set ikon yang dimuat** | setiap nama `fa-…` yang dipakai kode, dicocokkan ke CSS set ikon yang benar-benar dimuat | 26 nama ikon yang dipakai ternyata ikon Font Awesome **Pro**, sedangkan yang dimuat set **Free 6.5.0**. Ikon yang tidak dikenal **tidak menghasilkan galat apa pun** — hanya kotak kosong, sehingga tidak ada yang menyadarinya sampai dilihat dengan mata |
+| **E5 — Label antarmuka berbahasa Inggris** | teks di antara dua tag (boleh lintas baris), nilai atribut `placeholder`/`title`/`aria-label`/`alt`, dan label dari data (`{ text: '…' }`, `{ label: '…' }`, `{ title: '…' }`) | aturan E3 hanya mengenali **kalimat** utuh, sehingga **105 label pendek** lolos — termasuk lima di halaman login, layar pertama yang dilihat setiap pengguna |
+
+Cacat produksi yang diperbaiki (semuanya sudah tayang):
+
+1. **Semua ikon kotak kosong** — `all.min.css` menunjuk `url(../webfonts/…)`
+   (gaya CDN) padahal fontnya dibundel di `public/vendor/fontawesome/webfonts/`.
+2. **Sebagian ikon tetap kosong** — 26 nama ikon Pro, 54 pemakaian diganti ke
+   padanan set Free.
+3. **Kartu login terpotong di ponsel** — `width:100%` + `margin:20px` di dalam
+   wadah ber-padding, sementara `#login-portal` memakai `overflow:hidden`.
+4. **Service worker tidak pernah mendaftar** — alamat absolut `/service-worker.js`
+   padahal situs disajikan dari sub-folder `/pengkajislf/`.
+5. **26 kalimat berbahasa Inggris** di antarmuka Indonesia.
+6. **Pil "Terhubung" tanpa gaya CSS** di luar kartu login + gulir kosong 26 px.
+7. **105 label pendek berbahasa Inggris** (daftar: `temuan-label-inggris.md`).
+
+Perubahan pada alat audit: `codeMask()` tidak berubah; yang ditambahkan hanyalah
+`auditIcons()` (E4) dan `auditLabelInggris()` (E5), keduanya dipanggil di blok
+`shouldRun('visual')` setelah `auditVisual()`. Keduanya sudah diuji balik
+(rule-toggle): menyisipkan satu nama ikon palsu dan satu label Inggris
+memunculkan temuan; mengembalikannya membuat temuan hilang.
+
+Angka audit **tidak berubah** oleh kedua aturan itu — tetap **40 temuan
+(0 tinggi · 0 sedang · 40 rendah)** — karena cacat yang ditemukannya sudah
+diperbaiki, bukan karena aturannya dilonggarkan. Yang berubah: audit kini benar-
+benar menangkap dua kelas cacat yang sebelumnya tidak terlihat sama sekali,
+yaitu ikon yang tidak tersedia dan label berbahasa Inggris.
+
+Yang **belum** dikerjakan: nilai data berbahasa Inggris (mis. status
+`COMPLIANT`/`NON-COMPLIANT` yang dihasilkan lapisan perhitungan). Nilai itu juga
+dipakai sebagai pembanding di dalam kode, jadi penerjemahannya harus menyeluruh —
+lihat `temuan-label-inggris.md` bagian C.
