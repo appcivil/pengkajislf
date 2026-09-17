@@ -843,10 +843,75 @@ body {
   flex-shrink: 0;
 }
 
-.app-layout.sidebar-collapsed .sidebar-footer {
-  padding: var(--space-4) 0;
+/* Lencana verifikasi di kaki sidebar.
+   Aturan ini pernah ADA di versi lama lalu hilang saat berkas ditulis ulang,
+   sedangkan HTML-nya tetap memakai kelas .verified-badge/.badge-icon/.badge-text.
+   Akibatnya lencana menjadi kotak tanpa aturan tata letak dan — karena
+   .sidebar-footer pada mode ringkas memakai flex baris — posisinya bergeser
+   keluar dari rel sidebar 72 px sampai terpotong tepi layar. */
+.verified-badge {
   display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+}
+.badge-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
   justify-content: center;
+  font-size: 0.7rem;
+  color: #201a04;
+  flex-shrink: 0;
+}
+.badge-text { min-width: 0; line-height: 1.25; }
+.badge-text span { display: block; }
+.badge-sub {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  opacity: 0.75;
+}
+
+/* Mode ringkas (rel 72 px): lencana dan kartu pengguna DITUMPUK vertikal.
+   Sebelumnya flex baris memaksa keduanya berdampingan; lencana yang lebih lebar
+   dari rel akan meleset keluar batas sidebar. */
+.app-layout.sidebar-collapsed .sidebar-footer {
+  padding: var(--space-3) 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+.app-layout.sidebar-collapsed .verified-badge {
+  padding: 0;
+  margin-bottom: 0;
+  border: none !important;
+  background: transparent !important;
+  justify-content: center;
+}
+.app-layout.sidebar-collapsed .verified-badge .badge-text {
+  display: none;
+}
+
+/* Mode ringkas: kartu pengguna menjadi bulatan avatar saja, di tengah rel 72 px.
+   Tanpa aturan ini, kartu tetap selebar isinya (nama + surel + ikon keluar)
+   sehingga rentangnya -71…143 px — jauh keluar dari rel dan terpotong tepi
+   layar. Aturan ini juga hilang bersama blok CSS yang sama seperti lencana. */
+.app-layout.sidebar-collapsed .user-card {
+  width: 44px;
+  padding: var(--space-2) 0;
+  justify-content: center;
+  margin: 0 auto;
+}
+.app-layout.sidebar-collapsed .user-info-wrap,
+.app-layout.sidebar-collapsed .logout-icon,
+.app-layout.sidebar-collapsed .user-card > div:not(.user-avatar) {
+  display: none !important;
 }
 
 .user-card {
@@ -1320,6 +1385,49 @@ body:has(.app-header) #sync-indicator-root:not(.di-dalam-kartu) {
   grid-column: 2;
   grid-row: 3;
   z-index: 40;
+  min-width: 0;   /* izinkan teks membungkus, bukan meluber keluar layar */
+}
+
+/* Dua spanduk yang mengisi wadah di atas: peringatan Mode Pratinjau dan
+   pemberitahuan sinkronisasi. Kelas `.bypass-warning-banner` dan `.sync-banner`
+   dipakai di markup tetapi TIDAK PUNYA aturan CSS — jadi keduanya tergambar
+   sebagai teks polos: tanpa latar, tanpa ikon yang sejajar, dan di layar 390 px
+   teksnya terpotong tepi kanan. */
+.bypass-warning-banner,
+.sync-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  min-width: 0;
+}
+.bypass-warning-banner > i,
+.sync-banner > i { flex-shrink: 0; margin-top: 3px; }   /* sejajar baris pertama teks */
+.bypass-warning-banner > span,
+.sync-banner > span {
+  /* flex:1 + min-width:0 → teks membungkus DI DALAM span, bukan mendorong
+     ikon ke barisnya sendiri (perilaku flex-wrap tanpa ini). */
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.bypass-warning-banner {
+  background: hsla(45, 90%, 60%, 0.08);
+  border: 1px solid hsla(45, 90%, 60%, 0.22);
+  color: var(--text-primary);
+}
+.bypass-warning-banner i { color: var(--gold-400); }
+.sync-banner.offline {
+  background: hsla(0, 84%, 60%, 0.08);
+  border: 1px solid hsla(0, 84%, 60%, 0.25);
+}
+.sync-banner.pending {
+  background: hsla(45, 90%, 60%, 0.08);
+  border: 1px solid hsla(45, 90%, 60%, 0.22);
+  justify-content: space-between;
 }
 
 #project-context-container {
@@ -1327,6 +1435,111 @@ body:has(.app-header) #sync-indicator-root:not(.di-dalam-kartu) {
   grid-row: 2;
   z-index: 45;
 }
+
+/* --- Bilah Konteks Proyek -----------------------------------------------
+   Muncul di atas isi halaman setiap kali sebuah proyek sedang dibuka.
+   Seluruh keluarganya (.project-context-bar, .context-*, .ctx-btn,
+   .context-status-pill, .status-dot) dipakai di markup tetapi TIDAK PUNYA
+   satu pun aturan CSS — jadi bilah ini tergambar sebagai tumpukan teks dan
+   tombol tanpa bentuk. Ditulis ulang di sini mengikuti bahasa desain yang
+   sama dengan kartu lain (latar kaca, sudut membulat, aksen emas/biru). */
+.project-context-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin: var(--space-4) var(--space-6) 0;
+  padding: 10px var(--space-4);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+.context-left { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+.context-right { display: flex; align-items: center; gap: var(--space-2); }
+.context-project-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 4px 6px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.context-project-info:hover { background: hsla(220, 95%, 52%, 0.1); }
+.context-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  background: hsla(220, 95%, 52%, 0.12);
+  border: 1px solid hsla(220, 95%, 52%, 0.25);
+  color: var(--brand-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+.context-text { min-width: 0; }
+.context-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--text-tertiary);
+}
+.context-title { font-weight: 700; color: var(--text-primary); font-size: 0.9rem; }
+.context-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: hsla(220, 20%, 100%, 0.05);
+  border: 1px solid var(--border-subtle);
+  white-space: nowrap;
+}
+.context-status-pill .status-dot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+}
+.context-status-pill.badge-laik .status-dot          { background: var(--success-400); }
+.context-status-pill.badge-bersyarat .status-dot     { background: var(--warning-400); }
+.context-status-pill.badge-tidak-laik .status-dot    { background: var(--danger-400); }
+.context-status-pill.badge-proses .status-dot        { background: var(--brand-400); }
+.context-actions { display: flex; align-items: center; gap: 6px; }
+.ctx-btn {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: hsla(220, 20%, 100%, 0.04);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.ctx-btn:hover { color: white; border-color: var(--border-brand); background: hsla(220, 95%, 52%, 0.12); }
+.ctx-btn.primary {
+  background: var(--gradient-gold);
+  border-color: transparent;
+  color: #201a04;
+}
+.ctx-btn.primary:hover { filter: brightness(1.08); }
+
+/* Animasi masuk halus — kelas ini juga dipakai tanpa definisi sebelumnya.
+   Memakai keyframes yang sudah ada (slide-up-fade) supaya tidak menambah
+   satu pun keyframes baru hanya untuk efek masuk. */
+.animate-fade-in { animation: slide-up-fade 0.35s ease both; }
 
 
 
@@ -2147,6 +2360,14 @@ tbody tr:hover { background: var(--bg-elevated); }
   margin-bottom: var(--space-2);
 }
 .empty-desc { font-size: 0.875rem; color: var(--text-tertiary); max-width: 280px; }
+/* Kalimat penjelas di bawah judul status kosong — dipakai antara lain oleh
+   Daftar Periksa Bertingkat saat belum ada proyek yang dipilih. */
+.empty-sub {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+  max-width: 420px;
+  line-height: 1.6;
+}
 
 /* --- Skeleton Loader --- */
 .skeleton {

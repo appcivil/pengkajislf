@@ -26,6 +26,28 @@ import { prefersReducedMotion, announce } from '../lib/a11y.js';
 
 let _container = null;
 
+/**
+ * Jumlah toast yang boleh tampil bersamaan.
+ *
+ * Toast galat bertahan sampai ditutup (memang disengaja — pengguna perlu waktu
+ * membaca). Masalahnya, satu halaman yang gagal memuat beberapa berkas sekaligus
+ * memanggil toast berulang-ulang, dan tanpa batas tumpukannya MENUTUPI SELURUH
+ * LAYAR: saat diperiksa dengan peramban sungguhan, 9 notifikasi "Gagal" berturut-
+ * turut menutupi separuh layar kanan. Selain jelek, itu juga menutupi tombol yang
+ * dibutuhkan pengguna untuk memperbaiki masalahnya.
+ *
+ * Karena itu yang tertua dibuang lebih dulu — pengguna selalu melihat pesan
+ * TERBARU (yang paling relevan), dengan jumlah maksimal yang muat dilihat.
+ */
+const MAKS_TOAST = 3;
+
+function batasiJumlah(container) {
+  const daftar = [...container.querySelectorAll('.toast')];
+  const kelebihan = daftar.length - MAKS_TOAST;
+  // Yang dibuang adalah yang paling lama, bukan yang baru muncul.
+  for (let n = 0; n < kelebihan; n++) daftar[n].remove();
+}
+
 function ensureContainer() {
   if (_container && document.body.contains(_container)) return _container;
   _container = document.createElement('div');
@@ -110,6 +132,7 @@ export function toast(message, type = 'info', duration, action) {
   el.appendChild(close);
 
   container.appendChild(el);
+  batasiJumlah(container);
 
   let timer = null;
   let closed = false;

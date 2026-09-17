@@ -28,12 +28,21 @@ const LOADING_DELAY_MS = 150;
  */
 const ROUTE_LABELS = {
   dashboard: 'Dasbor', proyek: 'Proyek', 'proyek-detail': 'Detail Proyek',
+  'proyek-baru': 'Proyek Baru', 'proyek-edit': 'Ubah Proyek',
   'proyek-files': 'Berkas Proyek', checklist: 'Daftar Periksa',
+  'tier-checklist': 'Daftar Periksa Bertingkat',
   laporan: 'Laporan', analisis: 'Analisis', pengaturan: 'Pengaturan',
   'tim-kerja': 'Tim Kerja', todo: 'Tugas', 'todo-detail': 'Detail Tugas',
+  files: 'Berkas', galeri: 'Galeri', simulation: 'Simulasi', kondisi: 'Kondisi Bangunan',
+  'surat-pernyataan-list': 'Surat Pernyataan', 'surat-pernyataan': 'Surat Pernyataan',
+  'smart-ai': 'Smart AI', chatbot: 'Chatbot', 'canva-studio': 'Studio Desain AI',
+  'ndt-calculator': 'Kalkulator NDT', 'multi-agent': 'Multi-Agen',
+  'environmental-impact': 'Dampak Lingkungan', stormwater: 'Air Hujan',
+  'sanitation-inspection': 'Sanitasi', 'disaster-mitigation': 'Mitigasi Bencana',
+  'lighting-simulation': 'Simulasi Pencahayaan', 'comfort-inspection': 'Kenyamanan Ruang',
   legal: 'Ketentuan Layanan', login: 'Masuk', verify: 'Verifikasi',
-  'multi-agent': 'Multi-Agen', 'task-detail': 'Detail Tugas',
-  'seismic-calculator': 'Kalkulator Seismik', 404: 'Halaman Tidak Ditemukan',
+  'task-detail': 'Detail Tugas', 'seismic-calculator': 'Kalkulator Seismik',
+  404: 'Halaman Tidak Ditemukan',
 };
 
 function routeLabel(path) {

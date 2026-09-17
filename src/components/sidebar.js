@@ -103,14 +103,15 @@ export function renderSidebar() {
       </nav>
 
       <div class="sidebar-footer">
-        <div class="verified-badge" style="background: hsla(45, 90%, 60%, 0.05); border: 1px solid hsla(45, 90%, 60%, 0.15); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 20px;">
-          <div class="badge-icon" style="background: var(--gradient-gold); box-shadow: 0 0 15px hsla(45, 90%, 60%, 0.3);">
-            <i class="fas fa-shield-halved"></i>
+          <div class="verified-badge" style="background: hsla(45, 90%, 60%, 0.05); border: 1px solid hsla(45, 90%, 60%, 0.15);" title="Berkas laporan ditandatangani secara digital">
+            <div class="badge-icon" style="background: var(--gradient-gold); box-shadow: 0 0 15px hsla(45, 90%, 60%, 0.3);">
+              <i class="fas fa-shield-halved"></i>
+            </div>
+            <div class="badge-text">
+              <span style="color: var(--gold-400); font-weight: 800; letter-spacing: 0.05em; font-size: 10px;">PENGKAJI TERVERIFIKASI</span>
+              <span class="badge-sub" style="color: var(--text-tertiary);">ITE COMPLIANT v2.0</span>
+            </div>
           </div>
-          <div class="badge-text" style="font-family:'Outfit', sans-serif; display: flex; align-items: center; gap: 8px;">
-            <i class="fas fa-certificate" style="color: var(--gold-500); font-size: 10px; opacity: 0.8" title="ITE Compliant v2.0"></i>
-          </div>
-        </div>
 
         <div class="user-card" id="user-card-btn" title="Klik untuk logout" style="background: hsla(220, 20%, 50%, 0.05); border: 1px solid var(--border-subtle)">
           ${avatarHtml}

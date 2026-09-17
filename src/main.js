@@ -11,7 +11,7 @@ import './styles/main.css';
 import { escapeHtml } from './lib/safe-markdown.js';
 import { initAuth, onAuthChange, isAuthenticated, getUserInfo } from './lib/auth.js';
 import { route, startRouter, navigate, getRouteHandler } from './lib/router.js';
-import { renderAppShell, getPageRoot, onRouteChange, destroyAppShell } from './components/layout.js';
+import { renderAppShell, getPageRoot, onRouteChange, destroyAppShell, pasangNavigateGlobal } from './components/layout.js';
 import { initNotifications, destroyNotifications } from './components/notification.js';
 
 // Infrastructure & Use Cases (dipertahankan tidak lazy — critical path)
@@ -1040,6 +1040,11 @@ async function bootstrap() {
     .catch(e => console.error('[App] SmartAI Pipeline initialization failed:', e));
 
   registerRoutes();
+
+  // Pasang window.navigate SEBELUM rute mana pun dirender: halaman login pun
+  // memakai window.navigate (tombol bypass), dan 103 tempat lain memakainya
+  // lewat atribut onclick. Sebelumnya fungsi ini hanya dipasang di dashboard.
+  pasangNavigateGlobal();
 
   updateProgress(20, 'Menghubungkan ke server...');
 

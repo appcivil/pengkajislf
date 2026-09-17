@@ -479,10 +479,20 @@ export const floatingChatStyles = `
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsive */
+/* Responsive.
+   Di ponsel ada menu bawah setinggi 72 px: tombol ini akan menutupi menu
+   "Hub AI" bila tetap 1rem dari dasar layar (terbukti saat diperiksa dengan
+   peramban). Karena itu tombol dinaikkan ke ATAS menu bawah. */
+@media (max-width: 768px) {
+  .floating-chat-wrapper {
+    bottom: calc(72px + 12px + env(safe-area-inset-bottom, 0px));
+    right: 1rem;
+  }
+}
+
 @media (max-width: 480px) {
   .floating-chat-wrapper {
-    bottom: 1rem;
+    bottom: calc(72px + 12px + env(safe-area-inset-bottom, 0px));
     right: 1rem;
   }
   

@@ -6,8 +6,32 @@ import { renderSidebar, bindSidebarEvents, updateActiveNav } from './sidebar.js'
 import { renderHeader, bindHeaderEvents, updateHeaderTitle } from './header.js';
 import { getUser } from '../lib/auth.js';
 import { store } from '../lib/store.js';
+import { navigate } from '../lib/router.js';
 
 let _layoutInitialized = false;
+
+/**
+ * Pastikan `window.navigate` tersedia untuk atribut `onclick` di seluruh markup.
+ *
+ * Aplikasi ini memanggil `window.navigate(...)` dari **103 tempat** lewat atribut
+ * `onclick`. Sebelumnya fungsi itu hanya dipasang di dalam `pages/dashboard.js`,
+ * sehingga:
+ *
+ *   - setiap navigasi dari halaman SELAIN Dasbor gagal dengan galat
+ *     "window.navigate is not a function" (mis. tombol PROYEK BARU, tab
+ *     pemeriksaan, tombol keluar);
+ *   - bahkan dari Dasbor pun tidak selalu ada, karena `dashboard.js` dimuat
+ *     secara lazy — pengguna yang langsung membuka #/proyek dan menekan tombol
+ *     tetap mendapat galat yang sama.
+ *
+ * Dipasang di sini (kerangka aplikasi), bukan di router, supaya router tetap
+ * tidak menyentuh objek global.
+ */
+export function pasangNavigateGlobal() {
+  if (typeof window !== 'undefined' && window.navigate !== navigate) {
+    window.navigate = navigate;
+  }
+}
 
 /**
  * Render the full app shell (sidebar + header + content slot)
@@ -15,6 +39,7 @@ let _layoutInitialized = false;
  * @param {boolean} isPublic - If true, render a simplified shell without sidebar
  */
 export function renderAppShell(appEl, isPublic = false) {
+  pasangNavigateGlobal();
   if (_layoutInitialized) return;
   _layoutInitialized = true;
 
@@ -69,7 +94,7 @@ function checkBypassMode() {
   if (user?.is_bypass && container) {
     container.innerHTML = `
       <div class="bypass-warning-banner">
-        <i class="fas fa-exclamation-triangle"></i>
+        <i class="fas fa-triangle-exclamation"></i>
         <span><strong>Mode Pratinjau:</strong> Data Anda tidak akan tersimpan ke database karena Anda tidak login secara resmi.</span>
       </div>
     `;
@@ -125,7 +150,7 @@ function renderBottomNav() {
     <nav class="bottom-nav">
       <a class="bnav-item" onclick="window.navigate('dashboard')">
         <i class="fas fa-home"></i>
-        <span>Home</span>
+        <span>Dasbor</span>
       </a>
       <a class="bnav-item" onclick="window.navigate('proyek')">
         <i class="fas fa-tasks"></i>
@@ -137,7 +162,7 @@ function renderBottomNav() {
       </a>
       <a class="bnav-item" onclick="window.navigate('multi-agent')">
         <i class="fas fa-robot"></i>
-        <span>AI Hub</span>
+        <span>Hub AI</span>
       </a>
     </nav>
   `;

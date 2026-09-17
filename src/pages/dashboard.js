@@ -722,5 +722,6 @@ function formatDate(d) {
   return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-window.navigate = navigate;
+// window.navigate kini dipasang sekali di kerangka aplikasi (components/layout.js)
+// — bukan di sini, karena halaman lain membutuhkannya sebelum Dasbor dimuat.
 window.refreshCharts = () => window.location.reload();

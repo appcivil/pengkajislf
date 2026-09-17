@@ -65,6 +65,27 @@ export async function tierChecklistPage(params = {}) {
   // Load saved data
   await loadTierData(proyekId);
   
+  // Penjaga: rute ini WAJIB tahu proyek mana yang diperiksa. Sebelumnya, membuka
+  // #/tier-checklist tanpa parameter id membuat renderTierChecklistShell()
+  // membaca properti dari null → TypeError, dan halaman hanya menampilkan galat
+  // di konsol tanpa penjelasan apa pun bagi pengguna.
+  if (!currentProyek || !currentProyek.id) {
+    root.innerHTML = `
+      <div class="page-header">
+        <h1 class="page-title">Daftar Periksa Bertingkat</h1>
+        <p class="page-subtitle">ASCE 41-17 · Evaluasi Tier 1, 2, dan 3</p>
+      </div>
+      <div class="empty-state">
+        <div class="empty-icon"><i class="fas fa-folder-open"></i></div>
+        <p class="empty-title">Belum ada proyek yang dipilih</p>
+        <p class="empty-sub">Pilih salah satu proyek terlebih dahulu — daftar periksa bertingkat selalu terikat pada satu proyek.</p>
+        <button class="btn btn-primary mt-4" onclick="window.navigate('proyek')">
+          <i class="fas fa-folder-tree"></i> Pilih Proyek
+        </button>
+      </div>`;
+    return root.innerHTML;
+  }
+
   // Render shell
   root.innerHTML = renderTierChecklistShell(currentProyek, activeTier);
   

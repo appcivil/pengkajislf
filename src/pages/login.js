@@ -4,6 +4,7 @@
  * Entry Gateway to the Strategic AI Audit Ecosystem
  */
 import { signInWithGoogle, signInWithEmail, signUpWithEmail, devModeBypass } from '../lib/auth.js';
+import { navigate } from '../lib/router.js';
 import { escapeHtml } from '../lib/safe-markdown.js';
 import { APP_CONFIG } from '../lib/config.js';
 import { showError, showInfo } from '../components/toast.js';
@@ -143,14 +144,14 @@ export async function loginPage() {
     e.preventDefault();
     const btn = document.getElementById('btn-dev-bypass');
     btn.disabled = true;
-    btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> OVERRIDING...`;
+    btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> MEMBUKA AKSES MODE PRATINJAU...`;
     try {
       await devModeBypass();
-      window.navigate('dashboard');
+      navigate('dashboard');
     } catch(err) {
-      showError('Bypass Failure: ' + err.message);
+      showError('Mode pratinjau gagal dibuka: ' + err.message);
       btn.disabled = false;
-      btn.innerHTML = `<i class="fas fa-terminal"></i> OVERRIDE PROTOCOL (BYPASS)`;
+      btn.innerHTML = `<i class="fas fa-terminal"></i> PROTOKOL PENGABAIAN (BYPASS)`;
     }
   });
 
@@ -193,14 +194,14 @@ async function handleFormSubmit(e) {
   // Visual Validation
   if (!emailField.value || !emailField.validity.valid) {
     emailField.classList.add('error');
-    emailError.innerHTML = `<i class="fas fa-circle-exclamation"></i> Identity alias is invalid or missing.`;
+    emailError.innerHTML = `<i class="fas fa-circle-exclamation"></i> Alamat surel belum diisi atau formatnya salah.`;
     emailError.style.display = 'flex';
     hasError = true;
   }
 
   if (!passField.value || passField.value.length < 6) {
     passField.classList.add('error');
-    passError.innerHTML = `<i class="fas fa-triangle-exclamation"></i> Security key is too short or missing.`;
+    passError.innerHTML = `<i class="fas fa-triangle-exclamation"></i> Kata sandi belum diisi atau kurang dari 6 karakter.`;
     passError.style.display = 'flex';
     hasError = true;
   }
@@ -209,14 +210,14 @@ async function handleFormSubmit(e) {
 
   const btn = document.getElementById('btn-email-signin');
   btn.disabled = true;
-  btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> VERIFYING...`;
+  btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> MEMVERIFIKASI...`;
   
   try {
     await signInWithEmail(emailField.value, passField.value);
   } catch (err) {
-    showError('Identity Verification Rejected.');
+    showError('Surel atau kata sandi tidak cocok.');
     btn.disabled = false;
-    btn.innerHTML = `<i class="fas fa-lock"></i> AUTHORIZE DIRECT`;
+    btn.innerHTML = `<i class="fas fa-lock"></i> MASUK`;
     
     // Highlight both fields as potential cause
     emailField.classList.add('error');

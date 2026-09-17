@@ -8,18 +8,59 @@ import { getUserInfo, signOut } from '../lib/auth.js';
 import { showSuccess, showError } from './toast.js';
 import { confirm } from './modal.js';
 
+/**
+ * Judul + ikon yang tampil di header untuk setiap rute.
+ *
+ * Daftar ini sengaja dibuat lengkap untuk SEMUA rute yang terdaftar di
+ * src/main.js. Sebelumnya hanya 11 rute yang punya entri, sehingga 25 halaman
+ * lain (Berkas, Galeri, Simulasi, Chatbot, seluruh halaman pemeriksaan, …)
+ * menampilkan nama aplikasi "Smart AI SLF" sebagai judul — pengguna tidak dapat
+ * memastikan sedang berada di halaman mana.
+ */
 const PAGE_TITLES = {
-  dashboard:   { title: 'Dashboard',          icon: 'fa-gauge-high' },
+  dashboard:   { title: 'Dasbor',             icon: 'fa-gauge-high' },
   proyek:      { title: 'Daftar Proyek SLF',  icon: 'fa-folder-open' },
   'proyek-baru':{ title: 'Proyek Baru',       icon: 'fa-plus-circle' },
+  'proyek-edit':{ title: 'Ubah Proyek',       icon: 'fa-pen-to-square' },
   'proyek-detail':{ title: 'Detail Proyek',   icon: 'fa-building' },
+  'proyek-files':{ title: 'Berkas Proyek',    icon: 'fa-folder-tree' },
   checklist:   { title: 'Checklist Pemeriksaan', icon: 'fa-clipboard-check' },
+  'tier-checklist':{ title: 'Periksa Bertingkat ASCE 41', icon: 'fa-layer-group' },
   analisis:    { title: 'Analisis AI',         icon: 'fa-brain' },
-  'multi-agent':{ title: 'Multi-Agent Analysis', icon: 'fa-network-wired' },
+  'multi-agent':{ title: 'Analisis Multi-Agen', icon: 'fa-network-wired' },
   laporan:     { title: 'Laporan Kajian SLF',  icon: 'fa-file-contract' },
-  todo:        { title: 'TODO Board',           icon: 'fa-list-check' },
-  executive:   { title: 'Dasbor Eksekutif', icon: 'fa-chart-line' },
-  settings:    { title: 'Pengaturan',           icon: 'fa-gear' },
+  todo:        { title: 'Papan Tugas',         icon: 'fa-list-check' },
+  files:       { title: 'Berkas',              icon: 'fa-cloud-arrow-up' },
+  galeri:      { title: 'Galeri',              icon: 'fa-images' },
+  simulation:  { title: 'Pusat Simulasi',      icon: 'fa-flask-vial' },
+  kondisi:     { title: 'Kondisi Bangunan',    icon: 'fa-clipboard-list' },
+  'tim-kerja': { title: 'Tim Kerja',           icon: 'fa-users-gear' },
+  'surat-pernyataan-list':{ title: 'Surat Pernyataan', icon: 'fa-file-signature' },
+  'surat-pernyataan':{ title: 'Surat Pernyataan', icon: 'fa-file-signature' },
+  settings:    { title: 'Pengaturan',          icon: 'fa-gear' },
+  'smart-ai':  { title: 'Pipeline Smart AI',   icon: 'fa-microchip' },
+  chatbot:     { title: 'Asisten AI',          icon: 'fa-robot' },
+  'canva-studio':{ title: 'Studio Desain AI',  icon: 'fa-palette' },
+  'ndt-calculator':{ title: 'Kalkulator NDT',  icon: 'fa-calculator' },
+  'seismic-calculator':{ title: 'Kalkulator Seismik', icon: 'fa-chart-line' },
+  verify:      { title: 'Verifikasi Dokumen',  icon: 'fa-shield-halved' },
+  // Halaman pemeriksaan (modul inspeksi)
+  'electrical-inspection':{ title: 'Pemeriksaan Kelistrikan', icon: 'fa-bolt' },
+  'lps-inspection':{ title: 'Pemeriksaan Penangkal Petir', icon: 'fa-cloud-bolt' },
+  'fire-protection':{ title: 'Proteksi Kebakaran', icon: 'fa-fire-extinguisher' },
+  'building-intensity':{ title: 'Intensitas Bangunan', icon: 'fa-building-columns' },
+  architectural:{ title: 'Pemeriksaan Arsitektur', icon: 'fa-ruler-combined' },
+  'egress-system':{ title: 'Sistem Evakuasi',  icon: 'fa-person-running' },
+  environmental:{ title: 'Pemeriksaan Lingkungan', icon: 'fa-leaf' },
+  accessibility:{ title: 'Aksesibilitas',      icon: 'fa-wheelchair' },
+  'comfort-inspection':{ title: 'Kenyamanan Ruang', icon: 'fa-temperature-half' },
+  'lighting-simulation':{ title: 'Simulasi Pencahayaan', icon: 'fa-lightbulb' },
+  'water-inspection':{ title: 'Pemeriksaan Air Bersih', icon: 'fa-droplet' },
+  'wastewater-inspection':{ title: 'Air Limbah', icon: 'fa-water' },
+  'environmental-impact':{ title: 'Dampak Lingkungan', icon: 'fa-recycle' },
+  stormwater:  { title: 'Pengelolaan Air Hujan', icon: 'fa-cloud-rain' },
+  'sanitation-inspection':{ title: 'Sanitasi', icon: 'fa-toilet' },
+  'disaster-mitigation':{ title: 'Mitigasi Bencana', icon: 'fa-house-crack' },
 };
 export function renderHeader(route = 'dashboard') {
   const info = PAGE_TITLES[route] || { title: 'Smart AI SLF', icon: 'fa-building' };
