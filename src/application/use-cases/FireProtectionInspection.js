@@ -133,7 +133,7 @@ export class FireProtectionInspection extends BaseInspection {
         
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
           ${InspectionWidgets.renderSectionCard({
-            title: 'Status Compliance',
+            title: 'STATUS KEPATUHAN',
             icon: 'check-circle',
             accentColor: 'var(--success-400)',
             content: `

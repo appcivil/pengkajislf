@@ -31,7 +31,7 @@ export function renderControlBar(proyek, data) {
       
       <div class="control-right">
         <!-- Refresh Button -->
-        <button onclick="window._refreshPreview()" class="btn-control" title="Refresh Preview">
+        <button onclick="window._refreshPreview()" class="btn-control" title="Segarkan Pratinjau">
           <i class="fas fa-arrows-rotate"></i>
           <span>Refresh</span>
         </button>

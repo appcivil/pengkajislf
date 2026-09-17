@@ -1013,6 +1013,18 @@ body {
   z-index: 60;
   pointer-events: none;
 }
+/* Di halaman login, sync-ui.js memindahkan wadah ini KE DALAM kartu
+   (#login-sync-slot) agar status menyatu dengan desain. Di sana ia mengalir
+   biasa, bukan lagi mengambang. */
+#login-sync-slot {
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+}
+#sync-indicator-root.di-dalam-kartu {
+  position: static;
+  pointer-events: auto;
+}
 .sync-badge {
   display: inline-flex;
   align-items: center;
@@ -1052,8 +1064,11 @@ body {
   color: var(--brand-300);
 }
 /* Di dalam aplikasi status sinkronisasi sudah tampil di header — jangan ganda.
+   Pengecualian :not(.di-dalam-kartu) penting: pada rute publik, kerangka
+   aplikasi (termasuk .app-header yang disembunyikan) masih ada di DOM, jadi
+   tanpa pengecualian ini pil di dalam kartu login ikut tersembunyi.
    (:has() hanya penyempurnaan; peramban lama tetap menampilkan pilnya.) */
-body:has(.app-header) #sync-indicator-root {
+body:has(.app-header) #sync-indicator-root:not(.di-dalam-kartu) {
   display: none;
 }
 

@@ -1385,7 +1385,7 @@ export function initFireProtectionHandlers(projectId) {
       resultDiv.innerHTML = `
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px">
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; text-align: center">
-            <div style="font-size: 0.7rem; color: var(--text-tertiary)">Power Required</div>
+            <div style="font-size: 0.7rem; color: var(--text-tertiary)">Daya Diperlukan</div>
             <div style="font-size: 1.8rem; font-weight: 800; color: var(--danger-400)">${escapeHtml(result.powerKW)}</div>
             <div style="font-size: 0.8rem; color: var(--text-tertiary)">kW (${escapeHtml(result.powerHP)} HP)</div>
           </div>
@@ -1396,7 +1396,7 @@ export function initFireProtectionHandlers(projectId) {
           </div>
         </div>
         <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px">
-          <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-bottom: 8px">Backup Power Required</div>
+          <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-bottom: 8px">Daya Cadangan Diperlukan</div>
           <div style="display: flex; gap: 12px">
             <span class="badge" style="background: ${result.backupRequired.diesel ? 'var(--warning-400)22' : 'var(--text-tertiary)22'}; 
                           color: ${result.backupRequired.diesel ? 'var(--warning-400)' : 'var(--text-tertiary)'}; 

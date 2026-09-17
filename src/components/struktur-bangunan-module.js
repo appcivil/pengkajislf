@@ -474,7 +474,7 @@ function renderPushoverTab() {
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px;">
-            <div style="font-size: 0.75rem; color: var(--text-tertiary);">Target Displacement</div>
+            <div style="font-size: 0.75rem; color: var(--text-tertiary);">Simpangan Target</div>
             <input type="number" id="pushover-target-disp" class="form-input" placeholder="mm" style="width: 100%; margin-top: 4px; background: hsla(220, 20%, 100%, 0.03); border-color: hsla(220, 20%, 100%, 0.1);">
           </div>
           <div style="padding: 12px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px;">
@@ -552,13 +552,13 @@ function renderModelImportTab() {
             <i class="fas fa-file-export" style="margin-right: 6px;"></i> Export E2K
           </button>
           <button onclick="window._saveModelToCloud()" class="btn btn-primary btn-sm" style="background: hsla(220, 95%, 52%, 0.2);">
-            <i class="fas fa-cloud-upload-alt" style="margin-right: 6px;"></i> Save to Cloud
+            <i class="fas fa-cloud-upload-alt" style="margin-right: 6px;"></i> Simpan ke Cloud
           </button>
           <button onclick="window._loadModelFromCloud()" class="btn btn-ghost btn-sm">
             <i class="fas fa-cloud-download-alt" style="margin-right: 6px;"></i> Load
           </button>
           <button onclick="window._generateEtabsReportTrigger()" class="btn btn-primary btn-sm" style="background: hsla(160, 100%, 45%, 0.2);">
-            <i class="fas fa-file-word" style="margin-right: 6px;"></i> Generate Report
+            <i class="fas fa-file-word" style="margin-right: 6px;"></i> Buat Laporan
           </button>
         </div>
       </div>
@@ -704,7 +704,7 @@ function renderTimeHistoryTab() {
         <div class="card-quartz" style="padding: 20px; min-height: 250px;" id="timehistory-plot-container">
           <div style="text-align: center; color: var(--text-tertiary); padding: 60px 20px;">
             <i class="fas fa-chart-area" style="font-size: 2rem; margin-bottom: 12px; opacity: 0.5;"></i>
-            <div>Run analysis to see displacement time history</div>
+            <div>Jalankan analisis untuk melihat riwayat waktu simpangan</div>
           </div>
         </div>
 
@@ -778,7 +778,7 @@ function renderFEMA356Tab() {
           <div style="text-align: center; color: var(--text-tertiary); padding: 80px 20px;">
             <i class="fas fa-chart-line" style="font-size: 2rem; margin-bottom: 12px; opacity: 0.5;"></i>
             <div>FEMA 356 Capacity Curve</div>
-            <div style="font-size: 0.75rem; margin-top: 8px;">Run analysis to see results</div>
+            <div style="font-size: 0.75rem; margin-top: 8px;">Jalankan analisis untuk melihat hasil</div>
           </div>
         </div>
 

@@ -152,7 +152,7 @@ function renderHeaderCard() {
             <i class="fas fa-building" style="font-size: 1.4rem;"></i>
           </div>
           <div>
-            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: var(--success-400);">PHASE 02A</div>
+            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: var(--success-400);">TAHAP 02A</div>
             <h3 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1rem; color: white; margin: 0;">Intensitas Bangunan</h3>
           </div>
         </div>

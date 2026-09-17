@@ -127,7 +127,7 @@ function renderIPALCard(ipal, tests) {
     <div class="card-quartz" style="padding: var(--space-5);">
       <div class="flex-between" style="margin-bottom: 16px;">
         <h5 style="font-weight: 700; color: white; margin: 0;">${escapeHtml(ipal.name || 'IPAL')}</h5>
-        ${latestTest ? getStatusBadge(efficiency.status) : '<span class="badge" style="background: hsla(220, 20%, 100%, 0.1); color: var(--text-tertiary); font-size: 10px;">NO DATA</span>'}
+        ${latestTest ? getStatusBadge(efficiency.status) : '<span class="badge" style="background: hsla(220, 20%, 100%, 0.1); color: var(--text-tertiary); font-size: 10px;">BELUM ADA DATA</span>'}
       </div>
       
       <div style="margin-bottom: 16px;">
@@ -645,7 +645,7 @@ function initEventListeners() {
               <div style="font-size: 18px; color: white; font-weight: 700;">${escapeHtml(result.minDimension)}m</div>
             </div>
             <div style="background: hsla(220, 20%, 100%, 0.05); border-radius: 8px; padding: 12px;">
-              <div style="font-size: 10px; color: var(--text-tertiary);">Area Required</div>
+              <div style="font-size: 10px; color: var(--text-tertiary);">Luas Diperlukan</div>
               <div style="font-size: 18px; color: white; font-weight: 700;">${escapeHtml(result.requiredArea)}m²</div>
             </div>
           </div>

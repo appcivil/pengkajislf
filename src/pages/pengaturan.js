@@ -90,12 +90,12 @@ export async function pengaturanPage() {
                  <div style="display:flex; gap:12px">
                    <input type="text" id="my-profile-name" class="form-input" value="${user?.name || ''}" style="background:hsla(220, 20%, 100%, 0.02); border-color:hsla(220, 20%, 100%, 0.1); color:white; font-weight:700; flex:1">
                    <button type="button" onclick="window.handleUpdateMyProfile(this)" class="btn btn-primary" style="height:48px; border-radius:12px; padding:0 24px; font-size:0.7rem; font-weight:800; background:var(--gradient-brand); border:none">
-                     <i class="fas fa-id-card-clip" style="margin-right:10px"></i> UPDATE IDENTITY
+                     <i class="fas fa-id-card-clip" style="margin-right:10px"></i> PERBARUI IDENTITAS
                    </button>
                  </div>
                </div>
                <div class="form-group">
-                 <label style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:2px; display:block; margin-bottom:12px">ENCRYPTED EMAIL ALIAS</label>
+                 <label style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:2px; display:block; margin-bottom:12px">ALIAS SUREL TERENKRIPSI</label>
                  <input type="email" class="form-input" value="${user?.email || ''}" readonly style="background:hsla(220, 20%, 100%, 0.02); border-color:hsla(220, 20%, 100%, 0.05); color:hsla(220, 20%, 100%, 0.4); font-weight:700">
                </div>
             </div>
@@ -104,7 +104,7 @@ export async function pengaturanPage() {
           <div style="display:flex; flex-direction:column; gap:32px">
              <div class="card-quartz" style="padding:32px; border-color:hsla(45, 90%, 60%, 0.1)">
                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:white; margin-bottom:16px; display:flex; align-items:center; gap:12px">
-                   <i class="fas fa-shield-halved" style="color:var(--gold-400)"></i> Security Protocol
+                   <i class="fas fa-shield-halved" style="color:var(--gold-400)"></i> Protokol Keamanan
                 </div>
                 <p style="font-size:0.8rem; color:var(--text-tertiary); margin-bottom:24px; line-height:1.6">Akun Anda dilindungi enkripsi 256-bit. Autentikasi multifaktor aktif untuk seluruh operasi penyegelan dokumen.</p>
                 <button class="btn btn-outline" style="width:100%; height:44px; border-radius:12px; font-weight:700; color:white; border-color:hsla(220, 20%, 100%, 0.1)">
@@ -166,7 +166,7 @@ export async function pengaturanPage() {
                     <input type="text" class="form-input" name="director_name" value="${settings.consultant?.director_name || ''}" placeholder="Full Name & Title">
                   </div>
                   <div class="form-group">
-                    <label class="form-label">EXECUTIVE TITLE</label>
+                    <label class="form-label">JABATAN</label>
                     <input type="text" class="form-input" name="director_job" value="${settings.consultant?.director_job || 'Direktur Utama'}" placeholder="e.g. CEO / Director">
                   </div>
                 </div>
@@ -280,7 +280,7 @@ export async function pengaturanPage() {
                  <div class="form-group">
                    <label class="form-label">AUTO-SYNC BEHAVIOR</label>
                    <select class="form-select" name="simbg_sync_mode" style="height:48px; border-radius:12px">
-                      <option value="manual" ${settings.simbg?.syncMode === 'manual' ? 'selected' : ''}>MANUAL OVERRIDE ONLY</option>
+                      <option value="manual" ${settings.simbg?.syncMode === 'manual' ? 'selected' : ''}>HANYA DAPAT DIUBAH MANUAL</option>
                       <option value="daily" ${settings.simbg?.syncMode === 'daily' ? 'selected' : ''}>SCHEDULED DAILY PULSE</option>
                    </select>
                  </div>
@@ -357,7 +357,7 @@ export async function pengaturanPage() {
               </div>
               
               <div class="form-group">
-                <label class="form-label">DYNAMIC METADATA OVERRIDE</label>
+                <label class="form-label">PENGABAIAN METADATA DINAMIS</label>
                 <textarea class="form-input font-mono text-xs" name="wm_custom_tags" rows="4" placeholder="Method: Visual Audit&#10;Equipment: Thermal Drone">${settings.watermark?.custom_tags || ''}</textarea>
                 <p style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); margin-top:8px; letter-spacing:1px">ADD ONE DATA TAG PER LINE</p>
               </div>
@@ -456,7 +456,7 @@ export async function pengaturanPage() {
 
           <div style="display:flex; flex-direction:column; gap:32px">
              <div class="card-quartz" style="padding:32px; background:var(--gradient-dark)">
-                <h4 style="color:white; font-size:1rem; margin-bottom:16px">Cloud Sync Status</h4>
+                <h4 style="color:white; font-size:1rem; margin-bottom:16px">Status Sinkronisasi Cloud</h4>
                 <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px">
                    <div style="width:48px; height:48px; border-radius:12px; background:hsla(220, 95%, 52%, 0.1); display:flex; align-items:center; justify-content:center; color:var(--brand-400)">
                       <i class="fas fa-cloud-arrow-up" style="font-size:1.4rem"></i>

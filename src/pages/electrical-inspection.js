@@ -397,7 +397,7 @@ function renderDashboardTab() {
                 <i class="fas fa-file-import"></i>
               </div>
               <div>
-                <div style="font-weight: 700; color: white; font-size: 0.9rem;">Import Data Logger</div>
+                <div style="font-weight: 700; color: white; font-size: 0.9rem;">Impor Data Logger</div>
                 <div style="font-size: 0.75rem; color: var(--text-tertiary);">CSV/Excel dari power meter</div>
               </div>
             </button>
@@ -688,7 +688,7 @@ function renderModals() {
     <div id="import-modal" class="modal" style="display: none;">
       <div class="modal-content">
         <div class="modal-header">
-          <h3><i class="fas fa-file-import"></i> Import Data Logger</h3>
+          <h3><i class="fas fa-file-import"></i> Impor Data Logger</h3>
           <button class="modal-close" onclick="closeModal('import-modal')">&times;</button>
         </div>
         <div class="import-section">
@@ -706,7 +706,7 @@ function renderModals() {
             <input type="file" id="import-file-input" accept=".csv,.xlsx,.xls" multiple hidden>
           </div>
           <div id="import-preview" class="import-preview" style="display: none;">
-            <h4>Preview Data</h4>
+            <h4>Pratinjau Data</h4>
             <div id="import-preview-content"></div>
           </div>
           <div id="import-progress" class="import-progress" style="display: none;">
@@ -719,7 +719,7 @@ function renderModals() {
         <div class="modal-actions">
           <button type="button" class="btn-secondary" onclick="closeModal('import-modal')">Batal</button>
           <button type="button" class="btn-primary" id="btn-confirm-import" onclick="confirmImport()" disabled>
-            Import Data
+            Impor Data
           </button>
         </div>
       </div>
@@ -2273,7 +2273,7 @@ function renderReportsTab() {
         </div>
         <div class="report-card" onclick="backupProjectData()">
           <i class="fas fa-download"></i>
-          <span>Backup Data Project</span>
+          <span>Cadangkan Data Proyek</span>
         </div>
       </div>
     </div>

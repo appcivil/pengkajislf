@@ -387,7 +387,7 @@ export class ElectricalInspection extends BaseInspection {
       <div id="electrical-tab-measurements" class="electrical-tab-content">
         ${InspectionWidgets.renderActionBar([
           { icon: 'plus', label: 'Tambah Pengukuran', variant: 'primary', onclick: `window._inspectionControllers['electrical'].showAddMeasurementModal()` },
-          { icon: 'file-import', label: 'Import Data', variant: 'secondary', onclick: `window._inspectionControllers['electrical'].showImportModal()` },
+          { icon: 'file-import', label: 'Impor Data', variant: 'secondary', onclick: `window._inspectionControllers['electrical'].showImportModal()` },
           { icon: 'file-export', label: 'Export CSV', variant: 'ghost', onclick: `window._inspectionControllers['electrical'].exportMeasurements()` }
         ])}
         
@@ -472,7 +472,7 @@ export class ElectricalInspection extends BaseInspection {
       content: `
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
           <div class="card-quartz" style="padding: 20px;">
-            <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">Load Profile Analysis</div>
+            <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">Analisis Profil Beban</div>
             <div style="font-size: 0.75rem; color: var(--text-tertiary);">Analisis profil beban per panel akan ditampilkan di sini.</div>
           </div>
           <div class="card-quartz" style="padding: 20px;">

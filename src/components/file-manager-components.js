@@ -13,7 +13,7 @@ export function renderFileSidebar(categories, activeCat) {
   return `
     <aside class="fm-sidebar" style="background:hsla(220, 20%, 100%, 0.02); padding:var(--space-6); display:flex; flex-direction:column; gap:var(--space-2); border-right:1px solid hsla(220, 20%, 100%, 0.05)">
       <div style="font-family:var(--font-mono); font-size:0.75rem; font-weight:800; color:var(--text-tertiary); text-transform:uppercase; margin-bottom:var(--space-6); padding:0 var(--space-2); letter-spacing:1.5px">
-        <i class="fas fa-layer-group" style="margin-right:8px; color:var(--brand-400)"></i> Data Repository
+        <i class="fas fa-layer-group" style="margin-right:8px; color:var(--brand-400)"></i> Repositori Data
       </div>
       ${categories.map(cat => {
         const isActive = activeCat === cat.id;

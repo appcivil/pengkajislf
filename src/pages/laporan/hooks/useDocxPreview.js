@@ -101,7 +101,7 @@ export function useDocxPreview(options = {}) {
           <div id="docx-nav-list" class="nav-content" style="flex:1;overflow-y:auto;padding:8px 0;">
             <div style="text-align:center;padding:40px 20px;color:#adb5bd;font-size:0.85rem;">
               <i class="fas fa-circle-notch fa-spin" style="margin-right:8px;opacity:0.6;"></i>
-              Loading document structure...
+              Memuat struktur dokumen…
             </div>
           </div>
         </div>

@@ -46,12 +46,12 @@ export function renderPasswordChangeModal(userInfo) {
 
         <form id="form-change-password">
           <div class="form-group">
-            <label class="form-label">NEW SECURE PASSWORD</label>
+            <label class="form-label">KATA SANDI BARU</label>
             <input type="password" id="new-password" class="form-input" placeholder="Min 8 characters" required minlength="8">
           </div>
 
           <div class="form-group">
-            <label class="form-label">CONFIRM NEW PASSWORD</label>
+            <label class="form-label">ULANGI KATA SANDI BARU</label>
             <input type="password" id="confirm-password" class="form-input" placeholder="Repeat password" required minlength="8">
           </div>
 

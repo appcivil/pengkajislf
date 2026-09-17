@@ -982,7 +982,7 @@ function renderKebakaranTab(projectId) {
           <div style="background: hsla(220, 20%, 100%, 0.03); padding: 20px; border-radius: 12px; text-align: center">
             <div style="font-size: 2rem; color: var(--warning-400); margin-bottom: 8px">⏱️</div>
             <div style="font-size: 0.8rem; font-weight: 700; color: white">ASET Analysis</div>
-            <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 4px">Available Time</div>
+            <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 4px">Waktu Tersedia</div>
           </div>
           <div style="background: hsla(220, 20%, 100%, 0.03); padding: 20px; border-radius: 12px; text-align: center">
             <div style="font-size: 2rem; color: var(--success-400); margin-bottom: 8px">📊</div>

@@ -50,7 +50,7 @@ export function renderDocxPreviewTab(proyek) {
           <div id="docx-nav-list" class="nav-content">
             <div class="nav-placeholder">
               <i class="fas fa-circle-notch fa-spin"></i>
-              <span>Loading document structure...</span>
+              <span>Memuat struktur dokumen…</span>
             </div>
           </div>
         </div>
@@ -78,7 +78,7 @@ export function renderDocxPreviewTab(proyek) {
           <button onclick="window._docxZoomIn()" class="zoom-btn" title="Zoom In">
             <i class="fas fa-plus"></i>
           </button>
-          <button onclick="window._docxFitWidth()" class="zoom-btn zoom-fit" title="Fit Width">
+          <button onclick="window._docxFitWidth()" class="zoom-btn zoom-fit" title="Sesuaikan Lebar">
             <i class="fas fa-compress-arrows-alt"></i>
           </button>
         </div>

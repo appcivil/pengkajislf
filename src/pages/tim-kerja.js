@@ -41,7 +41,7 @@ function buildHtml(workload, members) {
         <div class="flex-between">
           <div>
             <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.2rem; letter-spacing:-0.02em; margin-bottom:4px">
-              Team <span class="text-gradient-gold">Consortium</span>
+              Tim <span class="text-gradient-gold">Konsorsium</span>
             </h1>
             <p class="page-subtitle" style="font-family:var(--font-mono); font-size: 0.7rem; letter-spacing:1px; opacity:0.6; text-transform:uppercase">
               AUTHORIZED PERSONNEL DIRECTORY & REAL-TIME LOAD MONITORING
@@ -93,7 +93,7 @@ function buildHtml(workload, members) {
                   <tr>
                      <th style="padding:20px 32px; text-align:left; font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">AUTHORIZED AGENT</th>
                      <th style="padding:20px 32px; text-align:left; font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">SPECIALIZATION</th>
-                     <th style="padding:20px 32px; text-align:left; font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">ACTIVE LOAD</th>
+                     <th style="padding:20px 32px; text-align:left; font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">BEBAN AKTIF</th>
                      <th style="padding:20px 32px; text-align:left; font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">EFFICIENCY</th>
                      <th style="padding:20px 32px; text-align:left; font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">CLEARANCE</th>
                      <th style="padding:20px 32px; text-align:right; font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">ACTIONS</th>
@@ -111,7 +111,7 @@ function buildHtml(workload, members) {
       <div style="display:grid; grid-template-columns: 2fr 1fr; gap:32px; margin-top:40px">
          
          <div class="card-quartz" style="padding:32px">
-            <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:white; margin-bottom:32px">Strategic Distribution Chart</div>
+            <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:white; margin-bottom:32px">Grafik Distribusi Strategis</div>
             <div style="height:300px; display:flex; align-items:flex-end; gap:32px; justify-content:space-around; padding:0 40px">
                ${workload.map(m => `
                   <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:20px">
@@ -254,7 +254,7 @@ function renderMemberModal(member = null) {
           </div>
           
           <div class="form-group">
-            <label class="form-label">OFFICIAL ENCRYPTED EMAIL</label>
+            <label class="form-label">SUREL RESMI TERENKRIPSI</label>
             <input type="email" name="email" class="form-input" placeholder="Masukkan email resmi agent..." required value="${member?.email || ''}" ${isEdit ? 'readonly' : ''}>
           </div>
 

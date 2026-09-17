@@ -53,7 +53,7 @@ function buildHtml(proyekData, analisisData, checklistData) {
       <div class="page-header" style="background:var(--bg-elevated);margin:-24px -24px 24px;padding:32px 24px;border-bottom:1px solid var(--border-subtle)">
         <div class="flex-between">
           <div>
-            <div class="test-sm text-tertiary font-bold" style="letter-spacing:1px;text-transform:uppercase;margin-bottom:4px"><i class="fas fa-chart-line text-brand"></i> Executive View</div>
+            <div class="test-sm text-tertiary font-bold" style="letter-spacing:1px;text-transform:uppercase;margin-bottom:4px"><i class="fas fa-chart-line text-brand"></i> Tampilan Eksekutif</div>
             <h1 class="page-title" style="font-size:2rem;margin-bottom:8px">Portofolio SLF Kota/Kabupaten</h1>
             <p class="text-secondary" style="max-width:600px;line-height:1.5">
               Dashboard analitik tingkat manajemen untuk memantau status kelaikan fungsi seluruh gedung. 
@@ -64,7 +64,7 @@ function buildHtml(proyekData, analisisData, checklistData) {
              <div class="text-2xl font-bold text-primary">${new Date().toLocaleString('id-ID', { month:'long', year:'numeric'})}</div>
              <div class="text-sm text-tertiary">Live System Update</div>
              <button class="btn btn-secondary btn-sm mt-2" onclick="window.exportPortfolioReport()">
-               <i class="fas fa-download"></i> Export Report
+               <i class="fas fa-download"></i> Ekspor Laporan
              </button>
           </div>
         </div>

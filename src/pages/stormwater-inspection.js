@@ -452,7 +452,7 @@ function renderReportTab() {
         </div>
 
         <div style="background: rgba(15, 23, 42, 0.8); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-          <h3 style="margin: 0 0 16px; font-size: 14px; color: #e2e8f0;">Export Data</h3>
+          <h3 style="margin: 0 0 16px; font-size: 14px; color: #e2e8f0;">Ekspor Data</h3>
           <div style="display: flex; gap: 12px;">
             <button class="btn btn-outline" id="btn-export-csv" ${!hasSim ? 'disabled' : ''}>
               <i class="fas fa-file-csv" style="margin-right: 8px;"></i>Export CSV

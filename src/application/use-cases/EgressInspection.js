@@ -289,7 +289,7 @@ export class EgressInspection extends BaseInspection {
       content: `
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 24px;">
           <div class="card-quartz" style="padding: 24px; text-align: center;">
-            <div style="font-size: 0.9rem; color: var(--text-tertiary); margin-bottom: 8px;">Estimated Occupancy</div>
+            <div style="font-size: 0.9rem; color: var(--text-tertiary); margin-bottom: 8px;">Perkiraan Okupansi</div>
             <div style="font-size: 3rem; font-weight: 800; color: white;">${this._formatNumber(occupancy, 0)}</div>
             <div style="font-size: 0.85rem; color: var(--text-tertiary);">Orang</div>
           </div>

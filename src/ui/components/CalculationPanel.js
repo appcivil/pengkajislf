@@ -219,7 +219,7 @@ export class CalculationPanel extends HTMLElement {
         <div class="info-box">
           <strong style="color:#60a5fa;">💡 Tip:</strong> Setel tinggi bidang kerja ke 0,85 m untuk perhitungan setinggi meja kerja.
         </div>
-        <h3>⚙️ Calculation Settings</h3>
+        <h3>⚙️ Pengaturan Perhitungan</h3>
         <div class="grid-settings">
           <div>
             <label>Grid Spacing (m)</label>
@@ -276,12 +276,12 @@ export class CalculationPanel extends HTMLElement {
         </div>
         
         <button class="calculate secondary" id="btn-cancel" style="display: none;">
-          Cancel Calculation
+          Batalkan Perhitungan
         </button>
       </div>
 
       <div class="section" id="results-section" style="display: none;">
-        <h3>📊 Calculation Results</h3>
+        <h3>📊 Hasil Perhitungan</h3>
         <div class="results">
           <div class="stat-row">
             <span class="stat-label">Average Illuminance</span>
@@ -308,7 +308,7 @@ export class CalculationPanel extends HTMLElement {
             <span class="value" id="res-lpd">0 W/m²</span>
           </div>
           <div class="stat-row">
-            <span class="stat-label">Compliance Status</span>
+            <span class="stat-label">Status Kepatuhan</span>
             <span id="res-status" class="compliance-badge non-compliant">Pending</span>
           </div>
         </div>

@@ -247,7 +247,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
               <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--text-primary); margin-bottom:4px">Risk Analysis AI</h3>
               <p style="font-size:0.75rem; color:var(--text-tertiary); line-height:1.5">Automated technical scoring & mitigation recommendations based on audit data.</p>
               <div style="margin-top:20px; display:flex; align-items:center; gap:8px">
-                <span class="badge" style="background:hsla(45, 90%, 60%, 0.1); color:var(--gold-400); border:1px solid hsla(45, 90%, 60%, 0.2); font-size:10px">NEURAL ENGINE ACTIVE</span>
+                <span class="badge" style="background:hsla(45, 90%, 60%, 0.1); color:var(--gold-400); border:1px solid hsla(45, 90%, 60%, 0.2); font-size:10px">MESIN NEURAL AKTIF</span>
               </div>
             </div>
 
@@ -432,7 +432,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
 
              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px">
                 <button class="btn-presidential gold" style="width:100%; height:44px; border-radius:12px; font-size:10px" onclick="window._openSimulationModal('${escapeHtml(p.id)}')">
-                   <i class="fas fa-play" style="margin-right:8px"></i> RUN NEW
+                   <i class="fas fa-play" style="margin-right:8px"></i> JALANKAN BARU
                 </button>
                 <button class="btn btn-outline" style="width:100%; height:44px; border-radius:12px; font-size:10px; border-color:hsla(45, 90%, 60%, 0.2); color:white" onclick="window._viewSimulationHistory('${escapeHtml(p.id)}')">
                    <i class="fas fa-history" style="margin-right:8px"></i> HISTORY

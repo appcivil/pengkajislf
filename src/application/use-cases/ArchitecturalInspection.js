@@ -93,7 +93,7 @@ export class ArchitecturalInspection extends BaseInspection {
           })}
           
           ${InspectionWidgets.renderSectionCard({
-            title: 'Status Compliance',
+            title: 'STATUS KEPATUHAN',
             icon: 'check-circle',
             accentColor: 'var(--success-400)',
             content: `

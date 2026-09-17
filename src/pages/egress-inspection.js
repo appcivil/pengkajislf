@@ -514,7 +514,7 @@ function renderCapacityTab() {
             </div>
           </div>
           
-          <h5 style="font-weight: 700; color: white; margin-bottom: 12px; font-size: 0.9rem;">Minimum Width Requirements</h5>
+          <h5 style="font-weight: 700; color: white; margin-bottom: 12px; font-size: 0.9rem;">Persyaratan Lebar Minimum</h5>
           <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width: 100%; font-size: 0.7rem;">
             <thead>
               <tr style="border-bottom: 1px solid hsla(220, 20%, 100%, 0.1);">
@@ -1418,11 +1418,11 @@ function initEventListeners() {
       <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; border: 1px solid ${isAdequate ? 'var(--success-400)' : 'var(--danger-400)'};">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px;">
           <div style="text-align: center;">
-            <div style="font-size: 0.7rem; color: var(--text-tertiary);">Required Width</div>
+            <div style="font-size: 0.7rem; color: var(--text-tertiary);">Lebar Diperlukan</div>
             <div style="font-size: 1.3rem; font-weight: 700; color: var(--brand-400);">${Math.ceil(requiredWidth)} mm</div>
           </div>
           <div style="text-align: center;">
-            <div style="font-size: 0.7rem; color: var(--text-tertiary);">Available Width</div>
+            <div style="font-size: 0.7rem; color: var(--text-tertiary);">Lebar Tersedia</div>
             <div style="font-size: 1.3rem; font-weight: 700; color: ${isAdequate ? 'var(--success-400)' : 'var(--danger-400)'};">${escapeHtml(availableWidth)} mm</div>
           </div>
         </div>
@@ -1459,7 +1459,7 @@ function initEventListeners() {
     resultDiv.innerHTML = `
       <div style="padding: 16px; background: hsla(220, 20%, 100%, 0.03); border-radius: 8px; border: 1px solid ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'};">
         <div style="text-align: center; margin-bottom: 12px;">
-          <div style="font-size: 0.75rem; color: var(--text-tertiary);">STATUS COMPLIANCE</div>
+          <div style="font-size: 0.75rem; color: var(--text-tertiary);">STATUS KEPATUHAN</div>
           <div style="font-size: 1.5rem; font-weight: 800; color: ${isCompliant ? 'var(--success-400)' : 'var(--danger-400)'};">
             ${isCompliant ? 'COMPLIANT' : 'NON-COMPLIANT'}
           </div>

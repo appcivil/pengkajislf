@@ -160,7 +160,7 @@ export function renderElectricalSystemCard(p, summary = {}) {
           <button class="btn btn-outline" 
                   style="width: 100%; height: 44px; border-radius: 12px; font-size: 10px; border-color: hsla(45, 90%, 60%, 0.2); color: var(--gold-400);"
                   onclick="window._exportElectricalData('${escapeHtml(p.id)}')">
-            <i class="fas fa-download" style="margin-right: 8px;"></i> EXPORT DATA
+            <i class="fas fa-download" style="margin-right: 8px;"></i> Ekspor Data
           </button>
         ` : `
           <button class="btn btn-outline" disabled
@@ -169,7 +169,7 @@ export function renderElectricalSystemCard(p, summary = {}) {
           </button>
           <button class="btn btn-outline" disabled
                   style="width: 100%; height: 44px; border-radius: 12px; font-size: 10px; border-color: hsla(220, 20%, 100%, 0.1); color: var(--text-tertiary); opacity: 0.5;">
-            <i class="fas fa-download" style="margin-right: 8px;"></i> EXPORT DATA
+            <i class="fas fa-download" style="margin-right: 8px;"></i> Ekspor Data
           </button>
         `}
       </div>

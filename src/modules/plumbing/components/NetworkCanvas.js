@@ -260,7 +260,7 @@ export class NetworkCanvas extends HTMLElement {
       <div class="controls">
         <button class="control-btn" id="btn-zoom-in" title="Zoom In">+</button>
         <button class="control-btn" id="btn-zoom-out" title="Zoom Out">−</button>
-        <button class="control-btn" id="btn-fit" title="Fit to View">⊡</button>
+        <button class="control-btn" id="btn-fit" title="Sesuaikan ke Layar">⊡</button>
       </div>
 
       <div class="simulation-overlay" id="sim-overlay">

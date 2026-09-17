@@ -18,7 +18,7 @@ const PAGE_TITLES = {
   'multi-agent':{ title: 'Multi-Agent Analysis', icon: 'fa-network-wired' },
   laporan:     { title: 'Laporan Kajian SLF',  icon: 'fa-file-contract' },
   todo:        { title: 'TODO Board',           icon: 'fa-list-check' },
-  executive:   { title: 'Executive Dashboard', icon: 'fa-chart-line' },
+  executive:   { title: 'Dasbor Eksekutif', icon: 'fa-chart-line' },
   settings:    { title: 'Pengaturan',           icon: 'fa-gear' },
 };
 export function renderHeader(route = 'dashboard') {

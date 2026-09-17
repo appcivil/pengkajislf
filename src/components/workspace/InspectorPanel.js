@@ -77,7 +77,7 @@ export function renderInspector() {
        <!-- Footer Actions -->
        <div class="p-6 border-top flex gap-2">
           <button class="btn btn-primary btn-sm flex-1 font-bold" onclick="window.open('${escapeHtml(file.file_url)}', '_blank')">
-             <i class="fas fa-external-link-alt"></i> Open File
+             <i class="fas fa-external-link-alt"></i> Buka Berkas
           </button>
           <button class="btn btn-secondary btn-sm" title="Compare with another version" onclick="window._startCompare('${escapeHtml(file.id)}')">
              <i class="fas fa-columns"></i>
@@ -155,7 +155,7 @@ function renderTabContent(file, activeId) {
         <div style="height:100%; border-radius:12px; background:rgba(0,0,0,0.05); flex-center text-center p-8">
            <div class="flex-column gap-3">
               <i class="fas fa-file-pdf text-4xl opacity-0.2"></i>
-              <p class="text-xs font-bold opacity-0.4">Preview not available in this view</p>
+              <p class="text-xs font-bold opacity-0.4">Pratinjau tidak tersedia pada tampilan ini</p>
               <button class="btn btn-ghost btn-xs" onclick="window.open('${escapeHtml(file.file_url)}', '_blank')">View Full Screen</button>
            </div>
         </div>
@@ -196,7 +196,7 @@ function renderTabContent(file, activeId) {
               <div class="flex-column">
                  <span class="text-sm font-bold">Current Version (3.0)</span>
                  <span class="text-xs text-tertiary">31 Mar 2026, 17:45</span>
-                 <p class="text-xs mt-1">Finalized calculation results</p>
+                 <p class="text-xs mt-1">Hasil perhitungan final</p>
               </div>
            </div>
            <div class="flex gap-4 items-start pb-4 border-bottom opacity-0.6">

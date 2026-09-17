@@ -435,7 +435,7 @@ function renderDashboardTab() {
                 <i class="fas fa-file-csv"></i>
               </div>
               <div>
-                <div style="font-weight: 700; color: white; font-size: 0.9rem;">Import Data Logger</div>
+                <div style="font-weight: 700; color: white; font-size: 0.9rem;">Impor Data Logger</div>
                 <div style="font-size: 0.75rem; color: var(--text-tertiary);">CSV dari HOBO/Testo</div>
               </div>
             </button>
@@ -1200,7 +1200,7 @@ function renderReportTab() {
           </div>
           
           <div style="margin-bottom: 16px;">
-            <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 8px;">COMPLIANCE STATUS</div>
+            <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 8px;">Status Kepatuhan</div>
             <div style="display: flex; gap: 16px;">
               <div style="text-align: center;">
                 <div style="font-size: 1.2rem; font-weight: 700; color: var(--success-400);">${comfortData.rooms.filter(r => r.compliance_status === 'C').length}</div>
@@ -1803,7 +1803,7 @@ function renderModals() {
     <div id="import-climate-modal" class="modal" style="display: none;">
       <div class="modal-content" style="max-width: 500px;">
         <div class="modal-header">
-          <h3><i class="fas fa-file-csv"></i> Import Data Logger</h3>
+          <h3><i class="fas fa-file-csv"></i> Impor Data Logger</h3>
           <button class="modal-close" onclick="closeModal('import-climate-modal')">&times;</button>
         </div>
         <div style="padding: 20px;">

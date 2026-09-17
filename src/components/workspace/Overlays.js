@@ -70,7 +70,7 @@ export function renderCommandPalette() {
              <div class="cp-item p-3 px-4 hover:bg-brand-50 flex-between cursor-pointer rounded-lg" onclick="window._openUploadWorkspace()">
                 <div class="flex items-center gap-3">
                    <i class="fas fa-plus"></i>
-                   <span>Upload New Document</span>
+                   <span>Unggah Dokumen Baru</span>
                 </div>
                 <span class="text-xs opacity-0.5">N</span>
              </div>

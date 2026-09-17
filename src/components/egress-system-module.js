@@ -415,9 +415,9 @@ function renderScreeningTab() {
         <div style="font-size: 0.75rem; color: var(--text-tertiary); line-height: 1.6; margin-bottom: 12px;">
           <p><strong>Exit Number:</strong> 20 poin</p>
           <p><strong>Travel Distance:</strong> 20 poin</p>
-          <p><strong>Width Capacity:</strong> 20 poin</p>
+          <p><strong>Kapasitas Lebar:</strong> 20 poin</p>
           <p><strong>Stair Protection:</strong> 20 poin</p>
-          <p><strong>Lighting/Sign:</strong> 20 poin</p>
+          <p><strong>Pencahayaan/Tanda:</strong> 20 poin</p>
           <p style="margin-top: 8px; color: var(--success-400);">Pass threshold: 80/100</p>
         </div>
         <button onclick="window._calculateComplianceScore()" class="btn btn-ghost btn-sm" style="width: 100%;">

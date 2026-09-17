@@ -80,7 +80,7 @@ export class WastewaterInspection extends BaseInspection {
               ${['Separate', 'Combined'].map(type => `
                 <div class="card-quartz" style="padding: 20px; text-align: center; ${assessment.system_type === type ? 'border: 2px solid var(--brand-400);' : ''}">
                   <i class="fas fa-${type === 'Separate' ? 'code-branch' : 'arrows-alt'}" style="font-size: 1.8rem; color: var(--brand-400); margin-bottom: 8px;"></i>
-                  <div style="font-size: 1rem; font-weight: 600; color: white;">${escapeHtml(type)} System</div>
+                  <div style="font-size: 1rem; font-weight: 600; color: white;">${escapeHtml(type === 'Separate' ? 'Sistem Terpisah' : 'Sistem Gabungan')}</div>
                   <div style="font-size: 0.75rem; color: var(--text-tertiary);">
                     ${type === 'Separate' ? 'Air kotor & hujan terpisah' : 'Air kotor & hujan bersama'}
                   </div>

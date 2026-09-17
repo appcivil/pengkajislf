@@ -1059,8 +1059,114 @@ function auditIcons(sec, files) {
     `${daftar.slice(0, 12).join(', ')}${hilang.length > 12 ? `, … dan ${hilang.length - 12} lagi` : ''}. ` +
     'Ikon yang tidak dikenal tidak menghasilkan galat apa pun — ia hanya tergambar sebagai kotak kosong, sehingga pengguna melihat tombol tanpa lambang dan pengembang tidak mendapat petunjuk.',
     hilang[0][1][0].rel, hilang[0][1][0].line,
-    'Ganti dengan padanan dari set yang dimuat (mis. ikon Pro "fa-brain-circuit" → "fa-brain" yang tersedia di set Free), atau tambahkan CSS ikon yang memuatnya.');
-}
+      'Ganti dengan padanan dari set yang dimuat (mis. ikon Pro "fa-brain-circuit" → "fa-brain" yang tersedia di set Free), atau tambahkan CSS ikon yang memuatnya.');
+  }
+
+  /**
+   * E5. Label antarmuka berbahasa Inggris.
+   *
+   * Aturan E3 hanya menangkap KALIMAT utuh (minimal 5 kata + kata fungsi), jadi
+   * label PENDEK lolos tanpa pernah terdeteksi. Nyata terjadi: halaman login —
+   * layar pertama yang dilihat setiap pengguna — menampilkan "Consortium Entry",
+   * "OR DIRECT ALIAS", "IDENTITY ALIAS (EMAIL)", "SECURITY KEYCASE (PASSWORD)",
+   * dan tombol "AUTHORIZE DIRECT" tanpa satu pun temuan dari E3.
+   *
+   * Cara kerja: kumpulkan teks yang benar-benar tergambar sebagai label —
+   * isi di antara dua tag dan nilai atribut placeholder/title/aria-label/alt —
+   * lalu tandai yang SELURUH katanya kosakata Inggris. Dua penjaga menjaga agar
+   * pemeriksaan ini tidak berisik:
+   *
+   *   1. satu kata Indonesia saja sudah cukup untuk meloloskannya
+   *      ("Pratinjau Hasil" tidak ditandai meski "Hasil" bukan kosakata Inggris);
+   *   2. kata yang ejaannya sama di kedua bahasa (data, volume, minimum, total,
+   *      area, status, normal) tidak dihitung sebagai bukti bahasa Inggris —
+   *      tanpa ini, label "Volume Minimum" yang SUDAH berbahasa Indonesia akan
+   *      dilaporkan sebagai temuan palsu.
+   *
+   * Istilah baku profesi (Pushover Analysis, ACH/DF Minimum Required, Daylight
+   * Factor, Noise Criteria) tetap dibiarkan: menerjemahkannya justru menyimpang
+   * dari rujukan SNI/ASHRAE/NFPA yang dipakai profesi.
+   */
+  const KOSAKATA_INGGRIS = new Set(
+    ('secure sign in with google authorize direct identity alias email security keycase password override ' +
+     'protocol bypass consortium entry quantum neural engine active synthesis automated integrity compliance ' +
+     'overwatch official gdocs digital sealing orchestrator strategic distribution chart data visualization ' +
+     'pulse maps asset encrypted cloud architecture repository bit aes executive summary view report generate ' +
+     'generating intelligent export print download upload settings configuration user profile logout out welcome ' +
+     'home dashboard project projects building structure analysis result results history search filter sort column ' +
+     'row table graph total average maximum cost area weight height width length volume time date name description ' +
+     'notes instructions steps section list value unit calculation loading loaded failed failure success warning ' +
+     'attention notice please enter select add remove delete save cancel close back page file files users role ' +
+     'status connected connection error invalid required optional title subtitle heading label placeholder button ' +
+     'submit reset confirm apply preview edit update create new open details overview recent latest all none yes ' +
+     'no or the of to for from without by on at is are will can cannot must should your you this that these those ' +
+     'when while before after until then than there here what which who how why enabled disabled inactive pending ' +
+     'completed running stopped started finished paused retry refresh reload sync synchronize import backup restore ' +
+     'run finalized fit document logger lighting gateway proceed final available minimum requirements not only ' +
+     'system version powered supporting technical capacity reference standard specifications metadata confidence ' +
+     'permitted authority hereby approved rejected reviewed verified sealed disclosure retrieved estimated forecast ' +
+     'scores rating grade level tier phase stage mode sample manual automatic online offline ranking utilization ' +
+     'occupancy envelope resistance reinforcement displacement drift stiffness torsion modal shear moment deflection ' +
+     'demand utilization factor code analysis equivalent static dynamic response spectrum dominant period base ' +
+     'isolation damping ratio mass participation load profile power target focus protocol pulse secure verification ' +
+     'comprehensive generating a no run see in into from off over out up').split(/\s+/)
+  );
+  // Ejaan yang sama di bahasa Indonesia dan Inggris, serta nama format/akronim
+  // yang memang dipakai apa adanya — bukan bukti bahasa Inggris.
+  const KATA_BERSAMA = new Set(['data', 'volume', 'minimum', 'total', 'area', 'status', 'normal', 'final', 'unit', 'maksimum', 'optimasi', 'docx', 'pdf', 'xlsx', 'csv', 'excel', 'ies', 'iot']);
+  // Istilah baku profesi / nama merek — memang harus tetap berbahasa Inggris.
+  const LABEL_TETAP = /^(pushover|ach\b|df\b|daylight\s+factor|noise\s+criteria|air\s+changes|air\s+flow|ies\b|lpd\b|cct\b|cri\b|nfpa|sni|asce|ashrae|astm|iso|iec|api\b|ai\b|slf\b|sim\s?bg|google|excel|docx|pdf|xlsx|csv)/i;
+
+  function auditLabelInggris(sec, files) {
+    const temuan = [];
+    const periksa = (isi, f, index) => {
+      const t = String(isi).replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+      if (t.length < 4 || t.length > 120) return;
+      if (/[${}=<>@]|https?:|&&|\/\//.test(t)) return;          // bukan teks tampilan
+      if (f.mask && f.mask[index] === 0) return;                // di dalam komentar
+      // Tanda hubung ikut dianggap pemisah: "SIGN-IN" harus dinilai sebagai
+      // dua kata (SIGN + IN) — tanpa ini, label "SECURE SIGN-IN WITH GOOGLE"
+      // lolos hanya karena satu token gabungan tidak ada di kosakata.
+      const kata = t.split(/[^A-Za-z']+/).filter(Boolean);
+      if (kata.length < 2) return;                              // label satu kata terlalu ambigu
+      if (LABEL_TETAP.test(t)) return;
+      if (kata.some((w) => !KOSAKATA_INGGRIS.has(w.toLowerCase()))) return;  // ada kata bukan-Inggris
+      if (kata.every((w) => KATA_BERSAMA.has(w.toLowerCase()))) return;      // ejaan sama di dua bahasa
+      temuan.push({ rel: f.rel, line: lineAt(f.code, index), teks: t });
+    };
+
+    for (const f of files) {
+      if (!/\.(js|html)$/.test(f.rel)) continue;
+      // Teks label bisa berada di barisnya sendiri (mis. isi <button> yang
+      // ditulis di antara dua baris). Versi pertama aturan ini hanya
+      // memeriksa teks yang berada di baris yang sama dengan kedua tag,
+      // sehingga "SECURE SIGN-IN WITH GOOGLE" di halaman login lolos
+      // tanpa terdeteksi. Karena itu pemisah baris tidak lagi dilarang;
+      // spasi berlebih dipangkas saat penilaian.
+      for (const m of f.code.matchAll(/>([^<>]{4,300})</g)) periksa(m[1], f, m.index);
+      for (const m of f.code.matchAll(/(?:placeholder|title|aria-label|alt)\s*=\s*"([^"\n]{4,120})"/g)) periksa(m[1], f, m.index);
+      // Label yang datang dari DATA: { text: 'Quantum Neural Synthesis…' },
+      // { label: 'Import Data' }, { title: 'Executive Dashboard' }. Nilainya
+      // dirender sebagai label, tetapi bukan "teks di antara dua tag" sehingga
+      // tidak terlihat oleh pola pertama — dan di repositori ini ada 9 di antaranya.
+      for (const m of f.code.matchAll(/(?:^|[{,\s])(text|label|title|judul|subtitle|heading)\s*:\s*(['"])([^'"\n]{4,110})\2/g)) periksa(m[3], f, m.index);
+    }
+    if (!temuan.length) return;
+
+    const unik = [...new Map(temuan.map((h) => [h.teks.toLowerCase(), h])).values()];
+    add(sec, unik.length > 20 ? 'sedang' : 'rendah',
+      `Label antarmuka berbahasa Inggris (${unik.length} label)`,
+      'Label pendek (judul kolom, tombol, label formulir) masih berbahasa Inggris di tengah antarmuka berbahasa Indonesia. ' +
+      'Aturan E3 hanya menangkap kalimat utuh sehingga label seperti ini tidak pernah terdeteksi. Istilah baku profesi ' +
+      '(Pushover Analysis, ACH/DF Minimum Required, Daylight Factor, Noise Criteria) dan ejaan yang sama di kedua bahasa ' +
+      '(data, volume, minimum) TIDAK dihitung.',
+      unik[0].rel, unik[0].line,
+      'Terjemahkan label-label ini. Lihat daftarnya dengan --verbose.');
+    if (VERBOSE) {
+      for (const h of unik.slice(0, 60)) console.log(`       ${h.rel}:${h.line}  "${h.teks}"`);
+      if (unik.length > 60) console.log(`       … dan ${unik.length - 60} label lain`);
+    }
+  }
 
 function auditVisual(sec, files) {
   // E1. Warna heksadesimal literal di JS (di luar token)
@@ -1295,6 +1401,7 @@ async function main() {
   if (shouldRun('visual')) {
     auditVisual(byName.visual, files);
     auditIcons(byName.visual, files);
+    auditLabelInggris(byName.visual, files);
   }
   if (shouldRun('perf')) auditPerf(byName.perf);
 

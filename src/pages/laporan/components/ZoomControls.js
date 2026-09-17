@@ -17,7 +17,7 @@ export function renderZoomControls(zoom = 100) {
         <i class="fas fa-plus"></i>
       </button>
       
-      <button class="zoom-btn zoom-fit" onclick="window._fitWidth()" title="Fit Width">
+      <button class="zoom-btn zoom-fit" onclick="window._fitWidth()" title="Sesuaikan Lebar">
         <i class="fas fa-compress-arrows-alt"></i>
       </button>
     </div>

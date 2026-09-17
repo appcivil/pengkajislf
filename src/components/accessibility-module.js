@@ -930,7 +930,7 @@ function renderReportTab() {
         </div>
 
         <button onclick="window._generateComplianceReport()" class="btn btn-primary btn-sm" style="width: 100%;">
-          <i class="fas fa-file-contract" style="margin-right: 6px;"></i> Generate Compliance Report
+          <i class="fas fa-file-contract" style="margin-right: 6px;"></i> Buat Laporan Kepatuhan
         </button>
 
         <div id="acc-compliance-result" style="margin-top: 12px; display: none;"></div>

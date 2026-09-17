@@ -274,7 +274,7 @@ export class ComplianceWaterPanel extends HTMLElement {
       <div class="summary-card">
         <div class="summary-grid">
           <div class="summary-item">
-            <div class="summary-label">Total Compliance</div>
+            <div class="summary-label">Kepatuhan Total</div>
             <div class="summary-value" id="total-score">--</div>
             <div class="summary-status" id="status-text">Belum dievaluasi</div>
           </div>

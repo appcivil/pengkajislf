@@ -187,7 +187,7 @@ function renderControlBarStable(proyek, data) {
       </div>
       
       <div class="control-right" style="display: flex; align-items: center; gap: 8px;">
-        <button onclick="window._refreshPreview()" class="btn-control" title="Refresh Preview" style="
+        <button onclick="window._refreshPreview()" class="btn-control" title="Segarkan Pratinjau" style="
           height: 40px;
           padding: 0 16px;
           border-radius: 10px;
@@ -342,7 +342,7 @@ function renderPreviewStable(proyek) {
           <div id="docx-nav-list" style="flex:1;overflow-y:auto;padding:8px 0;">
             <div style="text-align:center;padding:40px 20px;color:#adb5bd;font-size:0.85rem;">
               <i class="fas fa-circle-notch fa-spin" style="margin-right:8px;opacity:0.6;"></i>
-              Loading document structure...
+              Memuat struktur dokumen…
             </div>
           </div>
         </div>

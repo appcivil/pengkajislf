@@ -9,7 +9,7 @@ export function renderNavigationPane(headings = []) {
     return `
       <div class="nav-empty">
         <i class="fas fa-circle-notch fa-spin"></i>
-        <span>Loading document structure...</span>
+        <span>Memuat struktur dokumen…</span>
       </div>
     `;
   }

@@ -10,11 +10,11 @@ import { showError, showInfo } from '../components/toast.js';
 
 export async function loginPage() {
   const features = [
-    { icon: 'fa-brain',   text: 'Quantum Neural Synthesis (SNI 9273:2025)' },
-    { icon: 'fa-shield-halved',    text: 'Automated Integrity & Compliance Overwatch' },
-    { icon: 'fa-file-signature',  text: 'Official GDocs Digital Sealing Orchestrator' },
-    { icon: 'fa-diagram-project',   text: 'Strategic Data Visualization & Pulse Maps' },
-    { icon: 'fa-cloud',    text: 'Encrypted Cloud Architecture (256-bit AES)' },
+    { icon: 'fa-brain',   text: 'Sintesis Neural Kuantum (SNI 9273:2025)' },
+    { icon: 'fa-shield-halved',    text: 'Pengawasan Integritas & Kepatuhan Otomatis' },
+    { icon: 'fa-file-signature',  text: 'Orkestrator Segel Digital GDocs Resmi' },
+    { icon: 'fa-diagram-project',   text: 'Visualisasi Data Strategis & Peta Denyut' },
+    { icon: 'fa-cloud',    text: 'Arsitektur Cloud Terenkripsi (AES 256-bit)' },
   ];
 
   const year = new Date().getFullYear();
@@ -71,7 +71,7 @@ export async function loginPage() {
            <!-- Interaction Side -->
            <div class="login-interaction">
               <div id="login-view" class="route-fade">
-                 <h2 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.8rem; color:white; margin-bottom:12px">Consortium Entry</h2>
+                 <h2 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.8rem; color:white; margin-bottom:12px">Masuk Sistem</h2>
                  <p style="color:var(--text-tertiary); font-size:0.85rem; margin-bottom:40px">Verifikasi identitas Anda untuk masuk ke sistem.</p>
                  
                  <button class="btn btn-outline" id="btn-google-signin" style="width:100%; height:56px; border-radius:14px; background:white; color:#020408; font-weight:800; border:none; display:flex; align-items:center; justify-content:center; gap:12px; transition:transform 0.2s" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
@@ -81,42 +81,49 @@ export async function loginPage() {
                       <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                       <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                     </svg>
-                    SECURE SIGN-IN WITH GOOGLE
+                    MASUK DENGAN GOOGLE
                  </button>
 
                  <div style="text-align:center; position:relative; margin:32px 0">
                     <div style="position:absolute; height:1px; background:hsla(220, 20%, 100%, 0.1); left:0; right:0; top:50%"></div>
-                    <span style="position:relative; background:#0D1117; padding:0 16px; font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:2px; font-weight:800">OR DIRECT ALIAS</span>
+                    <span style="position:relative; background:#0D1117; padding:0 16px; font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:2px; font-weight:800">ATAU MASUK LANGSUNG</span>
                  </div>
 
                  <form id="email-login-form" style="display:flex; flex-direction:column; gap:24px" novalidate>
                     <div class="form-group" style="margin:0">
-                       <label class="form-label" style="font-size:10px; letter-spacing:1.5px; opacity:0.8">IDENTITY ALIAS (EMAIL)</label>
-                       <input type="email" id="login-email" class="form-input" placeholder="authorized.personnel@registry.gov" required>
+                       <label class="form-label" style="font-size:10px; letter-spacing:1.5px; opacity:0.8">ALAMAT SUREL</label>
+                       <input type="email" id="login-email" class="form-input" placeholder="nama@instansi.go.id" required>
                        <div id="email-error" class="field-error" style="display:none"></div>
                     </div>
                     <div class="form-group" style="margin:0">
-                       <label class="form-label" style="font-size:10px; letter-spacing:1.5px; opacity:0.8">SECURITY KEYCASE (PASSWORD)</label>
+                       <label class="form-label" style="font-size:10px; letter-spacing:1.5px; opacity:0.8">KATA SANDI</label>
                        <input type="password" id="login-pass" class="form-input" placeholder="••••••••" required>
                        <div id="pass-error" class="field-error" style="display:none"></div>
                     </div>
                     <button type="submit" class="btn-presidential gold" id="btn-email-signin" style="height:56px; border-radius:14px; font-weight:800; font-size:1rem; margin-top:8px">
-                       <i class="fas fa-lock" style="margin-right:12px"></i> AUTHORIZE DIRECT
+                       <i class="fas fa-lock" style="margin-right:12px"></i> MASUK
                     </button>
                     ${!APP_CONFIG.features.isPublished ? `
                       <button type="button" class="btn btn-ghost" id="btn-dev-bypass" style="color:var(--brand-300); font-family:var(--font-mono); font-size:9px; font-weight:800; letter-spacing:2px; margin-top:-8px">
-                        <i class="fas fa-terminal" style="margin-right:10px"></i> OVERRIDE PROTOCOL (BYPASS)
+                        <i class="fas fa-terminal" style="margin-right:10px"></i> PROTOKOL PENGABAIAN (BYPASS)
                       </button>
                     ` : ''}
                  </form>
 
                  <div style="margin-top:40px; text-align:center">
                     <p style="font-size:0.8rem; color:hsla(220, 20%, 100%, 0.4); line-height:1.6">
-                       System version v${escapeHtml(APP_CONFIG.version)} &bull; © ${escapeHtml(year)} Consortium.<br>
-                       Encrypted by <span style="color:var(--brand-400); font-weight:800">Smart AI Pengkaji</span>
+                       Versi sistem v${escapeHtml(APP_CONFIG.version)} &bull; © ${escapeHtml(year)} Konsorsium.<br>
+                       Terenkripsi oleh <span style="color:var(--brand-400); font-weight:800">Smart AI Pengkaji</span>
                     </p>
                  </div>
               </div>
+
+              <!-- Tempat indikator sinkronisasi. Wadah #sync-indicator-root
+                   dipindahkan KE SINI oleh src/components/sync-ui.js selama
+                   pengguna berada di halaman login, supaya tidak lagi
+                   mengambang di sudut layar. Diletakkan di luar #login-view
+                   agar tidak ikut terhapus saat isi formulir diganti. -->
+              <div id="login-sync-slot"></div>
            </div>
 
         </div>

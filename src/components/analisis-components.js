@@ -164,7 +164,7 @@ export function renderResultPanel(result, proyek, checklistData) {
 
           <div class="flex-stack gap-3" style="width: auto">
               <button class="btn btn-outline" style="height:48px; padding:0 24px; border-radius:14px; border-color:hsla(220, 20%, 100%, 0.1); color:white" onclick="window.navigate('laporan',{id:'${escapeHtml(proyek.id)}'})">
-                <i class="fas fa-file-invoice" style="margin-right:10px"></i> VIEW REPORT
+                <i class="fas fa-file-invoice" style="margin-right:10px"></i> LIHAT LAPORAN
               </button>
               <button class="btn-presidential gold" style="height:48px; padding:0 24px; border-radius:14px" onclick="window._runFinalConclusion()">
                 <i class="fas fa-shield-halved" style="margin-right:10px"></i> SEAL FINAL STATUS
@@ -209,7 +209,7 @@ export function renderResultPanel(result, proyek, checklistData) {
       <!-- Radar & Recommendations -->
       <div class="grid-main-side" style="gap: 32px">
          <div class="card-quartz" style="padding: 32px; background:var(--gradient-dark); border-color: hsla(220, 95%, 52%, 0.1)">
-            <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:0.9rem; color:white; text-align:center; letter-spacing:1px; margin-bottom:32px">ASSET INTEGRITY PULSE</div>
+            <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:0.9rem; color:white; text-align:center; letter-spacing:1px; margin-bottom:32px">DENYUT INTEGRITAS ASET</div>
             <div style="height:320px; display:flex; align-items:center; justify-content:center">
                <canvas id="radar-chart"></canvas>
             </div>

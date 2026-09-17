@@ -85,10 +85,10 @@ export async function lightingSimulationPage(params = {}) {
         <button id="btn-daylight" title="Daylight Analysis">
           <i class="fas fa-sun"></i>
         </button>
-        <button id="btn-save-project" title="Save Project">
+        <button id="btn-save-project" title="Simpan Proyek">
           <i class="fas fa-save"></i>
         </button>
-        <button id="btn-load-project" title="Load Project">
+        <button id="btn-load-project" title="Muat Proyek">
           <i class="fas fa-folder-open"></i>
         </button>
       </div>
@@ -98,7 +98,7 @@ export async function lightingSimulationPage(params = {}) {
         <div class="modal-backdrop"></div>
         <div class="modal-content">
           <div class="modal-header">
-            <h3>📋 Lighting Calculation Report</h3>
+            <h3>📋 Laporan Perhitungan Pencahayaan</h3>
             <button class="btn-close">&times;</button>
           </div>
           <div class="modal-body" id="report-content"></div>
@@ -926,7 +926,7 @@ function handleGenerateReport(e) {
   
   content.innerHTML = `
     <div class="report-header" style="text-align: center; margin-bottom: 24px;">
-      <h2 style="margin: 0 0 8px 0; color: #f1f5f9;">Lighting Calculation Report</h2>
+      <h2 style="margin: 0 0 8px 0; color: #f1f5f9;">Laporan Perhitungan Pencahayaan</h2>
       <p style="margin: 0; color: #94a3b8; font-size: 12px;">
         Generated on ${new Date().toLocaleDateString('id-ID')}
       </p>
@@ -945,7 +945,7 @@ function handleGenerateReport(e) {
     </div>
     
     <div class="report-section" style="background: rgba(30, 41, 59, 0.5); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
-      <h4 style="margin: 0 0 12px 0; color: #60a5fa; font-size: 13px;">Calculation Results</h4>
+      <h4 style="margin: 0 0 12px 0; color: #60a5fa; font-size: 13px;">Hasil Perhitungan</h4>
       <div class="table-wrap" tabindex="0" role="region" aria-label="Tabel data yang dapat digulir"><table style="width: 100%; font-size: 12px; border-collapse: collapse;">
         <tr style="border-bottom: 1px solid rgba(59, 130, 246, 0.2);">
           <th scope="row" style="padding: 8px 0; color: #94a3b8; font-weight: 400; text-align: left">Average Illuminance</th>
@@ -1010,7 +1010,7 @@ async function exportDOCX() {
       properties: {},
       children: [
         new Paragraph({
-          children: [new TextRun({ text: 'Lighting Calculation Report', bold: true, size: 32 })],
+          children: [new TextRun({ text: 'Laporan Perhitungan Pencahayaan', bold: true, size: 32 })],
           alignment: AlignmentType.CENTER
         }),
         new Paragraph({
@@ -1019,7 +1019,7 @@ async function exportDOCX() {
         }),
         new Paragraph({ text: '' }),
         new Paragraph({
-          children: [new TextRun({ text: 'Calculation Results', bold: true, size: 24 })]
+          children: [new TextRun({ text: 'Hasil Perhitungan', bold: true, size: 24 })]
         }),
         new Paragraph({ text: '' }),
       ]

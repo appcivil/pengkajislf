@@ -159,7 +159,7 @@ function renderPage() {
             gap: 8px;
             transition: all 0.2s;
           ">
-            ▶ Run Analysis
+            ▶ Jalankan Analisis
           </button>
         </div>
       </div>

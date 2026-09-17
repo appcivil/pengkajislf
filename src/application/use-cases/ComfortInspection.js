@@ -169,7 +169,7 @@ export class ComfortInspection extends BaseInspection {
           })}
           
           ${InspectionWidgets.renderSectionCard({
-            title: 'Status Compliance',
+            title: 'STATUS KEPATUHAN',
             icon: 'check-circle',
             accentColor: 'var(--success-400)',
             content: this.renderComplianceSummary(rooms)
@@ -299,7 +299,7 @@ export class ComfortInspection extends BaseInspection {
         
         <div style="padding: 16px; background: hsla(220, 20%, 15%, 0.5); border-radius: 12px; margin-bottom: 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <span style="font-size: 0.85rem; color: var(--text-secondary);">Status Compliance</span>
+            <span style="font-size: 0.85rem; color: var(--text-secondary);">STATUS KEPATUHAN</span>
             ${InspectionWidgets.renderComplianceBadge(compliance)}
           </div>
           <div style="font-size: 0.75rem; color: var(--text-tertiary);">
@@ -331,7 +331,7 @@ export class ComfortInspection extends BaseInspection {
       <div id="comfort-tab-climate" class="comfort-tab-content">
         ${InspectionWidgets.renderActionBar([
           { icon: 'plus', label: 'Tambah Pengukuran', variant: 'primary', onclick: `window._inspectionControllers['comfort'].showAddClimateModal()` },
-          { icon: 'file-import', label: 'Import Data', variant: 'secondary', onclick: `window._inspectionControllers['comfort'].showImportModal()` }
+          { icon: 'file-import', label: 'Impor Data', variant: 'secondary', onclick: `window._inspectionControllers['comfort'].showImportModal()` }
         ])}
         
         ${climateData.length > 0

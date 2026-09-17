@@ -18,7 +18,7 @@ export function renderToolbar() {
       
       <div style="display:flex; gap:16px; align-items:center; flex:1; justify-content:flex-end">
          <!-- View Switcher -->
-         <div class="flex bg-secondary p-1 rounded-lg" style="background:#f2f2f7; gap:2px" role="group" aria-label="View Mode">
+         <div class="flex bg-secondary p-1 rounded-lg" style="background:#f2f2f7; gap:2px" role="group" aria-label="Mode Tampilan">
             <button class="btn btn-ghost btn-xs ${workspace.viewMode === 'grid' ? 'active shadow-sm bg-white' : ''}" 
                     onclick="window._changeViewMode('grid')"
                     aria-label="Grid View"
@@ -27,14 +27,14 @@ export function renderToolbar() {
             </button>
             <button class="btn btn-ghost btn-xs ${workspace.viewMode === 'list' ? 'active shadow-sm bg-white' : ''}" 
                     onclick="window._changeViewMode('list')"
-                    aria-label="List View"
-                    title="List View">
+                    aria-label="Tampilan Daftar"
+                    title="Tampilan Daftar">
                <i class="fas fa-list"></i>
             </button>
             <button class="btn btn-ghost btn-xs ${workspace.viewMode === 'columns' ? 'active shadow-sm bg-white' : ''}" 
                     onclick="window._changeViewMode('columns')"
-                    aria-label="Column View"
-                    title="Column View">
+                    aria-label="Tampilan Kolom"
+                    title="Tampilan Kolom">
                <i class="fas fa-columns"></i>
             </button>
          </div>
@@ -54,7 +54,7 @@ export function renderToolbar() {
             <button class="btn btn-secondary btn-sm" style="border-radius:6px; font-weight:700" onclick="window._openCommandPalette()" aria-label="Open Command Palette" title="Command Palette (Ctrl+K)">
                <i class="fas fa-terminal"></i>
             </button>
-            <button class="btn btn-primary btn-sm" style="border-radius:6px; font-weight:700" onclick="window._openUploadWorkspace()" aria-label="Upload New File" title="Upload Document">
+            <button class="btn btn-primary btn-sm" style="border-radius:6px; font-weight:700" onclick="window._openUploadWorkspace()" aria-label="Unggah Berkas Baru" title="Unggah Dokumen">
                <i class="fas fa-plus"></i> Upload
             </button>
             <button class="btn btn-ghost btn-sm" style="border-radius:6px" 

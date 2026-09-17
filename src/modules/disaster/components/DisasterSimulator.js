@@ -149,7 +149,7 @@ export class DisasterSimulator extends HTMLElement {
       </div>
 
       <div class="controls-3d">
-        <button class="control-btn" id="btn-reset">Reset View</button>
+        <button class="control-btn" id="btn-reset">Atur Ulang Tampilan</button>
         <button class="control-btn" id="btn-toggle-grid">Toggle Grid</button>
       </div>
 

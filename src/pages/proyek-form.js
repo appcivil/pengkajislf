@@ -258,7 +258,7 @@ export async function proyekFormPage(params = {}) {
                     </div>
                  </div>
                  <div class="form-group">
-                    <label class="form-label">ENCRYPTED EMAIL ALIAS</label>
+                    <label class="form-label">ALIAS SUREL TERENKRIPSI</label>
                     <input type="email" class="form-input" name="email_pemilik" value="${escapeHtml(data.email_pemilik || '')}">
                  </div>
               </div>
@@ -280,7 +280,7 @@ export async function proyekFormPage(params = {}) {
                        <input type="date" class="form-input" name="tanggal_mulai" value="${escapeHtml(data.tanggal_mulai || '')}">
                     </div>
                     <div class="form-group">
-                       <label class="form-label">TARGET SEALING DATE</label>
+                       <label class="form-label">TARGET TANGGAL SEGEL</label>
                        <input type="date" class="form-input" name="tanggal_target" value="${escapeHtml(data.tanggal_target || '')}">
                     </div>
                  </div>
@@ -290,10 +290,10 @@ export async function proyekFormPage(params = {}) {
                        <div style="width:32px; height:32px; border-radius:8px; background:hsla(220, 95%, 52%, 0.1); display:flex; align-items:center; justify-content:center; color:var(--brand-400)">
                           <i class="fas fa-brain"></i>
                        </div>
-                       <strong style="font-family:'Outfit', sans-serif; font-size:0.9rem">QUANTUM NEURAL FOCUS</strong>
+                       <strong style="font-family:'Outfit', sans-serif; font-size:0.9rem">FOKUS NEURAL KUANTUM</strong>
                     </div>
                     <select class="form-select text-xs" name="ai_focus" style="background:transparent; border-color:hsla(220, 20%, 100%, 0.1)">
-                       <option value="komprehensif">PROTOCOL: COMPREHENSIVE SYNTHESIS</option>
+                       <option value="komprehensif">PROTOKOL: SINTESIS MENYELURUH</option>
                        <option value="struktur">PROTOCOL: STRUCTURAL DEPTH-SCAN</option>
                        <option value="kebakaran">PROTOCOL: FIRE SAFETY OVERWATCH</option>
                     </select>

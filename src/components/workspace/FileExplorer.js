@@ -191,7 +191,7 @@ function renderColumnView(files, selectedId) {
              </div>
           ` : `
              <i class="fas fa-columns text-4xl opacity-0.1 mb-3"></i>
-             <p class="text-xs opacity-0.4">Select a file to preview</p>
+             <p class="text-xs opacity-0.4">Pilih berkas untuk dipratinjau</p>
           `}
        </div>
     </div>

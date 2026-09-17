@@ -164,7 +164,7 @@ export async function dashboardPage() {
          <div class="card-quartz" style="grid-column: span 1">
            <div class="flex-between" style="margin-bottom: 20px">
               <div class="card-title" style="font-size: 0.9rem; font-weight:700">RECENT OPS</div>
-              <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek')" style="color:var(--text-tertiary)">VIEW ALL</button>
+              <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek')" style="color:var(--text-tertiary)">LIHAT SEMUA</button>
            </div>
            <div style="display:flex; flex-direction:column; gap:12px">
               ${projects.slice(0, 5).map(p => `

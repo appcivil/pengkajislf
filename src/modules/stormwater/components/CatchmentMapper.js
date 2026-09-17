@@ -939,7 +939,7 @@ export class CatchmentMapper extends HTMLElement {
   drawHydrograph(data) {
     const container = this.shadowRoot.getElementById('hydrograph-chart');
     if (!data || data.length === 0) {
-      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#64748b;font-size:12px;">No data</div>';
+      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#64748b;font-size:12px;">BELUM ADA DATA</div>';
       return;
     }
 

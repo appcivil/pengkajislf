@@ -250,7 +250,7 @@ export class DocumentEngine extends IDocumentEngine {
       html += '</div>';
       return html;
     } catch (error) {
-      return '<div>Error generating preview</div>';
+      return '<div>Gagal membuat pratinjau</div>';
     }
   }
 
@@ -343,7 +343,7 @@ export class DocumentEngine extends IDocumentEngine {
       html += '</div>';
       return html;
     } catch (error) {
-      return '<div>Error generating preview</div>';
+      return '<div>Gagal membuat pratinjau</div>';
     }
   }
 

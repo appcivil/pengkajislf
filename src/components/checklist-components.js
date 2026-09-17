@@ -62,7 +62,7 @@ export function renderChecklistShell(proyek, checklist) {
 
          <div style="margin-top: auto; padding: 20px">
             <button class="btn btn-ghost" onclick="window.navigate('proyek-detail',{id:'${escapeHtml(proyek.id)}'})" style="width:100%; border-radius:12px; font-size:0.8rem; color: var(--text-tertiary)">
-               <i class="fas fa-sign-out-alt" style="margin-right:8px"></i> BACK TO OVERVIEW
+               <i class="fas fa-sign-out-alt" style="margin-right:8px"></i> KEMBALI KE RINGKASAN
             </button>
          </div>
       </div>

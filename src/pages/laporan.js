@@ -334,7 +334,7 @@ function renderGDocsTab(proyek, gdocStatus, cachedDoc) {
         <div style="width:80px; height:80px; background:var(--gradient-brand); border-radius:18px; display:flex; align-items:center; justify-content:center; margin:0 auto 24px; font-size:2rem; color:white; box-shadow:var(--shadow-sapphire); border:1px solid hsla(220, 95%, 52%, 0.3)">
           <i class="fas fa-file-circle-plus"></i>
         </div>
-        <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.6rem; color:white; margin-bottom:12px">Generate Intelligent Executive Report</h3>
+        <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.6rem; color:white; margin-bottom:12px">Buat Laporan Eksekutif Cerdas</h3>
         <p style="color:var(--brand-300); max-width:640px; margin:0 auto 40px; line-height:1.6; font-weight:600">
           Mesin neural menyalin templat induk dan mengisi otomatis seluruh temuan lapangan, matriks risiko, dan catatan bukti visual ke dalam Google Document yang sesuai ketentuan hukum.
         </p>
@@ -359,7 +359,7 @@ function renderGDocsTab(proyek, gdocStatus, cachedDoc) {
             <i class="fas fa-file-word"></i>
           </div>
           <div>
-            <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:0.95rem; color:white">ACTIVE CLOUD REPOSITORY</div>
+            <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:0.95rem; color:white">REPOSITORI CLOUD AKTIF</div>
             <div style="font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px">SYNCED: ${formatTanggalwTime(cachedDoc.generatedAt)}</div>
           </div>
         </div>

@@ -64,7 +64,7 @@ function renderEmptyVerify() {
             </div>
             <h2 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.8rem; color:hsl(224, 30%, 12%); margin-bottom:12px">SLF Verification Portal</h2>
             <p style="color:var(--text-tertiary); font-size:0.9rem; line-height:1.6; margin-bottom:40px">Gunakan QR code pada dokumen fisik untuk memverifikasi keaslian teknis dan segel integritas digital.</p>
-            <button class="btn-presidential" style="height:48px; padding:0 32px; border-radius:14px; background:var(--gradient-brand)" onclick="window.navigate('dashboard')">PROCEED TO DASHBOARD</button>
+            <button class="btn-presidential" style="height:48px; padding:0 32px; border-radius:14px; background:var(--gradient-brand)" onclick="window.navigate('dashboard')">LANJUT KE DASBOR</button>
         </div>
     </div>`;
 }
@@ -106,7 +106,7 @@ function buildVerifyHtml(p, a, s, expertType, expert, integrity, cert) {
       <!-- Anti-Scrape Overlay (Light Privacy) -->
       <div id="security-blur-overlay" style="display:none; position:fixed; inset:0; background:rgba(255,255,255,0.95); backdrop-filter:blur(30px); z-index:10000; align-items:center; justify-content:center; flex-direction:column; color:hsl(224, 30%, 12%); text-align:center; transition:opacity 0.3s">
          <i class="fas fa-shield-halved" style="font-size:4rem; color:var(--brand-500); margin-bottom:24px"></i>
-         <h2 style="font-family:'Outfit', sans-serif; font-weight:800; letter-spacing:0.05em">ENCRYPTED VIEW</h2>
+         <h2 style="font-family:'Outfit', sans-serif; font-weight:800; letter-spacing:0.05em">TAMPILAN TERENKRIPSI</h2>
          <p style="color:var(--text-tertiary); max-width:300px; font-size:0.9rem">Konten disembunyikan sementara saat jendela tidak aktif untuk melindungi data audit teknis.</p>
       </div>
 
@@ -117,7 +117,7 @@ function buildVerifyHtml(p, a, s, expertType, expert, integrity, cert) {
                ${consultant.logo ? `<img alt="Logo instansi" src="${escapeHtml(consultant.logo)}" style="height:44px; object-fit:contain">` : `<div style="width:44px; height:44px; background:var(--gradient-brand); border-radius:10px; display:flex; align-items:center; justify-content:center; color:white; font-size:1.4rem"><i class="fas fa-microchip"></i></div>`}
                <div>
                   <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; letter-spacing:0.5px; color:hsl(224, 30%, 12%)">${escHtml(consultant.name || 'SMART AI PENGKAJI')}</div>
-                  <div style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); letter-spacing:1px; text-transform:uppercase">Official Digital Integrity Verification Gateway</div>
+                  <div style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); letter-spacing:1px; text-transform:uppercase">Gerbang Verifikasi Integritas Digital Resmi</div>
                </div>
             </div>
             <div style="background:hsla(158, 85%, 45%, 0.05); border:1px solid hsla(158, 85%, 45%, 0.1); padding:8px 20px; border-radius:100px; font-family:var(--font-mono); font-size:10px; font-weight:800; color:var(--success-500); display:flex; align-items:center; gap:10px; width:fit-content">
@@ -272,7 +272,7 @@ function buildVerifyHtml(p, a, s, expertType, expert, integrity, cert) {
                <p style="font-size:0.85rem; color:var(--text-tertiary); max-width:400px; line-height:1.6">${escHtml(consultant.name)} &bull; ${escHtml(consultant.address)}</p>
             </div>
             <div style="text-align:right">
-               <div style="font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">SYSTEM POWERED BY</div>
+               <div style="font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px">SISTEM DIDUKUNG OLEH</div>
                <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.4rem; color:hsl(224, 30%, 12%)">Smart <span style="background:var(--gradient-brand); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">ENGINE v7</span></div>
             </div>
          </div>
@@ -299,7 +299,7 @@ function renderError(msg) {
       <div style="height:100vh; background:hsl(220, 30%, 98%); display:flex; align-items:center; justify-content:center; padding:20px; color:hsl(224, 30%, 12%); font-family:'Inter', sans-serif">
          <div style="padding:60px 40px; text-align:center; max-width:480px; background:white; border-radius:30px; box-shadow:0 30px 80px rgba(0,0,0,0.1); border:1px solid rgba(220, 53, 69, 0.1)">
             <i class="fas fa-triangle-exclamation" style="font-size:4rem; color:var(--danger-500); margin-bottom:32px"></i>
-            <h2 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.6rem; margin-bottom:12px">Verification Failure</h2>
+            <h2 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.6rem; margin-bottom:12px">Verifikasi Gagal</h2>
             <p style="color:var(--text-tertiary); line-height:1.6; margin-bottom:40px">${escapeHtml(msg)}</p>
             <button class="btn btn-outline" style="width:100%; height:48px; border-radius:12px; color:var(--text-primary); border-color:rgba(0,0,0,0.1)" onclick="window.navigate('dashboard')">RE-ENTRY TO SYSTEM</button>
          </div>

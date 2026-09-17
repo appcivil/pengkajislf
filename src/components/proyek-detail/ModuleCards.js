@@ -146,7 +146,7 @@ export function renderRiskAnalysisCard(proyek, analisisData, loading = false) {
     content: `
       <div style="margin-top: 20px; display: flex; align-items: center; gap: 8px;">
         <span class="badge" style="background: hsla(45, 90%, 60%, 0.1); color: var(--gold-400); border: 1px solid hsla(45, 90%, 60%, 0.2); font-size: 10px;">
-          NEURAL ENGINE ACTIVE
+          MESIN NEURAL AKTIF
         </span>
       </div>
     `

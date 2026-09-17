@@ -59,7 +59,7 @@ export function renderTierChecklistShell(proyek, activeTier = 'tier1') {
         <!-- Status Summary -->
         <div id="tier-status-summary" class="card-quartz" style="padding: 20px;">
           <div style="font-family: var(--font-mono); font-size: 9px; font-weight: 800; color: var(--text-tertiary); letter-spacing: 1px; margin-bottom: 12px;">
-            STATUS SUMMARY
+            RINGKASAN STATUS
           </div>
           <div id="status-summary-content">
             <!-- Filled dynamically -->
@@ -384,7 +384,7 @@ function renderTier2Item(item, data = {}) {
             </button>
             ${item.tier3Required ? `
               <span class="status-badge" style="background: hsla(258, 70%, 65%, 0.15); color: hsla(258, 70%, 65%, 1);">
-                <i class="fas fa-layer-group"></i> Tier 3 Required
+                <i class="fas fa-layer-group"></i> Tingkat 3 Wajib
               </span>
             ` : ''}
           </div>

@@ -23,7 +23,7 @@ export function renderSmartAIDashboard() {
       <div class="dashboard-grid">
         <!-- File Upload Section -->
         <div class="dashboard-card upload-section">
-          <h3><i class="fas fa-cloud-upload-alt"></i> File Upload</h3>
+          <h3><i class="fas fa-cloud-upload-alt"></i> Unggah Berkas</h3>
           <div class="upload-zone" id="smartai-upload-zone">
             <div class="upload-prompt">
               <i class="fas fa-file-import"></i>
@@ -102,7 +102,7 @@ export function renderSmartAIDashboard() {
 
         <!-- Results Section -->
         <div class="dashboard-card results-section full-width">
-          <h3><i class="fas fa-file-alt"></i> Results Preview</h3>
+          <h3><i class="fas fa-file-alt"></i> Pratinjau Hasil</h3>
           <div class="results-tabs">
             <button class="tab-btn active" data-tab="extracted">Extracted Text</button>
             <button class="tab-btn" data-tab="ocr">OCR Result</button>
@@ -116,7 +116,7 @@ export function renderSmartAIDashboard() {
 
         <!-- Export Section -->
         <div class="dashboard-card export-section">
-          <h3><i class="fas fa-download"></i> Export Results</h3>
+          <h3><i class="fas fa-download"></i> Ekspor Hasil</h3>
           <div class="export-buttons">
             <button id="export-docx-btn" class="btn btn-secondary">
               <i class="fas fa-file-word"></i> DOCX
@@ -281,7 +281,7 @@ export function initSmartAIDashboard() {
         <pre class="result-json">${JSON.stringify(status.result, null, 2)}</pre>
       `;
     } else {
-      resultsContent.innerHTML = '<div class="empty-state">No results available</div>';
+      resultsContent.innerHTML = '<div class="empty-state">Belum ada hasil</div>';
     }
   }
 
