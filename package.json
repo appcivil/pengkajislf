@@ -30,6 +30,8 @@
     "test:ui": "vitest --ui"
   },
   "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "@vitest/coverage-v8": "^4.1.4",
     "@vitest/ui": "^4.1.4",
     "happy-dom": "^20.9.0",
@@ -52,8 +54,11 @@
     "idb": "^8.0.3",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
+    "lucide-react": "^1.49.0",
     "marked": "^17.0.5",
     "pizzip": "^3.1.7",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "tesseract.js": "^7.0.0",
     "three": "^0.183.2",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
