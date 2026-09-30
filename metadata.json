@@ -1,0 +1,6 @@
+{
+  "name": "Smart AI Pengkaji SLF",
+  "description": "Smart AI Konsultan Pengkaji Sertifikat Laik Fungsi (SLF) - Sistem berbasis AI untuk pengkajian teknis bangunan gedung",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

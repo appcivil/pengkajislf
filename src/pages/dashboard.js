@@ -37,30 +37,30 @@ export async function dashboardPage() {
 
   return `
     <div id="dashboard-page" style="animation: page-fade-in 0.8s ease-out">
-      <!-- Page Header -->
-      <div class="page-header" style="margin-bottom: var(--space-8)">
-        <div class="flex-between" style="align-items: flex-end">
+      <!-- Executive Hero Banner Showcase -->
+      <div class="hero-banner-audit" style="margin-bottom: var(--space-8)">
+        <div class="flex-between flex-stack" style="align-items: flex-end; relative; z-index: 2;">
           <div>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom: 12px;">
+              <span style="font-family:var(--font-mono); font-size: 0.7rem; font-weight:700; color:var(--gold-400); letter-spacing:1.5px; text-transform:uppercase; background:hsla(45, 90%, 60%, 0.1); border:1px solid hsla(45, 90%, 60%, 0.25); padding: 4px 12px; border-radius: 50px;">
+                <i class="fas fa-shield-halved" style="margin-right:6px"></i> System Operational v2.0
+              </span>
+              <span style="font-size:0.75rem; color:var(--text-tertiary)">·</span>
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-secondary)">${formatDate(now)}</span>
+            </div>
             <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.5rem; letter-spacing:-0.03em; margin-bottom:8px">
               ${escapeHtml(greeting)}, <span class="text-gradient-gold">${userName.split(' ')[0]}</span>!
             </h1>
-            <div style="display:flex; align-items:center; gap:12px">
-               <p class="page-subtitle" style="font-family:var(--font-mono); font-size: 0.7rem; letter-spacing:1.5px; opacity:0.6; text-transform:uppercase; display:flex; align-items:center; gap:6px">
-                 <span style="width:6px; height:6px; border-radius:50%; background:var(--success-400); box-shadow:0 0 8px var(--success-400)"></span>
-                 PENGKAJI COMMAND CENTER
-               </p>
-               <span style="width:1px; height:12px; background:var(--border-subtle)"></span>
-               <p style="font-family:var(--font-mono); font-size: 0.7rem; letter-spacing:1px; opacity:0.6; text-transform:uppercase">
-                 <i class="fas fa-calendar-day" style="color:var(--brand-400); margin-right:4px"></i> ${formatDate(now)}
-               </p>
-            </div>
+            <p style="font-size: 0.95rem; color: var(--text-secondary); max-width: 640px; margin-bottom: 0;">
+              Pusat Kendali Inspeksi & Audit Teknis Kelaikan Fungsi Bangunan Gedung Berbasis AI Multi-Moda (NSPK, SNI, ASCE 41-11).
+            </p>
           </div>
-          <div class="flex gap-3 page-actions-mobile">
-            <button class="btn btn-secondary" onclick="window.navigate('laporan')" style="height:48px; padding:0 20px; border-radius:14px; font-weight:700">
-              <i class="fas fa-file-export"></i> <span class="hide-mobile">Analytics</span>
+          <div class="flex gap-3 page-actions-mobile" style="margin-top: 16px;">
+            <button class="btn btn-secondary" onclick="window.navigate('smart-ai')" style="height:48px; padding:0 20px; border-radius:14px; font-weight:700; background:hsla(220, 20%, 100%, 0.05); backdrop-filter:blur(10px)">
+              <i class="fas fa-microchip" style="color:var(--brand-400)"></i> <span class="hide-mobile">Pipeline AI</span>
             </button>
             <button class="btn-presidential gold" onclick="window.navigate('proyek-baru')" style="height:48px; padding:0 24px; border-radius:14px">
-              <i class="fas fa-plus"></i> <span class="hide-mobile">Proyek Baru</span>
+              <i class="fas fa-plus"></i> <span>Proyek Baru</span>
             </button>
           </div>
         </div>
@@ -98,7 +98,7 @@ export async function dashboardPage() {
         <!-- Right Column: AI Intel & Activity -->
         <div style="display:flex; flex-direction:column; gap:var(--space-6)">
            <!-- AI Power Panel -->
-           <div class="card-quartz" style="padding: var(--space-6); background: var(--gradient-dark); border-color: hsla(220, 95%, 52%, 0.2)">
+           <div class="card-quartz ai-panel-bg" style="padding: var(--space-6); border-color: hsla(220, 95%, 52%, 0.25); border-radius: var(--radius-xl);">
               <div style="display:flex; align-items:center; gap:16px; margin-bottom: 24px">
                 <div style="width:48px; height:48px; border-radius:14px; background:var(--gradient-brand); display:flex; align-items:center; justify-content:center; box-shadow: var(--shadow-sapphire)">
                   <i class="fas fa-brain" style="color:white; font-size: 1.4rem"></i>
@@ -497,10 +497,9 @@ async function initMap(projects) {
   window.L.control.zoom({ position: 'bottomright' }).addTo(map);
   window._dashMap = map;
 
-  window.L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; CARTO',
-    subdomains: 'abcd',
-    maxZoom: 20
+  window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
+    maxZoom: 19
   }).addTo(map);
 
   const markers = window.L.featureGroup().addTo(map);

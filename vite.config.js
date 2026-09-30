@@ -79,20 +79,12 @@ export default defineConfig(({ mode }) => {
     },
   },
   server: {
-    port: 5173,
-    open: true,
-    // Host yang diizinkan mengakses server dev.
-    //
-    // Sejak Vite 5.4.12, permintaan dengan header Host yang tidak dikenal
-    // ditolak (HTTP 403) sebagai perlindungan terhadap DNS rebinding. Server
-    // dev di lingkungan kerja ini diakses lewat domain pratinjau
-    // *.e2b.app — tanpa pendaftaran di bawah, halaman pratinjau selalu
-    // gagal dimuat dengan pesan "Blocked request".
-    //
-    // `*.e2b.app` adalah domain pratinjau sandbox; localhost dan alamat IP
-    // lokal sudah diizinkan Vite secara bawaan. Entri ini HANYA berlaku untuk
-    // server dev dan tidak memengaruhi hasil build produksi.
-    allowedHosts: ['localhost', '127.0.0.1', '.e2b.app', '.e2b.dev'],
+    port: 3000,
+    host: '0.0.0.0',
+    open: false,
+    allowedHosts: 'all',
+    hmr: process.env.DISABLE_HMR !== 'true',
+    watch: process.env.DISABLE_HMR === 'true' ? null : {},
     proxy: {
       // Proxy ke Supabase Edge Function saat development
       '/functions': {

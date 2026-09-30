@@ -83,26 +83,26 @@
   --danger-500:  hsl(350, 95%, 52%);
   --danger-bg:   hsla(350, 95%, 15%, 0.12);
   
-  /* Dark Theme Obsidian Neutrals */
-  --bg-base:       hsl(224, 30%, 4%);   /* Absolute Obsidian */
-  --bg-elevated:   hsl(224, 25%, 7%);
-  --bg-card:       hsla(224, 25%, 10%, 0.6);
-  --bg-card-hover: hsla(224, 25%, 12%, 0.8);
-  --bg-input:      hsl(224, 25%, 10%);
-  --bg-overlay:    hsla(224, 30%, 2%, 0.9);
+  /* Eye-Comfort Slate Neutrals (Soft & Professional) */
+  --bg-base:       hsl(222, 47%, 8%);   /* Deep Soft Slate */
+  --bg-elevated:   hsl(222, 40%, 12%);  /* Comfort Surface */
+  --bg-card:       hsla(222, 35%, 13%, 0.75);
+  --bg-card-hover: hsla(222, 35%, 17%, 0.88);
+  --bg-input:      hsl(222, 35%, 11%);
+  --bg-overlay:    hsla(222, 47%, 5%, 0.85);
 
-  /* Borders - Presidential Sub-pixel */
-  --border-subtle:  hsla(220, 20%, 80%, 0.05);
-  --border-default: hsla(220, 20%, 80%, 0.12);
-  --border-strong:  hsla(220, 20%, 80%, 0.25);
-  --border-brand:   hsla(220, 90%, 56%, 0.40);
-  --border-gold:    hsla(45, 90%, 60%, 0.35);
+  /* Borders - Soft Balanced Contrast */
+  --border-subtle:  hsla(215, 20%, 80%, 0.08);
+  --border-default: hsla(215, 20%, 80%, 0.15);
+  --border-strong:  hsla(215, 20%, 80%, 0.28);
+  --border-brand:   hsla(220, 90%, 56%, 0.35);
+  --border-gold:    hsla(45, 90%, 60%, 0.30);
 
-  /* Text - High Clarity */
-  --text-primary:   hsl(220, 20%, 98%);
-  --text-secondary: hsl(220, 10%, 75%);
-  --text-tertiary:  hsl(220, 10%, 55%);
-  --text-disabled:  hsl(220, 5%, 38%);
+  /* Text - Comfort High-Legibility */
+  --text-primary:   hsl(210, 40%, 98%);
+  --text-secondary: hsl(215, 25%, 82%);
+  --text-tertiary:  hsl(215, 16%, 65%);
+  --text-disabled:  hsl(215, 10%, 42%);
   --text-brand:     var(--brand-400);
   --text-gold:      var(--gold-400);
 
@@ -176,6 +176,30 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* --- Typography & Accessibility Constitution Rules --- */
+h1, h2, h3, .page-title, .card-title, .loading-title {
+  text-wrap: balance;
+}
+
+.tabular-nums,
+.kpi-value,
+.stat-value,
+table td,
+.sync-label,
+.badge-sub,
+.user-role,
+.context-label {
+  font-variant-numeric: tabular-nums;
+  -moz-font-feature-settings: "tnum";
+  -webkit-font-feature-settings: "tnum";
+  font-feature-settings: "tnum";
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand-400) !important;
+  outline-offset: 2px !important;
+}
+
 body {
   font-family: var(--font-sans);
   background: var(--bg-base);
@@ -184,6 +208,36 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   /* --- High Clarity Visual Base --- */
+}
+
+/* --- Hero Banner Audit Showcase --- */
+.hero-banner-audit {
+  position: relative;
+  background-image: linear-gradient(135deg, hsla(224, 30%, 4%, 0.88) 0%, hsla(224, 30%, 8%, 0.92) 60%, hsla(220, 95%, 20%, 0.4) 100%),
+                    url('/src/assets/images/executive_building_audit_1790766197755.jpg');
+  background-size: cover;
+  background-position: center;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-brand);
+  box-shadow: var(--shadow-xl), 0 0 50px hsla(220, 95%, 52%, 0.12);
+  padding: var(--space-8);
+  overflow: hidden;
+}
+
+.hero-banner-audit::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 80% 20%, hsla(45, 90%, 60%, 0.12) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.ai-panel-bg {
+  position: relative;
+  background-image: linear-gradient(180deg, hsla(224, 30%, 6%, 0.9) 0%, hsla(224, 30%, 10%, 0.95) 100%),
+                    url('/src/assets/images/smart_ai_neural_hub_1790766209920.jpg');
+  background-size: cover;
+  background-position: center;
 }
 
 @keyframes page-fade-in {
