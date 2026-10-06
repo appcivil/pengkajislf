@@ -1,5 +1,4 @@
 import { defineConfig, loadEnv } from 'vite';
-import tailwindcss from '@tailwindcss/vite';
 
 // Target proxy dev untuk Edge Function. Diambil dari VITE_SUPABASE_URL
 // (.env) supaya project ref TIDAK lagi di-hardcode di konfigurasi —
@@ -10,11 +9,6 @@ export default defineConfig(({ mode }) => {
   const supabaseTarget = env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
 
   return {
-    plugins: [tailwindcss()],
-    esbuild: {
-      jsx: 'automatic',
-      jsxImportSource: 'react',
-    },
     envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
   define: {
     global: 'window',
@@ -52,7 +46,6 @@ export default defineConfig(({ mode }) => {
           const pkg = match[1];
 
           const GROUPS = {
-            'react':      ['react', 'react-dom', 'lucide-react'],
             'three':      ['three'],
             'charts':     ['chart.js'],
             'xlsx':       ['xlsx'],
