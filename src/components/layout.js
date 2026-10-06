@@ -147,22 +147,26 @@ export function onRouteChange(path) {
  */
 function renderBottomNav() {
   return `
-    <nav class="bottom-nav">
-      <a class="bnav-item" onclick="window.navigate('dashboard')">
-        <i class="fas fa-home"></i>
+    <nav class="bottom-nav" aria-label="Navigasi Bawah Ponsel">
+      <a class="bnav-item" role="button" tabindex="0" onclick="window.navigate('dashboard')">
+        <i class="fas fa-gauge-high"></i>
         <span>Dasbor</span>
       </a>
-      <a class="bnav-item" onclick="window.navigate('proyek')">
-        <i class="fas fa-tasks"></i>
+      <a class="bnav-item" role="button" tabindex="0" onclick="window.navigate('proyek')">
+        <i class="fas fa-folder-tree"></i>
         <span>Proyek</span>
       </a>
-      <a class="bnav-item" onclick="window.navigate('files')">
-        <i class="fas fa-folder"></i>
+      <a class="bnav-item" role="button" tabindex="0" onclick="window.navigate('smart-ai')">
+        <i class="fas fa-microchip"></i>
+        <span>AI Hub</span>
+      </a>
+      <a class="bnav-item" role="button" tabindex="0" onclick="window.navigate('files')">
+        <i class="fas fa-folder-open"></i>
         <span>Berkas</span>
       </a>
-      <a class="bnav-item" onclick="window.navigate('multi-agent')">
-        <i class="fas fa-robot"></i>
-        <span>Hub AI</span>
+      <a class="bnav-item bnav-toggle" role="button" tabindex="0" onclick="document.getElementById('sidebar-toggle')?.click()" aria-label="Buka Menu Lengkap">
+        <i class="fas fa-bars"></i>
+        <span>Menu</span>
       </a>
     </nav>
   `;

@@ -16,7 +16,7 @@ export function renderChecklistShell(proyek, checklist) {
   const progressPct = Math.round((doneItems / totalItems) * 100);
 
   return `
-    <div id="checklist-page" style="animation: page-fade-in 0.6s ease-out; display: grid; grid-template-columns: 320px 1fr; gap: var(--space-8); height: calc(100vh - 120px); overflow: hidden">
+    <div id="checklist-page" class="checklist-page-layout">
       
       <!-- LEFT SIDEBAR (Navigation & Progress) -->
       <div class="sidebar-quartz" style="display: flex; flex-direction: column; gap: 24px; overflow-y: auto; padding-right: 8px">
