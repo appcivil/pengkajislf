@@ -3,6 +3,7 @@
  * @module pages/smart-ai-dashboard
  */
 
+import '../styles/smart-ai-dashboard.css';
 import { renderSmartAIDashboard, initSmartAIDashboard } from '../components/smart-ai-dashboard.js';
 
 /**
