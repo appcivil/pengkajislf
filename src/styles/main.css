@@ -826,56 +826,66 @@ body {
 .nav-item {
   display: flex !important;
   align-items: center;
-  gap: var(--space-4);
-  padding: 12px var(--space-4);
+  gap: var(--space-3);
+  padding: 10px 14px;
   color: var(--text-secondary) !important;
   text-decoration: none !important;
   border-radius: var(--radius-md);
   transition: all var(--transition-fast);
   cursor: pointer;
   white-space: nowrap;
-  font-weight: 600;
-  font-size: 0.9rem;
+  font-weight: 500;
+  font-size: 0.88rem;
   border: 1px solid transparent;
+  position: relative;
 }
 
 .nav-item i {
-  font-size: 1.2rem !important;
-  width: 24px;
-  min-width: 24px;
+  font-size: 1.05rem !important;
+  width: 22px;
+  min-width: 22px;
   text-align: center;
-  color: var(--brand-300) !important;
+  color: var(--text-tertiary) !important;
   display: flex !important;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s ease;
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 
 .nav-item span {
-  font-size: 0.9rem !important;
-  color: var(--text-primary) !important;
-  transition: opacity 0.3s ease;
+  font-size: 0.88rem !important;
+  color: var(--text-secondary) !important;
+  transition: color 0.2s ease;
 }
 
 .nav-item:hover {
-  background: hsla(220, 95%, 52%, 0.1) !important;
-  color: white !important;
-  border-color: hsla(220, 95%, 52%, 0.2);
+  background: hsla(220, 20%, 100%, 0.05) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-subtle);
 }
 
 .nav-item:hover i {
-  color: var(--brand-400) !important;
-  transform: scale(1.15);
+  color: var(--brand-300) !important;
+}
+
+.nav-item:hover span {
+  color: var(--text-primary) !important;
 }
 
 .nav-item.active {
-  background: var(--gradient-brand) !important;
+  background: hsla(220, 95%, 52%, 0.14) !important;
   color: white !important;
-  box-shadow: var(--shadow-sapphire);
+  border-color: hsla(220, 95%, 52%, 0.28) !important;
+  box-shadow: 0 2px 12px hsla(220, 95%, 52%, 0.12);
 }
 
 .nav-item.active i {
+  color: var(--brand-400) !important;
+}
+
+.nav-item.active span {
   color: white !important;
+  font-weight: 600;
 }
 
 /* Collapsed Nav Item State */

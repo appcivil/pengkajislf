@@ -102,7 +102,7 @@ export function renderHeader(route = 'dashboard') {
           <i class="fas fa-search search-icon" style="color: var(--text-tertiary)"></i>
           <input type="text"
                  id="global-search"
-                 placeholder="Search Intel..."
+                 placeholder="Cari data, proyek, atau dokumen..."
                  style="font-family: var(--font-sans); font-size: 0.85rem; color: var(--text-primary)"
                  autocomplete="off" />
         </div>

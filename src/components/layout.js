@@ -58,7 +58,7 @@ export function renderAppShell(appEl, isPublic = false) {
   }
 
   appEl.innerHTML = `
-    <div class="app-layout sidebar-collapsed" id="app-layout">
+    <div class="app-layout" id="app-layout">
       <!-- Tanpa tautan ini, pengguna keyboard harus menekan Tab puluhan kali
            melewati sidebar dan header di SETIAP halaman (WCAG 2.4.1). -->
       <a class="skip-link" href="#page-root">Lompat ke konten utama</a>

@@ -98,50 +98,50 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
   const prog = p.progress || 0;
 
   const workflowSteps = [
-    { label: 'INTEGRITAS DATA', icon: 'fa-database',       key: 'input' },
-    { label: 'AUDIT TEKNIS',    icon: 'fa-clipboard-check', key: 'checklist' },
-    { label: 'AI ANALYTICS',    icon: 'fa-brain',   key: 'analisis' },
-    { label: 'EXECUTIVE RPT',   icon: 'fa-file-circle-check',       key: 'laporan' },
-    { label: 'CERTIFICATION',   icon: 'fa-certificate',     key: 'final' },
+    { label: 'Data Gedung',     icon: 'fa-database',           key: 'input' },
+    { label: 'Audit Teknis',    icon: 'fa-clipboard-check',    key: 'checklist' },
+    { label: 'Analisis AI',     icon: 'fa-brain',              key: 'analisis' },
+    { label: 'Laporan Kajian',  icon: 'fa-file-circle-check',  key: 'laporan' },
+    { label: 'Sertifikasi SLF', icon: 'fa-certificate',        key: 'final' },
   ];
 
   const currentStep = prog < 20 ? 0 : prog < 40 ? 1 : prog < 60 ? 2 : prog < 80 ? 3 : 4;
 
   return `
-    <div id="proyek-detail-page" style="animation: page-fade-in 0.8s ease-out">
+    <div id="proyek-detail-page" style="animation: page-fade-in 0.6s ease-out">
       
       <!-- Presidential Hero Header -->
-      <div class="card-quartz" style="padding: var(--space-8); margin-bottom: var(--space-8); background: var(--gradient-dark); border-color: hsla(220, 95%, 52%, 0.2); position:relative; overflow:hidden">
+      <div class="card-quartz" style="padding: var(--space-6) var(--space-8); margin-bottom: var(--space-8); background: var(--gradient-dark); border-color: var(--border-default); position:relative; overflow:hidden">
          <!-- Abstract Background Effect -->
-         <div style="position:absolute; right:-100px; top:-100px; width:400px; height:400px; border-radius:50%; background:radial-gradient(circle, hsla(220, 95%, 52%, 0.1) 0%, transparent 70%); pointer-events:none"></div>
+         <div style="position:absolute; right:-80px; top:-80px; width:360px; height:360px; border-radius:50%; background:radial-gradient(circle, hsla(220, 95%, 52%, 0.08) 0%, transparent 70%); pointer-events:none"></div>
 
          <div class="flex-between flex-stack" style="align-items:flex-start; position:relative; z-index:2; gap:var(--space-6)">
             <div style="flex:1">
-               <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek')" style="margin-bottom:20px; color:var(--brand-300); padding:0; font-weight:700; letter-spacing:1px">
-                 <i class="fas fa-arrow-left" style="margin-right:8px"></i> KEMBALI LIST PROYEK
+               <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek')" style="margin-bottom:16px; color:var(--brand-300); padding:0; font-weight:700; letter-spacing:0.5px">
+                 <i class="fas fa-arrow-left" style="margin-right:8px"></i> KEMBALI KE DAFTAR PROYEK
                </button>
-               <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; color:white; letter-spacing:-0.03em; margin:0; line-height:1.1">
+               <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; color:white; letter-spacing:-0.02em; margin:0; line-height:1.2; font-size:2rem">
                  ${escHtml(p.nama_bangunan)}
                </h1>
-               <div style="display:flex; gap:16px; margin-top:20px; align-items:center; flex-wrap:wrap">
+               <div style="display:flex; gap:12px; margin-top:16px; align-items:center; flex-wrap:wrap">
                   <span class="badge" style="background:${escapeHtml(st.color)}1a; border:1px solid ${escapeHtml(st.color)}44; color:${escapeHtml(st.color)}; font-weight:800; font-family:var(--font-mono); font-size:11px; padding:6px 12px">
                     <i class="fas ${st.icon}" style="margin-right:6px"></i> ${escapeHtml(st.label)}
                   </span>
-                  <span class="badge" style="background:hsla(220, 20%, 100%, 0.05); border:1px solid hsla(220, 20%, 100%, 0.1); color:var(--text-secondary); font-weight:700; font-size:11px; padding:6px 12px">
+                  <span class="badge" style="background:hsla(220, 20%, 100%, 0.05); border:1px solid var(--border-subtle); color:var(--text-secondary); font-weight:600; font-size:11px; padding:6px 12px">
                     <i class="fas fa-location-dot" style="margin-right:6px; color:var(--brand-400)"></i> ${escHtml(p.kota || 'INDONESIA')}
                   </span>
-                  <div class="hide-mobile" style="width:1px; height:20px; background:hsla(220, 20%, 100%, 0.1)"></div>
-                  <span style="font-family:var(--font-mono); font-size:11px; font-weight:800; color:var(--gold-400); letter-spacing:1px">
-                    ${escapeHtml(p.nomor_pbg || 'NO REGISTRATION')}
+                  <div class="hide-mobile" style="width:1px; height:18px; background:var(--border-subtle)"></div>
+                  <span style="font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--gold-400); letter-spacing:0.5px">
+                    PBG: ${escapeHtml(p.nomor_pbg || 'Belum Terdaftar')}
                   </span>
                </div>
             </div>
             
             <div class="flex gap-3 flex-stack" style="width:auto">
-               <button class="btn btn-outline" style="height:48px; border-radius:14px; border-color:hsla(220, 20%, 100%, 0.1); color:white; padding: 0 20px" onclick="window.navigate('proyek-edit', {id:'${escapeHtml(p.id)}'})">
-                 <i class="fas fa-pen-nib" style="margin-right:8px"></i> Edit Manifest
+               <button class="btn btn-outline" style="height:44px; border-radius:12px; border-color:var(--border-subtle); color:white; padding: 0 18px" onclick="window.navigate('proyek-edit', {id:'${escapeHtml(p.id)}'})">
+                 <i class="fas fa-pen-to-square" style="margin-right:8px"></i> Edit Data Gedung
                </button>
-               <button type="button" aria-label="Hapus" class="btn btn-ghost" style="height:48px; width:48px; padding:0; border-radius:14px; background:hsla(0, 85%, 60%, 0.1); color:var(--danger-400)" onclick="window._hapusProyek('${escapeHtml(p.id)}')">
+               <button type="button" aria-label="Hapus" class="btn btn-ghost" style="height:44px; width:44px; padding:0; border-radius:12px; background:hsla(0, 85%, 60%, 0.1); color:var(--danger-400)" onclick="window._hapusProyek('${escapeHtml(p.id)}')">
                  <i class="fas fa-trash-can"></i>
                </button>
             </div>

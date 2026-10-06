@@ -10,34 +10,34 @@ import { showSuccess, showError } from './toast.js';
 
 const GLOBAL_NAV = [
   { section: 'Utama', icon: 'fa-house' },
-  { path: 'dashboard',              label: 'Overview',           icon: 'fa-gauge-high' },
+  { path: 'dashboard',              label: 'Dasbor Eksekutif',   icon: 'fa-gauge-high' },
   { path: 'proyek',                 label: 'Daftar Proyek SLF',  icon: 'fa-folder-tree' },
-  { path: 'surat-pernyataan-list',  label: 'Kumpulan Surat SP',  icon: 'fa-file-signature', badge: 'Global' },
-  { path: 'files',                  label: 'SLFdrive',           icon: 'fa-cloud-arrow-up' },
-  { path: 'smart-ai',             label: 'SmartAI Pipeline',   icon: 'fa-microchip', badge: 'New' },
-  { path: 'chatbot',              label: 'AI Chatbot',         icon: 'fa-comments', badge: 'GPT' },
-  { path: 'canva-studio',         label: 'AI Design Studio',  icon: 'fa-palette', badge: 'Canva' },
-  { path: 'multi-agent',            label: 'Multi Agent AI Hub', icon: 'fa-robot', badge: 'Baru' },
-  { path: 'lighting-simulation',    label: 'Simulasi Pencahayaan', icon: 'fa-lightbulb', badge: 'DIALux' },
+  { path: 'surat-pernyataan-list',  label: 'Kumpulan Surat SP',  icon: 'fa-file-signature' },
+  { path: 'files',                  label: 'SLFdrive Berkas',    icon: 'fa-cloud-arrow-up' },
+  { path: 'smart-ai',               label: 'SmartAI Pipeline',   icon: 'fa-microchip' },
+  { path: 'chatbot',                label: 'Asisten AI SLF',     icon: 'fa-comments' },
+  { path: 'canva-studio',           label: 'Studio Desain AI',   icon: 'fa-palette' },
+  { path: 'multi-agent',            label: 'Multi-Agent AI Hub', icon: 'fa-robot' },
+  { path: 'lighting-simulation',    label: 'Simulasi Pencahayaan', icon: 'fa-lightbulb' },
 
   { section: 'ADMINISTRASI', icon: 'fa-shield-halved', adminOnly: true },
-  { path: 'todo',         label: 'TODO Board',          icon: 'fa-list-check', adminOnly: true },
-  { path: 'tim-kerja',    label: 'Tim Kerja',           icon: 'fa-users-gear', adminOnly: true },
+  { path: 'todo',         label: 'Papan Tugas (TODO)',  icon: 'fa-list-check', adminOnly: true },
+  { path: 'tim-kerja',    label: 'Manajemen Tim',       icon: 'fa-users-gear', adminOnly: true },
 
   { section: 'SISTEM', icon: 'fa-sliders' },
   { path: 'settings',     label: 'Pengaturan',          icon: 'fa-gear' },
 ];
 
 const PROJECT_NAV = [
-  { section: 'WORKSPACE PROYEK', icon: 'fa-microchip' },
+  { section: 'WORKSPACE PROYEK', icon: 'fa-building' },
   { path: 'proyek-detail', label: 'Ringkasan Gedung',  icon: 'fa-circle-info' },
   { path: 'files',         label: 'Dokumen SIMBG',      icon: 'fa-folder-open' },
   { path: 'checklist',     label: 'Checklist Teknis',  icon: 'fa-clipboard-check' },
   { path: 'kondisi',       label: 'Pemeriksaan Kondisi', icon: 'fa-building-circle-exclamation' },
-  { path: 'electrical-inspection', label: 'Sistem Kelistrikan', icon: 'fa-bolt', badge: 'PUIL 2020' },
-  { path: 'water-inspection', label: 'Sistem Air Bersih', icon: 'fa-water', badge: 'SNI 6774' },
+  { path: 'electrical-inspection', label: 'Sistem Kelistrikan', icon: 'fa-bolt' },
+  { path: 'water-inspection', label: 'Sistem Air Bersih', icon: 'fa-water' },
   { path: 'galeri',        label: 'Galeri Visual',     icon: 'fa-images' },
-  { path: 'analisis',      label: 'Analisis Smart AI', icon: 'fa-brain', badge: 'Active' },
+  { path: 'analisis',      label: 'Analisis Smart AI', icon: 'fa-brain' },
   { path: 'laporan',       label: 'Laporan Final SLF', icon: 'fa-file-contract' },
 ];
 

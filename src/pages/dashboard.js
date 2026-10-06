@@ -36,30 +36,30 @@ export async function dashboardPage() {
   _cachedKpi      = kpi;
 
   return `
-    <div id="dashboard-page" style="animation: page-fade-in 0.8s ease-out">
+    <div id="dashboard-page" style="animation: page-fade-in 0.6s ease-out">
       <!-- Executive Hero Banner Showcase -->
       <div class="hero-banner-audit" style="margin-bottom: var(--space-8)">
-        <div class="flex-between flex-stack" style="align-items: flex-end; relative; z-index: 2;">
+        <div class="flex-between flex-stack" style="align-items: flex-end; position: relative; z-index: 2;">
           <div>
             <div style="display:flex; align-items:center; gap:10px; margin-bottom: 12px;">
-              <span style="font-family:var(--font-mono); font-size: 0.7rem; font-weight:700; color:var(--gold-400); letter-spacing:1.5px; text-transform:uppercase; background:hsla(45, 90%, 60%, 0.1); border:1px solid hsla(45, 90%, 60%, 0.25); padding: 4px 12px; border-radius: 50px;">
-                <i class="fas fa-shield-halved" style="margin-right:6px"></i> System Operational v2.0
+              <span style="font-family:var(--font-mono); font-size: 0.7rem; font-weight:700; color:var(--gold-400); letter-spacing:1px; text-transform:uppercase; background:hsla(45, 90%, 60%, 0.1); border:1px solid hsla(45, 90%, 60%, 0.25); padding: 4px 12px; border-radius: 50px;">
+                <i class="fas fa-shield-halved" style="margin-right:6px"></i> Sistem Operasional SLF v2.0
               </span>
               <span style="font-size:0.75rem; color:var(--text-tertiary)">·</span>
               <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-secondary)">${formatDate(now)}</span>
             </div>
-            <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.5rem; letter-spacing:-0.03em; margin-bottom:8px">
+            <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.3rem; letter-spacing:-0.02em; margin-bottom:8px">
               ${escapeHtml(greeting)}, <span class="text-gradient-gold">${userName.split(' ')[0]}</span>!
             </h1>
-            <p style="font-size: 0.95rem; color: var(--text-secondary); max-width: 640px; margin-bottom: 0;">
-              Pusat Kendali Inspeksi & Audit Teknis Kelaikan Fungsi Bangunan Gedung Berbasis AI Multi-Moda (NSPK, SNI, ASCE 41-11).
+            <p style="font-size: 0.95rem; color: var(--text-secondary); max-width: 680px; margin-bottom: 0; line-height: 1.6;">
+              Pusat Kendali Inspeksi & Audit Teknis Kelaikan Fungsi Bangunan Gedung Terintegrasi AI (NSPK, SNI, ASCE 41-11).
             </p>
           </div>
           <div class="flex gap-3 page-actions-mobile" style="margin-top: 16px;">
-            <button class="btn btn-secondary" onclick="window.navigate('smart-ai')" style="height:48px; padding:0 20px; border-radius:14px; font-weight:700; background:hsla(220, 20%, 100%, 0.05); backdrop-filter:blur(10px)">
+            <button class="btn btn-secondary" onclick="window.navigate('smart-ai')" style="height:46px; padding:0 20px; border-radius:12px; font-weight:700; background:hsla(220, 20%, 100%, 0.05); backdrop-filter:blur(10px)">
               <i class="fas fa-microchip" style="color:var(--brand-400)"></i> <span class="hide-mobile">Pipeline AI</span>
             </button>
-            <button class="btn-presidential gold" onclick="window.navigate('proyek-baru')" style="height:48px; padding:0 24px; border-radius:14px">
+            <button class="btn-presidential gold" onclick="window.navigate('proyek-baru')" style="height:46px; padding:0 24px; border-radius:12px">
               <i class="fas fa-plus"></i> <span>Proyek Baru</span>
             </button>
           </div>
@@ -75,22 +75,22 @@ export async function dashboardPage() {
       <div class="grid-dashboard-main" style="margin-top:var(--space-8)">
         
         <!-- Left Column: Operations Map -->
-        <div class="card-quartz" style="padding:0; display:flex; flex-direction:column; min-height:600px; border: 1px solid var(--border-strong);">
+        <div class="card-quartz" style="padding:0; display:flex; flex-direction:column; min-height:540px; border: 1px solid var(--border-default);">
           <div class="card-header" style="padding: var(--space-5) var(--space-6); border-bottom:1px solid var(--border-subtle); background: hsla(220, 20%, 100%, 0.02); display:flex; justify-content:space-between; align-items:center">
             <div>
-              <div class="card-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 1.1rem; letter-spacing: 0.05em">PETA LOKASI PENGKAJIAN</div>
-              <div class="card-subtitle" style="font-size: 0.7rem; opacity:0.5; text-transform:uppercase; letter-spacing:1px">Real-time geospatial project distribution</div>
+              <div class="card-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 1.05rem; letter-spacing: 0.03em">PETA SEBARAN PENGKAJIAN GEDUNG</div>
+              <div class="card-subtitle" style="font-size: 0.72rem; color:var(--text-tertiary); letter-spacing:0.5px">Distribusi geospasial real-time gedung yang sedang dan telah dikaji</div>
             </div>
-            <div style="width:40px; height:40px; border-radius:10px; background:hsla(220, 95%, 52%, 0.1); display:flex; align-items:center; justify-content:center; border:1px solid hsla(220, 95%, 52%, 0.2)">
+            <div style="width:38px; height:38px; border-radius:10px; background:hsla(220, 95%, 52%, 0.1); display:flex; align-items:center; justify-content:center; border:1px solid hsla(220, 95%, 52%, 0.2)">
               <i class="fas fa-earth-asia" style="color:var(--brand-400)"></i>
             </div>
           </div>
-          <div id="dashboard-map" style="width:100%; flex:1; filter: contrast(1.1); opacity: 0.9">
-             <div class="map-legend-modern" style="bottom:20px; right:20px; background:var(--bg-card); border:1px solid var(--glass-border); backdrop-filter:blur(10px); padding:12px; border-radius:12px; z-index:1000; position:absolute; display:flex; gap:16px;">
-                <div class="leg-item" style="display:flex; align-items:center; gap:6px; font-size:10px; font-weight:700; color:white;"><div class="leg-clr" style="width:8px; height:8px; border-radius:50%; background:var(--success-500)"></div> Laik</div>
-                <div class="leg-item" style="display:flex; align-items:center; gap:6px; font-size:10px; font-weight:700; color:white;"><div class="leg-clr" style="width:8px; height:8px; border-radius:50%; background:var(--gold-500)"></div> Bersyarat</div>
-                <div class="leg-item" style="display:flex; align-items:center; gap:6px; font-size:10px; font-weight:700; color:white;"><div class="leg-clr" style="width:8px; height:8px; border-radius:50%; background:var(--danger-500)"></div> Kritis</div>
-                <div class="leg-item" style="display:flex; align-items:center; gap:6px; font-size:10px; font-weight:700; color:white;"><div class="leg-clr" style="width:8px; height:8px; border-radius:50%; background:var(--brand-500)"></div> Aktif</div>
+          <div id="dashboard-map" style="width:100%; flex:1; min-height:440px">
+             <div class="map-legend-modern" style="bottom:16px; right:16px; background:var(--bg-card); border:1px solid var(--glass-border); backdrop-filter:blur(12px); padding:10px 14px; border-radius:10px; z-index:1000; position:absolute; display:flex; gap:14px; box-shadow:var(--shadow-md);">
+                <div class="leg-item" style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:var(--text-secondary);"><div class="leg-clr" style="width:8px; height:8px; border-radius:50%; background:var(--success-500)"></div> Laik</div>
+                <div class="leg-item" style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:var(--text-secondary);"><div class="leg-clr" style="width:8px; height:8px; border-radius:50%; background:var(--gold-500)"></div> Bersyarat</div>
+                <div class="leg-item" style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:var(--text-secondary);"><div class="leg-clr" style="width:8px; height:8px; border-radius:50%; background:var(--danger-500)"></div> Tidak Laik</div>
+                <div class="leg-item" style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:var(--text-secondary);"><div class="leg-clr" style="width:8px; height:8px; border-radius:50%; background:var(--brand-500)"></div> Proses</div>
              </div>
           </div>
         </div>
@@ -98,18 +98,18 @@ export async function dashboardPage() {
         <!-- Right Column: AI Intel & Activity -->
         <div style="display:flex; flex-direction:column; gap:var(--space-6)">
            <!-- AI Power Panel -->
-           <div class="card-quartz ai-panel-bg" style="padding: var(--space-6); border-color: hsla(220, 95%, 52%, 0.25); border-radius: var(--radius-xl);">
-              <div style="display:flex; align-items:center; gap:16px; margin-bottom: 24px">
-                <div style="width:48px; height:48px; border-radius:14px; background:var(--gradient-brand); display:flex; align-items:center; justify-content:center; box-shadow: var(--shadow-sapphire)">
-                  <i class="fas fa-brain" style="color:white; font-size: 1.4rem"></i>
+           <div class="card-quartz ai-panel-bg" style="padding: var(--space-6); border-color: hsla(220, 95%, 52%, 0.2); border-radius: var(--radius-xl);">
+              <div style="display:flex; align-items:center; gap:14px; margin-bottom: 20px">
+                <div style="width:44px; height:44px; border-radius:12px; background:var(--gradient-brand); display:flex; align-items:center; justify-content:center; box-shadow: var(--shadow-sapphire)">
+                  <i class="fas fa-brain" style="color:white; font-size: 1.25rem"></i>
                 </div>
                 <div>
-                  <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 1.1rem; color:white">AI PORTFOLIO PULSE</div>
-                  <div style="font-size: 0.7rem; color:var(--brand-300); text-transform:uppercase; letter-spacing:1px; font-weight:700">Risk Matrix Analysis</div>
+                  <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 1.05rem; color:white">ANALISIS RISIKO AI</div>
+                  <div style="font-size: 0.72rem; color:var(--brand-300); font-weight:600">Matriks Evaluasi Kelaikan Multi-Moda</div>
                 </div>
               </div>
               
-              <div class="radar-wrap" style="height:220px; margin-bottom: 24px">
+              <div class="radar-wrap" style="height:210px; margin-bottom: 20px">
                  <canvas id="chart-risiko-radar"></canvas>
               </div>
               
@@ -120,9 +120,9 @@ export async function dashboardPage() {
 
            <!-- Recent Intel Feed -->
            <div class="card-quartz" style="flex:1">
-              <div class="flex-between" style="margin-bottom: 20px">
-                 <div class="card-title" style="font-size: 0.9rem; font-weight:700; letter-spacing:0.05em">LIVE AUDIT FEED</div>
-                 <i class="fas fa-bolt" style="color:var(--gold-500); font-size: 0.8rem"></i>
+              <div class="flex-between" style="margin-bottom: 16px">
+                 <div class="card-title" style="font-size: 0.88rem; font-weight:700; letter-spacing:0.03em">LOG AUDIT SISTEM</div>
+                 <i class="fas fa-clock-rotate-left" style="color:var(--brand-400); font-size: 0.85rem"></i>
               </div>
               ${renderFieldFeed(kpi.logs || [])}
            </div>
@@ -134,23 +134,23 @@ export async function dashboardPage() {
          <!-- Findings Distribution -->
          <div class="card-quartz">
             <div class="flex-between" style="margin-bottom: 20px">
-               <div class="card-title" style="font-size: 0.9rem; font-weight:700">SEBARAN TEMUAN</div>
-               <span class="badge" style="background:hsla(220,95%,52%,0.1); color:var(--brand-400); border:1px solid hsla(220,95%,52%,0.2)">TECHNICAL</span>
+               <div class="card-title" style="font-size: 0.9rem; font-weight:700">SEBARAN TEMUAN TEKNIS</div>
+               <span class="badge" style="background:hsla(220,95%,52%,0.1); color:var(--brand-400); border:1px solid hsla(220,95%,52%,0.2); font-size:10px">TEKNIKAL</span>
             </div>
-            <div class="chart-wrap" style="height:250px">
+            <div class="chart-wrap" style="height:240px">
                <canvas id="chart-distribusi"></canvas>
             </div>
          </div>
          
          <!-- Team Workload -->
          <div class="card-quartz">
-            <div class="card-title" style="font-size: 0.9rem; font-weight:700; margin-bottom:20px">ELITE TEAM WORKLOAD</div>
+            <div class="card-title" style="font-size: 0.9rem; font-weight:700; margin-bottom:20px">BEBAN KERJA TIM TEKNIS</div>
             <div style="display:flex; flex-direction:column; gap:16px">
                ${workload.slice(0, 5).map(w => `
                  <div>
                     <div class="flex-between mb-2">
-                       <span style="font-size: 0.75rem; font-weight:600; color:var(--text-secondary)">${escapeHtml(w.full_name)}</span>
-                       <span style="font-size: 0.7rem; font-weight:700; color:var(--brand-400); font-family:var(--font-mono)">${escapeHtml(w.activeProjects)} PROJECTS</span>
+                       <span style="font-size: 0.78rem; font-weight:600; color:var(--text-secondary)">${escapeHtml(w.full_name)}</span>
+                       <span style="font-size: 0.72rem; font-weight:700; color:var(--brand-400); font-family:var(--font-mono)">${escapeHtml(w.activeProjects)} PROYEK</span>
                     </div>
                     <div class="progress-wrap" style="height:6px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px">
                        <div class="progress-fill" style="width:${Math.min((w.activeProjects / 5) * 100, 100)}%; background:var(--gradient-brand); border-radius:10px; box-shadow: var(--shadow-sapphire)"></div>
@@ -163,17 +163,17 @@ export async function dashboardPage() {
          <!-- Active Projects Mini List -->
          <div class="card-quartz" style="grid-column: span 1">
            <div class="flex-between" style="margin-bottom: 20px">
-              <div class="card-title" style="font-size: 0.9rem; font-weight:700">RECENT OPS</div>
-              <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek')" style="color:var(--text-tertiary)">LIHAT SEMUA</button>
+              <div class="card-title" style="font-size: 0.9rem; font-weight:700">PROYEK TERBARU</div>
+              <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek')" style="color:var(--brand-300); font-weight:600">LIHAT SEMUA</button>
            </div>
-           <div style="display:flex; flex-direction:column; gap:12px">
+           <div style="display:flex; flex-direction:column; gap:10px">
               ${projects.slice(0, 5).map(p => `
-                <div class="flex-between clickable" onclick="window.navigate('proyek-detail', {id:'${escapeHtml(p.id)}'})" style="padding:8px; border-radius:8px; background:hsla(220, 20%, 100%, 0.02); border:1px solid transparent; transition:all 0.2s">
+                <div class="flex-between clickable" onclick="window.navigate('proyek-detail', {id:'${escapeHtml(p.id)}'})" style="padding:10px 12px; border-radius:10px; background:hsla(220, 20%, 100%, 0.02); border:1px solid var(--border-subtle); transition:all 0.2s">
                    <div style="overflow:hidden">
-                      <div style="font-size: 0.8rem; font-weight:700; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${escapeHtml(p.nama_bangunan)}</div>
-                      <div style="font-size: 0.65rem; color:var(--text-tertiary); text-transform:uppercase">${escapeHtml(p.kota)}</div>
+                      <div style="font-size: 0.82rem; font-weight:700; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${escapeHtml(p.nama_bangunan)}</div>
+                      <div style="font-size: 0.68rem; color:var(--text-tertiary); text-transform:uppercase">${escapeHtml(p.kota || 'INDONESIA')}</div>
                    </div>
-                   <div style="font-size: 0.75rem; font-weight:800; color:var(--brand-400)">${escapeHtml(p.progress)}%</div>
+                   <div style="font-size: 0.8rem; font-weight:800; color:var(--brand-400)">${escapeHtml(p.progress || 0)}%</div>
                 </div>
               `).join('')}
            </div>
@@ -185,27 +185,28 @@ export async function dashboardPage() {
 
 // ── KPI Cards ──────────────────────────────────────────────
 function renderKPICards(kpi) {
+  const total = kpi.totalProyek || 0;
+  const pctLaik = total > 0 ? Math.round(((kpi.laikFungsi || 0) / total) * 100) : 0;
+  
   const cards = [
-    { label: 'PROTOFOLIO PENGKAJIAN', value: kpi.totalProyek || 0, icon: 'fa-briefcase', color: 'var(--brand-400)', bg: 'hsla(220, 95%, 52%, 0.1)' },
-    { label: 'STRUCTURAL COMPLIANCE', value: kpi.laikFungsi || 0, icon: 'fa-shield-halved', color: 'var(--success-400)', bg: 'hsla(158, 85%, 45%, 0.1)' },
-    { label: 'ACTIVE FIELD OPS', value: kpi.proyekAktif || 0, icon: 'fa-location-dot', color: 'var(--gold-400)', bg: 'hsla(45, 90%, 60%, 0.1)' },
-    { label: 'REMEDIAL ACTIONS', value: kpi.tidakLaik || 0, icon: 'fa-triangle-exclamation', color: 'var(--danger-400)', bg: 'hsla(350, 95%, 52%, 0.1)' },
+    { label: 'Portofolio Pengkajian', value: total, icon: 'fa-briefcase', color: 'var(--brand-400)', bg: 'hsla(220, 95%, 52%, 0.1)', sub: 'Total bangunan terdaftar' },
+    { label: 'Kelaikan Fungsi (Laik)', value: kpi.laikFungsi || 0, icon: 'fa-shield-halved', color: 'var(--success-400)', bg: 'hsla(158, 85%, 45%, 0.1)', sub: `${pctLaik}% memenuhi NSPK` },
+    { label: 'Pengkajian Lapangan', value: kpi.proyekAktif || 0, icon: 'fa-location-dot', color: 'var(--gold-400)', bg: 'hsla(45, 90%, 60%, 0.1)', sub: 'Sedang berjalan aktif' },
+    { label: 'Perlu Tindak Lanjut', value: kpi.tidakLaik || 0, icon: 'fa-triangle-exclamation', color: 'var(--danger-400)', bg: 'hsla(350, 95%, 52%, 0.1)', sub: 'Rekomendasi perbaikan' },
   ];
 
   return cards.map(c => `
-    <div class="card-quartz" style="display:flex; flex-direction:column; gap:16px; cursor:pointer;" onclick="window.navigate('proyek')">
+    <div class="card-quartz" style="display:flex; flex-direction:column; gap:12px; cursor:pointer;" onclick="window.navigate('proyek')">
       <div class="flex-between">
-        <div style="width:40px; height:40px; border-radius:10px; background:${escapeHtml(c.bg)}; display:flex; align-items:center; justify-content:center; border:1px solid ${escapeHtml(c.color)}33">
-          <i class="fas ${c.icon}" style="color:${escapeHtml(c.color)}; font-size:1.1rem"></i>
+        <div style="width:42px; height:42px; border-radius:12px; background:${escapeHtml(c.bg)}; display:flex; align-items:center; justify-content:center; border:1px solid ${escapeHtml(c.color)}33">
+          <i class="fas ${c.icon}" style="color:${escapeHtml(c.color)}; font-size:1.15rem"></i>
         </div>
-        <div style="font-family:var(--font-mono); font-size:9px; font-weight:700; color:var(--text-tertiary); letter-spacing:1px">DATA LIVE</div>
+        <span style="font-family:var(--font-mono); font-size:10px; font-weight:700; color:var(--text-tertiary); letter-spacing:0.5px">LIVE</span>
       </div>
       <div>
-        <div style="font-size: 2.2rem; font-weight:800; color:var(--text-primary); font-family:'Outfit', sans-serif; line-height:1">${escapeHtml(c.value)}</div>
-        <div style="font-size: 0.65rem; font-weight:700; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px; margin-top:8px">${escapeHtml(c.label)}</div>
-      </div>
-      <div style="height:2px; width:100%; background:hsla(220, 20%, 100%, 0.03); border-radius:2px; margin-top:4px">
-        <div style="height:100%; width:70%; background:${escapeHtml(c.color)}; box-shadow:0 0 10px ${escapeHtml(c.color)}66; border-radius:2px"></div>
+        <div style="font-size: 2.1rem; font-weight:800; color:var(--text-primary); font-family:'Outfit', sans-serif; line-height:1">${escapeHtml(c.value)}</div>
+        <div style="font-size: 0.78rem; font-weight:700; color:var(--text-secondary); margin-top:8px">${escapeHtml(c.label)}</div>
+        <div style="font-size: 0.7rem; color:var(--text-tertiary); margin-top:3px">${escapeHtml(c.sub)}</div>
       </div>
     </div>
   `).join('');
@@ -692,7 +693,7 @@ function renderFieldFeed(logs) {
         const cfg     = actionMap[log.action] || { icon: 'fa-clock', label: esc(log.action), color: 'var(--text-tertiary)' };
         const diff    = new Date() - new Date(log.created_at);
         const mins    = Math.floor(diff / 60000);
-        const timeStr = mins < 1 ? 'Just now' : mins < 60 ? `${escapeHtml(mins)}m ago` : `${Math.floor(mins/60)}h ago`;
+        const timeStr = mins < 1 ? 'Baru saja' : mins < 60 ? `${escapeHtml(mins)} mnt lalu` : `${Math.floor(mins/60)} jam lalu`;
         // SECURITY: escaping nama_bangunan dari database
         const proyekNama = esc(log.proyek?.nama_bangunan) || 'Ops System';
 

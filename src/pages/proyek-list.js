@@ -13,15 +13,15 @@ export async function proyekListPage() {
     <div id="proyek-list-page" style="animation: page-fade-in 0.6s ease-out">
       <div class="page-header flex-between flex-stack" style="margin-bottom: var(--space-8)">
         <div>
-          <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.2rem; letter-spacing:-0.02em; margin-bottom:4px">
+          <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.1rem; letter-spacing:-0.02em; margin-bottom:4px">
             Daftar <span class="text-gradient-gold">Proyek SLF</span>
           </h1>
-          <p class="page-subtitle" style="font-family:var(--font-mono); font-size: 0.75rem; letter-spacing:1px; opacity:0.6; text-transform:uppercase">
-            Portfolio Management &bull; Strategic Assets
+          <p class="page-subtitle" style="font-size: 0.85rem; color:var(--text-tertiary); margin-bottom:0">
+            Manajemen Portofolio & Pengkajian Teknis Kelaikan Fungsi Gedung
           </p>
         </div>
-        <div class="flex gap-4 flex-stack">
-          <button class="btn btn-outline" onclick="exportProyek()" style="height:44px; padding:0 24px; border-radius:12px; font-weight:700">
+        <div class="flex gap-3 flex-stack">
+          <button class="btn btn-outline" onclick="exportProyek()" style="height:44px; padding:0 20px; border-radius:12px; font-weight:700">
             <i class="fas fa-file-export" style="margin-right:8px"></i> Export CSV
           </button>
           <button class="btn-presidential gold" onclick="window.navigate('proyek-baru')" style="height:44px; padding:0 24px; border-radius:12px">
@@ -31,28 +31,28 @@ export async function proyekListPage() {
       </div>
 
       <!-- Filters (Quartz Bar) -->
-      <div class="card-quartz" style="padding:var(--space-5); margin-bottom:var(--space-8); border: 1px solid var(--border-strong);">
-        <div class="flex-between flex-stack" style="gap:24px;">
+      <div class="card-quartz" style="padding:var(--space-4) var(--space-5); margin-bottom:var(--space-8); border: 1px solid var(--border-default);">
+        <div class="flex-between flex-stack" style="gap:16px;">
           <div style="position:relative; flex:1; width:100%">
             <i class="fas fa-magnifying-glass" style="position:absolute; left:16px; top:50%; transform:translateY(-50%); color:var(--brand-400); font-size:0.9rem"></i>
             <input type="text" id="search-proyek" class="form-input" placeholder="Cari gedung, pemilik, atau lokasi..."
-                   style="padding-left:48px; background:hsla(220, 20%, 100%, 0.03); border:1px solid hsla(220, 20%, 100%, 0.05); height:48px; border-radius:12px; width:100%" 
+                   style="padding-left:46px; background:hsla(220, 20%, 100%, 0.03); border:1px solid var(--border-subtle); height:46px; border-radius:12px; width:100%" 
                    oninput="filterProyek(this.value)" />
           </div>
-          <div class="flex gap-4 flex-stack" style="width:100%">
-            <select class="form-select" id="filter-status" onchange="filterProyek()" style="flex:1; min-width:140px; height:48px; background:hsla(220, 20%, 100%, 0.03); border-radius:12px">
+          <div class="flex gap-3 flex-stack" style="width:100%">
+            <select class="form-select" id="filter-status" onchange="filterProyek()" style="flex:1; min-width:140px; height:46px; background:hsla(220, 20%, 100%, 0.03); border-radius:12px; border:1px solid var(--border-subtle)">
               <option value="">Semua Status</option>
               <option value="DALAM_PENGKAJIAN">Dalam Proses</option>
               <option value="LAIK_FUNGSI">Laik Fungsi</option>
               <option value="LAIK_FUNGSI_BERSYARAT">Laik Bersyarat</option>
               <option value="TIDAK_LAIK_FUNGSI">Tidak Laik</option>
             </select>
-            <select class="form-select" id="filter-sort" onchange="sortProyek(this.value)" style="flex:1; min-width:120px; height:48px; background:hsla(220, 20%, 100%, 0.03); border-radius:12px">
+            <select class="form-select" id="filter-sort" onchange="sortProyek(this.value)" style="flex:1; min-width:120px; height:46px; background:hsla(220, 20%, 100%, 0.03); border-radius:12px; border:1px solid var(--border-subtle)">
               <option value="updated_at">Terbaru</option>
               <option value="nama_bangunan">Nama A-Z</option>
             </select>
-            <div id="proyek-count" style="display:flex; align-items:center; background:hsla(158, 85%, 45%, 0.1); color:var(--success-400); padding:0 16px; border-radius:12px; font-weight:800; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:1px; border:1px solid hsla(158, 85%, 45%, 0.2); height:48px; justify-content:center">
-              0 ASSETS
+            <div id="proyek-count" style="display:flex; align-items:center; background:hsla(158, 85%, 45%, 0.1); color:var(--success-400); padding:0 16px; border-radius:12px; font-weight:800; font-family:var(--font-mono); font-size:11px; letter-spacing:0.5px; border:1px solid hsla(158, 85%, 45%, 0.2); height:46px; justify-content:center; white-space:nowrap">
+              0 PROYEK
             </div>
           </div>
         </div>
@@ -112,20 +112,20 @@ function renderProyekCards(proyek) {
   const countEl = document.getElementById('proyek-count');
 
   if (loading) loading.style.display = 'none';
-  if (countEl) countEl.textContent = `${proyek.length} ASSETS`;
+  if (countEl) countEl.textContent = `${proyek.length} PROYEK`;
 
   if (!container) return;
 
   if (!proyek.length) {
     container.innerHTML = `
-      <div class="empty-state" style="padding: 100px 20px">
-        <div class="empty-icon" style="background:var(--gradient-dark); border:1px solid var(--glass-border); width:80px; height:80px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--text-tertiary); font-size:2rem; margin-bottom:24px">
+      <div class="empty-state" style="padding: 80px 20px; text-align:center">
+        <div class="empty-icon" style="background:var(--gradient-dark); border:1px solid var(--glass-border); width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--text-tertiary); font-size:1.8rem; margin:0 auto 20px">
           <i class="fas fa-folder-open"></i>
         </div>
-        <h3 class="empty-title" style="font-family:'Outfit', sans-serif; font-weight:800; color:white">No strategic assets found</h3>
-        <p class="empty-desc" style="opacity:0.6; margin-bottom: 24px">Start by creating your first ministerial building project.</p>
+        <h3 class="empty-title" style="font-family:'Outfit', sans-serif; font-weight:800; color:white; font-size:1.2rem; margin-bottom:8px">Belum Ada Proyek Terdaftar</h3>
+        <p class="empty-desc" style="color:var(--text-tertiary); font-size:0.9rem; max-width:480px; margin:0 auto 24px">Mulai dengan mendaftarkan gedung pertama Anda untuk dilakukan pengkajian teknis kelaikan fungsi.</p>
         <button class="btn-presidential gold" onclick="window.navigate('proyek-baru')">
-          <i class="fas fa-plus"></i> Initiate New Project
+          <i class="fas fa-plus"></i> Tambah Proyek Baru
         </button>
       </div>
     `;
@@ -133,70 +133,70 @@ function renderProyekCards(proyek) {
   }
 
   const statusMap = {
-    LAIK_FUNGSI:           { label: 'LAIK FUNGSI',      cls: 'badge-laik',       icon: 'fa-circle-check',   color: 'var(--success-400)' },
-    LAIK_FUNGSI_BERSYARAT: { label: 'LAIK BERSYARAT',   cls: 'badge-bersyarat',  icon: 'fa-triangle-exclamation', color: 'var(--gold-400)' },
-    TIDAK_LAIK_FUNGSI:     { label: 'TIDAK LAIK',       cls: 'badge-tidak-laik', icon: 'fa-circle-xmark',   color: 'var(--danger-400)' },
-    DALAM_PENGKAJIAN:      { label: 'PENGKAJIAN',       cls: 'badge-proses',     icon: 'fa-clock',          color: 'var(--brand-400)' },
+    LAIK_FUNGSI:           { label: 'Laik Fungsi',      cls: 'badge-laik',       icon: 'fa-circle-check',   color: 'var(--success-400)' },
+    LAIK_FUNGSI_BERSYARAT: { label: 'Laik Bersyarat',   cls: 'badge-bersyarat',  icon: 'fa-triangle-exclamation', color: 'var(--gold-400)' },
+    TIDAK_LAIK_FUNGSI:     { label: 'Tidak Laik',       cls: 'badge-tidak-laik', icon: 'fa-circle-xmark',   color: 'var(--danger-400)' },
+    DALAM_PENGKAJIAN:      { label: 'Pengkajian',       cls: 'badge-proses',     icon: 'fa-clock',          color: 'var(--brand-400)' },
   };
 
   container.innerHTML = proyek.map(p => {
-    const s    = statusMap[p.status_slf] || { label: p.status_slf || '-', cls: 'badge-proses', icon: 'fa-circle', color: 'var(--text-tertiary)' };
+    const s    = statusMap[p.status_slf] || { label: p.status_slf || 'Proses', cls: 'badge-proses', icon: 'fa-circle', color: 'var(--text-tertiary)' };
     const prog = p.progress || 0;
     const date = p.updated_at ? new Date(p.updated_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
 
     return `
-      <div class="card-quartz" style="padding: var(--space-6); display:flex; gap:24px; align-items:center; cursor:pointer; position:relative; overflow:hidden; flex-wrap:wrap"
+      <div class="card-quartz" style="padding: var(--space-5) var(--space-6); display:flex; gap:20px; align-items:center; cursor:pointer; position:relative; overflow:hidden; flex-wrap:wrap"
            onclick="window.navigate('proyek-detail', {id:'${escapeHtml(p.id)}'})">
         
         <!-- Status Indicator line -->
         <div style="position:absolute; left:0; top:0; bottom:0; width:4px; background:${escapeHtml(s.color)}"></div>
 
         <!-- Project Icon -->
-        <div class="hide-mobile" style="width:64px; height:64px; border-radius:18px; background:var(--gradient-brand); display:flex; align-items:center; justify-content:center; color:white; font-size:1.6rem; flex-shrink:0; box-shadow: var(--shadow-sapphire); border:1px solid hsla(220, 95%, 52%, 0.3)">
+        <div class="hide-mobile" style="width:56px; height:56px; border-radius:14px; background:var(--gradient-brand); display:flex; align-items:center; justify-content:center; color:white; font-size:1.4rem; flex-shrink:0; box-shadow: var(--shadow-sapphire); border:1px solid hsla(220, 95%, 52%, 0.3)">
           <i class="fas fa-building"></i>
         </div>
 
         <!-- Info Section -->
-        <div style="flex:1; min-width:200px; overflow:hidden">
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px; flex-wrap:wrap">
-            <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.15rem; color:var(--text-primary); margin:0">${escapeHtml(p.nama_bangunan || 'UNTITLED ASSET')}</h3>
-            <span class="badge ${escapeHtml(s.cls)}" style="font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:1px; border:1px solid ${escapeHtml(s.color)}66; background:${escapeHtml(s.color)}1a; color:${escapeHtml(s.color)}">
+        <div style="flex:1; min-width:220px; overflow:hidden">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px; flex-wrap:wrap">
+            <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--text-primary); margin:0">${escapeHtml(p.nama_bangunan || 'Bangunan Tanpa Nama')}</h3>
+            <span class="badge ${escapeHtml(s.cls)}" style="font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:0.5px; border:1px solid ${escapeHtml(s.color)}66; background:${escapeHtml(s.color)}1a; color:${escapeHtml(s.color)}">
               <i class="fas ${s.icon}"></i> ${escapeHtml(s.label)}
             </span>
           </div>
           
-          <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px; flex-wrap:wrap">
+          <div style="display:flex; align-items:center; gap:16px; margin-bottom:12px; flex-wrap:wrap">
             <div style="font-size: 0.75rem; color:var(--text-tertiary); display:flex; align-items:center; gap:6px">
-              <i class="fas fa-location-dot" style="color:var(--brand-400)"></i> ${escapeHtml(p.alamat || p.kota || 'Location Pending')}
+              <i class="fas fa-location-dot" style="color:var(--brand-400)"></i> ${escapeHtml(p.alamat || p.kota || 'Lokasi belum ditentukan')}
             </div>
             <div style="font-size: 0.75rem; color:var(--text-tertiary); display:flex; align-items:center; gap:6px">
-              <i class="fas fa-user-tie" style="color:var(--gold-400)"></i> ${escapeHtml(p.pemilik || 'Private Ownership')}
+              <i class="fas fa-user-tie" style="color:var(--gold-400)"></i> ${escapeHtml(p.pemilik || 'Kepemilikan Mandiri')}
             </div>
           </div>
 
-          <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap">
-            <div class="progress-wrap" style="flex:1; min-width:140px; max-width:240px; height:6px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px">
-              <div class="progress-fill" style="width:${escapeHtml(prog)}%; height:100%; border-radius:10px; background:${prog >= 80 ? 'var(--gradient-brand)' : prog >= 40 ? 'var(--gradient-gold)' : 'var(--gradient-danger)'}; box-shadow: 0 0 10px ${prog >= 80 ? 'var(--brand-500)66' : 'var(--gold-500)66'}"></div>
+          <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
+            <div class="progress-wrap" style="flex:1; min-width:140px; max-width:220px; height:6px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px">
+              <div class="progress-fill" style="width:${escapeHtml(prog)}%; height:100%; border-radius:10px; background:${prog >= 80 ? 'var(--gradient-brand)' : prog >= 40 ? 'var(--gradient-gold)' : 'var(--gradient-danger)'}; box-shadow: 0 0 8px ${prog >= 80 ? 'var(--brand-500)66' : 'var(--gold-500)66'}"></div>
             </div>
-            <span style="font-family:var(--font-mono); font-weight:800; font-size:11px; color:var(--brand-400)">${escapeHtml(prog)}% INTEGRITY</span>
+            <span style="font-family:var(--font-mono); font-weight:700; font-size:11px; color:var(--brand-300)">${escapeHtml(prog)}% Kesiapan</span>
           </div>
         </div>
 
         <!-- Meta Section (Visible on some tablets, hidden on tiny mobile) -->
-        <div style="text-align:right; flex-shrink:0; min-width:100px" class="hide-mobile">
-          <div style="font-family:var(--font-mono); font-size:10px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px">Last Synced</div>
-          <div style="font-weight:700; color:var(--text-primary); font-size:0.85rem">${escapeHtml(date)}</div>
+        <div style="text-align:right; flex-shrink:0; min-width:110px" class="hide-mobile">
+          <div style="font-size:10px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px">Pembaruan</div>
+          <div style="font-weight:600; color:var(--text-secondary); font-size:0.82rem">${escapeHtml(date)}</div>
         </div>
 
         <!-- Action Pills -->
         <div class="flex gap-2" style="margin-left: auto" onclick="event.stopPropagation()">
-          <button class="btn btn-ghost" title="Checklist" onclick="event.stopPropagation();window.navigate('checklist',{id:'${escapeHtml(p.id)}'})" style="width:38px; height:38px; padding:0; border-radius:10px; border:1px solid hsla(220, 20%, 100%, 0.05)">
+          <button class="btn btn-ghost" title="Checklist Pemeriksaan" onclick="event.stopPropagation();window.navigate('checklist',{id:'${escapeHtml(p.id)}'})" style="width:36px; height:36px; padding:0; border-radius:10px; border:1px solid hsla(220, 20%, 100%, 0.05)">
             <i class="fas fa-clipboard-list" style="color:var(--brand-400)"></i>
           </button>
-          <button class="btn btn-ghost" title="Analytics" onclick="event.stopPropagation();window.navigate('analisis',{id:'${escapeHtml(p.id)}'})" style="width:38px; height:38px; padding:0; border-radius:10px; border:1px solid hsla(220, 20%, 100%, 0.05)">
+          <button class="btn btn-ghost" title="Analisis AI" onclick="event.stopPropagation();window.navigate('analisis',{id:'${escapeHtml(p.id)}'})" style="width:36px; height:36px; padding:0; border-radius:10px; border:1px solid hsla(220, 20%, 100%, 0.05)">
             <i class="fas fa-diagram-project" style="color:var(--gold-400)"></i>
           </button>
-          <button class="btn btn-ghost" title="Archive" onclick="event.stopPropagation();deleteProyek('${escapeHtml(p.id)}','${escapeHtml(p.nama_bangunan)}')" style="width:38px; height:38px; padding:0; border-radius:10px; border:1px solid hsla(0, 85%, 60%, 0.1)">
+          <button class="btn btn-ghost" title="Hapus Proyek" onclick="event.stopPropagation();deleteProyek('${escapeHtml(p.id)}','${escapeHtml(p.nama_bangunan)}')" style="width:36px; height:36px; padding:0; border-radius:10px; border:1px solid hsla(0, 85%, 60%, 0.1)">
             <i class="fas fa-trash-can" style="color:var(--danger-400)"></i>
           </button>
         </div>
