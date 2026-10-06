@@ -34,58 +34,58 @@ export async function proyekFormPage(params = {}) {
     <div id="proyek-form-page" style="animation: page-fade-in 0.8s ease-out">
       
       <!-- Executive Header -->
-      <div class="page-header" style="margin-bottom: 40px">
+      <div class="page-header" style="margin-bottom: 32px">
         <div class="flex-between flex-stack">
           <div>
-            <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek')" style="margin-bottom:12px; padding:0; color:var(--brand-300); font-weight:700; letter-spacing:1px">
-              <i class="fas fa-arrow-left" style="margin-right:8px"></i> BACK TO REGISTRY
+            <button class="btn btn-ghost btn-xs" onclick="window.navigate('proyek')" style="margin-bottom:12px; padding:0; color:var(--brand-300); font-weight:700; letter-spacing:0.5px">
+              <i class="fas fa-arrow-left" style="margin-right:8px"></i> KEMBALI KE DAFTAR PROYEK
             </button>
-            <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.2rem; letter-spacing:-0.02em; margin-bottom:4px">
-              ${isEdit ? 'Asset <span class="text-gradient-gold">Modification</span>' : 'Asset <span class="text-gradient-gold">Induction</span>'}
+            <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.1rem; letter-spacing:-0.02em; margin-bottom:4px">
+              ${isEdit ? 'Ubah Data <span class="text-gradient-gold">Proyek Gedung</span>' : 'Pendaftaran <span class="text-gradient-gold">Proyek Baru</span>'}
             </h1>
-            <p class="page-subtitle" style="font-family:var(--font-mono); font-size: 0.7rem; letter-spacing:1px; opacity:0.6; text-transform:uppercase">
-              ${isEdit ? 'UPDATING ARCHITECTURAL CORE DATA' : 'INITIATING NEW GOVERNMENTAL COMPLIANCE AUDIT'}
+            <p class="page-subtitle" style="font-size: 0.85rem; color:var(--text-tertiary); margin-bottom:0">
+              ${isEdit ? 'Perbarui data teknis, legalitas, dan parameter gedung' : 'Registrasi gedung baru untuk pengkajian teknis kelaikan fungsi (SLF)'}
             </p>
           </div>
           
           ${!isEdit ? `
-            <button class="btn-presidential gold" onclick="window._triggerOCRScan()" style="height:48px; padding:0 24px; border-radius:14px; width:auto">
-              <i class="fas fa-expand-arrows-alt" style="margin-right:12px"></i> AI OCR SCANNER
+            <button class="btn-presidential gold" onclick="window._triggerOCRScan()" style="height:44px; padding:0 20px; border-radius:12px; width:auto; font-size:0.85rem">
+              <i class="fas fa-file-invoice" style="margin-right:8px"></i> Pindai Dokumen PBG (AI OCR)
             </button>
           ` : ''}
         </div>
 
         <!-- Presidential Stepper -->
-        <div class="card-quartz hide-mobile" style="padding: 12px; margin-top: 32px; display: flex; align-items: center; background: hsla(224, 25%, 4%, 0.6); position:relative; overflow:hidden">
+        <div class="card-quartz hide-mobile" style="padding: 12px; margin-top: 24px; display: flex; align-items: center; background: hsla(224, 25%, 4%, 0.6); position:relative; overflow:hidden; border: 1px solid var(--border-default);">
            <div style="position:absolute; height:2px; background:hsla(220, 20%, 100%, 0.05); left:15%; right:15%; top:50%; transform:translateY(-50%); z-index:0"></div>
            <div id="stepper-fill" style="position:absolute; height:2px; background:var(--gradient-brand); left:15%; width:0%; top:50%; transform:translateY(-50%); z-index:1; transition:width 0.4s ease"></div>
            
            ${[
-             { n: 1, label: 'CORE IDENTITY' },
-             { n: 2, label: 'TECHNICAL PARAMETERS' },
-             { n: 3, label: 'BENEFICIARY & CONSENSUS' }
+             { n: 1, label: 'IDENTITAS GEDUNG' },
+             { n: 2, label: 'PARAMETER TEKNIS' },
+             { n: 3, label: 'KEPEMILIKAN & TIM' }
            ].map(s => `
              <div class="step-item ${s.n === 1 ? 'active' : ''}" id="step-dot-${escapeHtml(s.n)}" style="flex:1; z-index:2; position:relative; text-align:center">
                 <div class="step-circle" style="width:36px; height:36px; background:var(--bg-elevated); border:2px solid hsla(220, 20%, 100%, 0.1); border-radius:50%; margin:0 auto 8px; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--text-tertiary); transition:all 0.3s">
                    ${escapeHtml(s.n)}
                 </div>
-                <div class="step-label" style="font-family:var(--font-mono); font-size:8px; font-weight:800; color:var(--text-tertiary); letter-spacing:1px">${escapeHtml(s.label)}</div>
+                <div class="step-label" style="font-family:var(--font-mono); font-size:9px; font-weight:700; color:var(--text-tertiary); letter-spacing:0.5px">${escapeHtml(s.label)}</div>
              </div>
            `).join('')}
         </div>
       </div>
 
-      <!-- AI LOADING OVERLAY (DPI OPTIMIZED) -->
+      <!-- AI LOADING OVERLAY -->
       <div id="ai-loading-overlay" style="display:none; position:fixed; inset:0; background:hsla(224, 25%, 4%, 0.95); backdrop-filter:blur(20px); z-index:10000; align-items:center; justify-content:center; flex-direction:column; text-align:center">
-         <div style="position:relative; margin-bottom:40px">
+         <div style="position:relative; margin-bottom:32px">
             <div class="animate-ping" style="position:absolute; inset:0; border:2px solid var(--brand-500); border-radius:50%; opacity:0.1"></div>
-            <div style="width:100px; height:100px; background:var(--gradient-brand); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:3rem; color:white; box-shadow:var(--shadow-sapphire)">
+            <div style="width:88px; height:88px; background:var(--gradient-brand); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2.5rem; color:white; box-shadow:var(--shadow-sapphire)">
                <i class="fas fa-brain"></i>
             </div>
          </div>
-         <h2 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:2rem; color:white; margin-bottom:12px">NEURAL SCAN IN PROGRESS</h2>
-         <p id="ai-status-msg" style="color:var(--brand-300); font-family:var(--font-mono); font-size:10px; letter-spacing:2px; max-width:400px; line-height:1.8">SYNTHESIZING IMB/PBG DATA INTO REGISTRY STRUCTURE...</p>
-         <div style="width:320px; height:4px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px; margin-top:32px; overflow:hidden">
+         <h2 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.8rem; color:white; margin-bottom:8px">PEMINDAIAN AI BERJALAN</h2>
+         <p id="ai-status-msg" style="color:var(--brand-300); font-size:0.85rem; max-width:440px; line-height:1.6">Mengekstrak data teks dari dokumen perizinan PBG/IMB ke formulir...</p>
+         <div style="width:300px; height:4px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px; margin-top:24px; overflow:hidden">
             <div id="ai-progress-fill" style="width:0%; height:100%; background:var(--gradient-brand); border-radius:10px; transition:width 0.3s"></div>
          </div>
       </div>
@@ -99,43 +99,43 @@ export async function proyekFormPage(params = {}) {
            <div class="grid-main-side">
               
               <div class="card-quartz" style="padding:var(--space-6) var(--space-8)">
-                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.25rem; color:white; margin-bottom:32px; display:flex; align-items:center; gap:16px; text-align: left">
-                    <i class="fas fa-landmark" style="color:var(--brand-400)"></i> I. DATA BANGUNAN
+                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.2rem; color:white; margin-bottom:28px; display:flex; align-items:center; gap:12px; text-align: left">
+                    <i class="fas fa-landmark" style="color:var(--brand-400)"></i> I. IDENTITAS BANGUNAN
                  </div>
                  
-                 <div class="form-group mb-8">
-                    <label class="form-label" style="letter-spacing:1.5px">NAMA BANGUNAN <span style="color:var(--danger-400)">*</span></label>
-                    <input type="text" class="form-input" name="nama_bangunan" value="${escapeHtml(data.nama_bangunan || '')}" placeholder="e.g. Quartz Executive Tower" required>
+                 <div class="form-group mb-6">
+                    <label class="form-label">Nama Bangunan Gedung <span style="color:var(--danger-400)">*</span></label>
+                    <input type="text" class="form-input" name="nama_bangunan" value="${escapeHtml(data.nama_bangunan || '')}" placeholder="cth: Gedung Menara Graha" required>
                  </div>
                  
-                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px">
-                    <div class="form-group mb-8">
-                       <label class="form-label" style="letter-spacing:1.5px">FUNGSI BANGUNAN <span style="color:var(--danger-400)">*</span></label>
+                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px">
+                    <div class="form-group mb-6">
+                       <label class="form-label">Fungsi Bangunan <span style="color:var(--danger-400)">*</span></label>
                        <select class="form-select" name="jenis_bangunan" required>
-                          <option value="">-- SELECT CLASSIFICATION --</option>
-                          ${jenis.map(j => `<option value="${escapeHtml(j)}" ${data.jenis_bangunan === j ? 'selected' : ''}>${escapeHtml(j.toUpperCase())}</option>`).join('')}
+                          <option value="">-- Pilih Fungsi Bangunan --</option>
+                          ${jenis.map(j => `<option value="${escapeHtml(j)}" ${data.jenis_bangunan === j ? 'selected' : ''}>${escapeHtml(j)}</option>`).join('')}
                        </select>
                     </div>
-                    <div class="form-group mb-8">
-                       <label class="form-label" style="letter-spacing:1.5px">CORE CONSTRUCTION</label>
+                    <div class="form-group mb-6">
+                       <label class="form-label">Jenis Konstruksi Utama</label>
                        <select class="form-select" name="jenis_konstruksi">
-                          ${konstruksi.map(k => `<option value="${escapeHtml(k)}" ${data.jenis_konstruksi === k ? 'selected' : ''}>${escapeHtml(k.toUpperCase())}</option>`).join('')}
+                          ${konstruksi.map(k => `<option value="${escapeHtml(k)}" ${data.jenis_konstruksi === k ? 'selected' : ''}>${escapeHtml(k)}</option>`).join('')}
                        </select>
                     </div>
                  </div>
 
                  <div class="form-group">
-                    <label class="form-label" style="letter-spacing:1.5px">ALAMAT BANGUNAN <span style="color:var(--danger-400)">*</span></label>
-                    <textarea class="form-input" name="alamat" rows="3" placeholder="Full street address, district, and province..." required>${escapeHtml(data.alamat || '')}</textarea>
+                    <label class="form-label">Alamat Lengkap Bangunan <span style="color:var(--danger-400)">*</span></label>
+                    <textarea class="form-input" name="alamat" rows="3" placeholder="Jalan, RT/RW, Kelurahan, Kecamatan, Kota/Kabupaten..." required>${escapeHtml(data.alamat || '')}</textarea>
                  </div>
               </div>
 
               <div class="card-quartz" style="padding:var(--space-6); border-color: hsla(220, 95%, 52%, 0.1)">
-                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:white; margin-bottom:24px; display:flex; align-items:center; gap:12px; text-align: left">
-                    <i class="fas fa-crosshairs" style="color:var(--brand-400)"></i> TITIK KOORDINAT BG
+                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.05rem; color:white; margin-bottom:20px; display:flex; align-items:center; gap:10px; text-align: left">
+                    <i class="fas fa-crosshairs" style="color:var(--brand-400)"></i> Titik Koordinat Gedung
                  </div>
-                 <div id="proyek-map" style="width:100%; height:320px; border-radius:16px; background:hsla(224, 25%, 4%, 0.8); border:1px solid hsla(220, 20%, 100%, 0.05)"></div>
-                 <div class="grid-2-col" style="margin-top:24px">
+                 <div id="proyek-map" style="width:100%; height:300px; border-radius:14px; background:hsla(224, 25%, 4%, 0.8); border:1px solid hsla(220, 20%, 100%, 0.05)"></div>
+                 <div class="grid-2-col" style="margin-top:20px">
                     <div class="form-group">
                        <label class="form-label-xs">LATITUDE</label>
                        <input type="text" id="input-lat" name="latitude" value="${escapeHtml(data.latitude || '')}" class="form-input-compact" placeholder="-6.2088" onchange="window._updateMapFromInput()">
@@ -145,7 +145,7 @@ export async function proyekFormPage(params = {}) {
                        <input type="text" id="input-lng" name="longitude" value="${escapeHtml(data.longitude || '')}" class="form-input-compact" placeholder="106.8456" onchange="window._updateMapFromInput()">
                     </div>
                  </div>
-                 <p style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); margin-top:16px; line-height:1.5"><i class="fas fa-info-circle"></i> Drag pin di peta atau ketik koordinat manual. Latitude: -90 sampai 90, Longitude: -180 sampai 180.</p>
+                 <p style="font-size:0.75rem; color:var(--text-tertiary); margin-top:12px; line-height:1.5"><i class="fas fa-info-circle"></i> Geser pin di peta atau masukkan koordinat manual.</p>
               </div>
 
            </div>
@@ -156,79 +156,79 @@ export async function proyekFormPage(params = {}) {
            <div class="grid-main-side">
               
               <div class="card-quartz" style="padding:var(--space-6) var(--space-8)">
-                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.25rem; color:white; margin-bottom:32px; display:flex; align-items:center; gap:16px; text-align: left">
-                    <i class="fas fa-ruler-combined" style="color:var(--brand-400)"></i> II. Technical Parameters
+                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.2rem; color:white; margin-bottom:28px; display:flex; align-items:center; gap:12px; text-align: left">
+                    <i class="fas fa-ruler-combined" style="color:var(--brand-400)"></i> II. PARAMETER TEKNIS BANGUNAN
                  </div>
                  
-                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px">
-                    <div class="form-group mb-8">
-                       <label class="form-label" style="letter-spacing:1.5px">TOTAL AREA (M²)</label>
+                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px">
+                    <div class="form-group mb-6">
+                       <label class="form-label">Total Luas Bangunan (m²)</label>
                        <input type="number" class="form-input" name="luas_bangunan" value="${escapeHtml(data.luas_bangunan || '')}" placeholder="0.00">
                     </div>
-                    <div class="form-group mb-8">
-                       <label class="form-label" style="letter-spacing:1.5px">VERTICAL FLOORS</label>
+                    <div class="form-group mb-6">
+                       <label class="form-label">Jumlah Lantai</label>
                        <input type="number" class="form-input" name="jumlah_lantai" value="${escapeHtml(data.jumlah_lantai || '')}" placeholder="1">
                     </div>
                  </div>
 
-                 <div class="form-group mb-8">
-                    <label class="form-label" style="letter-spacing:1.5px">PBG / IMB REGISTRY NUMBER</label>
+                 <div class="form-group mb-6">
+                    <label class="form-label">Nomor Registrasi PBG / IMB</label>
                     <input type="text" class="form-input font-mono" name="nomor_pbg" value="${escapeHtml(data.nomor_pbg || '')}" placeholder="PBG-XXXXXXXXX">
                  </div>
 
-                 <div class="card-quartz" style="background:hsla(220, 95%, 52%, 0.03); border-color: hsla(220, 95%, 52%, 0.1); padding:24px; margin-top:24px">
-                    <label class="form-label" style="color:var(--brand-400); margin-bottom:16px"><i class="fas fa-chart-line"></i> BUILDING INTENSITY LIMITS (GSB/KDB)</label>
+                 <div class="card-quartz" style="background:hsla(220, 95%, 52%, 0.03); border-color: hsla(220, 95%, 52%, 0.1); padding:20px; margin-top:20px">
+                    <label class="form-label" style="color:var(--brand-400); margin-bottom:14px"><i class="fas fa-chart-line"></i> Batasan Intensitas Bangunan (GSB/KDB/KLB/KDH)</label>
                     <div class="grid-4-col" style="gap:12px">
-                       <div class="form-group"><label class="form-label-xs">GSB</label><input type="number" step="0.1" class="form-input-compact" name="gsb" value="${escapeHtml(data.gsb || '')}"></div>
-                       <div class="form-group"><label class="form-label-xs">KDB</label><input type="number" step="0.1" class="form-input-compact" name="kdb" value="${escapeHtml(data.kdb || '')}"></div>
+                       <div class="form-group"><label class="form-label-xs">GSB (m)</label><input type="number" step="0.1" class="form-input-compact" name="gsb" value="${escapeHtml(data.gsb || '')}"></div>
+                       <div class="form-group"><label class="form-label-xs">KDB (%)</label><input type="number" step="0.1" class="form-input-compact" name="kdb" value="${escapeHtml(data.kdb || '')}"></div>
                        <div class="form-group"><label class="form-label-xs">KLB</label><input type="number" step="0.1" class="form-input-compact" name="klb" value="${escapeHtml(data.klb || '')}"></div>
-                       <div class="form-group"><label class="form-label-xs">KDH</label><input type="number" step="0.1" class="form-input-compact" name="kdh" value="${escapeHtml(data.kdh || '')}"></div>
+                       <div class="form-group"><label class="form-label-xs">KDH (%)</label><input type="number" step="0.1" class="form-input-compact" name="kdh" value="${escapeHtml(data.kdh || '')}"></div>
                     </div>
                  </div>
               </div>
 
-              <div class="card-quartz" style="padding:40px">
-                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.25rem; color:white; margin-bottom:32px; display:flex; align-items:center; gap:16px">
-                    <i class="fas fa-map-marked-alt" style="color:var(--brand-400)"></i> Land Registry
+              <div class="card-quartz" style="padding:var(--space-6) var(--space-8)">
+                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.2rem; color:white; margin-bottom:28px; display:flex; align-items:center; gap:12px">
+                    <i class="fas fa-map-marked-alt" style="color:var(--brand-400)"></i> Data Lahan & Sertifikat
                  </div>
                  <div class="form-group mb-6">
-                    <label class="form-label">LAND TITLE / CERTIFICATE NO.</label>
-                    <input type="text" class="form-input" name="no_dokumen_tanah" value="${escapeHtml(data.no_dokumen_tanah || '')}">
+                    <label class="form-label">Nomor Sertifikat / Bukti Hak Tanah</label>
+                    <input type="text" class="form-input" name="no_dokumen_tanah" value="${escapeHtml(data.no_dokumen_tanah || '')}" placeholder="cth: SHM No. 1234 / HGB No. 567">
                  </div>
-                 <div class="form-group mb-8">
-                    <label class="form-label">LEGAL LAND OWNER</label>
+                 <div class="form-group mb-6">
+                    <label class="form-label">Nama Pemegang Hak Tanah</label>
                     <input type="text" class="form-input" name="nama_pemilik_tanah" value="${escapeHtml(data.nama_pemilik_tanah || '')}">
                  </div>
-                 <div class="card-quartz" style="padding:16px; background:hsla(220, 20%, 100%, 0.02)">
-                    <label style="display:flex; align-items:center; gap:16px; cursor:pointer">
-                       <input type="checkbox" name="pemilik_tanah_sama" value="true" ${data.pemilik_tanah_sama ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--brand-500)">
-                       <span style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--text-tertiary); letter-spacing:1px">OWNER IDENTITY MATCHES ASSET BENEFICIARY</span>
+                 <div class="card-quartz" style="padding:14px; background:hsla(220, 20%, 100%, 0.02)">
+                    <label style="display:flex; align-items:center; gap:12px; cursor:pointer">
+                       <input type="checkbox" name="pemilik_tanah_sama" value="true" ${data.pemilik_tanah_sama ? 'checked' : ''} style="width:18px; height:18px; accent-color:var(--brand-500)">
+                       <span style="font-size:0.8rem; color:var(--text-secondary)">Pemegang hak tanah sama dengan pemilik bangunan</span>
                     </label>
                  </div>
 
-                 <div class="card-quartz" style="padding:40px; margin-top:32px; border-color:var(--brand-400)">
-                     <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:white; margin-bottom:24px; display:flex; align-items:center; gap:16px">
-                        <i class="fas fa-cloud-arrow-down" style="color:var(--brand-400)"></i> SIMBG Portal Integration
+                 <div class="card-quartz" style="padding:24px; margin-top:24px; border-color:var(--border-default)">
+                     <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.05rem; color:white; margin-bottom:16px; display:flex; align-items:center; gap:12px">
+                        <i class="fas fa-cloud-arrow-down" style="color:var(--brand-400)"></i> Integrasi Akun Portal SIMBG
                      </div>
-                     <div class="form-group mb-6">
-                        <label class="form-label">SIMBG APPLICATION ID (ID PERMOHONAN)</label>
+                     <div class="form-group mb-4">
+                        <label class="form-label">ID Permohonan SIMBG</label>
                         <input type="text" class="form-input font-mono" name="simbg_id" value="${escapeHtml(data.simbg_id || '')}" placeholder="SIMBG-XXXXXXXXX">
                      </div>
-                     <div class="form-group mb-6">
-                        <label class="form-label">GOOGLE DRIVE PROXY URL</label>
+                     <div class="form-group mb-4">
+                        <label class="form-label">Google Drive Proxy URL</label>
                         <input type="text" class="form-input text-xs font-mono" name="drive_proxy_url" value="${data.drive_proxy_url || (!isEdit ? APP_CONFIG.gasApiUrl : '')}" placeholder="https://script.google.com/macros/s/...">
                      </div>
                      <div class="grid-2-col">
                         <div class="form-group">
-                           <label class="form-label">PORTAL EMAIL</label>
-                           <input type="email" class="form-input text-xs" name="simbg_email" value="${escapeHtml(data.simbg_email || '')}" placeholder="email@pendaftar.go.id">
+                           <label class="form-label">Email Akun SIMBG</label>
+                           <input type="email" class="form-input text-xs" name="simbg_email" value="${escapeHtml(data.simbg_email || '')}" placeholder="email@pemohon.go.id">
                         </div>
                         <div class="form-group">
-                           <label class="form-label">PORTAL PASSWORD</label>
+                           <label class="form-label">Kata Sandi SIMBG</label>
                            <input type="password" class="form-input text-xs" name="simbg_password" value="${escapeHtml(data.simbg_password || '')}" placeholder="••••••••">
                         </div>
                      </div>
-                     <p style="font-family:var(--font-mono); font-size:8px; color:var(--text-tertiary); margin-top:16px; line-height:1.5"><i class="fas fa-shield-alt"></i> Kredensial dipakai untuk sinkronisasi otomatis dengan basis data SIMBG nasional. URL proksi terisi otomatis dari konfigurasi aplikasi.</p>
+                     <p style="font-size:0.75rem; color:var(--text-tertiary); margin-top:12px; line-height:1.5"><i class="fas fa-shield-alt"></i> Kredensial digunakan untuk sinkronisasi dokumen perizinan dengan sistem SIMBG.</p>
                   </div>
               </div>
 
@@ -239,63 +239,63 @@ export async function proyekFormPage(params = {}) {
         <div class="form-step-section" id="step-3" style="display:none">
            <div class="grid-main-side">
               
-              <div class="card-quartz" style="padding:40px">
-                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.25rem; color:white; margin-bottom:32px; display:flex; align-items:center; gap:16px">
-                    <i class="fas fa-user-tie" style="color:var(--brand-400)"></i> III. Legal Beneficiary
+              <div class="card-quartz" style="padding:var(--space-6) var(--space-8)">
+                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.2rem; color:white; margin-bottom:28px; display:flex; align-items:center; gap:12px">
+                    <i class="fas fa-user-tie" style="color:var(--brand-400)"></i> III. DATA PEMILIK / PEMOHON
                  </div>
-                 <div class="form-group mb-8">
-                    <label class="form-label">PRIMARY OWNER / INSTITUTION <span style="color:var(--danger-400)">*</span></label>
-                    <input type="text" class="form-input" name="pemilik" value="${escapeHtml(data.pemilik || '')}" placeholder="e.g. PT Artha Graha / John Doe" required>
+                 <div class="form-group mb-6">
+                    <label class="form-label">Nama Pemilik / Badan Usaha <span style="color:var(--danger-400)">*</span></label>
+                    <input type="text" class="form-input" name="pemilik" value="${escapeHtml(data.pemilik || '')}" placeholder="cth: PT Pembangunan Graha / Bpk. Hendra" required>
                  </div>
-                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px">
-                    <div class="form-group mb-8">
-                       <label class="form-label">AUTHORIZED PIC</label>
+                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px">
+                    <div class="form-group mb-6">
+                       <label class="form-label">Penanggung Jawab (PIC)</label>
                        <input type="text" class="form-input" name="penanggung_jawab" value="${escapeHtml(data.penanggung_jawab || '')}">
                     </div>
-                    <div class="form-group mb-8">
-                       <label class="form-label">SECURE LINE (PHONE)</label>
-                       <input type="tel" class="form-input" name="telepon" value="${escapeHtml(data.telepon || '')}">
+                    <div class="form-group mb-6">
+                       <label class="form-label">Nomor Telepon / WhatsApp</label>
+                       <input type="tel" class="form-input" name="telepon" value="${escapeHtml(data.telepon || '')}" placeholder="08xxxxxxxxxx">
                     </div>
                  </div>
                  <div class="form-group">
-                    <label class="form-label">ALIAS SUREL TERENKRIPSI</label>
-                    <input type="email" class="form-input" name="email_pemilik" value="${escapeHtml(data.email_pemilik || '')}">
+                    <label class="form-label">Alamat Email Pemohon</label>
+                    <input type="email" class="form-input" name="email_pemilik" value="${escapeHtml(data.email_pemilik || '')}" placeholder="pemilik@perusahaan.com">
                  </div>
               </div>
 
-              <div class="card-quartz" style="padding:40px">
-                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.25rem; color:white; margin-bottom:32px; display:flex; align-items:center; gap:16px">
-                    <i class="fas fa-users-gear" style="color:var(--brand-400)"></i> Audit Delegation
+              <div class="card-quartz" style="padding:var(--space-6) var(--space-8)">
+                 <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.2rem; color:white; margin-bottom:28px; display:flex; align-items:center; gap:12px">
+                    <i class="fas fa-users-gear" style="color:var(--brand-400)"></i> Penugasan Tim Pengkaji Teknis
                  </div>
-                 <div class="form-group mb-8">
-                    <label class="form-label">DELEGATE TO (TEAM PIC)</label>
+                 <div class="form-group mb-6">
+                    <label class="form-label">Koordinator / Lead Engineer (PIC)</label>
                     <select class="form-select" name="assigned_to" style="border-color:hsla(45, 90%, 60%, 0.3)">
-                       <option value="">-- SELECT AUTHORIZED AGENT --</option>
-                       ${teamMembers.map(m => `<option value="${escapeHtml(m.id)}" ${data.assigned_to === m.id ? 'selected' : ''}>${escapeHtml(m.full_name.toUpperCase())}</option>`).join('')}
+                       <option value="">-- Pilih Tim Pengkaji --</option>
+                       ${teamMembers.map(m => `<option value="${escapeHtml(m.id)}" ${data.assigned_to === m.id ? 'selected' : ''}>${escapeHtml(m.full_name)}</option>`).join('')}
                     </select>
                  </div>
                  <div class="grid-2-col">
                     <div class="form-group">
-                       <label class="form-label">COMMENCEMENT DATE</label>
+                       <label class="form-label">Tanggal Mulai Kajian</label>
                        <input type="date" class="form-input" name="tanggal_mulai" value="${escapeHtml(data.tanggal_mulai || '')}">
                     </div>
                     <div class="form-group">
-                       <label class="form-label">TARGET TANGGAL SEGEL</label>
+                       <label class="form-label">Target Penyelesaian SLF</label>
                        <input type="date" class="form-input" name="tanggal_target" value="${escapeHtml(data.tanggal_target || '')}">
                     </div>
                  </div>
                  
-                 <div class="card-quartz" style="margin-top:32px; background:var(--gradient-dark); border-color: hsla(220, 95%, 52%, 0.2); padding:24px">
-                    <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px">
+                 <div class="card-quartz" style="margin-top:24px; background:var(--gradient-dark); border-color: hsla(220, 95%, 52%, 0.2); padding:20px">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
                        <div style="width:32px; height:32px; border-radius:8px; background:hsla(220, 95%, 52%, 0.1); display:flex; align-items:center; justify-content:center; color:var(--brand-400)">
                           <i class="fas fa-brain"></i>
                        </div>
-                       <strong style="font-family:'Outfit', sans-serif; font-size:0.9rem">FOKUS NEURAL KUANTUM</strong>
+                       <strong style="font-size:0.88rem; color:white">Fokus Prioritas Analisis AI</strong>
                     </div>
-                    <select class="form-select text-xs" name="ai_focus" style="background:transparent; border-color:hsla(220, 20%, 100%, 0.1)">
-                       <option value="komprehensif">PROTOKOL: SINTESIS MENYELURUH</option>
-                       <option value="struktur">PROTOCOL: STRUCTURAL DEPTH-SCAN</option>
-                       <option value="kebakaran">PROTOCOL: FIRE SAFETY OVERWATCH</option>
+                    <select class="form-select text-xs" name="ai_focus" style="background:transparent; border-color:var(--border-subtle)">
+                       <option value="komprehensif">Analisis Komprehensif (Seluruh Aspek SLF)</option>
+                       <option value="struktur">Prioritas Aspek Keselamatan Struktur</option>
+                       <option value="kebakaran">Prioritas Proteksi Kebakaran & Jalur Evakuasi</option>
                     </select>
                  </div>
               </div>
@@ -304,17 +304,17 @@ export async function proyekFormPage(params = {}) {
         </div>
 
         <!-- FOOTER NAVIGATION -->
-        <div style="margin-top:60px; display:flex; justify-content:space-between; align-items:center">
-           <button type="button" class="btn btn-ghost" id="btn-prev-step" onclick="window._switchStep(window._currentStep - 1)" style="visibility:hidden; height:48px; padding:0 24px; font-weight:700">
-              <i class="fas fa-arrow-left" style="margin-right:12px"></i> PREVIOUS STEP
+        <div style="margin-top:40px; display:flex; justify-content:space-between; align-items:center">
+           <button type="button" class="btn btn-ghost" id="btn-prev-step" onclick="window._switchStep(window._currentStep - 1)" style="visibility:hidden; height:46px; padding:0 24px; font-weight:700">
+              <i class="fas fa-arrow-left" style="margin-right:8px"></i> Sebelumnya
            </button>
            
-           <div style="display:flex; gap:16px">
-              <button type="button" class="btn-presidential gold" id="btn-next-step" onclick="window._switchStep(window._currentStep + 1)" style="height:56px; padding:0 40px; font-size:1rem; border-radius:14px">
-                 CONTINUE <i class="fas fa-arrow-right" style="margin-left:12px"></i>
+           <div style="display:flex; gap:12px">
+              <button type="button" class="btn-presidential gold" id="btn-next-step" onclick="window._switchStep(window._currentStep + 1)" style="height:48px; padding:0 32px; font-size:0.95rem; border-radius:12px">
+                 Lanjutkan <i class="fas fa-arrow-right" style="margin-left:8px"></i>
               </button>
-              <button type="submit" class="btn-presidential gold" style="height:56px; padding:0 48px; border-radius:14px; display:none" id="btn-submit-proyek">
-                 <i class="fas fa-check-double" style="margin-right:12px"></i> ${isEdit ? 'SEAL CHANGES' : 'INITIATE REGISTRY'}
+              <button type="submit" class="btn-presidential gold" style="height:48px; padding:0 36px; border-radius:12px; display:none" id="btn-submit-proyek">
+                 <i class="fas fa-check-double" style="margin-right:8px"></i> ${isEdit ? 'Simpan Perubahan' : 'Daftarkan Proyek'}
               </button>
            </div>
         </div>

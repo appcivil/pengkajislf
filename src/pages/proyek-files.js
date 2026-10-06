@@ -553,8 +553,8 @@ window._openSIMBGRegistration = () => {
             
             <div class="flex-between" style="margin-bottom:32px; position:relative; z-index:1">
                 <div>
-                   <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.4rem; color:white; margin:0">SIMBG <span class="text-gradient-gold">Assistant</span></h3>
-                   <p style="font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px; margin-top:4px">KEMENTERIAN PUPR REGISTRATION PROTOCOL</p>
+                   <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.4rem; color:white; margin:0">SIMBG <span class="text-gradient-gold">Asisten</span></h3>
+                   <p style="font-family:var(--font-mono); font-size:9px; color:var(--text-tertiary); letter-spacing:1px; margin-top:4px">PROTOKOL PENDAFTARAN KEMENTERIAN PUPR</p>
                 </div>
                 <button type="button" aria-label="Tutup" class="btn btn-ghost" onclick="document.getElementById('simbg-reg-modal').remove()" style="color:var(--text-tertiary)">
                    <i class="fas fa-times"></i>

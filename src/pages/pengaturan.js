@@ -225,38 +225,38 @@ export async function pengaturanPage() {
             <div style="display:flex; flex-direction:column; gap: 32px">
               <!-- Engine Connectivity -->
                 <div class="form-group mb-10">
-                  <label class="form-label">QUANTUM REASONING MODEL (CLOUD)</label>
+                  <label class="form-label">MODEL AI ANALISIS (CLOUD)</label>
                   <select class="form-select" name="default_model" style="height:48px; border-radius:12px">
                     ${Object.values(AI_MODELS).map(m => `<option value="${escapeHtml(m.id)}" ${settings.ai?.defaultModel === m.id ? 'selected' : ''}>${escapeHtml(m.name.toUpperCase())}</option>`).join('')}
                   </select>
                 </div>
 
-                <!-- NEW: LOCAL NEURAL NODE (OLLAMA) -->
+                <!-- Model AI Lokal (Ollama) -->
                 <div class="card-quartz" style="padding:24px; background:hsla(160, 100%, 50%, 0.02); border-color:hsla(160, 100%, 50%, 0.1); margin-top:24px">
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
                     <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1rem; color:white; display:flex; align-items:center; gap:10px">
-                       <i class="fas fa-microchip" style="color:var(--success-400)"></i> LOCAL NEURAL NODE (OLLAMA)
+                       <i class="fas fa-microchip" style="color:var(--success-400)"></i> MODEL AI LOKAL (OLLAMA)
                     </div>
                     <div style="display:flex; align-items:center; gap:8px">
-                      <span style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--text-tertiary)">ENABLED</span>
+                      <span style="font-family:var(--font-mono); font-size:9px; font-weight:800; color:var(--text-tertiary)">AKTIF</span>
                       <input type="checkbox" name="ollama_enabled" ${settings.ai?.ollamaEnabled ? 'checked' : ''} style="width:16px; height:16px; accent-color:var(--success-500)">
                     </div>
                   </div>
 
                   <div class="form-group mb-6">
-                    <label class="form-label">ENDPOINT URL</label>
+                    <label class="form-label">ALAMAT ENDPOINT</label>
                     <div style="display:flex; gap:12px">
                       <input type="text" class="form-input font-mono text-xs" name="ollama_endpoint" value="${settings.ai?.ollamaEndpoint || 'http://localhost:11434'}" placeholder="e.g. http://localhost:11434" style="flex:1">
                       <button type="button" onclick="window.syncOllamaModels(this)" class="btn btn-ghost" style="height:40px; border-radius:10px; border:1px solid hsla(220, 20%, 100%, 0.1); padding:0 16px; font-size:0.7rem; font-weight:800">
-                        <i class="fas fa-sync-alt" style="margin-right:8px"></i> SCAN MODELS
+                        <i class="fas fa-sync-alt" style="margin-right:8px"></i> PINDAI MODEL
                       </button>
                     </div>
                   </div>
 
                   <div class="form-group">
-                    <label class="form-label">LOCAL MODEL PRIORITY</label>
+                    <label class="form-label">PRIORITAS MODEL LOKAL</label>
                     <select class="form-select" name="ollama_model" id="ollama-model-select" style="height:48px; border-radius:12px">
-                      <option value="">-- PILIH MODEL (KLIK SCAN) --</option>
+                      <option value="">-- PILIH MODEL (KLIK PINDAI) --</option>
                       ${(settings.ai?.availableLocalModels || []).map(m => `
                         <option value="${escapeHtml(m)}" ${settings.ai?.ollamaModel === m ? 'selected' : ''}>${escapeHtml(m.toUpperCase())}</option>
                       `).join('')}
@@ -365,13 +365,13 @@ export async function pengaturanPage() {
 
             <div style="display:flex; flex-direction:column; gap:32px">
               <div class="card-quartz" style="padding:40px">
-                <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.2rem; color:white; margin-bottom:32px">System Calibration</div>
+                <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.2rem; color:white; margin-bottom:32px">Kalibrasi Foto Lapangan</div>
                 
                 <div style="display:flex; flex-direction:column; gap:20px">
                    ${[
-                     { name: 'wm_enabled', label: 'ACTIVATE NEURAL WATERMARK', checked: settings.watermark?.enabled },
-                     { name: 'wm_show_gps', label: 'APPEND GEOSPATIAL COORDINATES', checked: settings.watermark?.show_gps },
-                     { name: 'wm_show_time', label: 'INJECT ATOMIC TIMESTAMP', checked: settings.watermark?.show_time }
+                     { name: 'wm_enabled', label: 'AKTIFKAN WATERMARK FOTO', checked: settings.watermark?.enabled },
+                     { name: 'wm_show_gps', label: 'TAMPILKAN KOORDINAT GPS', checked: settings.watermark?.show_gps },
+                     { name: 'wm_show_time', label: 'TAMPILKAN STEMPEL WAKTU', checked: settings.watermark?.show_time }
                    ].map(opt => `
                      <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; background:hsla(220, 20%, 100%, 0.02); border:1px solid hsla(220, 20%, 100%, 0.05); border-radius:12px">
                         <label style="font-family:var(--font-mono); font-size:0.7rem; font-weight:800; color:white">${escapeHtml(opt.label)}</label>
@@ -381,12 +381,12 @@ export async function pengaturanPage() {
                 </div>
                 
                 <div class="form-group mt-10">
-                  <label class="form-label">LENS FIDELITY & RENDER OPACITY</label>
+                  <label class="form-label">KUALITAS RENDER & OPASITAS</label>
                   <div style="display:flex; gap:16px">
                     <select class="form-select" name="wm_resolution" style="flex:1">
-                      <option value="low" ${settings.watermark?.resolution === 'low' ? 'selected' : ''}>STANDARD (FAST)</option>
-                      <option value="medium" ${settings.watermark?.resolution === 'medium' ? 'selected' : ''}>HIGH DEFINITION</option>
-                      <option value="high" ${settings.watermark?.resolution === 'high' ? 'selected' : ''}>FORENSIC GRADE</option>
+                      <option value="low" ${settings.watermark?.resolution === 'low' ? 'selected' : ''}>STANDAR (CEPAT)</option>
+                      <option value="medium" ${settings.watermark?.resolution === 'medium' ? 'selected' : ''}>DEFINISI TINGGI</option>
+                      <option value="high" ${settings.watermark?.resolution === 'high' ? 'selected' : ''}>KUALITAS FORENSIK</option>
                     </select>
                     <input type="range" name="wm_opacity" min="0.1" max="1.0" step="0.1" value="${settings.watermark?.opacity || 0.85}" style="flex:1; accent-color:var(--brand-500)">
                   </div>
@@ -395,7 +395,7 @@ export async function pengaturanPage() {
 
               <div class="card-quartz" style="padding:32px; background:hsla(220, 95%, 52%, 0.03); border:1px dashed hsla(220, 95%, 52%, 0.2)">
                  <div style="font-size:0.8rem; color:var(--brand-300); line-height:1.6; font-weight:600">
-                    <i class="fas fa-microchip" style="margin-right:10px"></i> Calibration engine will process high-frequency image artifacts during final render. Pastikan perangkat kamera dikalibrasi sesuai zona waktu setempat.
+                    <i class="fas fa-microchip" style="margin-right:10px"></i> Mesin kalibrasi akan memproses artefak gambar resolusi tinggi saat render akhir. Pastikan perangkat kamera dikalibrasi sesuai zona waktu setempat.
                  </div>
               </div>
             </div>
@@ -462,12 +462,12 @@ export async function pengaturanPage() {
                       <i class="fas fa-cloud-arrow-up" style="font-size:1.4rem"></i>
                    </div>
                    <div>
-                      <div style="font-size:0.85rem; color:white; font-weight:700">Storage Synchronization</div>
-                      <div style="font-size:0.7rem; color:var(--text-tertiary)">Templates are stored in Supabase Cluster.</div>
+                      <div style="font-size:0.85rem; color:white; font-weight:700">Sinkronisasi Penyimpanan</div>
+                      <div style="font-size:0.7rem; color:var(--text-tertiary)">Template tersimpan di Supabase Cloud.</div>
                    </div>
                 </div>
                 <button class="btn btn-ghost" style="width:100%; border:1px solid hsla(220, 20%, 100%, 0.1); border-radius:12px; color:white; font-size:0.75rem">
-                   <i class="fas fa-trash-can" style="margin-right:10px"></i> RESET TO SYSTEM DEFAULT
+                   <i class="fas fa-trash-can" style="margin-right:10px"></i> KEMBALIKAN KE BAWAAN SISTEM
                 </button>
              </div>
           </div>

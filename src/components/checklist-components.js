@@ -22,19 +22,19 @@ export function renderChecklistShell(proyek, checklist) {
       <div class="sidebar-quartz" style="display: flex; flex-direction: column; gap: 24px; overflow-y: auto; padding-right: 8px">
          
          <!-- Progress Card -->
-         <div class="card-quartz" style="padding: 24px; background: var(--gradient-dark); border-color: hsla(220, 95%, 52%, 0.2)">
-            <div style="font-family: var(--font-mono); font-size: 9px; font-weight: 800; color: var(--text-tertiary); letter-spacing: 1px; margin-bottom: 12px">OVERALL AUDIT PROGRESS</div>
-            <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 16px">
-               <span style="font-size: 2.2rem; font-weight: 900; color: white; line-height: 1">${escapeHtml(progressPct)}%</span>
-               <span style="font-size: 0.8rem; color: var(--text-tertiary)">COMPLETED</span>
+         <div class="card-quartz" style="padding: 20px; background: var(--gradient-dark); border-color: var(--border-default)">
+            <div style="font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: var(--text-tertiary); letter-spacing: 0.5px; margin-bottom: 10px">PROGRES INSPEKSI KESELURUHAN</div>
+            <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px">
+               <span style="font-size: 2rem; font-weight: 800; color: white; line-height: 1">${escapeHtml(progressPct)}%</span>
+               <span style="font-size: 0.8rem; color: var(--text-tertiary)">Selesai Diisi</span>
             </div>
-            <div class="progress-wrap" style="height: 6px; background: hsla(220, 20%, 100%, 0.05)">
-               <div class="progress-fill" style="width: ${escapeHtml(progressPct)}%; background: var(--gradient-brand); box-shadow: 0 0 15px var(--brand-500)"></div>
+            <div class="progress-wrap" style="height: 6px; background: hsla(220, 20%, 100%, 0.05); border-radius: 10px">
+               <div class="progress-fill" style="width: ${escapeHtml(progressPct)}%; background: var(--gradient-brand); border-radius: 10px; box-shadow: 0 0 10px var(--brand-500)66"></div>
             </div>
          </div>
 
          <!-- Category Menu -->
-         <div style="display: flex; flex-direction: column; gap: 8px">
+         <div style="display: flex; flex-direction: column; gap: 6px">
             ${CHECKLIST_SECTIONS.map(sec => {
               const isActive = (checklist.activeTab || 'identitas') === sec.id;
               const secItems = checklist.fullSchema?.filter(i => i.category === sec.id) || [];
@@ -43,16 +43,16 @@ export function renderChecklistShell(proyek, checklist) {
               return `
               <button onclick="window._switchTab('${escapeHtml(sec.id)}')" 
                       class="nav-item-quartz ${isActive ? 'active' : ''}"
-                      style="display: flex; align-items: center; gap: 16px; padding: 16px 20px; border-radius: 16px; border: 1px solid ${isActive ? 'hsla(220, 95%, 52%, 0.3)' : 'transparent'}; 
-                             background: ${isActive ? 'hsla(220, 95%, 52%, 0.1)' : 'transparent'}; 
-                             transition: all 0.3s; cursor: pointer; text-align: left; width: 100%">
-                 <div style="width: 40px; height: 40px; border-radius: 12px; background: ${isActive ? 'var(--gradient-brand)' : 'hsla(220, 20%, 100%, 0.03)'}; 
-                             display: flex; align-items: center; justify-content: center; color: ${isActive ? 'white' : 'var(--text-tertiary)'}; font-size: 1.1rem">
+                      style="display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 12px; border: 1px solid ${isActive ? 'hsla(220, 95%, 52%, 0.3)' : 'transparent'}; 
+                             background: ${isActive ? 'hsla(220, 95%, 52%, 0.12)' : 'transparent'}; 
+                             transition: all 0.2s; cursor: pointer; text-align: left; width: 100%">
+                 <div style="width: 36px; height: 36px; border-radius: 10px; background: ${isActive ? 'var(--gradient-brand)' : 'hsla(220, 20%, 100%, 0.03)'}; 
+                             display: flex; align-items: center; justify-content: center; color: ${isActive ? 'white' : 'var(--text-tertiary)'}; font-size: 1rem">
                     <i class="fas ${sec.icon}"></i>
                  </div>
                  <div style="flex: 1">
-                    <div style="font-weight: 800; font-size: 0.85rem; color: ${isActive ? 'white' : 'var(--text-secondary)'}; text-transform: uppercase; letter-spacing: 0.5px">${escapeHtml(sec.label)}</div>
-                    <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 2px">${escapeHtml(secDone)} / ${escapeHtml(secItems.length)} Sub-items</div>
+                    <div style="font-weight: 700; font-size: 0.85rem; color: ${isActive ? 'white' : 'var(--text-secondary)'}; letter-spacing: 0.2px">${escapeHtml(sec.label)}</div>
+                    <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top: 2px">${escapeHtml(secDone)} / ${escapeHtml(secItems.length)} Butir</div>
                  </div>
                  ${secDone === secItems.length && secItems.length > 0 ? `<i class="fas fa-check-circle text-success-400" style="font-size: 0.8rem"></i>` : ''}
               </button>
@@ -122,10 +122,10 @@ export function renderChecklistSection(sectionId, items, dataMap) {
           </div>
           <div class="flex gap-3">
              <button class="btn btn-secondary btn-sm" onclick="window._saveDraft()">
-                <i class="fas fa-save" style="margin-right:8px"></i> SIMPAN DRAFT
+                <i class="fas fa-save" style="margin-right:8px"></i> Simpan Draf
              </button>
              <button class="btn-presidential gold btn-sm" onclick="window._autoFillFromAgents()">
-                <i class="fas fa-wand-magic-sparkles" style="margin-right:8px"></i> AI AUTO-FILL
+                <i class="fas fa-wand-magic-sparkles" style="margin-right:8px"></i> Auto-Isi AI
              </button>
           </div>
        </div>

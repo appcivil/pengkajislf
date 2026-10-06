@@ -78,7 +78,7 @@ function buildHtml(proyek, analisis, checklist, settings, gdocStatus, cachedDoc,
             Laporan eksekutif belum dapat disusun sebelum analisis AI selesai. Jalankan pemeriksaan kelaikan terlebih dahulu.
           </p>
           <button class="btn-presidential gold" onclick="window.navigate('analisis',{id:'${escapeHtml(proyek.id)}'})">
-            <i class="fas fa-brain" style="margin-right:10px"></i> OPEN AI ANALYTICS
+            <i class="fas fa-brain" style="margin-right:10px"></i> BUKA ANALISIS AI
           </button>
         </div>
       </div>
@@ -96,14 +96,14 @@ function buildHtml(proyek, analisis, checklist, settings, gdocStatus, cachedDoc,
               <i class="fas fa-arrow-left" style="margin-right:8px"></i> ${escHtml(proyek.nama_bangunan)}
             </button>
             <h1 class="page-title" style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 2.2rem; letter-spacing:-0.02em; margin-bottom:4px">
-              Synthesis <span class="text-gradient-gold">Laporan SLF</span>
+              Laporan Kajian <span class="text-gradient-gold">SLF Eksekutif</span>
             </h1>
             <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap">
               <p class="page-subtitle" style="font-family:var(--font-mono); font-size: 0.7rem; letter-spacing:1px; opacity:0.6; text-transform:uppercase">
-                Automated Regulatory Compliance Documentation
+                Dokumentasi Kepatuhan Regulasi Bangunan Gedung
               </p>
               <div style="background:hsla(158, 85%, 45%, 0.1); color:var(--success-400); border:1px solid hsla(158, 85%, 45%, 0.2); padding:2px 12px; border-radius:100px; font-size:9px; font-weight:800; display:flex; align-items:center; gap:6px; font-family:var(--font-mono)">
-                <i class="fas fa-shield-halved"></i> E-SIGNATURE VERIFIED
+                <i class="fas fa-shield-halved"></i> TTE TERVERIFIKASI
               </div>
             </div>
           </div>
@@ -113,7 +113,7 @@ function buildHtml(proyek, analisis, checklist, settings, gdocStatus, cachedDoc,
                 <i class="fas fa-print"></i>
              </button>
              <button class="btn btn-primary" id="btn-deep-forensic" style="height:44px; padding:0 20px; border-radius:12px; background: #0f172a; color:white; border:none">
-                <i class="fas fa-microscope" style="margin-right:10px"></i> DEEP AUDIT
+                <i class="fas fa-microscope" style="margin-right:10px"></i> AUDIT MENDALAM
              </button>
              <button class="btn-presidential gold" id="btn-global-export" style="height:44px; padding:0 24px; border-radius:12px; width:auto">
                 <i class="fas fa-cloud-arrow-down" style="margin-right:10px"></i> EXPORT
@@ -149,8 +149,8 @@ function buildHtml(proyek, analisis, checklist, settings, gdocStatus, cachedDoc,
           <div style="width:80px; height:80px; background:hsla(220, 95%, 52%, 0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 24px">
             <i class="fas fa-microchip fa-spin" style="font-size:2rem; color:var(--brand-400)"></i>
           </div>
-          <h3 id="export-progress-title" style="font-family:'Outfit', sans-serif; font-weight:800; color:white; margin-bottom:12px">Document Processor</h3>
-          <p id="export-progress-msg" style="color:var(--text-tertiary); font-size:0.85rem; margin-bottom:32px">Authenticating with Google Cloud...</p>
+          <h3 id="export-progress-title" style="font-family:'Outfit', sans-serif; font-weight:800; color:white; margin-bottom:12px">Pemrosesan Dokumen</h3>
+          <p id="export-progress-msg" style="color:var(--text-tertiary); font-size:0.85rem; margin-bottom:32px">Mengautentikasi ke Google Cloud...</p>
           
           <div style="height:6px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px; overflow:hidden">
             <div id="export-progress-fill" style="width:0%; height:100%; border-radius:10px; background:var(--gradient-brand); transition:width 0.4s"></div>
@@ -259,7 +259,7 @@ function renderDocxPreviewTab(proyek) {
             <i class="fas fa-file-word fa-beat" style="font-size:2rem; color:#2b7cd3"></i>
           </div>
           <div style="text-align:center">
-            <div style="font-family:'Outfit',sans-serif; font-weight:800; color:white; font-size:1.1rem; margin-bottom:8px">Generating DOCX Preview</div>
+            <div style="font-family:'Outfit',sans-serif; font-weight:800; color:white; font-size:1.1rem; margin-bottom:8px">Memproses Pratinjau DOCX</div>
             <div style="font-family:var(--font-mono); font-size:10px; color:var(--text-tertiary); letter-spacing:1px">Merender dokumen Word A4...</div>
           </div>
           <div style="width:200px; height:4px; background:hsla(220,20%,100%,0.1); border-radius:4px; overflow:hidden">
@@ -285,10 +285,10 @@ function renderDocxPreviewTab(proyek) {
           <!-- Navigation Sidebar -->
           <div id="docx-nav-sidebar" class="no-print" style="background:#f8fafc; border-right:1px solid #cbd5e1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:8px; box-shadow: inset -5px 0 15px rgba(0,0,0,0.02)">
             <div style="font-family:'Outfit',sans-serif; font-weight:800; font-size:0.7rem; color:#64748b; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; display:flex; align-items:center; gap:8px">
-              <i class="fas fa-list-ul"></i> NAVIGATION PANE
+              <i class="fas fa-list-ul"></i> PANEL NAVIGASI
             </div>
             <div id="docx-nav-list" style="display:flex; flex-direction:column; gap:4px">
-               <div style="font-size:8pt; color:#94a3b8; font-style:italic; padding:10px; text-align:center">Extracting document structure...</div>
+               <div style="font-size:8pt; color:#94a3b8; font-style:italic; padding:10px; text-align:center">Mengekstrak struktur dokumen...</div>
             </div>
           </div>
 
@@ -317,12 +317,12 @@ function renderGDocsTab(proyek, gdocStatus, cachedDoc) {
     return `
       <div class="card-quartz" style="text-align:center; padding:80px 40px; border-color: hsla(0, 85%, 60%, 0.1)">
         <i class="fas fa-link-slash" style="font-size:3rem; color:var(--danger-400); margin-bottom:24px; opacity:0.5"></i>
-        <h3 style="font-family:'Outfit', sans-serif; font-weight:800; color:white; margin-bottom:12px">Cloud Integration Failure</h3>
+        <h3 style="font-family:'Outfit', sans-serif; font-weight:800; color:white; margin-bottom:12px">Integrasi Cloud Gagal</h3>
         <p style="color:var(--text-tertiary); max-width:500px; margin:0 auto 32px">
           ${escHtml(gdocStatus.message)}
         </p>
         <button class="btn btn-outline" onclick="window.navigate('settings')">
-          <i class="fas fa-gears" style="margin-right:10px"></i> RECONFIGURE SETTINGS
+          <i class="fas fa-gears" style="margin-right:10px"></i> KONFIGURASI ULANG
         </button>
       </div>
     `;
@@ -339,7 +339,7 @@ function renderGDocsTab(proyek, gdocStatus, cachedDoc) {
           Mesin neural menyalin templat induk dan mengisi otomatis seluruh temuan lapangan, matriks risiko, dan catatan bukti visual ke dalam Google Document yang sesuai ketentuan hukum.
         </p>
         <button class="btn-presidential gold" onclick="window._generateGDoc()" id="btn-generate-gdoc" style="height:56px; padding:0 40px; font-size:1rem">
-          <i class="fas fa-wand-magic-sparkles" style="margin-right:12px"></i> INITIATE TEMPLATE BINDING
+          <i class="fas fa-wand-magic-sparkles" style="margin-right:12px"></i> BUAT DOKUMEN DARI TEMPLATE
         </button>
       </div>
     `;
@@ -366,16 +366,16 @@ function renderGDocsTab(proyek, gdocStatus, cachedDoc) {
         
         <div class="flex gap-4">
           <button class="btn btn-ghost btn-sm" onclick="window._reGenerateGDoc()" style="color:var(--brand-300); font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:1px">
-            <i class="fas fa-sync-alt" style="margin-right:8px"></i> SYNC CORE DATA
+            <i class="fas fa-sync-alt" style="margin-right:8px"></i> SINKRONKAN DATA
           </button>
           
           <button class="btn btn-outline btn-sm" onclick="window.open('${escapeHtml(editUrl)}','_blank')" style="border-radius:10px; font-weight:700">
-            <i class="fas fa-external-link" style="margin-right:8px"></i> OPEN EDITOR
+            <i class="fas fa-external-link" style="margin-right:8px"></i> BUKA EDITOR
           </button>
           
           <div style="position:relative; display:flex; gap:8px">
             <button class="btn btn-outline btn-sm" onclick="window._openTemplateSetup()" style="border-radius:10px; font-weight:700; background:hsla(220, 20%, 100%, 0.05); color:var(--brand-300)">
-              <i class="fas fa-file-invoice" style="margin-right:8px"></i> TEMPLATE SETUP
+              <i class="fas fa-file-invoice" style="margin-right:8px"></i> ATUR TEMPLATE
             </button>
 
             <button class="btn-presidential gold" onclick="window._toggleGDocsExport()" style="height:36px; padding:0 20px; font-size:11px; border-radius:10px">
@@ -400,7 +400,7 @@ function renderGDocsTab(proyek, gdocStatus, cachedDoc) {
       <div class="card-quartz" style="padding:0; overflow:hidden; height:75vh; position:relative; background:hsla(224, 25%, 4%, 0.4)">
          <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:var(--text-tertiary); display:flex; flex-direction:column; align-items:center; gap:16px; z-index:0">
            <i class="fas fa-circle-notch fa-spin" style="font-size:2.5rem; color:var(--brand-400)"></i>
-           <span style="font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:2px">INTERFACING GOOGLE CLOUD...</span>
+           <span style="font-family:var(--font-mono); font-size:10px; font-weight:800; letter-spacing:2px">MENGHUBUNGKAN KE GOOGLE CLOUD...</span>
          </div>
          <iframe src="${escapeHtml(embedUrl)}" style="width:100%; height:100%; border:none; position:relative; z-index:1; background:transparent"></iframe>
       </div>
@@ -588,7 +588,7 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
       <!-- Left Anchor Nav -->
       <div class="no-print">
         <div class="card-quartz" style="padding:24px; position:sticky; top:20px">
-          <div style="font-family:var(--font-mono); font-size:10px; font-weight:800; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:2px; margin-bottom:24px">STRUCTURE NAVIGATION</div>
+          <div style="font-family:var(--font-mono); font-size:10px; font-weight:800; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:2px; margin-bottom:24px">NAVIGASI BAGIAN DOKUMEN</div>
           <div style="display:flex; flex-direction:column; gap:8px">
             ${sections.map((s) => `
               <button class="btn btn-ghost" style="width:100%; justify-content:flex-start; height:40px; font-weight:700; font-size:0.85rem; padding:0 16px; border-radius:10px" onclick="document.getElementById('lap-${escapeHtml(s.id)}').scrollIntoView({ behavior: 'smooth', block: 'start' })">
@@ -598,7 +598,7 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
           </div>
           <div style="margin-top:32px; padding-top:24px; border-top:1px solid hsla(220, 20%, 100%, 0.05)">
             <button class="btn-presidential gold" onclick="window._printReport()" style="width:100%; justify-content:center; font-size:11px">
-              <i class="fas fa-print" style="margin-right:8px"></i> PRINT TO PDF
+              <i class="fas fa-print" style="margin-right:8px"></i> CETAK KE PDF
             </button>
           </div>
         </div>
@@ -616,11 +616,11 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
                 <div style="width:40px; height:40px; background:#1e3a8a; border-radius:8px; display:flex; align-items:center; justify-content:center; color:white">
                   <i class="fas fa-building-shield"></i>
                 </div>
-                <div style="font-size:12pt; font-weight:900; color:#1e3a8a">GOVTECH<br><span style="font-size:7pt; opacity:0.7">SLF DIVISION</span></div>
+                <div style="font-size:12pt; font-weight:900; color:#1e3a8a">PENGKAJI SLF<br><span style="font-size:7pt; opacity:0.7">DIVISI KELAIKAN</span></div>
               </div>
               <div style="text-align:right">
                 <div style="font-size:10pt; font-weight:800; color:#1e3a8a; text-transform:uppercase">${escHtml(settings.consultant?.name || 'PT. KONSULTAN TEKNIK NASIONAL')}</div>
-                <div style="font-size:7pt; color:#64748b">Engineering License: ${escHtml(settings.consultant?.license || 'NIB-812000...')}</div>
+                <div style="font-size:7pt; color:#64748b">Izin Usaha: ${escHtml(settings.consultant?.license || 'NIB-812000...')}</div>
               </div>
             </div>
 
@@ -923,7 +923,7 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
                          </div>
                          <div style="position:absolute; bottom:-15px; left:50%; transform:translateX(-50%); width:max-content">
                             <div style="border: 1px solid #3b82f6; display:inline-block; padding: 2px 6px; border-radius:4px; background:#eff6ff">
-                              <span style="font-size:7pt; font-weight:900; color:#1e40af">TTE VERIFIED</span>
+                              <span style="font-size:7pt; font-weight:900; color:#1e40af">TTE TERVERIFIKASI</span>
                             </div>
                          </div>
                        ` : `
@@ -956,7 +956,7 @@ function renderLegacyTab(proyek, analisis, checklist, settings, proyekFiles) {
                    </div>
                    <div style="position:absolute; bottom:-12px; left:50%; transform:translateX(-50%); width:max-content">
                       <div style="border: 1px solid #3b82f6; display:inline-block; padding: 3px 10px; border-radius:4px; background:#eff6ff">
-                        <span style="font-size:8pt; font-weight:900; color:#1e40af">OFFICIAL SEAL</span>
+                        <span style="font-size:8pt; font-weight:900; color:#1e40af">STEMPEL RESMI</span>
                       </div>
                    </div>
                  ` : `
@@ -1059,7 +1059,7 @@ function renderForensicAnalysisNarrative(items, proyekFiles = []) {
             <div style="font-family:var(--font-mono); font-size:7pt; color:#64748b; margin-top:2px">ID: ${escapeHtml(i.kode || i.id.substring(0,8).toUpperCase())} | Aspek: ${escHtml(i.aspek || 'Umum')}</div>
           </div>
           <div style="padding:4px 12px; border-radius:6px; background:${isDeep ? '#ecfdf5' : '#f1f5f9'}; border:1px solid ${isDeep ? '#10b981' : '#cbd5e1'}">
-             <span style="font-size:7pt; font-weight:800; color:${isDeep ? '#065f46' : '#64748b'}">${isDeep ? 'AUDITED: DEEP REASONING' : 'PRELIMINARY ANALYSIS'}</span>
+             <span style="font-size:7pt; font-weight:800; color:${isDeep ? '#065f46' : '#64748b'}">${isDeep ? 'DIAUDIT: ANALISIS MENDALAM' : 'ANALISIS AWAL'}</span>
           </div>
         </div>
 

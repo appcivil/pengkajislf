@@ -92,15 +92,15 @@ function renderBaseCard({
 export function renderAuditTeknisCard(proyekId, stats, loading = false) {
   return renderBaseCard({
     title: 'Audit Teknis Lapangan',
-    phase: 'PHASE 02',
+    phase: 'TAHAP 02',
     icon: 'clipboard-list-check',
     accentColor: 'var(--brand-400)',
     description: 'Inspeksi menyeluruh terhadap komponen arsitektur, struktur dan MEP.',
     onClick: `window.navigate('checklist', {id: '${proyekId}'})`,
     loading,
     stats: {
-      value: `${stats.done}/${stats.total} ITEMS`,
-      label: 'COMPLETION RATE',
+      value: `${stats.done}/${stats.total} BUTIR`,
+      label: 'TINGKAT PENYELESAIAN',
       progress: stats.pct,
       sublabel: `${stats.pct}% selesai`
     }
@@ -115,7 +115,7 @@ export function renderProteksiPetirCard(proyek, summary, loading = false) {
 
   return renderBaseCard({
     title: 'Proteksi Petir',
-    phase: 'PHASE 02C',
+    phase: 'TAHAP 02C',
     icon: 'cloud-bolt',
     accentColor: 'var(--warning-400)',
     description: 'Evaluasi sistem proteksi petir sesuai SNI 2848:2020.',
@@ -136,17 +136,17 @@ export function renderProteksiPetirCard(proyek, summary, loading = false) {
  */
 export function renderRiskAnalysisCard(proyek, analisisData, loading = false) {
   return renderBaseCard({
-    title: 'Risk Analysis AI',
-    phase: 'PHASE 03',
+    title: 'Analisis Risiko AI',
+    phase: 'TAHAP 03',
     icon: 'brain-circuit',
     accentColor: 'var(--gold-400)',
-    description: 'Automated technical scoring & mitigation recommendations.',
+    description: 'Penilaian teknis otomatis & rekomendasi mitigasi.',
     onClick: `window.navigate('analisis', {id: '${proyek.id}'})`,
     loading,
     content: `
       <div style="margin-top: 20px; display: flex; align-items: center; gap: 8px;">
         <span class="badge" style="background: hsla(45, 90%, 60%, 0.1); color: var(--gold-400); border: 1px solid hsla(45, 90%, 60%, 0.2); font-size: 10px;">
-          MESIN NEURAL AKTIF
+          MESIN ANALISIS AI AKTIF
         </span>
       </div>
     `
@@ -159,10 +159,10 @@ export function renderRiskAnalysisCard(proyek, analisisData, loading = false) {
 export function renderManajemenBerkasCard(proyek, loading = false) {
   return renderBaseCard({
     title: 'Manajemen Berkas SIMBG',
-    phase: 'PHASE 01',
+    phase: 'TAHAP 01',
     icon: 'folder-tree',
     accentColor: 'var(--text-secondary)',
-    description: 'Synchronization dengan SIMBG database.',
+    description: 'Sinkronisasi dengan database SIMBG.',
     onClick: `window.navigate('proyek-files', {id: '${proyek.id}'})`,
     loading
   });
@@ -174,10 +174,10 @@ export function renderManajemenBerkasCard(proyek, loading = false) {
 export function renderLaporanKajianCard(proyek, loading = false) {
   return renderBaseCard({
     title: 'Laporan Kajian SLF',
-    phase: 'PHASE 04',
+    phase: 'TAHAP 04',
     icon: 'file-invoice',
     accentColor: 'var(--success-400)',
-    description: 'Executive summary & full technical report.',
+    description: 'Ringkasan eksekutif & laporan teknis lengkap.',
     onClick: `window.navigate('laporan', {id: '${proyek.id}'})`,
     loading
   });

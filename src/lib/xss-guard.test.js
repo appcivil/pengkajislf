@@ -16,8 +16,6 @@
  *     muatan XSS, lalu memeriksa HTML yang dihasilkan. Lapis ini membuktikan
  *     escaping bekerja sampai ke keluaran akhir, bukan sekadar "ada tulisan
  *     escapeHtml di kode".
- *
- * @vitest-environment jsdom
  */
 
 import { describe, it, expect } from 'vitest';

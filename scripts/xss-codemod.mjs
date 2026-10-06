@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * xss-codemod.mjs — menyuntikkan escapeHtml() ke interpolasi data pada
  * setiap sink innerHTML, sehingga XSS tersimpan (stored XSS) tertutup.

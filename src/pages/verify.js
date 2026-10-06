@@ -160,7 +160,7 @@ function buildVerifyHtml(p, a, s, expertType, expert, integrity, cert) {
                      <div style="position:absolute; inset:0; background:linear-gradient(transparent 50%, rgba(255,255,255,0.9) 100%); padding:40px; display:flex; flex-direction:column; justify-content:flex-end">
                         <h2 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:2rem; color:hsl(224, 30%, 12%); margin-bottom:8px">${escHtml(p.nama_bangunan)}</h2>
                         <div style="display:flex; align-items:center; gap:12px; color:var(--text-tertiary); font-size:0.9rem">
-                           <i class="fas fa-map-pin" style="color:var(--brand-500)"></i> ${escHtml(p.alamat || 'Unknown Geospatial coordinates')}
+                           <i class="fas fa-map-pin" style="color:var(--brand-500)"></i> ${escHtml(p.alamat || 'Alamat belum ditentukan')}
                         </div>
                      </div>
                   </div>

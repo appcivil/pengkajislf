@@ -178,15 +178,15 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
                 <div style="width:48px; height:48px; border-radius:14px; background:hsla(220, 95%, 52%, 0.1); display:flex; align-items:center; justify-content:center; color:var(--brand-400)">
                   <i class="fas fa-clipboard-check" style="font-size:1.4rem"></i>
                 </div>
-                <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--brand-400)">PHASE 02</div>
+                <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--brand-400)">TAHAP 02</div>
               </div>
               <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--text-primary); margin-bottom:4px">Audit Teknis Lapangan</h3>
               <p style="font-size:0.75rem; color:var(--text-tertiary); line-height:1.5">Inspeksi menyeluruh terhadap komponen arsitektur, struktur dan MEP.</p>
               
               <div style="margin-top:20px">
                 <div class="flex-between" style="margin-bottom:8px">
-                  <span style="font-size:0.7rem; font-weight:700; color:var(--text-tertiary)">COMPLETION RATE</span>
-                  <span style="font-size:0.7rem; font-weight:800; color:var(--brand-400)">${escapeHtml(stats.done)}/${escapeHtml(stats.total)} ITEMS</span>
+                  <span style="font-size:0.7rem; font-weight:700; color:var(--text-tertiary)">TINGKAT PENYELESAIAN</span>
+                  <span style="font-size:0.7rem; font-weight:800; color:var(--brand-400)">${escapeHtml(stats.done)}/${escapeHtml(stats.total)} BUTIR</span>
                 </div>
                 <div style="height:6px; background:hsla(220, 20%, 100%, 0.05); border-radius:10px">
                   <div style="width:${escapeHtml(stats.pct)}%; height:100%; border-radius:10px; background:var(--gradient-brand); box-shadow: var(--shadow-sapphire)"></div>
@@ -242,12 +242,12 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
                 <div style="width:48px; height:48px; border-radius:14px; background:hsla(45, 90%, 60%, 0.1); display:flex; align-items:center; justify-content:center; color:var(--gold-400)">
                   <i class="fas fa-brain" style="font-size:1.4rem"></i>
                 </div>
-                <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--gold-400)">PHASE 03</div>
+                <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--gold-400)">TAHAP 03</div>
               </div>
-              <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--text-primary); margin-bottom:4px">Risk Analysis AI</h3>
-              <p style="font-size:0.75rem; color:var(--text-tertiary); line-height:1.5">Automated technical scoring & mitigation recommendations based on audit data.</p>
+              <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--text-primary); margin-bottom:4px">Analisis Risiko AI</h3>
+              <p style="font-size:0.75rem; color:var(--text-tertiary); line-height:1.5">Penilaian teknis otomatis & rekomendasi mitigasi berdasarkan data audit.</p>
               <div style="margin-top:20px; display:flex; align-items:center; gap:8px">
-                <span class="badge" style="background:hsla(45, 90%, 60%, 0.1); color:var(--gold-400); border:1px solid hsla(45, 90%, 60%, 0.2); font-size:10px">MESIN NEURAL AKTIF</span>
+                <span class="badge" style="background:hsla(45, 90%, 60%, 0.1); color:var(--gold-400); border:1px solid hsla(45, 90%, 60%, 0.2); font-size:10px">MESIN ANALISIS AI AKTIF</span>
               </div>
             </div>
 
@@ -266,7 +266,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
                 <div style="width:48px; height:48px; border-radius:14px; background:hsla(220, 20%, 100%, 0.05); display:flex; align-items:center; justify-content:center; color:var(--text-secondary)">
                   <i class="fas fa-folder-tree" style="font-size:1.4rem"></i>
                 </div>
-                <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--text-tertiary)">PHASE 01</div>
+                <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--text-tertiary)">TAHAP 01</div>
               </div>
               <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--text-primary); margin-bottom:4px">Manajemen Berkas SIMBG</h3>
               <p style="font-size:0.75rem; color:var(--text-tertiary); line-height:1.5">Sinkronisasi dengan basis data SIMBG nasional untuk gambar arsitektur dan struktur.</p>
@@ -278,10 +278,10 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
                 <div style="width:48px; height:48px; border-radius:14px; background:hsla(158, 85%, 45%, 0.1); display:flex; align-items:center; justify-content:center; color:var(--success-400)">
                   <i class="fas fa-file-invoice" style="font-size:1.4rem"></i>
                 </div>
-                <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--success-400)">PHASE 04</div>
+                <div style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--success-400)">TAHAP 04</div>
               </div>
               <h3 style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.1rem; color:var(--text-primary); margin-bottom:4px">Laporan Kajian SLF</h3>
-              <p style="font-size:0.75rem; color:var(--text-tertiary); line-height:1.5">Executive summary & full technical report generation with legally compliant format.</p>
+              <p style="font-size:0.75rem; color:var(--text-tertiary); line-height:1.5">Ringkasan eksekutif & laporan teknis lengkap sesuai format regulasi.</p>
             </div>
           </div>
 
@@ -289,15 +289,15 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
           <div class="grid-3-col">
              <div class="card-quartz clickable" onclick="window.navigate('galeri', {id:'${escapeHtml(p.id)}'})" style="text-align:center; padding:var(--space-5)">
                 <i class="fas fa-images" style="font-size:1.4rem; color:var(--brand-400); margin-bottom:12px"></i>
-                <div style="font-weight:700; font-size:0.85rem; color:white">Visual Gallery</div>
+                <div style="font-weight:700; font-size:0.85rem; color:white">Galeri Visual</div>
              </div>
              <div class="card-quartz clickable" onclick="window.navigate('surat-pernyataan', {id:'${escapeHtml(p.id)}'})" style="text-align:center; padding:var(--space-5)">
                 <i class="fas fa-file-contract" style="font-size:1.4rem; color:var(--gold-400); margin-bottom:12px"></i>
-                <div style="font-weight:700; font-size:0.85rem; color:white">Statements</div>
+                <div style="font-weight:700; font-size:0.85rem; color:white">Surat Pernyataan</div>
              </div>
              <div class="card-quartz clickable" onclick="window.navigate('todo', {proyekId:'${escapeHtml(p.id)}'})" style="text-align:center; padding:var(--space-5)">
                 <i class="fas fa-list-check" style="font-size:1.4rem; color:var(--success-400); margin-bottom:12px"></i>
-                <div style="font-weight:700; font-size:0.85rem; color:white">Remedial Tasks</div>
+                <div style="font-weight:700; font-size:0.85rem; color:white">Tugas Perbaikan</div>
              </div>
           </div>
 

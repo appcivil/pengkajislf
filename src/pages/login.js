@@ -11,11 +11,11 @@ import { showError, showInfo } from '../components/toast.js';
 
 export async function loginPage() {
   const features = [
-    { icon: 'fa-brain',   text: 'Sintesis Neural Kuantum (SNI 9273:2025)' },
-    { icon: 'fa-shield-halved',    text: 'Pengawasan Integritas & Kepatuhan Otomatis' },
-    { icon: 'fa-file-signature',  text: 'Orkestrator Segel Digital GDocs Resmi' },
-    { icon: 'fa-diagram-project',   text: 'Visualisasi Data Strategis & Peta Denyut' },
-    { icon: 'fa-cloud',    text: 'Arsitektur Cloud Terenkripsi (AES 256-bit)' },
+    { icon: 'fa-brain',           text: 'Analisis Cerdas Berbasis Standar Teknis (SNI & PUPR)' },
+    { icon: 'fa-shield-halved',   text: 'Pemeriksaan Kelaikan & Integritas Struktur Bangunan' },
+    { icon: 'fa-file-signature',  text: 'Penyusunan & Pengesahan Dokumen Kajian SLF Resmi' },
+    { icon: 'fa-diagram-project', text: 'Visualisasi Geospasial & Matriks Risiko Kelaikan' },
+    { icon: 'fa-cloud',           text: 'Penyimpanan Berkas Aman & Sinkronisasi Cloud' },
   ];
 
   const year = new Date().getFullYear();
@@ -105,8 +105,8 @@ export async function loginPage() {
                        <i class="fas fa-lock" style="margin-right:12px"></i> MASUK
                     </button>
                     ${!APP_CONFIG.features.isPublished ? `
-                      <button type="button" class="btn btn-ghost" id="btn-dev-bypass" style="color:var(--brand-300); font-family:var(--font-mono); font-size:9px; font-weight:800; letter-spacing:2px; margin-top:-8px">
-                        <i class="fas fa-terminal" style="margin-right:10px"></i> PROTOKOL PENGABAIAN (BYPASS)
+                      <button type="button" class="btn btn-ghost" id="btn-dev-bypass" style="color:var(--brand-300); font-family:var(--font-mono); font-size:10px; font-weight:700; letter-spacing:1px; margin-top:-4px">
+                        <i class="fas fa-terminal" style="margin-right:8px"></i> Masuk Mode Pratinjau (Dev Bypass)
                       </button>
                     ` : ''}
                  </form>
@@ -151,7 +151,7 @@ export async function loginPage() {
     } catch(err) {
       showError('Mode pratinjau gagal dibuka: ' + err.message);
       btn.disabled = false;
-      btn.innerHTML = `<i class="fas fa-terminal"></i> PROTOKOL PENGABAIAN (BYPASS)`;
+      btn.innerHTML = `<i class="fas fa-terminal"></i> Masuk Mode Pratinjau (Dev Bypass)`;
     }
   });
 
