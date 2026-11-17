@@ -67,6 +67,13 @@ class Store {
     };
     try {
       localStorage.removeItem('slf_app_state');
+      // Settings can contain customer names, report templates and branding.
+      // Clear all browser copies on logout/account switch; they are reloaded
+      // from the tenant-scoped database after the next authenticated session.
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('slf_app_settings:')) localStorage.removeItem(key);
+      }
       this.persist();
     } catch (e) {
       console.warn('[Store] Failed to clear persisted session data', e);
