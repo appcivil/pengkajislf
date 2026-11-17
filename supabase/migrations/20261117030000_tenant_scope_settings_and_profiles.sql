@@ -8,7 +8,7 @@ alter table public.settings
   references public.organizations(id) on delete cascade;
 
 update public.settings
-set organization_id = '11111111-1111-4111-8111-111111111111'
+set organization_id = '22222222-2222-4222-8222-222222222222'
 where organization_id is null;
 
 alter table public.settings
