@@ -14,6 +14,9 @@ export async function organisasiPage() {
   }
 
   const memberships = (data || []).filter(row => row.organization_id);
+  if (!store.get().activeOrganizationId && memberships.length === 1) {
+    store.set({ activeOrganizationId: memberships[0].organization_id });
+  }
   const activeOrganizationId = store.get().activeOrganizationId || null;
   const cards = memberships.length
     ? memberships.map(row => `
