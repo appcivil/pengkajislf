@@ -40,6 +40,9 @@ export async function proyekFormPage(params = {}) {
   if (!isEdit && organizations.length === 0) {
     throw new Error('Akun belum tergabung dalam organisasi. Hubungi pemilik organisasi.');
   }
+  if (!store.get().activeOrganizationId && organizations.length === 1) {
+    store.set({ activeOrganizationId: organizations[0].id });
+  }
   const organizationField = !isEdit
     ? '<div class="form-group mb-6"><label class="form-label">Organisasi / Tenant <span style="color:var(--danger-400)">*</span></label><select class="form-select" name="organization_id" required><option value="">-- Pilih organisasi --</option>' +
       organizations.map(org => '<option value="' + escapeHtml(org.id) + '"' + ((organizations.length === 1 || store.get().activeOrganizationId === org.id) ? ' selected' : '') + '>' + escapeHtml(org.name) + ' (' + escapeHtml(org.role) + ')</option>').join('') +
