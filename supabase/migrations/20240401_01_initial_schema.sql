@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS public.proyek (
   tanggal_mulai    date,
   tanggal_target   date,
   progress         integer DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
+  metadata         jsonb NOT NULL DEFAULT '{}'::jsonb,
   
   -- SIMBG Step 1: Intensitas Teknis
   gsb              numeric,
