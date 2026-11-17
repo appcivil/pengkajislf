@@ -73,7 +73,6 @@ export async function organisasiPage() {
 }
 
 window.selectActiveOrganization = function(organizationId) {
-  const allowed = document.querySelectorAll('[data-organization-id]');
   // The server-side membership check remains authoritative; this is only
   // a UI context choice and never grants access to another tenant.
   store.set({ activeOrganizationId: organizationId });
@@ -93,8 +92,9 @@ window.handleCreateOrganization = async function(event) {
 
   button.disabled = true;
   try {
-    const { error } = await supabase.rpc('create_organization', { p_name: name });
+    const { data, error } = await supabase.rpc('create_organization', { p_name: name });
     if (error) throw error;
+    if (data?.id) store.set({ activeOrganizationId: data.id });
     showSuccess('Organisasi berhasil dibuat. Anda menjadi owner pertama.');
     window.navigate('organisasi');
   } catch (error) {
