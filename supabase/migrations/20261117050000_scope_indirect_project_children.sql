@@ -8,6 +8,8 @@ do $$
 declare
   v_map record;
   v_policy record;
+  v_select text;
+  v_write text;
 begin
   for v_map in
     select * from (values
@@ -47,6 +49,15 @@ begin
 
     execute format('alter table public.%I enable row level security',
       v_map.child_table);
+
+    v_select := format(
+      'exists (select 1 from public.%I parent_row join public.proyek project_row on project_row.id = parent_row.project_id where parent_row.id = %I.%I and private.is_org_member(project_row.organization_id))',
+      v_map.parent_table, v_map.child_table, v_map.child_fk
+    );
+    v_write := format(
+      'exists (select 1 from public.%I parent_row join public.proyek project_row on project_row.id = parent_row.project_id where parent_row.id = %I.%I and private.has_org_role(project_row.organization_id, array[''owner'',''admin'',''member'']))',
+      v_map.parent_table, v_map.child_table, v_map.child_fk
+    );
 
     execute format(
       'create policy tenant_parent_select on public.%I for select to authenticated using (%s)',
