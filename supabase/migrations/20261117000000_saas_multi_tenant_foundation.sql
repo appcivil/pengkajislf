@@ -194,7 +194,7 @@ declare
   v_org_id uuid;
 begin
   if new.organization_id is null then
-    select count(*), min(m.organization_id)
+    select count(*), (array_agg(m.organization_id order by m.created_at))[1]
       into v_org_count, v_org_id
     from public.organization_members m
     where m.user_id = (select auth.uid());
@@ -266,16 +266,16 @@ begin
       v_table.relname, v_using
     );
     execute format(
-      'create policy tenant_scope_insert on public.%I for insert to authenticated with check (%s)',
-      v_table.relname, v_using
+      'create policy tenant_scope_insert on public.%I for insert to authenticated with check (exists (select 1 from public.proyek p where p.id = %I.proyek_id and private.has_org_role(p.organization_id, array[''owner'',''admin'',''member''])))',
+      v_table.relname, v_table.relname
     );
     execute format(
-      'create policy tenant_scope_update on public.%I for update to authenticated using (%s) with check (%s)',
-      v_table.relname, v_using, v_using
+      'create policy tenant_scope_update on public.%I for update to authenticated using (exists (select 1 from public.proyek p where p.id = %I.proyek_id and private.has_org_role(p.organization_id, array[''owner'',''admin'',''member'']))) with check (exists (select 1 from public.proyek p where p.id = %I.proyek_id and private.has_org_role(p.organization_id, array[''owner'',''admin'',''member''])))',
+      v_table.relname, v_table.relname, v_table.relname
     );
     execute format(
-      'create policy tenant_scope_delete on public.%I for delete to authenticated using (%s)',
-      v_table.relname, v_using
+      'create policy tenant_scope_delete on public.%I for delete to authenticated using (exists (select 1 from public.proyek p where p.id = %I.proyek_id and private.has_org_role(p.organization_id, array[''owner'',''admin'',''member''])))',
+      v_table.relname, v_table.relname
     );
   end loop;
 end;
@@ -300,12 +300,12 @@ using (private.is_org_member(organization_id));
 
 create policy proyek_tenant_insert on public.proyek
 for insert to authenticated
-with check (private.is_org_member(organization_id));
+with check (private.has_org_role(organization_id, array['owner','admin','member']));
 
 create policy proyek_tenant_update on public.proyek
 for update to authenticated
-using (private.is_org_member(organization_id))
-with check (private.is_org_member(organization_id));
+using (private.has_org_role(organization_id, array['owner','admin','member']))
+with check (private.has_org_role(organization_id, array['owner','admin','member']));
 
 create policy proyek_tenant_delete on public.proyek
 for delete to authenticated
