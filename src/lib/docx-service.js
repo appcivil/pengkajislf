@@ -7,6 +7,7 @@ import { saveAs } from 'file-saver';
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import { getSettings } from './settings.js';
+import { supabase } from './supabase.js';
 import { FONT_SIZE_BODY, FONT_SIZE_CAPTION, COLOR_MUTED, FONT_MAIN, COLOR_BORDER, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM, MARGIN_LEFT, safeText, COLOR_PRIMARY, LINE_SPACING, FONT_SIZE_H1, COLOR_HEADING, FONT_SIZE_H2, FONT_SIZE_H3, COLOR_SUBHEADING, formatTanggal } from './docx/utils.js';
 
 // Modular Outlines
@@ -48,15 +49,24 @@ export async function generateDocxBlob(proyek, analisis, checklist, onProgress, 
   // Check project meta first, then global settings
   const customTemplateBase64 = proyek.metadata?.report_template_base64 || settings.report?.customTemplateBase64;
 
-  if (customTemplateBase64 || proyek.metadata?.report_template_url) {
+  if (customTemplateBase64 || proyek.metadata?.report_template_storage_path || proyek.metadata?.report_template_url) {
     if (onProgress) onProgress(20, 'Menyiapkan data template...');
     try {
       let tplBase64 = customTemplateBase64;
       
-      // Jika ada URL (dari Storage), ambil datanya
-      if (!tplBase64 && proyek.metadata?.report_template_url) {
-        if (onProgress) onProgress(25, 'Mengunduh template dari storage...');
-        // fetchTemplateAsBase64 didefinisikan di bawah
+      // Project templates are stored in a private bucket. Generate a short-lived
+      // signed URL only after the project has passed tenant-scoped RLS.
+      if (!tplBase64 && proyek.metadata?.report_template_storage_path) {
+        if (onProgress) onProgress(25, 'Mengunduh template privat...');
+        const { data: signed, error: signedError } = await supabase.storage
+          .from('templates')
+          .createSignedUrl(proyek.metadata.report_template_storage_path, 300);
+        if (signedError) throw signedError;
+        tplBase64 = await fetchTemplateAsBase64(signed.signedUrl);
+      } else if (!tplBase64 && proyek.metadata?.report_template_url) {
+        // Legacy compatibility only. Migrate old project templates to private
+        // storage and remove the public URL from project metadata.
+        if (onProgress) onProgress(25, 'Mengunduh template lama...');
         tplBase64 = await fetchTemplateAsBase64(proyek.metadata.report_template_url);
       }
 
