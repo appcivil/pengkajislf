@@ -110,3 +110,52 @@ The Performance Advisor reports 13 duplicate-index groups. These are optimizatio
 - This report is a catalog/security inventory, not a full schema diff. Column-level and function-body equivalence across all 151 tables and 192 functions still needs to be generated and reviewed.
 - Supabase migration history being empty does not mean the live schema is empty; it means the existing live DDL has not been reconciled into the CLI migration ledger.
 - No production changes were performed during this audit.
+
+
+## 7. Exact table-level reconciliation (catalog inventory)
+
+A second pass used Supabase's verbose table catalog (151 public base tables, including columns, primary keys and foreign keys) and parsed every checked-in SQL file under `supabase/`.
+
+### 7.1 Tables represented by existing checked-in table-creation SQL
+
+The live catalog contains 26 tables represented by the existing core/optional SQL files. The optional `keepalive_ping` table is declared in `20260916_keepalive_and_indexes.sql` but was not present in the verbose live table listing. The SaaS migration will create `organizations` and `organization_members`; neither appears in the current live table inventory.
+
+### 7.2 125 live tables not declared by checked-in CREATE TABLE statements
+
+These are present in the live catalog but no matching `CREATE TABLE` declaration was found in the checked-in SQL files. They need their original DDL recovered or re-authored and reviewed before a full clean-database baseline can be claimed.
+
+**Core and AI / collaboration**
+- `agent_prompts`, `multi_agent_results`, `system_logs`, `laporan_versions`, `tata_ruang_analisis`, `tata_ruang_luasan`, `proyek_access`, `chat_sessions`, `generated_contents`, `ai_memories`
+
+**Electrical, lightning protection and building intensity**
+- `electrical_panels`, `electrical_measurements`, `electrical_thermal_images`, `electrical_protection_settings`, `electrical_compliance_checks`, `electrical_reports`, `lightning_risk_assessments`, `lps_components`, `lps_grounding_tests`, `lps_inspections`, `lps_internal_protection`, `lps_risk_assessments`, `lps_air_terminals`, `lps_grounding`, `building_intensity_assessments`, `building_setback_details`, `building_room_schedules`, `building_intensity_files`, `zoning_reference`
+
+**Architecture, evacuation and structural**
+- `architectural_assessments`, `architectural_rooms`, `architectural_facade_photos`, `architectural_files`, `architectural_standards_ref`, `egress_routes`, `exit_components`, `emergency_lighting`, `smoke_zones`, `occupant_loads`, `evacuation_drills`, `ref_occupant_factors`, `ref_travel_distance_limits`, `simulasi_summary`, `egress_analysis`, `etabs_models`, `fema356_analysis_results`, `timehistory_analysis_results`, `structural_analysis_reports`, `architecture_data`, `archsim_sessions`, `archsim_snapshots`, `evacuation_simulations`, `evacuation_exits`, `evacuation_agents`, `evacuation_buildings`
+
+**Fire safety and lighting**
+- `fire_simulations`, `fire_sources`, `fire_timeline`, `fire_integrated_analysis`, `fire_assets`, `fire_inspections`, `fire_calculations`, `fire_egress_plans`, `fire_pump_tests`, `fire_hydrant_tests`, `fire_risk_assessments`, `fire_inspection_files`, `lighting_projects`, `lighting_calculations`, `luminaire_library`, `furniture_library`, `daylight_calculations`, `lighting_reports`
+
+**Building comfort and sanitation**
+- `comfort_rooms`, `comfort_climate`, `comfort_view`, `comfort_noise`, `comfort_vibration`, `comfort_ventilation`, `comfort_furniture_layout`, `comfort_summary`, `wastewater_systems`, `sewer_network`, `treatment_units`, `effluent_quality`, `sanitary_fixtures`, `maintenance_schedule`, `pump_stations`, `pump_units`
+
+**Stormwater, water and accessibility**
+- `stormwater_simulations`, `stormwater_evaluations`, `stormwater_catchments`, `stormwater_design_storms`, `stormwater_lid_systems`, `stormwater_channels`, `water_systems`, `water_quality_tests`, `water_tanks`, `water_pipes`, `water_pumps`, `water_meters`, `water_meter_readings`, `water_fixtures`, `accessibility_scores`, `accessibility_corridors`, `accessibility_ramps`, `accessibility_stairs`, `accessibility_elevators`, `accessibility_toilets`, `accessibility_parking`, `accessibility_signage`, `accessibility_infrastructure`, `accessibility_files`, `accessibility_reports`
+
+**Environmental modules and ledger**
+- `environmental_documents`, `wastewater_monitoring`, `waste_audits`, `air_emissions`, `noise_measurements`, `hazardous_waste`, `energy_audits`, `water_audits`, `drainage_analysis`, `green_space_analysis`, `schema_migrations`
+
+### 7.3 Ownership and indirect-parent coverage
+
+The catalog identifies 17 live tables without any direct `project_id`, `proyek_id`, `organization_id`, `user_id`, `created_by`, or `owner_id` column:
+
+- Parent-linked child rows: `electrical_protection_settings`, `building_setback_details`, `building_room_schedules`, `architectural_rooms`, `evacuation_exits`, `evacuation_agents`, `fire_sources`, `fire_timeline`, `lighting_reports`, `pump_units`.
+- Shared/reference/system candidates: `agent_prompts`, `zoning_reference`, `architectural_standards_ref`, `ref_occupant_factors`, `ref_travel_distance_limits`, `luminaire_library`, `schema_migrations`.
+
+The current branch migration `20261117050000_scope_indirect_project_children.sql` explicitly covers the ten parent-linked child tables (including electrical protection settings) and gives `agent_prompts` platform-admin-only write access. The four reference tables and `luminaire_library` still need explicit policy classification; `schema_migrations` needs a dedicated internal-only access model. Do not grant all authenticated users broad access merely to make the Advisor warning disappear.
+
+### 7.4 Important limitation in the current branch
+
+The branch's SaaS migration set is designed as a tenant-security layer over the existing application schema. It is **not yet a complete database bootstrap** for a fresh project: 125 live table definitions are not represented in checked-in `CREATE TABLE` SQL, and several live views/functions/triggers are also outside the base migration set. The existing CI proves replayability of the committed partial schema, not reproducibility of the entire live application database.
+
+A complete migration baseline must be produced as a separate reviewed workstream. It should be generated from schema-only metadata, preserve dependency ordering, and be tested against a disposable local/staging database before the SaaS security migrations are layered on top.
