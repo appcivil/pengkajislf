@@ -31,8 +31,19 @@ $$;
 revoke all on function private.storage_project_id(text, text) from public, anon;
 grant execute on function private.storage_project_id(text, text) to authenticated;
 
--- The templates bucket contains customer-specific templates, not public assets.
-update storage.buckets set public = false where id = 'templates';
+-- Provision the buckets referenced by the application and fail closed on
+-- legacy project storage. Existing object paths remain unchanged.
+insert into storage.buckets (id, name, public)
+values
+  ('project-files', 'project-files', false),
+  ('project-photos', 'project-photos', false),
+  ('templates', 'templates', false),
+  ('system-assets', 'system-assets', true)
+on conflict (id) do update
+set public = excluded.public;
+
+-- Legacy bucket is not used by current application code; keep it private.
+update storage.buckets set public = false where id = 'skpslf';
 
 -- Remove known broad policies from the original setup guide.
 drop policy if exists "Berkas proyek untuk pengguna login" on storage.objects;
