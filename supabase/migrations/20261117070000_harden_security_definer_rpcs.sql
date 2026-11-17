@@ -108,8 +108,8 @@ begin
   where lp.id = $1
     and (
       lp.owner_id = v_user_id
-      or coalesce(lp.is_shared, false)
-      or v_user_id = any(coalesce(lp.shared_with, '{}'::uuid[]))
+      or (coalesce(lp.is_shared, false)
+          and v_user_id = any(coalesce(lp.shared_with, '{}'::uuid[])))
     );
 
   if not found then
