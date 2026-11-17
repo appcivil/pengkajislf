@@ -28,6 +28,9 @@ export async function pengaturanPage() {
             <p class="page-subtitle" style="font-family:var(--font-mono); font-size: 0.7rem; letter-spacing:1px; opacity:0.6; text-transform:uppercase">
               EXECUTIVE COMMAND & REGISTRY CONTROL
             </p>
+            <button type="button" class="btn btn-outline" onclick="window.navigate('organisasi')" style="margin-top:14px">
+              <i class="fas fa-building" style="margin-right:8px"></i> ORGANISASI & TENANT
+            </button>
           </div>
           <div style="background:hsla(220, 20%, 100%, 0.03); padding:10px 20px; border-radius:12px; border:1px solid hsla(220, 20%, 100%, 0.05); display:flex; align-items:center; gap:12px; height:fit-content">
              <div class="animate-pulse" style="width:8px; height:8px; border-radius:50%; background:var(--success-500)"></div>
