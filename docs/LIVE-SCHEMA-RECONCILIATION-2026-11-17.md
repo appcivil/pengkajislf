@@ -191,3 +191,14 @@ The current catalog surfaced broad-policy candidates across modules including st
 ### Scope note
 
 The constraint/index/trigger/view/function/policy counts above were obtained from live PostgreSQL catalogs. The full object definitions are not included in this public report to avoid unnecessarily publishing internal schema and implementation details. This remains a metadata/security audit; no row data or secrets were exported and no production object was changed.
+
+
+## 9. View and SECURITY DEFINER verification
+
+A direct catalog check found 24 ordinary public views and **all 24 currently lack `security_invoker=true`** (the PostgreSQL default is owner-rights / security-definer view behavior). This is broader than the 12 view warnings previously surfaced by the Security Advisor; the Advisor warning count should not be treated as the complete view inventory.
+
+The same query found 13 public SECURITY DEFINER functions, and all 13 lack a pinned `search_path` setting in `pg_proc.proconfig`. The live Security Advisor's separate count of 43 mutable function search paths is a wider set of functions and remains a separate remediation queue.
+
+Trigger inventory: 72 public triggers (71 BEFORE, 1 AFTER, 0 INSTEAD OF).
+
+**Correction / interpretation:** the branch migration `20261117060000_secure_public_views.sql` is intended to set `security_invoker=true` for every public view and restrict grants, but it has not been applied to live production. Its local CI result is not evidence that production views are already hardened.
