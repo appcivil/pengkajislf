@@ -50,3 +50,13 @@ The SaaS foundation PR is a code and migration proposal, not an applied database
 ## Explicit non-actions
 
 No production database schema or data was modified. No migrations were applied. No bucket visibility or Storage policies were changed. No staging branch was created. No production deployment was triggered.
+
+## Approved tenant mapping decision (2026-11-17)
+
+The data owner approved the following mapping for the SaaS sample:
+
+- Existing sample project → tenant `PT. TAPAK CITRA REKAYASA`.
+- Designated platform administrator and intended owner of the sample tenant → `enjangwahyudin.st@gmail.com`.
+- Platform administration is a separate privilege from tenant membership. It does not imply unrestricted access to customer technical files.
+- A read-only Auth lookup found no confirmed Auth account for the designated email at inspection time. Therefore the migration creates the Tapak tenant and maps the project, but does not grant owner/platform-admin membership to a different existing user. The designated account must be created and verified before running the documented bootstrap.
+- This is a repository migration change only. It has **not** been applied to the live database; no live data or policy was changed.
