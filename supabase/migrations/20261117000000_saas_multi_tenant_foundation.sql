@@ -61,12 +61,12 @@ language sql
 stable
 security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1 from private.platform_admins a
     where a.user_id = (select auth.uid())
   );
-$;
+$$;
 revoke all on function private.is_platform_admin() from public, anon;
 grant execute on function private.is_platform_admin() to authenticated;
 
