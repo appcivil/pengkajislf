@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase.js';
 import { escapeHtml } from '../lib/safe-markdown.js';
 import { showSuccess, showError } from '../components/toast.js';
+import { store } from '../lib/store.js';
 
 export async function organisasiPage() {
   const { data, error } = await supabase
@@ -13,6 +14,7 @@ export async function organisasiPage() {
   }
 
   const memberships = (data || []).filter(row => row.organization_id);
+  const activeOrganizationId = store.get().activeOrganizationId || null;
   const cards = memberships.length
     ? memberships.map(row => `
       <div class="card-quartz" style="padding:24px; margin-bottom:16px">
@@ -29,6 +31,11 @@ export async function organisasiPage() {
         <p style="font-size:.8rem; color:var(--text-secondary); margin:16px 0 0">
           ID tenant: <code>${escapeHtml(row.organization_id)}</code>
         </p>
+        <div style="display:flex; justify-content:flex-end; margin-top:14px">
+          ${activeOrganizationId === row.organization_id
+            ? '<span class="badge" style="background:var(--success-500); color:white">Organisasi aktif</span>'
+            : '<button type="button" class="btn btn-outline btn-sm" onclick="window.selectActiveOrganization(\'' + escapeHtml(row.organization_id) + '\')">Jadikan aktif</button>'}
+        </div>
       </div>
     `).join('')
     : '<div class="card-quartz" style="padding:24px">Akun ini belum menjadi anggota organisasi.</div>';
@@ -64,6 +71,15 @@ export async function organisasiPage() {
     </div>
   `;
 }
+
+window.selectActiveOrganization = function(organizationId) {
+  const allowed = document.querySelectorAll('[data-organization-id]');
+  // The server-side membership check remains authoritative; this is only
+  // a UI context choice and never grants access to another tenant.
+  store.set({ activeOrganizationId: organizationId });
+  showSuccess('Organisasi aktif diperbarui.');
+  window.navigate('organisasi');
+};
 
 window.handleCreateOrganization = async function(event) {
   event.preventDefault();
