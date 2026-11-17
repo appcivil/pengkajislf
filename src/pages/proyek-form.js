@@ -37,15 +37,16 @@ export async function proyekFormPage(params = {}) {
     name: member.organizations?.name || 'Organisasi',
     role: member.role
   })).filter(org => org.id);
-  if (!isEdit && organizations.length === 0) {
-    throw new Error('Akun belum tergabung dalam organisasi. Hubungi pemilik organisasi.');
+  const writableOrganizations = organizations.filter(org => org.role !== 'viewer');
+  if (!isEdit && writableOrganizations.length === 0) {
+    throw new Error('Akun tidak memiliki peran yang diizinkan membuat proyek pada organisasi mana pun.');
   }
-  if (!store.get().activeOrganizationId && organizations.length === 1) {
-    store.set({ activeOrganizationId: organizations[0].id });
+  if (!store.get().activeOrganizationId && writableOrganizations.length === 1) {
+    store.set({ activeOrganizationId: writableOrganizations[0].id });
   }
   const organizationField = !isEdit
     ? '<div class="form-group mb-6"><label class="form-label">Organisasi / Tenant <span style="color:var(--danger-400)">*</span></label><select class="form-select" name="organization_id" required><option value="">-- Pilih organisasi --</option>' +
-      organizations.map(org => '<option value="' + escapeHtml(org.id) + '"' + ((organizations.length === 1 || store.get().activeOrganizationId === org.id) ? ' selected' : '') + '>' + escapeHtml(org.name) + ' (' + escapeHtml(org.role) + ')</option>').join('') +
+      writableOrganizations.map(org => '<option value="' + escapeHtml(org.id) + '"' + ((writableOrganizations.length === 1 || store.get().activeOrganizationId === org.id) ? ' selected' : '') + '>' + escapeHtml(org.name) + ' (' + escapeHtml(org.role) + ')</option>').join('') +
       '</select><small style="color:var(--text-tertiary)">Proyek hanya dapat diakses anggota organisasi yang dipilih.</small></div>'
     : '';
   const jenis = ['Bangunan Gedung', 'Hunian', 'Komersial', 'Industri', 'Pendidikan', 'Kesehatan', 'Ibadah', 'Pemerintahan', 'Campuran'];
@@ -584,7 +585,7 @@ window.submitProyek = async function(event) {
 
     if (!id) {
       const selectedOrganizationId = data.organization_id;
-      if (!selectedOrganizationId || !organizations.some(org => org.id === selectedOrganizationId)) {
+      if (!selectedOrganizationId || !writableOrganizations.some(org => org.id === selectedOrganizationId)) {
         throw new Error('Pilih organisasi yang Anda ikuti sebelum membuat proyek.');
       }
       cleanData.organization_id = selectedOrganizationId;
