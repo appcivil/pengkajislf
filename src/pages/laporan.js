@@ -1886,10 +1886,8 @@ window._handleProjectTemplateUpload = async (proyekId, input) => {
             
         if (uploadError) throw uploadError;
         
-        // 2. Dapatkan URL Publik
-        const { data: { publicUrl } } = supabase.storage
-            .from('templates')
-            .getPublicUrl(fileName);
+        // 2. Do not create a public URL: project templates are private tenant data.
+        // The report generator creates a short-lived signed URL after RLS checks.
             
         // 3. Update Metadata Proyek (Hapus base64 lama jika ada untuk hemat space)
         const { data: current } = await supabase.from('proyek').select('metadata').eq('id', proyekId).single();
@@ -1898,7 +1896,7 @@ window._handleProjectTemplateUpload = async (proyekId, input) => {
         // Bersihkan data lama
         delete metadata.report_template_base64; 
         
-        metadata.report_template_url = publicUrl;
+        delete metadata.report_template_url;
         metadata.report_template_name = file.name;
         metadata.report_template_storage_path = fileName;
         
