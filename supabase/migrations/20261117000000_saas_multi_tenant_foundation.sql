@@ -222,20 +222,25 @@ declare
   v_table record;
   v_has_user_id boolean;
   v_using text;
-  v_check text;
+  v_write text;
   v_policy record;
 begin
   for v_table in
-    select c.relname
+    select c.relname,
+      case
+        when bool_or(col.column_name = 'proyek_id') then 'proyek_id'
+        else 'project_id'
+      end as project_column
     from pg_class c
     join pg_namespace n on n.oid = c.relnamespace
     join information_schema.columns col
       on col.table_schema = n.nspname
      and col.table_name = c.relname
-     and col.column_name = 'proyek_id'
+     and col.column_name in ('proyek_id', 'project_id')
     where n.nspname = 'public'
       and c.relkind = 'r'
       and c.relname <> 'proyek'
+    group by c.relname
   loop
     select exists (
       select 1 from information_schema.columns
@@ -245,12 +250,23 @@ begin
     ) into v_has_user_id;
 
     v_using := format(
-      'exists (select 1 from public.proyek p where p.id = %I.proyek_id and private.is_org_member(p.organization_id))',
-      v_table.relname
+      'exists (select 1 from public.proyek p where p.id = %I.%I and private.is_org_member(p.organization_id))',
+      v_table.relname, v_table.project_column
+    );
+    v_write := format(
+      'exists (select 1 from public.proyek p where p.id = %I.%I and private.has_org_role(p.organization_id, array[''owner'',''admin'',''member'']))',
+      v_table.relname, v_table.project_column
     );
 
     if v_has_user_id then
-      v_using := '(' || v_using || format(' or (%I.proyek_id is null and %I.user_id = (select auth.uid()))', v_table.relname, v_table.relname) || ')';
+      v_using := '(' || v_using || format(
+        ' or (%I.%I is null and %I.user_id = (select auth.uid()))',
+        v_table.relname, v_table.project_column, v_table.relname
+      ) || ')';
+      v_write := '(' || v_write || format(
+        ' or (%I.%I is null and %I.user_id = (select auth.uid()))',
+        v_table.relname, v_table.project_column, v_table.relname
+      ) || ')';
     end if;
 
     for v_policy in
@@ -266,16 +282,16 @@ begin
       v_table.relname, v_using
     );
     execute format(
-      'create policy tenant_scope_insert on public.%I for insert to authenticated with check (exists (select 1 from public.proyek p where p.id = %I.proyek_id and private.has_org_role(p.organization_id, array[''owner'',''admin'',''member''])))',
-      v_table.relname, v_table.relname
+      'create policy tenant_scope_insert on public.%I for insert to authenticated with check (%s)',
+      v_table.relname, v_write
     );
     execute format(
-      'create policy tenant_scope_update on public.%I for update to authenticated using (exists (select 1 from public.proyek p where p.id = %I.proyek_id and private.has_org_role(p.organization_id, array[''owner'',''admin'',''member'']))) with check (exists (select 1 from public.proyek p where p.id = %I.proyek_id and private.has_org_role(p.organization_id, array[''owner'',''admin'',''member''])))',
-      v_table.relname, v_table.relname, v_table.relname
+      'create policy tenant_scope_update on public.%I for update to authenticated using (%s) with check (%s)',
+      v_table.relname, v_write, v_write
     );
     execute format(
-      'create policy tenant_scope_delete on public.%I for delete to authenticated using (exists (select 1 from public.proyek p where p.id = %I.proyek_id and private.has_org_role(p.organization_id, array[''owner'',''admin'',''member''])))',
-      v_table.relname, v_table.relname
+      'create policy tenant_scope_delete on public.%I for delete to authenticated using (%s)',
+      v_table.relname, v_write
     );
   end loop;
 end;
