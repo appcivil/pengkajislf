@@ -5,9 +5,14 @@
  */
 
 import { supabase } from './supabase.js';
+import { store } from './store.js';
+import { getUser } from './auth.js';
 
-const SETTINGS_KEY = 'slf_app_settings';
-const GLOBAL_ID = '00000000-0000-0000-0000-000000000000';
+function getSettingsContext() {
+  const organizationId = store.get().activeOrganizationId || null;
+  const userId = getUser()?.id || 'anonymous';
+  return { organizationId, key: 'slf_app_settings:' + userId + ':' + (organizationId || 'no-tenant') };
+}
 
 const DEFAULT_SETTINGS = {
   consultant: {
@@ -57,28 +62,30 @@ const DEFAULT_SETTINGS = {
  * Mengambil dari LocalStorage dulu (cepat), lalu cek Supabase (sinkron).
  */
 export async function getSettings() {
-  // 1. Ambil dari lokal dulu
-  const saved = localStorage.getItem(SETTINGS_KEY);
+  const { organizationId, key } = getSettingsContext();
+  const saved = localStorage.getItem(key);
   let settings = saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
 
-  // 2. Jika online, coba ambil dari Supabase
-  try {
-    const { data: remote, error } = await supabase
-      .from('settings')
-      .select('data')
-      .eq('id', GLOBAL_ID)
-      .maybeSingle();
+  // Never fall back to the former global settings row: each tenant has its
+  // own record and the database enforces organization membership with RLS.
+  if (organizationId) {
+    try {
+      const { data: remote, error } = await supabase
+        .from('settings')
+        .select('data')
+        .eq('organization_id', organizationId)
+        .maybeSingle();
 
-    if (remote && remote.data) {
-      settings = remote.data;
-      // Update lokal agar sinkron
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+      if (error) throw error;
+      if (remote?.data) {
+        settings = remote.data;
+        localStorage.setItem(key, JSON.stringify(settings));
+      }
+    } catch (e) {
+      console.warn('[Settings] Tenant settings fetch failed; using tenant-local cache.', e);
     }
-  } catch (e) {
-    console.warn('[Settings] Failed to fetch remote settings, using local.', e);
   }
 
-  // Merge dengan default untuk kestabilan struktur
   return {
     consultant: { ...DEFAULT_SETTINGS.consultant, ...settings.consultant },
     ai:         { ...DEFAULT_SETTINGS.ai, ...settings.ai },
@@ -92,23 +99,24 @@ export async function getSettings() {
  * Menyimpan pengaturan ke LocalStorage DAN Supabase (Global).
  */
 export async function saveSettings(data) {
-  // Simpan Lokal
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(data));
-
-  // Simpan Cloud (Upsert kpd GLOBAL_ID)
-  try {
-    const { error } = await supabase
-      .from('settings')
-      .upsert({ 
-        id: GLOBAL_ID, 
-        data: data,
-        updated_at: new Date().toISOString()
-      });
-    
-    if (error) throw error;
-    return true;
-  } catch (e) {
-    console.error('[Settings] Cloud sync failed:', e);
-    throw e;
+  const { organizationId, key } = getSettingsContext();
+  if (!organizationId) {
+    throw new Error('Pilih organisasi aktif sebelum menyimpan pengaturan.');
   }
+
+  localStorage.setItem(key, JSON.stringify(data));
+
+  const { error } = await supabase
+    .from('settings')
+    .upsert({
+      organization_id: organizationId,
+      data,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'organization_id' });
+
+  if (error) {
+    console.error('[Settings] Tenant cloud sync failed:', error);
+    throw error;
+  }
+  return true;
 }
