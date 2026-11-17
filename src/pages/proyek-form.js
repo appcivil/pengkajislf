@@ -54,7 +54,7 @@ export async function proyekFormPage(params = {}) {
   // Map initialization delay
   setTimeout(() => window.initProyekMap && window.initProyekMap(data.latitude, data.longitude), 300);
 
-  return `
+  const html = `
     <div id="proyek-form-page" style="animation: page-fade-in 0.8s ease-out">
       
       <!-- Executive Header -->
@@ -126,7 +126,7 @@ export async function proyekFormPage(params = {}) {
                  <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.2rem; color:white; margin-bottom:28px; display:flex; align-items:center; gap:12px; text-align: left">
                     <i class="fas fa-landmark" style="color:var(--brand-400)"></i> I. IDENTITAS BANGUNAN
                  </div>
-                 ${organizationField}
+                 <!-- ORGANIZATION_FIELD -->
                  
                  <div class="form-group mb-6">
                     <label class="form-label">Nama Bangunan Gedung <span style="color:var(--danger-400)">*</span></label>
@@ -347,6 +347,7 @@ export async function proyekFormPage(params = {}) {
       </form>
     </div>
   `;
+  return html.replace('<!-- ORGANIZATION_FIELD -->', organizationField);
 }
 
 // INTERACTIVITY: STEPPER ORCHESTRATION
