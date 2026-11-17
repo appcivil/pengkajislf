@@ -159,3 +159,35 @@ The current branch migration `20261117050000_scope_indirect_project_children.sql
 The branch's SaaS migration set is designed as a tenant-security layer over the existing application schema. It is **not yet a complete database bootstrap** for a fresh project: 125 live table definitions are not represented in checked-in `CREATE TABLE` SQL, and several live views/functions/triggers are also outside the base migration set. The existing CI proves replayability of the committed partial schema, not reproducibility of the entire live application database.
 
 A complete migration baseline must be produced as a separate reviewed workstream. It should be generated from schema-only metadata, preserve dependency ordering, and be tested against a disposable local/staging database before the SaaS security migrations are layered on top.
+
+
+## 8. RLS policy semantics and legacy-policy collision (second pass)
+
+A read-only catalog query on 17 Nov 2026 counted:
+- 485 constraints (primary, foreign-key, unique and check combined)
+- 458 indexes
+- 72 triggers
+- 24 ordinary views; no materialized views
+- 192 public-schema functions
+- 292 public RLS policies
+- 101 policies have a literal `true` in either `USING` or `WITH CHECK`
+- 88 of those policies target/include `authenticated`
+- 71 policies still reference deprecated `auth.role()`
+
+These are policy-expression counts, not a claim that every row is currently exposed: effective access also depends on command, role, grants, RLS state, and the other predicates. However, any permissive policy with an unconditional `USING (true)` or `WITH CHECK (true)` can materially weaken tenant boundaries for its operation.
+
+**Critical PostgreSQL behavior:** permissive RLS policies are OR-combined. A new restrictive-looking policy does not neutralize an older permissive policy. The foundation migration correctly drops all existing policies before creating tenant policies for tables it discovers through direct `project_id` / `proyek_id` columns. The indirect-child migration also replaces policies for its explicit child-table mapping. This does not, by itself, prove every live table is covered: tables with neither direct ownership columns nor an explicit parent mapping can retain broad legacy policies unless separately classified and handled.
+
+The current catalog surfaced broad-policy candidates across modules including stormwater, settings, sanitation/wastewater, water, fire, electrical, accessibility, environmental and report tables. These names are a review queue, not a blanket instruction to revoke access: each table must be assigned a tenant, user-owned, shared-reference, system-only, or internal-ledger model before migration SQL is written.
+
+### Required pre-rollout gate
+
+1. Build a per-table matrix linking each live table to its tenant key or parent chain, effective RLS policies, grants, and intended role permissions.
+2. For each table, prove that migration logic either replaces every permissive legacy policy or intentionally preserves only a reviewed shared-reference policy.
+3. Add a CI assertion that scans the resulting schema for unexpected permissive `true` policies on tenant-owned tables and fails if any remain.
+4. Add integration tests for SELECT, INSERT, UPDATE (including changing ownership columns), and DELETE across tenant A/B for every module family, not just the core `proyek` table.
+5. Do not apply the tenant migrations to production until this reconciliation and tests are complete.
+
+### Scope note
+
+The constraint/index/trigger/view/function/policy counts above were obtained from live PostgreSQL catalogs. The full object definitions are not included in this public report to avoid unnecessarily publishing internal schema and implementation details. This remains a metadata/security audit; no row data or secrets were exported and no production object was changed.
