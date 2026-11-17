@@ -30,6 +30,17 @@ jobs:
         run: npm test -- --run
       - name: Static security audits
         run: npm run audit:all
+      - name: Setup Supabase CLI (pinned v2 during v3 migration)
+        uses: supabase/setup-cli@v3
+        with:
+          version: v2.stable
+      - name: Start local Supabase stack
+        run: supabase start
+      - name: Replay all committed migrations on clean local database
+        run: supabase db reset
+      - name: Stop local Supabase stack
+        if: always()
+        run: supabase stop --no-backup
       - name: Production build
         run: npm run build
         env:
