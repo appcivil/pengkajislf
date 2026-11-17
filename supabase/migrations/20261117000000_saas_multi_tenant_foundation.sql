@@ -32,25 +32,67 @@ alter table public.proyek
   add column if not exists organization_id uuid
   references public.organizations(id) on delete restrict;
 
--- Keep the pre-SaaS dataset in one explicit legacy tenant. Existing users are
--- members (not admins); a business owner must later assign users/projects to
--- their actual organizations using the documented onboarding process.
+-- Explicit sample tenant approved for the existing sample project.
+-- No broad auto-membership: only the designated account is granted owner access.
 insert into public.organizations
   (id, name, slug, created_by, is_legacy)
 values
-  ('11111111-1111-4111-8111-111111111111',
-   'Workspace lama — perlu pemetaan tenant',
-   'legacy-workspace', null, true)
-on conflict (id) do nothing;
+  ('22222222-2222-4222-8222-222222222222',
+   'PT. TAPAK CITRA REKAYASA',
+   'pt-tapak-citra-rekayasa', null, false)
+on conflict (id) do update
+set name = excluded.name, slug = excluded.slug, is_legacy = false;
 
 update public.proyek
-set organization_id = '11111111-1111-4111-8111-111111111111'
+set organization_id = '22222222-2222-4222-8222-222222222222'
 where organization_id is null;
 
-insert into public.organization_members (organization_id, user_id, role)
-select '11111111-1111-4111-8111-111111111111', u.id, 'member'
-from auth.users u
-on conflict (organization_id, user_id) do nothing;
+-- Platform administration is separate from customer-tenant membership.
+create table if not exists private.platform_admins (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  email_at_assignment text not null,
+  created_at timestamptz not null default now()
+);
+revoke all on private.platform_admins from public, anon, authenticated;
+
+create or replace function private.is_platform_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $
+  select exists (
+    select 1 from private.platform_admins a
+    where a.user_id = (select auth.uid())
+  );
+$;
+revoke all on function private.is_platform_admin() from public, anon;
+grant execute on function private.is_platform_admin() to authenticated;
+
+-- If the designated account already exists, grant it both platform-admin
+-- and sample-tenant-owner roles. If it does not exist yet, bootstrap it after
+-- verified signup using the documented one-time SQL; never promote another user.
+do $
+declare v_user_id uuid;
+begin
+  select id into v_user_id
+  from auth.users
+  where lower(email) = 'enjangwahyudin.st@gmail.com'
+    and email_confirmed_at is not null
+  limit 1;
+
+  if v_user_id is not null then
+    insert into private.platform_admins(user_id, email_at_assignment)
+    values (v_user_id, 'enjangwahyudin.st@gmail.com')
+    on conflict (user_id) do nothing;
+
+    insert into public.organization_members(organization_id, user_id, role)
+    values ('22222222-2222-4222-8222-222222222222', v_user_id, 'owner')
+    on conflict (organization_id, user_id) do update set role = 'owner';
+  end if;
+end;
+$;
 
 alter table public.proyek
   alter column organization_id set not null;
