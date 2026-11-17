@@ -58,5 +58,5 @@ The data owner approved the following mapping for the SaaS sample:
 - Existing sample project → tenant `PT. TAPAK CITRA REKAYASA`.
 - Designated platform administrator and intended owner of the sample tenant → `enjangwahyudin.st@gmail.com`.
 - Platform administration is a separate privilege from tenant membership. It does not imply unrestricted access to customer technical files.
-- A read-only Auth lookup found no confirmed Auth account for the designated email at inspection time. Therefore the migration creates the Tapak tenant and maps the project, but does not grant owner/platform-admin membership to a different existing user. The designated account must be created and verified before running the documented bootstrap.
+- A read-only Auth lookup confirmed both designated accounts are verified: `enjangwahyudin.st@gmail.com` for platform administration and `inannmar@gmail.com` for Tapak tenant ownership. The migration grants these identities separate roles.
 - This is a repository migration change only. It has **not** been applied to the live database; no live data or policy was changed.
