@@ -107,6 +107,14 @@ CREATE INDEX IF NOT EXISTS idx_proyek_created_by ON public.proyek(created_by);
 CREATE INDEX IF NOT EXISTS idx_proyek_status_slf ON public.proyek(status_slf);
 
 
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- ===========================================================
 -- TABEL 2: checklist_items
 -- Menyimpan poin-poin checklist pemeriksaan SLF per proyek
@@ -361,13 +369,7 @@ CREATE OR REPLACE TRIGGER trg_settings_updated_at
 -- ===========================================================
 -- FUNCTION: Update Timestamp otomatis
 -- ===========================================================
-CREATE OR REPLACE FUNCTION public.set_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = now();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+
 
 -- Terapkan trigger updated_at ke tabel yang relevan
 CREATE OR REPLACE TRIGGER trg_proyek_updated_at
@@ -484,11 +486,19 @@ ALTER TABLE public.field_test_data ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policy: Users can only access their own project field data
 CREATE POLICY "Field data access policy" ON public.field_test_data
-  FOR ALL USING (
-    auth.uid() IN (
-      SELECT created_by FROM public.proyek WHERE id = proyek_id
-    ) OR auth.uid() IN (
-      SELECT user_id FROM public.proyek_access WHERE proyek_id = proyek_id
+  FOR ALL TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.proyek p
+      WHERE p.id = field_test_data.proyek_id
+        AND p.created_by = (SELECT auth.uid())
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.proyek p
+      WHERE p.id = field_test_data.proyek_id
+        AND p.created_by = (SELECT auth.uid())
     )
   );
 
