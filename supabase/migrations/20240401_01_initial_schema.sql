@@ -216,12 +216,6 @@ CREATE TABLE IF NOT EXISTS public.proyek_files (
 -- RLS Policies - proyek_files
 ALTER TABLE public.proyek_files ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users can manage all proyek files"
-  ON public.proyek_files FOR ALL
-  TO authenticated
-  USING (true)
-  WITH CHECK (true);
-
 -- Index
 CREATE INDEX IF NOT EXISTS idx_files_proyek ON public.proyek_files(proyek_id);
 
