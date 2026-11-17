@@ -214,6 +214,31 @@ create trigger trg_set_project_organization
 before insert or update of organization_id on public.proyek
 for each row execute function private.set_project_organization();
 
+-- A member may edit project data but cannot move a project between tenants.
+-- Reassignment requires owner/admin authority in both source and destination.
+create or replace function private.prevent_project_tenant_reassignment()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $
+begin
+  if new.organization_id is distinct from old.organization_id then
+    if not private.has_org_role(old.organization_id, array['owner','admin'])
+       or not private.has_org_role(new.organization_id, array['owner','admin']) then
+      raise exception 'Hanya owner/admin tenant yang boleh memindahkan proyek antar organisasi'
+        using errcode = '42501';
+    end if;
+  end if;
+  return new;
+end;
+$;
+
+drop trigger if exists trg_prevent_project_tenant_reassignment on public.proyek;
+create trigger trg_prevent_project_tenant_reassignment
+before update of organization_id on public.proyek
+for each row execute function private.prevent_project_tenant_reassignment();
+
 -- Replace the legacy authenticated-wide project policy. RLS on every
 -- project-child table is derived from its parent proyek_id. Existing policies
 -- are removed first because PostgreSQL combines permissive policies with OR.
