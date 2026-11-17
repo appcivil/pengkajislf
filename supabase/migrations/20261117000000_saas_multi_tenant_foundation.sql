@@ -73,8 +73,7 @@ grant execute on function private.is_platform_admin() to authenticated;
 -- If the designated account already exists, grant it both platform-admin
 -- and sample-tenant-owner roles. If it does not exist yet, bootstrap it after
 -- verified signup using the documented one-time SQL; never promote another user.
-do $
-declare v_user_id uuid;
+do $$declare v_user_id uuid;
 begin
   select id into v_user_id
   from auth.users
