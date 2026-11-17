@@ -12,6 +12,7 @@ import { fetchTeamMembers } from '../lib/team-service.js';
 import { runOCRAnalysis } from '../lib/ai-router.js';
 import { initializeProjectFolder } from '../lib/drive.js';
 import { APP_CONFIG } from '../lib/config.js';
+import { store } from '../lib/store.js';
 
 export async function proyekFormPage(params = {}) {
   const isEdit = !!params.id;
@@ -41,7 +42,7 @@ export async function proyekFormPage(params = {}) {
   }
   const organizationField = !isEdit
     ? '<div class="form-group mb-6"><label class="form-label">Organisasi / Tenant <span style="color:var(--danger-400)">*</span></label><select class="form-select" name="organization_id" required><option value="">-- Pilih organisasi --</option>' +
-      organizations.map(org => '<option value="' + escapeHtml(org.id) + '"' + (organizations.length === 1 ? ' selected' : '') + '>' + escapeHtml(org.name) + ' (' + escapeHtml(org.role) + ')</option>').join('') +
+      organizations.map(org => '<option value="' + escapeHtml(org.id) + '"' + ((organizations.length === 1 || store.get().activeOrganizationId === org.id) ? ' selected' : '') + '>' + escapeHtml(org.name) + ' (' + escapeHtml(org.role) + ')</option>').join('') +
       '</select><small style="color:var(--text-tertiary)">Proyek hanya dapat diakses anggota organisasi yang dipilih.</small></div>'
     : '';
   const jenis = ['Bangunan Gedung', 'Hunian', 'Komersial', 'Industri', 'Pendidikan', 'Kesehatan', 'Ibadah', 'Pemerintahan', 'Campuran'];
