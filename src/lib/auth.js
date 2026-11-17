@@ -16,6 +16,14 @@ const DEV_USER_KEY = 'slf_dev_user';
 
 // Notify all auth state listeners
 function notifyListeners(user) {
+  // Scope persisted browser state to one authenticated identity. Switching
+  // accounts clears cached project/checklist/file data before the new session
+  // can render, including on shared field devices.
+  try {
+    store.bindUser(user?.id || null);
+  } catch (e) {
+    console.warn('[Auth] Failed to bind local state to user', e);
+  }
   _listeners.forEach(fn => fn(user));
   // Global Store Sync
   store.set({ user });
