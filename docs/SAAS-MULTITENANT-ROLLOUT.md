@@ -9,7 +9,7 @@ This branch introduces the database isolation foundation. It is intentionally no
 - `public.proyek.organization_id` is required.
 - Project child tables with a `proyek_id` column inherit tenant scope through the parent project.
 - `viewer` is read-only; `member`, `admin`, and `owner` can write project data.
-- The existing sample project is mapped to the explicitly approved tenant `PT. TAPAK CITRA REKAYASA`. No existing account is auto-added to the tenant. The designated account `enjangwahyudin.st@gmail.com` is separate platform administration and is also the intended sample-tenant owner once that verified Auth account exists.
+- The existing sample project is mapped to the explicitly approved tenant `PT. TAPAK CITRA REKAYASA`. Platform administration is assigned to `enjangwahyudin.st@gmail.com`; tenant ownership is assigned separately to `inannmar@gmail.com`.
 
 ## Critical rollout warning
 
@@ -34,7 +34,7 @@ Run these migrations in order in a staging Supabase project:
 4. `20261117030000_tenant_scope_settings_and_profiles.sql`
 5. `20261117040000_smartai_tenant_rls.sql`
 
-The first migration preserves the existing project row by assigning it to the approved `PT. TAPAK CITRA REKAYASA` sample tenant, creates a separate private platform-admin registry, and grants no broad legacy membership. It grants the designated email platform-admin and tenant-owner roles only if that verified Auth account exists at migration time. The later migrations harden membership roles, scope Storage objects, and scope tenant settings/profile visibility. Review the affected table and storage policy inventory on staging before production.
+The first migration preserves the existing project row by assigning it to the approved `PT. TAPAK CITRA REKAYASA` sample tenant, creates a separate private platform-admin registry, and grants no broad legacy membership. It grants platform-admin to the verified `enjangwahyudin.st@gmail.com` account and tenant-owner to the separately verified `inannmar@gmail.com` account, only when each exists at migration time. The later migrations harden membership roles, scope Storage objects, and scope tenant settings/profile visibility. Review the affected table and storage policy inventory on staging before production.
 
 ## Data migration to real tenants
 
@@ -51,35 +51,36 @@ Never infer a customer's tenant from email domain alone.
 ## Approved sample tenant and administrator bootstrap
 
 - Platform administrator: `enjangwahyudin.st@gmail.com`.
+- Owner of sample tenant: `inannmar@gmail.com`.
 - Sample customer tenant: `PT. TAPAK CITRA REKAYASA`.
 - Existing sample project: assigned to the Tapak tenant by the foundation migration.
+- Both Auth accounts were confirmed verified by a read-only lookup on 2026-11-17.
 - Platform admin is not a blanket tenant super-owner. Cross-tenant support access must be separately authorized and audited.
-- Live Auth inventory was checked on 2026-11-17: the designated email did **not** yet exist as a confirmed Auth user. Existing users are not substituted or promoted.
 
-After the designated account signs up and its email is verified, run this one-time bootstrap as a trusted database administrator (not from the browser):
+The foundation migration bootstraps the two identities separately. For a recovery/reconciliation run, use this one-time SQL as a trusted database administrator (not from the browser):
 
-```sql
-DO $
-DECLARE v_user_id uuid;
+\`\`\`sql
+DO $$
+DECLARE
+  v_admin uuid;
+  v_owner uuid;
 BEGIN
-  SELECT id INTO v_user_id
-  FROM auth.users
-  WHERE lower(email) = 'enjangwahyudin.st@gmail.com'
-    AND email_confirmed_at IS NOT NULL;
-  IF v_user_id IS NULL THEN
-    RAISE EXCEPTION 'Designated platform admin account is not verified yet';
+  SELECT id INTO v_admin FROM auth.users
+  WHERE lower(email) = 'enjangwahyudin.st@gmail.com' AND email_confirmed_at IS NOT NULL;
+  SELECT id INTO v_owner FROM auth.users
+  WHERE lower(email) = 'inannmar@gmail.com' AND email_confirmed_at IS NOT NULL;
+  IF v_admin IS NULL OR v_owner IS NULL THEN
+    RAISE EXCEPTION 'Both designated accounts must be verified';
   END IF;
-
   INSERT INTO private.platform_admins(user_id, email_at_assignment)
-  VALUES (v_user_id, 'enjangwahyudin.st@gmail.com')
+  VALUES (v_admin, 'enjangwahyudin.st@gmail.com')
   ON CONFLICT (user_id) DO NOTHING;
-
   INSERT INTO public.organization_members(organization_id, user_id, role)
-  VALUES ('22222222-2222-4222-8222-222222222222', v_user_id, 'owner')
+  VALUES ('22222222-2222-4222-8222-222222222222', v_owner, 'owner')
   ON CONFLICT (organization_id, user_id) DO UPDATE SET role = 'owner';
 END;
-$;
-```
+$$;
+\`\`\`
 
 Do not run the bootstrap until the Auth account is verified and the migration has first passed on staging. The platform-admin UI email check is only a display convenience; all privileged server/database operations must check `private.is_platform_admin()` or an equivalent server-verified authorization path.
 
