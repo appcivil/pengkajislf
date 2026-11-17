@@ -317,7 +317,7 @@ begin
   from public.ai_memories m
   where m.user_id = (select auth.uid())
     and (m.expires_at is null or m.expires_at > now())
-    and (m.key % p_query or m.key ilike '%' || p_query || '%')
+    and (m.key OPERATOR(public.%) p_query or m.key ilike '%' || p_query || '%')
   order by public.similarity(m.key, p_query) desc, m.access_count desc
   limit p_limit;
 end;
@@ -346,3 +346,6 @@ grant execute on function public.verify_rls_status() to service_role;
 -- Trigger-only function: revoke direct RPC access. The existing auth.users
 -- trigger continues to invoke it as part of the trigger execution path.
 revoke all on function public.handle_new_user() from public, anon, authenticated;
+
+-- Keep trigger execution independent of caller-controlled search_path.
+alter function public.handle_new_user() set search_path = '';
