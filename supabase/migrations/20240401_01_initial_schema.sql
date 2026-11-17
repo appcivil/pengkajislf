@@ -92,6 +92,7 @@ CREATE TABLE IF NOT EXISTS public.proyek_files (
 
 -- RLS Policies - proyek_files
 ALTER TABLE public.proyek_files ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Authenticated users can manage all proyek files" ON public.proyek_files;
 CREATE POLICY "Authenticated users can manage all proyek files" ON public.proyek_files FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- RLS Policies - proyek
