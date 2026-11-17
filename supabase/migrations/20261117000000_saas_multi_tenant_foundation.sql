@@ -263,7 +263,7 @@ returns trigger
 language plpgsql
 security invoker
 set search_path = ''
-as $
+as $$
 begin
   if new.organization_id is distinct from old.organization_id then
     if not private.has_org_role(old.organization_id, array['owner','admin'])
@@ -274,7 +274,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists trg_prevent_project_tenant_reassignment on public.proyek;
 create trigger trg_prevent_project_tenant_reassignment
