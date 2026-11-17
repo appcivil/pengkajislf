@@ -8,8 +8,6 @@ do $$
 declare
   v_map record;
   v_policy record;
-  v_select text;
-  v_write text;
 begin
   for v_map in
     select * from (values
@@ -50,15 +48,6 @@ begin
     execute format('alter table public.%I enable row level security',
       v_map.child_table);
 
-    v_select := format(
-      'exists (select 1 from public.%I parent_row join public.proyek p on p.id = parent_row.project_id where parent_row.id = %I.%I and private.is_org_member(p.organization_id))',
-      v_map.parent_table, v_map.child_table, v_map.child_fk
-    );
-    v_write := format(
-      'exists (select 1 from public.%I parent_row join public.proyek p on p.id = parent_row.project_id where parent_row.id = %I.%I and private.has_org_role(p.organization_id, array[''owner'',''admin'',''member'']))',
-      v_map.parent_table, v_map.child_table, v_map.child_fk
-    );
-
     execute format(
       'create policy tenant_parent_select on public.%I for select to authenticated using (%s)',
       v_map.child_table, v_select
@@ -85,8 +74,6 @@ $$;
 do $$
 declare
   v_policy record;
-  v_select text;
-  v_write text;
 begin
   if to_regclass('public.electrical_protection_settings') is not null
      and to_regclass('public.electrical_panels') is not null then
@@ -101,29 +88,8 @@ begin
 
     alter table public.electrical_protection_settings enable row level security;
 
-    v_select := $policy$
-      exists (
-        select 1
-        from public.electrical_panels panel
-        join public.proyek project_row on project_row.id = panel.project_id
-        where panel.id = electrical_protection_settings.panel_id
-          and private.is_org_member(project_row.organization_id)
-          and (
-            electrical_protection_settings.parent_panel_id is null
-            or exists (
-              select 1 from public.electrical_panels parent_panel
-              where parent_panel.id = electrical_protection_settings.parent_panel_id
-                and parent_panel.project_id = panel.project_id
-            )
-          )
-      )
-    $policy$;
-    v_write := replace(v_select,
-      'private.is_org_member(project_row.organization_id)',
-      'private.has_org_role(project_row.organization_id, array[''owner'',''admin'',''member''])');
-
     create policy tenant_parent_select on public.electrical_protection_settings
-    for select to authenticated using (true = false or (select true) and (
+    for select to authenticated using (
       exists (
         select 1
         from public.electrical_panels panel
@@ -139,7 +105,7 @@ begin
             )
           )
       )
-    ));
+    );
 
     create policy tenant_parent_insert on public.electrical_protection_settings
     for insert to authenticated with check (
