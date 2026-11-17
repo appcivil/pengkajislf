@@ -195,8 +195,9 @@ export function isAuthenticated() {
  */
 function _checkIsAdminFromProfile(profile, email) {
   if (!profile) return _checkIsAdminFromEmail(email);
-  const role = (profile.role || '').toLowerCase();
-  return role === 'admin' || role === 'administrator' || _checkIsAdminFromEmail(email);
+  // Frontend-only display gate. Authoritative platform privileges are checked
+  // server-side against private.platform_admins; profile.role is not trusted.
+  return _checkIsAdminFromEmail(email);
 }
 
 /**
@@ -205,7 +206,7 @@ function _checkIsAdminFromProfile(profile, email) {
  */
 function _checkIsAdminFromEmail(email) {
   if (!email) return false;
-  const SUPER_ADMIN_EMAILS = ['admin.skpslf@gmail.com', 'skpslf.official@gmail.com'];
+  const SUPER_ADMIN_EMAILS = ['enjangwahyudin.st@gmail.com'];
   return SUPER_ADMIN_EMAILS.includes(email.toLowerCase());
 }
 
