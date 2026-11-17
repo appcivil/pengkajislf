@@ -6,12 +6,8 @@
 
 import { supabase } from './supabase.js';
 import { store } from './store.js';
-import { getUser } from './auth.js';
-
 function getSettingsContext() {
-  const organizationId = store.get().activeOrganizationId || null;
-  const userId = getUser()?.id || 'anonymous';
-  return { organizationId, key: 'slf_app_settings:' + userId + ':' + (organizationId || 'no-tenant') };
+  return { organizationId: store.get().activeOrganizationId || null };
 }
 
 const DEFAULT_SETTINGS = {
@@ -62,29 +58,17 @@ const DEFAULT_SETTINGS = {
  * Mengambil dari LocalStorage dulu (cepat), lalu cek Supabase (sinkron).
  */
 export async function getSettings() {
-  const { organizationId, key } = getSettingsContext();
-  const saved = localStorage.getItem(key);
-  let settings = saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+  const { organizationId } = getSettingsContext();
+  if (!organizationId) return { ...DEFAULT_SETTINGS };
 
-  // Never fall back to the former global settings row: each tenant has its
-  // own record and the database enforces organization membership with RLS.
-  if (organizationId) {
-    try {
-      const { data: remote, error } = await supabase
-        .from('settings')
-        .select('data')
-        .eq('organization_id', organizationId)
-        .maybeSingle();
+  const { data: remote, error } = await supabase
+    .from('settings')
+    .select('data')
+    .eq('organization_id', organizationId)
+    .maybeSingle();
 
-      if (error) throw error;
-      if (remote?.data) {
-        settings = remote.data;
-        localStorage.setItem(key, JSON.stringify(settings));
-      }
-    } catch (e) {
-      console.warn('[Settings] Tenant settings fetch failed; using tenant-local cache.', e);
-    }
-  }
+  if (error) throw new Error('Tidak dapat memuat pengaturan organisasi: ' + error.message);
+  const settings = remote?.data || DEFAULT_SETTINGS;
 
   return {
     consultant: { ...DEFAULT_SETTINGS.consultant, ...settings.consultant },
@@ -99,12 +83,10 @@ export async function getSettings() {
  * Menyimpan pengaturan ke LocalStorage DAN Supabase (Global).
  */
 export async function saveSettings(data) {
-  const { organizationId, key } = getSettingsContext();
+  const { organizationId } = getSettingsContext();
   if (!organizationId) {
     throw new Error('Pilih organisasi aktif sebelum menyimpan pengaturan.');
   }
-
-  localStorage.setItem(key, JSON.stringify(data));
 
   const { error } = await supabase
     .from('settings')
