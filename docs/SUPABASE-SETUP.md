@@ -169,9 +169,12 @@ Pada branch SaaS, jalankan migrasi berurutan setelah skema inti dan setelah tabe
 - `20261117020000_tenant_scope_storage.sql`
 - `20261117030000_tenant_scope_settings_and_profiles.sql`
 - `20261117040000_smartai_tenant_rls.sql` (aman bila tabel SmartAI opsional belum dibuat; bila dibuat kemudian, jalankan ulang kebijakan ini).
+- `20261117050000_scope_indirect_project_children.sql` (mewariskan batas tenant ke tabel anak yang memakai foreign key assessment/simulation/panel/calculation/station).
+- `20261117060000_secure_public_views.sql` (mengaktifkan `security_invoker` pada view public dan mencabut akses anon/PUBLIC).
 
-Migrasi storage mengubah bucket `templates` menjadi privat dan mengganti policy
-bucket proyek dengan pemeriksaan tenant terhadap UUID proyek pada path objek.
+Migrasi storage membuat bucket `project-files`, `project-photos`, `templates`, dan `system-assets`
+bila belum tersedia; bucket dokumen proyek dan template dibuat privat. Bucket legacy
+`skpslf` juga dikunci privat. Policy bucket proyek memeriksa tenant melalui UUID proyek pada path objek.
 Format path yang didukung:
 - `project-photos/<project-uuid>/...`
 - `templates/<project-uuid>/...`
