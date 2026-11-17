@@ -156,49 +156,32 @@ Kode aplikasi merujuk empat bucket berikut:
 **Storage → New bucket** → isi nama → pilih Public/Private → Create.
 Ulangi untuk keempat bucket.
 
-### Policy Storage (wajib, kalau tidak unduhan akan ditolak)
+### Policy Storage — SaaS multi-tenant
 
-Buka **SQL Editor**, jalankan:
+**Jangan gunakan policy lama yang hanya memeriksa `bucket_id`.** Policy seperti
+`bucket_id IN ('project-files','project-photos')` memberi setiap pengguna login
+akses lintas instansi.
 
-```sql
--- ── Bucket privat: hanya pengguna terautentikasi ──
-insert into storage.buckets (id, name, public)
-values ('project-files', 'project-files', false),
-       ('project-photos', 'project-photos', false)
-on conflict (id) do nothing;
+Pada branch SaaS, jalankan migrasi berurutan setelah fondasi tenant:
 
-create policy "Berkas proyek untuk pengguna login"
-  on storage.objects for select
-  to authenticated
-  using (bucket_id in ('project-files', 'project-photos'));
+- `20261117000000_saas_multi_tenant_foundation.sql`
+- `20261117010000_harden_tenant_membership_and_roles.sql`
+- `20261117020000_tenant_scope_storage.sql`
+- `20261117030000_tenant_scope_settings_and_profiles.sql`
 
-create policy "Unggah berkas proyek"
-  on storage.objects for insert
-  to authenticated
-  with check (bucket_id in ('project-files', 'project-photos'));
+Migrasi storage mengubah bucket `templates` menjadi privat dan mengganti policy
+bucket proyek dengan pemeriksaan tenant terhadap UUID proyek pada path objek.
+Format path yang didukung:
+- `project-photos/<project-uuid>/...`
+- `templates/<project-uuid>/...`
+- `project-files/field_data/<project-uuid>/...`
 
-create policy "Ubah/hapus berkas proyek milik sendiri"
-  on storage.objects for update
-  to authenticated
-  using (bucket_id in ('project-files', 'project-photos'))
-  with check (bucket_id in ('project-files', 'project-photos'));
+Aplikasi harus membuat signed URL setelah akses lolos RLS. Jangan menyimpan
+public URL untuk dokumen proyek. Bucket `system-assets` tetap boleh dibaca
+publik karena hanya untuk aset non-rahasia.
 
--- ── Bucket publik: template & aset sistem ──
-insert into storage.buckets (id, name, public)
-values ('templates', 'templates', true),
-       ('system-assets', 'system-assets', true)
-on conflict (id) do nothing;
-
-create policy "Template & aset sistem bisa dibaca publik"
-  on storage.objects for select
-  to public
-  using (bucket_id in ('templates', 'system-assets'));
-
-create policy "Unggah template oleh pengguna login"
-  on storage.objects for insert
-  to authenticated
-  with check (bucket_id in ('templates', 'system-assets'));
-```
+Jalankan `supabase/security/rls_audit.sql` dan uji akses silang tenant pada
+database staging sebelum mengaktifkan migrasi ini di produksi.
 
 ### Setelan cache — pengaruh besar ke kuota egress
 
