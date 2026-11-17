@@ -22,8 +22,14 @@ with check (
 drop policy if exists org_members_update_admin on public.organization_members;
 create policy org_members_update_owner on public.organization_members
 for update to authenticated
-using (private.has_org_role(organization_id, array['owner']))
-with check (private.has_org_role(organization_id, array['owner']));
+using (
+  private.has_org_role(organization_id, array['owner'])
+  and user_id <> (select auth.uid())
+)
+with check (
+  private.has_org_role(organization_id, array['owner'])
+  and user_id <> (select auth.uid())
+);
 
 drop policy if exists org_members_delete_admin on public.organization_members;
 create policy org_members_delete_managed on public.organization_members
