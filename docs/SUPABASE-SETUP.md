@@ -1,10 +1,10 @@
 # Setup Supabase — Panduan Lengkap & Urutan Deploy
 
 **Proyek:** Smart AI Pengkaji SLF
-**Tanggal:** 16 September 2026
+**Tanggal:** 17 November 2026
 **Untuk:** pemasangan baru dari nol, atau verifikasi instalasi yang sudah ada.
 
-> Selain berkas di folder `supabase/`, panduan ini juga mencakup
+> **Peringatan untuk branch `feat/saas-multi-tenant-foundation`:** panduan instalasi lama di bawah masih menjelaskan pemasangan dasar. Untuk rollout SaaS, jangan jalankan SQL secara manual atau mengikuti urutan lama sebagai pengganti migration chain. Gunakan `supabase db reset` untuk validasi lokal; penerapan ke database live hanya setelah inventarisasi drift, staging, dan persetujuan eksplisit. Jangan deploy Edge Functions lama sebelum temuan otorisasi pada laporan Edge Function ditutup.\n>\n> Selain berkas di folder `supabase/`, panduan ini juga mencakup
 > **Storage bucket** dan **Edge Function**, karena keduanya wajib ada
 > agar fitur berjalan — dan keduanya belum pernah tercatat urutannya.
 
@@ -142,13 +142,13 @@ ALTER TABLE public.proyek          ENABLE ROW LEVEL SECURITY;
 ## 3. Storage Bucket
 
 Bucket **tidak dibuat oleh berkas SQL mana pun** — harus dibuat manual.
-Kode aplikasi merujuk empat bucket berikut:
+Kode aplikasi merujuk empat bucket berikut. Pada branch SaaS, seluruh dokumen proyek dan template laporan harus privat; hanya aset sistem non-rahasia yang boleh publik:
 
 | Bucket | Dipakai untuk | Akses | Rujukan kode |
 |---|---|---|---|
 | `project-files` | Berkas data lapangan (NDT, hasil uji) | Privat (signed URL) | `src/lib/field-data-import.js` |
 | `project-photos` | Foto bukti pemeriksaan egress | Privat | `src/domain/repositories/EgressRepository.js` |
-| `templates` | Template laporan DOCX per proyek | Publik (URL publik) | `src/pages/laporan.js` |
+| `templates` | Template laporan DOCX per proyek | **Privat (signed URL)** | `src/pages/laporan.js` |
 | `system-assets` | Aset sistem (logo, dsb.) | Publik | `src/pages/pengaturan.js` |
 
 ### Membuat bucket lewat dashboard
