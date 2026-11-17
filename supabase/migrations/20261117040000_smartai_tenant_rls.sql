@@ -164,7 +164,3 @@ begin
   end if;
 end;
 $$;
-
-revoke all on public.smartai_embeddings from anon, authenticated;
-revoke all on public.smartai_cache from anon;
-revoke all on public.smartai_logs from anon;
