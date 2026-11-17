@@ -22,7 +22,7 @@ Do not run this migration against production until:
 4. The tenant owner has approved the legacy-user/project mapping plan.
 5. Organization onboarding, organization selection, and tenant-aware project creation have been tested in the browser.
 6. Invitation and membership administration workflows are still pending.
-7. Storage bucket policies, settings, profiles, and every remaining table not linked through `proyek_id` have been audited on the actual staging schema.
+7. Storage bucket policies, settings, profiles, SmartAI tables, and every remaining table not linked through `proyek_id`/`project_id` have been audited on the actual staging schema.
 
 ## Apply
 
@@ -32,6 +32,7 @@ Run these migrations in order in a staging Supabase project:
 2. `20261117010000_harden_tenant_membership_and_roles.sql`
 3. `20261117020000_tenant_scope_storage.sql`
 4. `20261117030000_tenant_scope_settings_and_profiles.sql`
+5. `20261117040000_smartai_tenant_rls.sql`
 
 The first migration preserves existing project rows by assigning them to the legacy workspace and replaces permissive project policies. The later migrations harden membership roles, scope Storage objects, and scope tenant settings/profile visibility. Review the affected table and storage policy inventory on staging before production.
 
@@ -64,7 +65,8 @@ Run these checks in staging after migration:
 ## Completed in this branch
 
 - Basic organization onboarding, membership listing, active-tenant selection, and tenant selection on project creation.
-- Tenant-scoped settings and profile visibility policies.
+- Tenant-scoped settings and shared-tenant profile visibility policies.
+- SmartAI jobs/documents follow project tenant access; chunks inherit parent-document access; embedding vectors are backend-only; user cache/logs are owner-scoped.
 - Tenant-scoped Storage policies and signed URLs for field data and report templates.
 - Account-bound app-store persistence; account switching clears project/checklist/file state.
 - Staging smoke-test script for cross-tenant reads/updates and viewer read-only behavior.
@@ -73,7 +75,7 @@ Run these checks in staging after migration:
 ## Remaining before production
 
 - Invitation flow and full membership administration with server-side authorization.
-- Complete inventory and RLS review of every table without `proyek_id`, including notification and SmartAI pipeline tables.
+- Complete inventory and RLS review of every table without `proyek_id`/`project_id`, including auxiliary analysis tables and all RPC functions.
 - Tenant scoping for AI Proxy quotas, usage ledger, rate limits, model allowlist, and Edge Functions.
 - Realtime subscriptions and all views/RPC functions must be checked for tenant leaks.
 - Storage legacy object audit, path verification, and migration of old public template URLs.
