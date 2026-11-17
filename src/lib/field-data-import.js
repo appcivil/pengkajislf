@@ -442,14 +442,15 @@ async function uploadFieldDataFile(file, proyekId, tipePengujian) {
   
   if (error) throw error;
   
-  // Get public URL
-  const { data: urlData } = supabase.storage
+  // Bucket is private; issue a short-lived URL after tenant-scoped RLS.
+  const { data: urlData, error: signedUrlError } = await supabase.storage
     .from('project-files')
-    .getPublicUrl(filePath);
-  
+    .createSignedUrl(filePath, 3600);
+  if (signedUrlError) throw signedUrlError;
+
   return {
     path: filePath,
-    url: urlData.publicUrl
+    url: urlData.signedUrl
   };
 }
 
