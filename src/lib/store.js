@@ -23,6 +23,17 @@ class Store {
     this.notify();
   }
 
+  bindUser(userId) {
+    const key = 'slf_app_state_user';
+    const currentOwner = localStorage.getItem(key);
+    const nextOwner = userId || null;
+    if (currentOwner !== nextOwner) {
+      this.clearSessionData();
+      if (nextOwner) localStorage.setItem(key, nextOwner);
+      else localStorage.removeItem(key);
+    }
+  }
+
   clearSessionData() {
     // Never carry one account's project, checklist, file or analysis state
     // into the next login on shared field devices.
