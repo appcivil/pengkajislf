@@ -43,6 +43,7 @@ class Store {
       currentProyekId: null,
       currentProyek: null,
       currentAnalisis: null,
+      activeOrganizationId: null,
       checklist: {
         dataMap: {},
         fotoLinks: {},
@@ -105,6 +106,7 @@ export const store = new Store({
   currentProyekId: null,
   currentProyek: null,
   currentAnalisis: null,
+  activeOrganizationId: null,
   
   // Checklist State
   checklist: {
