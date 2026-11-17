@@ -1,7 +1,7 @@
 /**
  * SETTINGS MANAGER
  * Mengelola persistensi identitas konsultan, pemilihan model AI, 
- * dan daftar tenaga ahli menggunakan LocalStorage.
+ * dan daftar tenaga ahli per organisasi melalui Supabase.
  */
 
 import { supabase } from './supabase.js';
