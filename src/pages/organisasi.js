@@ -43,7 +43,7 @@ export async function organisasiPage() {
     `).join('')
     : '<div class="card-quartz" style="padding:24px">Akun ini belum menjadi anggota organisasi.</div>';
 
-  return `
+  const html = `
     <div class="page-header" style="margin-bottom:28px">
       <h1 class="page-title">Organisasi <span class="text-gradient-gold">Tenant</span></h1>
       <p class="page-subtitle">Kelola ruang kerja instansi dan lihat keanggotaan akun Anda.</p>
@@ -51,7 +51,7 @@ export async function organisasiPage() {
     <div class="grid-main-side">
       <section>
         <h2 style="font-size:1.1rem; margin-bottom:16px">Organisasi saya</h2>
-        ${cards}
+        <!-- ORGANIZATION_CARDS -->
       </section>
       <aside class="card-quartz" style="padding:24px; height:fit-content">
         <h2 style="font-size:1.05rem; margin:0 0 12px">Buat organisasi baru</h2>
@@ -73,6 +73,7 @@ export async function organisasiPage() {
       </aside>
     </div>
   `;
+  return html.replace('<!-- ORGANIZATION_CARDS -->', cards);
 }
 
 window.selectActiveOrganization = function(organizationId) {
