@@ -162,12 +162,13 @@ Ulangi untuk keempat bucket.
 `bucket_id IN ('project-files','project-photos')` memberi setiap pengguna login
 akses lintas instansi.
 
-Pada branch SaaS, jalankan migrasi berurutan setelah fondasi tenant:
+Pada branch SaaS, jalankan migrasi berurutan setelah skema inti dan setelah tabel opsional SmartAI dibuat bila modul tersebut dipakai:
 
 - `20261117000000_saas_multi_tenant_foundation.sql`
 - `20261117010000_harden_tenant_membership_and_roles.sql`
 - `20261117020000_tenant_scope_storage.sql`
 - `20261117030000_tenant_scope_settings_and_profiles.sql`
+- `20261117040000_smartai_tenant_rls.sql` (aman bila tabel SmartAI opsional belum dibuat; bila dibuat kemudian, jalankan ulang kebijakan ini).
 
 Migrasi storage mengubah bucket `templates` menjadi privat dan mengganti policy
 bucket proyek dengan pemeriksaan tenant terhadap UUID proyek pada path objek.
