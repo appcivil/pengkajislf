@@ -24,6 +24,26 @@ export async function proyekFormPage(params = {}) {
   }
 
   const teamMembers = await fetchTeamMembers();
+  const { data: memberships, error: membershipError } = await supabase
+    .from('organization_members')
+    .select('organization_id, role, organizations(name)')
+    .order('created_at', { ascending: true });
+  if (membershipError) {
+    throw new Error('Gagal memuat organisasi akun: ' + membershipError.message);
+  }
+  const organizations = (memberships || []).map(member => ({
+    id: member.organization_id,
+    name: member.organizations?.name || 'Organisasi',
+    role: member.role
+  })).filter(org => org.id);
+  if (!isEdit && organizations.length === 0) {
+    throw new Error('Akun belum tergabung dalam organisasi. Hubungi pemilik organisasi.');
+  }
+  const organizationField = !isEdit
+    ? '<div class="form-group mb-6"><label class="form-label">Organisasi / Tenant <span style="color:var(--danger-400)">*</span></label><select class="form-select" name="organization_id" required><option value="">-- Pilih organisasi --</option>' +
+      organizations.map(org => '<option value="' + escapeHtml(org.id) + '"' + (organizations.length === 1 ? ' selected' : '') + '>' + escapeHtml(org.name) + ' (' + escapeHtml(org.role) + ')</option>').join('') +
+      '</select><small style="color:var(--text-tertiary)">Proyek hanya dapat diakses anggota organisasi yang dipilih.</small></div>'
+    : '';
   const jenis = ['Bangunan Gedung', 'Hunian', 'Komersial', 'Industri', 'Pendidikan', 'Kesehatan', 'Ibadah', 'Pemerintahan', 'Campuran'];
   const konstruksi = ['Beton Bertulang', 'Baja', 'Kayu', 'Bata', 'Komposit'];
 
@@ -102,6 +122,7 @@ export async function proyekFormPage(params = {}) {
                  <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.2rem; color:white; margin-bottom:28px; display:flex; align-items:center; gap:12px; text-align: left">
                     <i class="fas fa-landmark" style="color:var(--brand-400)"></i> I. IDENTITAS BANGUNAN
                  </div>
+                 ${organizationField}
                  
                  <div class="form-group mb-6">
                     <label class="form-label">Nama Bangunan Gedung <span style="color:var(--danger-400)">*</span></label>
@@ -555,7 +576,15 @@ window.submitProyek = async function(event) {
       drive_proxy_url:     data.drive_proxy_url || null,
       updated_at:       new Date().toISOString()
     };
-    
+
+    if (!id) {
+      const selectedOrganizationId = data.organization_id;
+      if (!selectedOrganizationId || !organizations.some(org => org.id === selectedOrganizationId)) {
+        throw new Error('Pilih organisasi yang Anda ikuti sebelum membuat proyek.');
+      }
+      cleanData.organization_id = selectedOrganizationId;
+    }
+
     if (id) {
       await supabase.from('proyek').update(cleanData).eq('id', id);
     } else {
