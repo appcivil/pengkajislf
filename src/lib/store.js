@@ -23,6 +23,45 @@ class Store {
     this.notify();
   }
 
+  clearSessionData() {
+    // Never carry one account's project, checklist, file or analysis state
+    // into the next login on shared field devices.
+    const ui = { ...this.state.ui, isOnline: navigator.onLine };
+    this.state = {
+      user: null,
+      currentProyekId: null,
+      currentProyek: null,
+      currentAnalisis: null,
+      checklist: {
+        dataMap: {},
+        fotoLinks: {},
+        activeTab: 'admin',
+        isDirty: false,
+        dirtyKodes: new Set(),
+        lastSaveTime: null,
+        isSaving: false
+      },
+      gallery: { photos: [], filter: 'all', activePhoto: null },
+      files: { documents: [], activeCategory: 'umum', searchQuery: '', isSyncing: false, syncProgress: 0 },
+      ui,
+      workspace: {
+        activeView: 'projects',
+        viewMode: 'grid',
+        selectedFileId: null,
+        selectedProjectId: null,
+        activeInspectorTab: 'preview',
+        smartFilter: null
+      }
+    };
+    try {
+      localStorage.removeItem('slf_app_state');
+      this.persist();
+    } catch (e) {
+      console.warn('[Store] Failed to clear persisted session data', e);
+    }
+    this.notify();
+  }
+
   persist() {
      try {
         // Don't persist sensitive or transient data
