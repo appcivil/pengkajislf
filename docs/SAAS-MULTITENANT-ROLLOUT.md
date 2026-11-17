@@ -20,16 +20,20 @@ Do not run this migration against production until:
 2. The active Supabase project is restored and healthy.
 3. The complete production schema is compared with the repository migrations.
 4. The tenant owner has approved the legacy-user/project mapping plan.
-5. Application support for organization onboarding, organization switching, invitations, membership administration, and tenant-aware project creation has been implemented and tested.
-6. Storage bucket policies and every table not linked through `proyek_id` have been audited separately.
+5. Organization onboarding, organization selection, and tenant-aware project creation have been tested in the browser.
+6. Invitation and membership administration workflows are still pending.
+7. Storage bucket policies, settings, profiles, and every remaining table not linked through `proyek_id` have been audited on the actual staging schema.
 
 ## Apply
 
-Run the migration in a staging Supabase project first:
+Run these migrations in order in a staging Supabase project:
 
-`supabase/migrations/20261117000000_saas_multi_tenant_foundation.sql`
+1. `20261117000000_saas_multi_tenant_foundation.sql`
+2. `20261117010000_harden_tenant_membership_and_roles.sql`
+3. `20261117020000_tenant_scope_storage.sql`
+4. `20261117030000_tenant_scope_settings_and_profiles.sql`
 
-This migration is designed to preserve existing project rows by assigning them to the legacy workspace. It replaces permissive policies on the `proyek` table and on public tables containing a `proyek_id` column. Review the exact affected table list on staging before production.
+The first migration preserves existing project rows by assigning them to the legacy workspace and replaces permissive project policies. The later migrations harden membership roles, scope Storage objects, and scope tenant settings/profile visibility. Review the affected table and storage policy inventory on staging before production.
 
 ## Data migration to real tenants
 
@@ -57,13 +61,22 @@ Run these checks in staging after migration:
 - Storage objects, signed URL generation, Edge Functions, exports, AI proxy requests, and Realtime subscriptions are tenant-scoped independently.
 - All tables in exposed schemas have RLS enabled and no permissive legacy policy bypasses tenant checks.
 
-## Known follow-up work
+## Completed in this branch
 
-- Add organization picker/switcher and tenant onboarding UI.
-- Add invitation flow and role management UI with server-side authorization.
-- Scope storage object paths and policies to organization/project IDs.
-- Audit and scope tables without `proyek_id` (including profiles, settings, notifications, and user-owned records).
-- Add automated pgTAP tests for cross-tenant SELECT/INSERT/UPDATE/DELETE and role boundaries.
-- Add AI proxy per-tenant quotas, rate limits, usage ledger, and model allowlist.
-- Ensure logout clears app-store localStorage and all tenant-scoped caches.
+- Basic organization onboarding, membership listing, active-tenant selection, and tenant selection on project creation.
+- Tenant-scoped settings and profile visibility policies.
+- Tenant-scoped Storage policies and signed URLs for field data and report templates.
+- Account-bound app-store persistence; account switching clears project/checklist/file state.
+- Staging smoke-test script for cross-tenant reads/updates and viewer read-only behavior.
+- Pull-request CI workflow for tests, static audits, and production build.
+
+## Remaining before production
+
+- Invitation flow and full membership administration with server-side authorization.
+- Complete inventory and RLS review of every table without `proyek_id`, including notification and SmartAI pipeline tables.
+- Tenant scoping for AI Proxy quotas, usage ledger, rate limits, model allowlist, and Edge Functions.
+- Realtime subscriptions and all views/RPC functions must be checked for tenant leaks.
+- Storage legacy object audit, path verification, and migration of old public template URLs.
+- End-to-end tests for cross-tenant SELECT/INSERT/UPDATE/DELETE and all roles on a live staging database.
 - Enforce account status and privileged roles on the server, never only in frontend code.
+- Confirm `npm ci`, unit tests, static audits, and production build pass in GitHub Actions.
