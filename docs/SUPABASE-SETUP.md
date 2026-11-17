@@ -171,6 +171,7 @@ Pada branch SaaS, jalankan migrasi berurutan setelah skema inti dan setelah tabe
 - `20261117040000_smartai_tenant_rls.sql` (aman bila tabel SmartAI opsional belum dibuat; bila dibuat kemudian, jalankan ulang kebijakan ini).
 - `20261117050000_scope_indirect_project_children.sql` (mewariskan batas tenant ke tabel anak yang memakai foreign key assessment/simulation/panel/calculation/station).
 - `20261117060000_secure_public_views.sql` (mengaktifkan `security_invoker` pada view public dan mencabut akses anon/PUBLIC).
+- `20261117070000_harden_security_definer_rpcs.sql` (membatasi eksekusi RPC `SECURITY DEFINER`, memvalidasi identitas pemanggil, dan mengunci `search_path`).
 
 Migrasi storage membuat bucket `project-files`, `project-photos`, `templates`, dan `system-assets`
 bila belum tersedia; bucket dokumen proyek dan template dibuat privat. Bucket legacy
