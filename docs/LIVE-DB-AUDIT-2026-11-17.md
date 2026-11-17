@@ -19,7 +19,8 @@ Project reference: `hrzplcqeadhvbrfhlfuh` (Singapore region). The project was re
 - Storage buckets are `skpslf` and `templates`; both are currently marked public. The inspected policy inventory returned zero policies on `storage.objects`.
 - Six RLS-enabled tables had no policies in the initial inventory: `multi_agent_results`, `zoning_reference`, `architectural_standards_ref`, `smartai_chunks`, `smartai_embeddings`, and `smartai_logs`.
 - A function inventory found 13 SECURITY DEFINER functions in `public`; all 13 were executable by `anon`. 192 functions in `public` had no pinned `search_path` configuration (this count is broader than the SECURITY DEFINER subset).
-- Prior Security Advisor inspection also reported 12 SECURITY DEFINER views and 43 functions with mutable/unpinned search_path. Reconcile those counts with the current function/view inventory before remediation.
+- Security Advisor reports 12 SECURITY DEFINER views, 43 functions with mutable/unpinned `search_path`, 172 objects visible to anon through the GraphQL schema, and one public table with RLS disabled (`schema_migrations`). It also reports multiple permissive policies on several tables.
+- Four active Edge Functions were listed: `ai-proxy`, `keepalive`, `auto-fill-simak`, and `photo-checklist-mapper`; all currently have JWT verification enabled. JWT verification alone does not establish tenant authorization inside each function.
 
 ## High-priority risks
 
@@ -29,20 +30,22 @@ Project reference: `hrzplcqeadhvbrfhlfuh` (Singapore region). The project was re
 4. **Credential exposure risk.** The `proyek` table contains a `simbg_password` column. Even when currently NULL, it should not be treated as ordinary project metadata. Prefer secret storage (or a server-side integration credential vault), strict access, and rotation if any real credential has ever been stored.
 5. **SECURITY DEFINER attack surface.** Anon-executable SECURITY DEFINER functions and unpinned search paths require function-by-function review. Do not bulk revoke or alter them without mapping RPC usage and required grants.
 6. **No-policy RLS tables need classification.** Some may intentionally be backend-only or static reference data; others may be inaccessible to clients. Define intended access before creating policies.
+7. **GraphQL exposure needs a separate grant review.** Advisor's 172 anon-visible objects indicate schema discoverability/read grants should be reviewed object by object; do not blanket-revoke grants without checking intended public reference data and application dependencies.
 
 ## Required work before production migration
 
-- Export and review all 151 table definitions, foreign keys, views, triggers, RPC/function signatures and grants, Storage object paths, Edge Functions, Realtime publications, and application queries.
+- Export and review all 151 table definitions, foreign keys, views, triggers, RPC/function signatures and grants, Storage object paths, Edge Function source and authorization checks, Realtime publications, and application queries.
 - Classify every table as tenant-owned, project-owned, user-owned, global reference, system/backend-only, or intentionally public. Add an explicit ownership strategy for the 25 tables with no existing ownership key.
 - Design a data-preserving ownership assignment for the existing project and records with NULL owner/project keys. Obtain an explicit owner mapping; do not infer ownership from the first auth user.
 - Reconcile actual Storage buckets and object prefixes (`skpslf`, `templates`) with application code. Stage private bucket and signed URL changes only after object inventory and download/upload tests.
 - Review all 13 SECURITY DEFINER functions and 12 reported SECURITY DEFINER views; pin safe search paths, minimize grants, and test dependent RPCs.
-- Test with two real staging tenants and at least owner/admin/member/viewer roles. Cover SELECT/INSERT/UPDATE/DELETE, foreign-key reassignment, RPCs, views, Storage upload/download/list/delete, SmartAI jobs/documents/chunks/embeddings, and account switching.
+- Review all four Edge Functions for server-side tenant membership and project authorization, quota/rate limiting, input validation, and secret handling.
+- Test with two real staging tenants and at least owner/admin/member/viewer roles. Cover SELECT/INSERT/UPDATE/DELETE, foreign-key reassignment, RPCs, views, Storage upload/download/list/delete, SmartAI jobs/documents/chunks/embeddings, Edge Functions, and account switching.
 - Apply migrations to a disposable staging copy first, verify backup/restore, run automated isolation tests, then plan a separately approved production maintenance window.
 
 ## Relationship to the SaaS foundation PR
 
-The SaaS foundation PR is a code and migration proposal, not an applied database change. Its generic policy replacement logic is not sufficient for this live schema: it only scopes tables matching known project key conventions and does not automatically solve keyless tables, SECURITY DEFINER functions/views, existing public Storage buckets, or legacy rows with NULL ownership. Adapt the migration to this inventory before considering it deployable.
+The SaaS foundation PR is a code and migration proposal, not an applied database change. Its generic policy replacement logic is not sufficient for this live schema: it only scopes tables matching known project key conventions and does not automatically solve keyless tables, SECURITY DEFINER functions/views, existing public Storage buckets, GraphQL grants, Edge Function authorization, or legacy rows with NULL ownership. Adapt the migration to this inventory before considering it deployable.
 
 ## Explicit non-actions
 
