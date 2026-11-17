@@ -93,7 +93,7 @@ set search_path = ''
 as $$
 declare
   v_user_id uuid := (select auth.uid());
-  v_original public.lighting_projects%rowtype;
+  v_original record;
   v_new_project_id uuid;
 begin
   if v_user_id is null then
