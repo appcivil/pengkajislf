@@ -92,7 +92,7 @@ begin
     on conflict (organization_id, user_id) do update set role = 'owner';
   end if;
 end;
-$;
+$$;
 
 alter table public.proyek
   alter column organization_id set not null;
