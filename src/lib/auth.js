@@ -1,7 +1,7 @@
 // ============================================================
 //  AUTHENTICATION MODULE
 //  Google OAuth via Supabase Auth
-//  SECURITY FIX: Admin check divalidasi dari DB, bukan hanya client-side
+//  Admin UI indicator only; privileged operations require server-side authorization.
 // ============================================================
 import { supabase } from './supabase.js';
 import { APP_CONFIG } from './config.js';
@@ -201,8 +201,7 @@ function _checkIsAdminFromProfile(profile, email) {
 }
 
 /**
- * Cek admin dari email (fallback).
- * Private — HANYA sebagai fallback ketika DB tidak dapat diakses.
+ * Email allowlist for frontend display only; database/server checks private.platform_admins.
  */
 function _checkIsAdminFromEmail(email) {
   if (!email) return false;
@@ -211,8 +210,7 @@ function _checkIsAdminFromEmail(email) {
 }
 
 /**
- * isAdmin() — sinkron, menggunakan cache yang divalidasi dari DB.
- * SECURITY FIX: Tidak lagi bergantung pada user_metadata JWT yang bisa dispoofing.
+ * isAdmin() — frontend display gate only. Never use for privileged API/DB authorization.
  */
 export function isAdmin() {
   if (!_currentUser) return false;
