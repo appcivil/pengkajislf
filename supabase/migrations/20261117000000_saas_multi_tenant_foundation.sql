@@ -325,7 +325,7 @@ with check (private.has_org_role(organization_id, array['owner','admin','member'
 
 create policy proyek_tenant_delete on public.proyek
 for delete to authenticated
-using (private.has_org_role(organization_id, array['owner','admin','member']));
+using (private.has_org_role(organization_id, array['owner','admin']));
 
 create index if not exists proyek_organization_id_idx
   on public.proyek(organization_id);
