@@ -70,24 +70,34 @@ $$;
 revoke all on function private.is_platform_admin() from public, anon;
 grant execute on function private.is_platform_admin() to authenticated;
 
--- If the designated account already exists, grant it both platform-admin
--- and sample-tenant-owner roles. If it does not exist yet, bootstrap it after
--- verified signup using the documented one-time SQL; never promote another user.
-do $$declare v_user_id uuid;
+-- Platform administrator and sample-tenant owner are distinct identities.
+-- Grant each role only to its explicitly designated, verified Auth account.
+do $$
+declare
+  v_platform_admin_id uuid;
+  v_tenant_owner_id uuid;
 begin
-  select id into v_user_id
+  select id into v_platform_admin_id
   from auth.users
   where lower(email) = 'enjangwahyudin.st@gmail.com'
     and email_confirmed_at is not null
   limit 1;
 
-  if v_user_id is not null then
+  if v_platform_admin_id is not null then
     insert into private.platform_admins(user_id, email_at_assignment)
-    values (v_user_id, 'enjangwahyudin.st@gmail.com')
+    values (v_platform_admin_id, 'enjangwahyudin.st@gmail.com')
     on conflict (user_id) do nothing;
+  end if;
 
+  select id into v_tenant_owner_id
+  from auth.users
+  where lower(email) = 'inannmar@gmail.com'
+    and email_confirmed_at is not null
+  limit 1;
+
+  if v_tenant_owner_id is not null then
     insert into public.organization_members(organization_id, user_id, role)
-    values ('22222222-2222-4222-8222-222222222222', v_user_id, 'owner')
+    values ('22222222-2222-4222-8222-222222222222', v_tenant_owner_id, 'owner')
     on conflict (organization_id, user_id) do update set role = 'owner';
   end if;
 end;
