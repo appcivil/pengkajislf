@@ -9,7 +9,7 @@ import { navigate } from '../lib/router.js';
 import { getUserInfo } from '../lib/auth.js';
 import { showSuccess, showError, showInfo } from '../components/toast.js';
 import { fetchTeamMembers } from '../lib/team-service.js';
-import { runOCRAnalysis } from '../lib/ai-router.js';
+import { extractTextFromImage, extractTextFromPDF, parseIMBDocument } from '../lib/ocr-service.js';
 import { initializeProjectFolder } from '../lib/drive.js';
 import { APP_CONFIG } from '../lib/config.js';
 import { store } from '../lib/store.js';
@@ -506,28 +506,42 @@ window._handleOCRFile = async (event) => {
     if (progress) progress.style.width = '50%';
     if (statusEl) statusEl.textContent = 'EXTRACTING GEOMETRIC & LEGAL PARAMETERS...';
 
-    const result = await runOCRAnalysis(base64, file.type);
-    
-    if (progress) progress.style.width = '100%';
-    
-    if (result) {
-      const form = document.getElementById('proyek-form');
-      const fields = ['nama_bangunan', 'pemilik', 'alamat', 'luas_bangunan', 'jumlah_lantai', 'nomor_pbg', 'gsb', 'kdb', 'klb', 'kdh'];
-
-      fields.forEach(f => {
-        if (result[f] && form.elements[f]) {
-          form.elements[f].value = result[f];
-          const fg = form.elements[f].closest('.form-group');
-          if (fg) {
-             fg.style.animation = 'glow-gold 2s ease-out';
-             setTimeout(() => fg.style.animation = '', 2000);
-          }
-        }
-      });
-
-      showSuccess('AI Reconstruction Complete. Field parameters populated.');
-      if (window._switchStep) window._switchStep(1);
+    // Proyek belum dibuat pada tahap ini. Gunakan OCR lokal; jangan kirim dokumen
+    // ke AI Proxy/provider sebelum projectId dan keanggotaan dapat diverifikasi.
+    const ocrResult = file.type === 'application/pdf'
+      ? await extractTextFromPDF(file)
+      : await extractTextFromImage(file);
+    if (!ocrResult.success || !ocrResult.text?.trim()) {
+      throw new Error(ocrResult.error || 'Teks dokumen tidak berhasil diekstrak.');
     }
+    const parsed = await parseIMBDocument(ocrResult.text, false);
+    const result = {
+      pemilik: parsed.nama_pemilik,
+      alamat: parsed.alamat,
+      luas_bangunan: parsed.luas_bangunan,
+      jumlah_lantai: parsed.jumlah_lantai,
+      nomor_pbg: parsed.nomor_imb,
+      gsb: parsed.gsb,
+      kdb: parsed.kdb,
+      klb: parsed.klb,
+      kdh: parsed.kdh
+    };
+
+    if (progress) progress.style.width = '100%';
+    const form = document.getElementById('proyek-form');
+    const fields = ['nama_bangunan', 'pemilik', 'alamat', 'luas_bangunan', 'jumlah_lantai', 'nomor_pbg', 'gsb', 'kdb', 'klb', 'kdh'];
+    fields.forEach(field => {
+      if (result[field] && form.elements[field]) {
+        form.elements[field].value = result[field];
+        const fieldGroup = form.elements[field].closest('.form-group');
+        if (fieldGroup) {
+          fieldGroup.style.animation = 'glow-gold 2s ease-out';
+          setTimeout(() => fieldGroup.style.animation = '', 2000);
+        }
+      }
+    });
+    showSuccess('Ekstraksi OCR lokal selesai. Periksa kembali data sebelum menyimpan.');
+    if (window._switchStep) window._switchStep(1);
   } catch (err) {
     showError("OCR Integration Error: " + err.message);
   } finally {
