@@ -4695,3 +4695,24 @@ body.dark #dashboard-page .grid-3-col > .card-quartz {
 ) :where(input, select, textarea, option) {
   color: var(--text-primary, #1d1d1f);
 }
+
+
+/* Report page contrast exceptions: these states use light paper/card surfaces,
+   unlike the dark control bars where white labels are intentional. */
+:root:not([data-theme="dark"]) body:not(.dark) #laporan-page > .card-quartz h3[style*="color:white"],
+:root:not([data-theme="dark"]) body:not(.dark) #laporan-page > .card-quartz h3[style*="color: white"] {
+  color: var(--text-primary, #1d1d1f) !important;
+  -webkit-text-fill-color: var(--text-primary, #1d1d1f) !important;
+}
+:root:not([data-theme="dark"]) body:not(.dark) #docx-preview-loading [style*="color:white"],
+:root:not([data-theme="dark"]) body:not(.dark) #docx-preview-loading [style*="color: white"],
+:root:not([data-theme="dark"]) body:not(.dark) #docx-preview-error [style*="color:white"],
+:root:not([data-theme="dark"]) body:not(.dark) #docx-preview-error [style*="color: white"],
+:root:not([data-theme="dark"]) body:not(.dark) #export-progress-overlay .card-quartz [style*="color:white"],
+:root:not([data-theme="dark"]) body:not(.dark) #export-progress-overlay .card-quartz [style*="color: white"] {
+  color: var(--text-primary, #1d1d1f) !important;
+  -webkit-text-fill-color: var(--text-primary, #1d1d1f) !important;
+}
+:root:not([data-theme="dark"]) body:not(.dark) #export-progress-overlay .card-quartz {
+  color: var(--text-primary, #1d1d1f);
+}
