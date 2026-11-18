@@ -56,6 +56,9 @@ serve(async (req: Request) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    if (!parsedBody.data || typeof parsedBody.data !== "object" || Array.isArray(parsedBody.data)) {
+      return new Response(JSON.stringify({ error: "JSON body must be an object" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     const body = parsedBody.data as AutoFillRequest;
     const { proyekData, checklistTemplate, proyekId } = body;
     const authorization = await authenticateProject(req, proyekId);
