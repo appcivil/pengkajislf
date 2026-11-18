@@ -156,7 +156,8 @@ async function generateSimulationNarrative(proyekId, tipe, result, visuals) {
         provider: 'gemini',
         model: selection.model.id,
         prompt: prompt,
-        maxTokens: 2048
+        maxTokens: 2048,
+        projectId: proyekId
       })
     });
     
