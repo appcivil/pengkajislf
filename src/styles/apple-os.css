@@ -3741,3 +3741,399 @@ body.dark .galeri-grid .photo-title { color: #f2f3f5; }
     animation-duration: .01ms !important;
   }
 }
+
+
+/* Phase 6 — engineering inspection suite */
+#electrical-inspection-page,
+#fire-inspection-page,
+#lps-inspection-page,
+#water-inspection-page,
+#wastewater-inspection-page,
+#stormwater-page,
+#environmental-inspection-page,
+#disaster-page,
+#egress-inspection-page,
+#comfort-inspection-page,
+#intensity-inspection-page {
+  color: var(--text-primary);
+  min-width: 0;
+}
+#electrical-inspection-page,
+#fire-inspection-page,
+#lps-inspection-page,
+#wastewater-inspection-page,
+#environmental-inspection-page,
+#egress-inspection-page,
+#comfort-inspection-page,
+#intensity-inspection-page {
+  padding: clamp(12px,2.2vw,28px) !important;
+  max-width: 1480px !important;
+  margin-inline: auto;
+}
+#electrical-inspection-page .card-quartz,
+#fire-inspection-page .card-quartz,
+#lps-inspection-page .card-quartz,
+#wastewater-inspection-page .card-quartz,
+#environmental-inspection-page .card-quartz,
+#egress-inspection-page .card-quartz,
+#comfort-inspection-page .card-quartz,
+#intensity-inspection-page .card-quartz,
+#stormwater-page .card-quartz,
+#disaster-page .card-quartz {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: 16px;
+  box-shadow: var(--shadow-xs);
+}
+#electrical-inspection-page [id$="-main-card"],
+#fire-inspection-page [id$="-main-card"],
+#lps-inspection-page [id$="-main-card"],
+#wastewater-inspection-page [id$="-main-card"],
+#environmental-inspection-page [id$="-main-card"],
+#egress-inspection-page [id$="-main-card"],
+#comfort-inspection-page [id$="-main-card"],
+#intensity-inspection-page [id$="-main-card"] {
+  margin-bottom: 18px !important;
+  padding: clamp(16px,2vw,24px) !important;
+}
+#electrical-inspection-page [id$="-main-card"] h1,
+#electrical-inspection-page [id$="-main-card"] h2,
+#electrical-inspection-page [id$="-main-card"] h3,
+#fire-inspection-page [id$="-main-card"] h1,
+#fire-inspection-page [id$="-main-card"] h2,
+#fire-inspection-page [id$="-main-card"] h3,
+#lps-inspection-page [id$="-main-card"] h1,
+#lps-inspection-page [id$="-main-card"] h2,
+#lps-inspection-page [id$="-main-card"] h3,
+#wastewater-inspection-page [id$="-main-card"] h1,
+#wastewater-inspection-page [id$="-main-card"] h2,
+#wastewater-inspection-page [id$="-main-card"] h3,
+#environmental-inspection-page [id$="-main-card"] h1,
+#environmental-inspection-page [id$="-main-card"] h2,
+#environmental-inspection-page [id$="-main-card"] h3,
+#egress-inspection-page [id$="-main-card"] h1,
+#egress-inspection-page [id$="-main-card"] h2,
+#egress-inspection-page [id$="-main-card"] h3,
+#comfort-inspection-page [id$="-main-card"] h1,
+#comfort-inspection-page [id$="-main-card"] h2,
+#comfort-inspection-page [id$="-main-card"] h3,
+#intensity-inspection-page [id$="-main-card"] h1,
+#intensity-inspection-page [id$="-main-card"] h2,
+#intensity-inspection-page [id$="-main-card"] h3 {
+  color: var(--text-primary) !important;
+  letter-spacing: -.025em;
+}
+#electrical-inspection-page .electrical-tab-item,
+#fire-inspection-page .fire-tab-item,
+#lps-inspection-page .lps-tab-item,
+#wastewater-inspection-page .wastewater-tab-item,
+#environmental-inspection-page .env-tab-item,
+#egress-inspection-page .egress-tab-item,
+#comfort-inspection-page .comfort-tab-item,
+#intensity-inspection-page [class*="intensity-tab"] {
+  min-height: 42px;
+  border-radius: 10px !important;
+  font-family: inherit !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+  letter-spacing: .02em !important;
+  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+}
+#electrical-inspection-page .electrical-tab-item:not(.active):hover,
+#fire-inspection-page .fire-tab-item:not(.active):hover,
+#lps-inspection-page .lps-tab-item:not(.active):hover,
+#wastewater-inspection-page .wastewater-tab-item:not(.active):hover,
+#environmental-inspection-page .env-tab-item:not(.active):hover,
+#egress-inspection-page .egress-tab-item:not(.active):hover,
+#comfort-inspection-page .comfort-tab-item:not(.active):hover,
+#intensity-inspection-page [class*="intensity-tab"]:not(.active):hover {
+  color: var(--brand-500) !important;
+  background: var(--bg-hover) !important;
+}
+#electrical-content,
+#fire-content,
+#lps-content,
+#wastewater-content,
+#env-content,
+#egress-content,
+#comfort-content,
+#intensity-content,
+#accessibility-content { min-width: 0; }
+#electrical-content .grid-2-col,
+#electrical-content .grid-3-col,
+#electrical-content .grid-4-col,
+#fire-content .grid-2-col,
+#fire-content .grid-3-col,
+#fire-content .grid-4-col,
+#lps-content .grid-2-col,
+#lps-content .grid-3-col,
+#wastewater-content .grid-2-col,
+#wastewater-content .grid-3-col,
+#wastewater-content .grid-4-col,
+#env-content .grid-2-col,
+#env-content .grid-3-col,
+#env-content .grid-4-col,
+#egress-content .grid-2-col,
+#egress-content .grid-3-col,
+#comfort-content .grid-2-col,
+#comfort-content .grid-3-col,
+#comfort-content .grid-4-col,
+#intensity-content .grid-2-col,
+#intensity-content .grid-3-col,
+#intensity-content .grid-4-col {
+  min-width: 0;
+}
+#electrical-inspection-page input,
+#electrical-inspection-page select,
+#electrical-inspection-page textarea,
+#fire-inspection-page input,
+#fire-inspection-page select,
+#fire-inspection-page textarea,
+#lps-inspection-page input,
+#lps-inspection-page select,
+#lps-inspection-page textarea,
+#wastewater-inspection-page input,
+#wastewater-inspection-page select,
+#wastewater-inspection-page textarea,
+#environmental-inspection-page input,
+#environmental-inspection-page select,
+#environmental-inspection-page textarea,
+#egress-inspection-page input,
+#egress-inspection-page select,
+#egress-inspection-page textarea,
+#comfort-inspection-page input,
+#comfort-inspection-page select,
+#comfort-inspection-page textarea,
+#intensity-inspection-page input,
+#intensity-inspection-page select,
+#intensity-inspection-page textarea,
+#water-inspection-page input,
+#water-inspection-page select,
+#water-inspection-page textarea,
+#stormwater-page input,
+#stormwater-page select,
+#stormwater-page textarea,
+#disaster-page input,
+#disaster-page select,
+#disaster-page textarea {
+  max-width: 100%;
+  border-radius: 9px;
+}
+#electrical-inspection-page button,
+#fire-inspection-page button,
+#lps-inspection-page button,
+#water-inspection-page button,
+#wastewater-inspection-page button,
+#stormwater-page button,
+#environmental-inspection-page button,
+#disaster-page button,
+#egress-inspection-page button,
+#comfort-inspection-page button,
+#intensity-inspection-page button { touch-action: manipulation; }
+#water-inspection-page {
+  height: auto !important;
+  min-height: 100%;
+  max-width: 100%;
+  overflow: auto;
+  background: var(--bg-app);
+}
+#water-inspection-page .water-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px clamp(14px,2.5vw,28px) !important;
+  background: var(--bg-card) !important;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-default);
+  box-shadow: var(--shadow-xs);
+}
+#water-inspection-page .btn-tab {
+  min-height: 40px;
+  border-radius: 10px;
+}
+#water-inspection-page .tab-panel,
+#water-inspection-page .compliance-panel { min-width: 0; }
+#water-inspection-page .demand-card,
+#water-inspection-page .result-item {
+  border: 1px solid var(--border-default);
+  border-radius: 14px;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-xs);
+}
+#stormwater-page,
+#disaster-page {
+  min-height: 100%;
+  height: auto !important;
+  padding: clamp(12px,2vw,24px);
+  gap: 14px;
+  overflow: visible;
+}
+#stormwater-page .storm-tab,
+#disaster-page .disaster-tab {
+  min-height: 42px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+#stormwater-page #tab-content,
+#disaster-page .tab-content { min-width: 0; }
+#struktur-bangunan-card {
+  overflow: hidden;
+  border: 1px solid var(--border-default) !important;
+  border-radius: 18px !important;
+  background: var(--bg-card) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+#struktur-bangunan-card .struktur-tab-item {
+  min-height: 42px;
+  border-radius: 10px !important;
+  font-family: inherit !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+  letter-spacing: .015em !important;
+}
+#struktur-bangunan-card .struktur-tab-item:not(.active):hover {
+  background: var(--bg-hover) !important;
+  color: var(--brand-500) !important;
+}
+#struktur-bangunan-card .struktur-tab-content,
+#struktur-bangunan-card .grid-main-side { min-width: 0; }
+#struktur-bangunan-card input,
+#struktur-bangunan-card select,
+#struktur-bangunan-card textarea {
+  max-width: 100%;
+  border-radius: 9px;
+}
+#sanitation-card {
+  border: 1px solid var(--border-default) !important;
+  border-radius: 16px !important;
+  background: var(--bg-card) !important;
+  box-shadow: var(--shadow-xs) !important;
+}
+#sanitation-card h2,
+#sanitation-card h3 { color: var(--text-primary); }
+#sanitation-card .grid-2-col,
+#sanitation-card .grid-3-col { min-width: 0; }
+
+[data-theme="dark"] #water-inspection-page .water-header,
+body.dark #water-inspection-page .water-header {
+  background: #202126 !important;
+  color: #f5f5f7;
+  border-color: rgba(255,255,255,.09);
+}
+[data-theme="dark"] #water-inspection-page .demand-card,
+[data-theme="dark"] #water-inspection-page .result-item,
+body.dark #water-inspection-page .demand-card,
+body.dark #water-inspection-page .result-item {
+  background: #25262c;
+  border-color: rgba(255,255,255,.09);
+}
+[data-theme="dark"] #water-inspection-page input,
+[data-theme="dark"] #water-inspection-page select,
+[data-theme="dark"] #water-inspection-page textarea,
+body.dark #water-inspection-page input,
+body.dark #water-inspection-page select,
+body.dark #water-inspection-page textarea,
+[data-theme="dark"] #stormwater-page input,
+[data-theme="dark"] #stormwater-page select,
+[data-theme="dark"] #stormwater-page textarea,
+body.dark #stormwater-page input,
+body.dark #stormwater-page select,
+body.dark #stormwater-page textarea,
+[data-theme="dark"] #disaster-page input,
+[data-theme="dark"] #disaster-page select,
+[data-theme="dark"] #disaster-page textarea,
+body.dark #disaster-page input,
+body.dark #disaster-page select,
+body.dark #disaster-page textarea {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  border-color: var(--border-default);
+}
+[data-theme="dark"] #struktur-bangunan-card,
+body.dark #struktur-bangunan-card,
+[data-theme="dark"] #sanitation-card,
+body.dark #sanitation-card {
+  background: #24252b !important;
+  border-color: rgba(255,255,255,.09) !important;
+}
+@media (max-width: 900px) {
+  #electrical-inspection-page .grid-4-col,
+  #fire-inspection-page .grid-4-col,
+  #wastewater-inspection-page .grid-4-col,
+  #env-content .grid-4-col,
+  #comfort-content .grid-4-col,
+  #intensity-content .grid-4-col {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  }
+  #water-inspection-page .water-header { position: relative; }
+  #stormwater-page,
+  #disaster-page { overflow: visible; }
+}
+@media (max-width: 600px) {
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #wastewater-inspection-page,
+  #environmental-inspection-page,
+  #egress-inspection-page,
+  #comfort-inspection-page,
+  #intensity-inspection-page { padding: 10px !important; }
+  #electrical-inspection-page .flex-between,
+  #fire-inspection-page .flex-between,
+  #lps-inspection-page .flex-between,
+  #wastewater-inspection-page .flex-between,
+  #environmental-inspection-page .flex-between,
+  #egress-inspection-page .flex-between,
+  #comfort-inspection-page .flex-between,
+  #intensity-inspection-page .flex-between { gap: 10px; }
+  #electrical-inspection-page [class*="grid-"],
+  #fire-inspection-page [class*="grid-"],
+  #lps-inspection-page [class*="grid-"],
+  #wastewater-inspection-page [class*="grid-"],
+  #environmental-inspection-page [class*="grid-"],
+  #egress-inspection-page [class*="grid-"],
+  #comfort-inspection-page [class*="grid-"],
+  #intensity-inspection-page [class*="grid-"] {
+    min-width: 0;
+  }
+  #electrical-inspection-page .electrical-tab-item,
+  #fire-inspection-page .fire-tab-item,
+  #lps-inspection-page .lps-tab-item,
+  #wastewater-inspection-page .wastewater-tab-item,
+  #environmental-inspection-page .env-tab-item,
+  #egress-inspection-page .egress-tab-item,
+  #comfort-inspection-page .comfort-tab-item,
+  #intensity-inspection-page [class*="intensity-tab"],
+  #struktur-bangunan-card .struktur-tab-item,
+  #stormwater-page .storm-tab,
+  #disaster-page .disaster-tab {
+    flex: 0 0 auto !important;
+    min-width: 112px;
+  }
+  #water-inspection-page { min-height: 100%; }
+  #water-inspection-page .water-header { padding: 12px !important; }
+  #water-inspection-page .result-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  #stormwater-page,
+  #disaster-page { padding: 8px; }
+  #struktur-bangunan-card { border-radius: 14px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #electrical-inspection-page *,
+  #fire-inspection-page *,
+  #lps-inspection-page *,
+  #water-inspection-page *,
+  #wastewater-inspection-page *,
+  #stormwater-page *,
+  #environmental-inspection-page *,
+  #disaster-page *,
+  #egress-inspection-page *,
+  #comfort-inspection-page *,
+  #intensity-inspection-page *,
+  #struktur-bangunan-card *,
+  #sanitation-card * {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
