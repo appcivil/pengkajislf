@@ -6,6 +6,7 @@
 // ============================================================
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { authenticateProject, readJsonBody } from "../_shared/tenant-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -53,29 +54,66 @@ serve(async (req: Request) => {
   }
 
   try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
+    const parsedBody = await readJsonBody(req, 12 * 1024 * 1024);
+    if (!parsedBody.ok) {
+      return new Response(JSON.stringify({ error: parsedBody.error }), {
+        status: parsedBody.status,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const body = parsedBody.data as PhotoChecklistRequest;
+    const { photos, proyekData, checklistContext, proyekId, batchSize = 2 } = body;
+    const authorization = await authenticateProject(req, proyekId);
+    if (!authorization.ok) {
+      return new Response(JSON.stringify({ error: authorization.error }), {
+        status: authorization.status,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const body: PhotoChecklistRequest = await req.json();
-    const { photos, proyekData, checklistContext, proyekId, batchSize = 5 } = body;
-
-    if (!photos || photos.length === 0) {
-      return new Response(JSON.stringify({ error: "photos array is required" }), {
+    if (!Array.isArray(photos) || photos.length === 0 || photos.length > 10) {
+      return new Response(JSON.stringify({ error: "Provide between 1 and 10 photos per request" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    if (photos.length > 20) {
-      return new Response(JSON.stringify({ error: "Maximum 20 photos per request" }), {
+    if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 3) {
+      return new Response(JSON.stringify({ error: "batchSize must be an integer from 1 to 3" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+    const allowedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+    let totalEncodedBytes = 0;
+    for (const photo of photos) {
+      if (!photo || typeof photo.id !== "string" || photo.id.length > 100 ||
+          typeof photo.base64 !== "string" || !allowedMimeTypes.has(photo.mimeType) ||
+          !/^[A-Za-z0-9+/]+={0,2}$/.test(photo.base64)) {
+        return new Response(JSON.stringify({ error: "Each photo must have a valid id, base64 data, and JPEG/PNG/WebP MIME type" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const estimatedBytes = Math.floor(photo.base64.length * 3 / 4);
+      if (estimatedBytes > 3 * 1024 * 1024) {
+        return new Response(JSON.stringify({ error: "Each photo must be 3 MB or smaller" }), {
+          status: 413,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      totalEncodedBytes += estimatedBytes;
+    }
+    if (totalEncodedBytes > 8 * 1024 * 1024) {
+      return new Response(JSON.stringify({ error: "Combined photo data must be 8 MB or smaller" }), {
+        status: 413,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (proyekData && JSON.stringify(proyekData).length > 16 * 1024) {
+      return new Response(JSON.stringify({ error: "proyekData is too large" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (checklistContext && (!Array.isArray(checklistContext) || checklistContext.length > 100)) {
+      return new Response(JSON.stringify({ error: "checklistContext must contain at most 100 items" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const GEMINI_KEY = Deno.env.get("GEMINI_API_KEY");
