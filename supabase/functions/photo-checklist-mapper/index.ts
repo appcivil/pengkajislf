@@ -87,14 +87,13 @@ serve(async (req: Request) => {
     let totalEncodedBytes = 0;
     for (const photo of photos) {
       if (!photo || typeof photo.id !== "string" || photo.id.length > 100 ||
-          typeof photo.base64 !== "string" || !allowedMimeTypes.has(photo.mimeType) ||
-          !/^[A-Za-z0-9+/]+={0,2}$/.test(photo.base64)) {
+          typeof photo.base64 !== "string" || photo.base64.length === 0 || !allowedMimeTypes.has(photo.mimeType) ||\n          photo.base64.length % 4 !== 0 || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(photo.base64)) {
         return new Response(JSON.stringify({ error: "Each photo must have a valid id, base64 data, and JPEG/PNG/WebP MIME type" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const estimatedBytes = Math.floor(photo.base64.length * 3 / 4);
+      const padding = photo.base64.endsWith('==') ? 2 : photo.base64.endsWith('=') ? 1 : 0;\n      const estimatedBytes = (photo.base64.length / 4) * 3 - padding;
       if (estimatedBytes > 3 * 1024 * 1024) {
         return new Response(JSON.stringify({ error: "Each photo must be 3 MB or smaller" }), {
           status: 413,
