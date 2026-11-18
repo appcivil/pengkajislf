@@ -131,5 +131,8 @@ test('dialog and toast can be opened and dismissed accessibly', async ({ page })
   const notification = page.getByRole('status').filter({ hasText: 'Notifikasi uji' });
   await expect(notification).toBeVisible();
   await notification.getByRole('button', { name: 'Tutup notifikasi' }).click();
-  await expect(notification).toHaveCount(0);
+  // Toast menjalankan animasi keluar 400 ms sebelum node dilepas dari DOM.
+  // Pastikan langsung masuk status hide, lalu tunggu pelepasan aktualnya.
+  await expect(notification).toHaveClass(/hide/);
+  await expect(notification).toHaveCount(0, { timeout: 1500 });
 });
