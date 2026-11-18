@@ -51,7 +51,7 @@ Branch ini menghapus referensi provider key dari registry utama dan router infra
 
 ## Otorisasi role — belum diterapkan
 
-AI Proxy saat ini memverifikasi user JWT dan memastikan proyek dapat dibaca melalui RLS. Ini belum membedakan role owner/admin/member/viewer. Hak baca proyek tidak boleh dianggap otomatis sebagai hak menjalankan AI.
+AI Proxy memverifikasi user JWT, memastikan proyek dapat dibaca melalui RLS, lalu memeriksa keanggotaan organisasi dan role. Hanya owner/admin/member yang boleh menjalankan AI proyek; viewer ditolak. Platform admin tidak mendapat bypass lintas tenant. Pengujian unit matriks role ditambahkan; uji integrasi dengan sesi Supabase nyata masih harus lulus di CI.
 
 Usulan matriks role dan test matrix dicatat di `docs/AI-ATOMIC-QUOTA-DESIGN.md`. Implementasi role guard menunggu keputusan produk final, khususnya hak AI member, izin penyimpanan hasil, dan approval operasi berbiaya tinggi.
 
