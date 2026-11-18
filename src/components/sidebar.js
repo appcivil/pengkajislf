@@ -115,7 +115,7 @@ export function renderSidebar() {
             </div>
           </div>
 
-        <div class="user-card" id="user-card-btn" title="Klik untuk logout" style="background: hsla(220, 20%, 50%, 0.05); border: 1px solid var(--border-subtle)">
+        <div class="user-card" id="user-card-btn" role="button" tabindex="0" aria-label="Keluar dari akun" title="Keluar dari akun" style="background: hsla(220, 20%, 50%, 0.05); border: 1px solid var(--border-subtle)">
           ${avatarHtml}
           <div class="user-info-wrap">
             <div class="user-name truncate" style="font-weight: 700; color: var(--text-primary)">${user?.name || 'User'}</div>
@@ -149,22 +149,30 @@ export function bindSidebarEvents() {
   // Backdrop click to close
   document.getElementById('sidebar-backdrop')?.addEventListener('click', closeMobileSidebar);
 
-  // Logout
-  document.getElementById('user-card-btn')?.addEventListener('click', async () => {
+  // Logout — dapat diaktifkan dengan klik, Enter, atau Space.
+  const userCard = document.getElementById('user-card-btn');
+  const requestLogout = async () => {
     const ok = await confirm({
       title: 'Keluar Akun',
-      message: `Anda akan keluar dari akun <strong>${getUserInfo()?.email}</strong>. Lanjutkan?`,
+      message: `Anda akan keluar dari akun ${getUserInfo()?.email || ''}. Lanjutkan?`,
       confirmText: 'Keluar',
       danger: true,
     });
-    if (ok) {
-      try {
-        await signOut();
-        showSuccess('Berhasil keluar.');
-        navigate('login');
-      } catch {
-        showError('Gagal keluar. Coba lagi.');
-      }
+    if (!ok) return;
+    try {
+      await signOut();
+      showSuccess('Berhasil keluar.');
+      navigate('login');
+    } catch (error) {
+      console.error('[Auth] Logout failed:', error);
+      showError('Gagal keluar. Sesi belum dapat diakhiri. Periksa koneksi lalu coba lagi.');
+    }
+  };
+  userCard?.addEventListener('click', requestLogout);
+  userCard?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      requestLogout();
     }
   });
 }
