@@ -7,7 +7,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { authenticateProject, readJsonBody } from "../_shared/tenant-auth.ts";
-import { reserveAIUsage, finalizeAIUsage, releaseAIUsage, estimateTextTokens, extractProviderUsageTokens, aggregateProviderUsageTokens, type AIQuotaReservation } from "../_shared/ai-quota.ts";
+import { reserveAIUsage, finalizeAIUsage, releaseAIUsage, estimateTextTokens, extractProviderUsageTokens, aggregateProviderUsageTokens, aiQuotaSettlement, type AIQuotaReservation } from "../_shared/ai-quota.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -314,7 +314,7 @@ Output WAJIB dalam format JSON:
   } catch (error) {
     if (quotaReservation) {
       try {
-        if (providerRequestStarted) {
+        if (aiQuotaSettlement(providerRequestStarted) === "finalize") {
           await finalizeAIUsage(quotaReservation, quotaReservation.reservedTokens);
         } else {
           await releaseAIUsage(quotaReservation);
