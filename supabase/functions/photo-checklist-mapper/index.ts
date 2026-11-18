@@ -87,7 +87,8 @@ serve(async (req: Request) => {
     let totalEncodedBytes = 0;
     for (const photo of photos) {
       if (!photo || typeof photo.id !== "string" || photo.id.length > 100 ||
-          typeof photo.base64 !== "string" || photo.base64.length === 0 || !allowedMimeTypes.has(photo.mimeType) ||\n          photo.base64.length % 4 !== 0 || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(photo.base64)) {
+          typeof photo.base64 !== "string" || photo.base64.length === 0 || !allowedMimeTypes.has(photo.mimeType) ||
+          photo.base64.length % 4 !== 0 || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(photo.base64)) {
         return new Response(JSON.stringify({ error: "Each photo must have a valid id, base64 data, and JPEG/PNG/WebP MIME type" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
