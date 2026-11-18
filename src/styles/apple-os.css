@@ -939,3 +939,320 @@ body.dark #tier-checklist-page #tier-content h2 { color:#f4f4f5 !important; }
   #ndt-page .grid-2-1, #seismic-page .grid-2-1 { grid-template-columns:1fr !important; }
   #proyek-form-page .form-step-section { padding:14px; }
 }
+
+
+/* Final page-family pass: simulation, visual gallery, Canva Studio and inspection workspaces */
+#simulation-page {
+  color:var(--text-primary);
+  min-width:0;
+}
+#simulation-page .grid-2-1 { gap:18px; align-items:start; }
+#simulation-page .card {
+  background:rgba(255,255,255,.94) !important;
+  border:1px solid rgba(31,41,55,.085) !important;
+  border-radius:15px !important;
+  box-shadow:0 4px 16px rgba(31,41,55,.045) !important;
+  color:var(--text-primary);
+}
+#simulation-page .card-title { color:var(--text-primary) !important; }
+#simulation-page .sim-tab { border-radius:9px !important; }
+#simulation-page .sim-tab.active,
+#simulation-page .sim-tab[aria-selected="true"] {
+  background:#eaf3ff !important; color:#1769c2 !important;
+  border-color:#d5e7ff !important;
+}
+#simulation-page #pyodide-status { border-radius:9px; }
+#simulation-page #result-card,
+#simulation-page #simulation-result-content,
+#simulation-page #viz-preview-container,
+#simulation-page #field-data-import-section {
+  min-width:0; overflow-wrap:anywhere;
+}
+#simulation-page pre, #simulation-page code { max-width:100%; overflow-x:auto; }
+
+.lighting-simulation-page { color:var(--text-primary); min-height:0; }
+.lighting-simulation-page .simulation-layout {
+  display:grid; grid-template-columns:minmax(245px,300px) minmax(0,1fr) minmax(280px,330px);
+  gap:12px; min-height:calc(100vh - 104px); align-items:stretch;
+}
+.lighting-simulation-page .panel {
+  min-width:0; overflow:hidden; background:rgba(255,255,255,.94);
+  border:1px solid rgba(31,41,55,.09); border-radius:15px;
+  box-shadow:0 4px 16px rgba(31,41,55,.045); color:var(--text-primary);
+}
+.lighting-simulation-page .panel-header {
+  min-height:52px; padding:12px 15px; background:#fafbfc;
+  border-bottom:1px solid rgba(31,41,55,.08);
+}
+.lighting-simulation-page .panel-header h3 { color:var(--text-primary); font:650 13px/1.4 inherit; }
+.lighting-simulation-page .panel-content { min-width:0; color:var(--text-primary); }
+.lighting-simulation-page .view-toggle,
+.lighting-simulation-page .tabs { background:#f0f2f5; border-radius:10px; padding:4px; }
+.lighting-simulation-page .toggle-btn,
+.lighting-simulation-page .tab-btn { border-radius:7px; color:#626873; }
+.lighting-simulation-page .toggle-btn.active,
+.lighting-simulation-page .tab-btn.active { background:#fff; color:#1769c2; box-shadow:0 1px 4px rgba(20,28,40,.1); }
+.lighting-simulation-page .header-actions button,
+.lighting-simulation-page .floating-toolbar button { border-radius:8px; }
+.lighting-simulation-page #canvas-container { position:relative; min-height:420px; background:#eef2f7; }
+.lighting-simulation-page #three-canvas { width:100%; height:100%; min-height:420px; }
+.lighting-simulation-page #three-canvas canvas { display:block; max-width:100%; }
+.lighting-simulation-page .view-overlay { border-radius:0 0 14px 14px; }
+.lighting-simulation-page input,
+.lighting-simulation-page select,
+.lighting-simulation-page textarea { max-width:100%; background:#fff; color:#24262b; border:1px solid #dfe3e9; border-radius:8px; }
+.lighting-simulation-page .modal-content { background:#fff; color:#24262b; border:1px solid #e3e7ed; border-radius:16px; box-shadow:0 18px 55px rgba(20,28,40,.18); }
+
+#accessibility-inspection-page .accessibility-main-card,
+#intensity-inspection-page .intensity-main-card,
+#comfort-inspection-page .comfort-main-card,
+#disaster-page .card-quartz,
+#egress-inspection-page .egress-main-card,
+#environmental-inspection-page .env-main-card,
+#fire-inspection-page .fire-main-card,
+#lps-inspection-page .lps-main-card,
+#wastewater-inspection-page .wastewater-main-card,
+#water-inspection-page .card-quartz,
+#stormwater-page .card-quartz {
+  background:rgba(255,255,255,.94) !important;
+  border:1px solid rgba(31,41,55,.085) !important;
+  border-radius:15px !important;
+  box-shadow:0 4px 16px rgba(31,41,55,.045) !important;
+  color:var(--text-primary);
+}
+#accessibility-inspection-page .accessibility-tab-item,
+#intensity-inspection-page .intensity-tab-item,
+#comfort-inspection-page .comfort-tab-item,
+#egress-inspection-page .egress-tab-item,
+#environmental-inspection-page .env-tab-item,
+#fire-inspection-page .fire-tab-item,
+#lps-inspection-page .lps-tab-item,
+#wastewater-inspection-page .wastewater-tab-item,
+#disaster-page .disaster-tab,
+#stormwater-page .storm-tab {
+  border-radius:9px !important; transition:background var(--transition-fast),color var(--transition-fast);
+}
+#accessibility-inspection-page .accessibility-tab-item.active,
+#intensity-inspection-page .intensity-tab-item.active,
+#comfort-inspection-page .comfort-tab-item.active,
+#egress-inspection-page .egress-tab-item.active,
+#environmental-inspection-page .env-tab-item.active,
+#fire-inspection-page .fire-tab-item.active,
+#lps-inspection-page .lps-tab-item.active,
+#wastewater-inspection-page .wastewater-tab-item.active,
+#disaster-page .disaster-tab.active,
+#stormwater-page .storm-tab.active {
+  background:#eaf3ff !important; color:#1769c2 !important; border-color:#d5e7ff !important;
+}
+#accessibility-inspection-page .form-input-dark,
+#intensity-inspection-page .form-input-dark,
+#comfort-inspection-page .form-input-dark,
+#egress-inspection-page .form-input-dark,
+#environmental-inspection-page .form-input-dark,
+#fire-inspection-page .form-input-dark,
+#lps-inspection-page .form-input-dark,
+#wastewater-inspection-page .form-input-dark,
+#disaster-page input, #disaster-page select,
+#stormwater-page input, #stormwater-page select,
+#water-inspection-page input, #water-inspection-page select {
+  background:#fff !important; color:#24262b !important;
+  border:1px solid #dfe3e9 !important; border-radius:9px !important;
+}
+#accessibility-inspection-page .table-wrap,
+#intensity-inspection-page .table-wrap,
+#comfort-inspection-page .table-container,
+#egress-inspection-page .table-wrap,
+#environmental-inspection-page .table-wrap,
+#fire-inspection-page .table-wrap,
+#lps-inspection-page .table-wrap,
+#wastewater-inspection-page .table-wrap { overflow-x:auto; border-radius:10px; }
+#disaster-page .tab-content,
+#stormwater-page .tab-content,
+#water-inspection-page .tab-panel { min-width:0; }
+
+.legal-page { padding:clamp(16px,3vw,36px); }
+.legal-page .legal-container { max-width:980px; margin:0 auto; padding:clamp(20px,4vw,44px); }
+.legal-page .legal-title { color:var(--text-primary) !important; letter-spacing:-.03em; }
+.legal-page .legal-subtitle,
+.legal-page .legal-section p,
+.legal-page .legal-section li { color:var(--text-secondary) !important; line-height:1.75; }
+.legal-page .legal-section h2 { color:var(--text-primary) !important; }
+
+#page-root:has(.canva-page) { min-width:0; }
+.canva-page { min-width:0; color:var(--text-primary); }
+.canva-studio-overlay {
+  background:rgba(238,241,246,.92) !important;
+  color:var(--text-primary) !important;
+  backdrop-filter:blur(18px) saturate(140%);
+}
+.canva-studio-container {
+  width:min(100%,1600px) !important; height:min(94vh,1000px) !important;
+  background:#fff !important; border:1px solid rgba(31,41,55,.1) !important;
+  border-radius:18px !important; box-shadow:0 18px 60px rgba(20,28,40,.16) !important;
+  overflow:hidden;
+}
+.canva-studio-header, .canva-studio-footer {
+  background:rgba(255,255,255,.94) !important; color:var(--text-primary) !important;
+  border-color:rgba(31,41,55,.09) !important;
+}
+.canva-studio-body { min-height:0; background:#f5f6f8 !important; }
+.canva-sidebar, .properties-panel {
+  background:#fff !important; color:var(--text-primary) !important;
+  border-color:rgba(31,41,55,.09) !important;
+}
+.canva-studio-container .tool-section,
+.canva-studio-container .template-item,
+.canva-studio-container .style-btn,
+.canva-studio-container .format-option,
+.canva-studio-container .dim-btn { border-radius:9px !important; }
+.canva-studio-container .tool-section.active,
+.canva-studio-container .style-btn.active,
+.canva-studio-container .dim-btn.active {
+  background:#eaf3ff !important; color:#1769c2 !important;
+}
+.canva-studio-container .canva-workspace,
+.canva-studio-container .design-canvas-area { min-width:0; min-height:0; }
+.canva-studio-container .canvas-placeholder,
+.canva-studio-container #design-canvas { max-width:100%; }
+.canva-studio-container textarea,
+.canva-studio-container input { background:#fff !important; color:#24262b !important; border:1px solid #dfe3e9 !important; border-radius:9px !important; }
+
+#verify-portal .card-quartz { color:var(--text-primary); }
+#verify-portal .text-secondary { color:var(--text-secondary) !important; }
+
+@media(max-width:1100px) {
+  .lighting-simulation-page .simulation-layout { grid-template-columns:minmax(220px,270px) minmax(0,1fr); }
+  .lighting-simulation-page .panel-right { grid-column:1 / -1; }
+  .canva-studio-body { grid-template-columns:190px minmax(0,1fr) 220px; }
+}
+@media(max-width:760px) {
+  #simulation-page .grid-2-1 { grid-template-columns:1fr !important; }
+  #simulation-page .page-header .flex-between { align-items:flex-start; gap:12px; flex-direction:column; }
+  .lighting-simulation-page .simulation-layout { display:flex; flex-direction:column; min-height:0; }
+  .lighting-simulation-page .panel { width:100%; }
+  .lighting-simulation-page #canvas-container,
+  .lighting-simulation-page #three-canvas { min-height:320px; }
+  .lighting-simulation-page .panel-left { order:1; }
+  .lighting-simulation-page .panel-center { order:2; }
+  .lighting-simulation-page .panel-right { order:3; }
+  .legal-page { padding:12px; }
+  .legal-page .legal-container { padding:18px; border-radius:14px; }
+  .canva-studio-overlay { padding:8px !important; }
+  .canva-studio-container { width:100% !important; height:calc(100dvh - 16px) !important; border-radius:13px !important; }
+  .canva-studio-body { display:flex !important; flex-direction:column; overflow:auto; }
+  .canva-sidebar { width:100% !important; border-right:0 !important; border-bottom:1px solid rgba(31,41,55,.09); }
+  .canva-sidebar .tool-sections { display:flex; overflow-x:auto; gap:6px; }
+  .canva-sidebar .tool-section { flex:0 0 auto; }
+  .canva-studio-container .properties-panel { width:100% !important; }
+  #accessibility-inspection-page .grid-4-col,
+  #accessibility-inspection-page .grid-2-col,
+  #intensity-inspection-page .grid-4-col,
+  #intensity-inspection-page .grid-2-col,
+  #comfort-inspection-page .grid-4-col,
+  #comfort-inspection-page .grid-2-col,
+  #egress-inspection-page .grid-2-col,
+  #environmental-inspection-page .grid-4-col,
+  #environmental-inspection-page .grid-2-col,
+  #fire-inspection-page .grid-4-col,
+  #fire-inspection-page .grid-2-col,
+  #lps-inspection-page .grid-3-col,
+  #lps-inspection-page .grid-2-col,
+  #wastewater-inspection-page .grid-4-col,
+  #wastewater-inspection-page .grid-3-col,
+  #wastewater-inspection-page .grid-2-col { grid-template-columns:1fr !important; }
+  #disaster-page .flex-between.flex-stack,
+  #stormwater-page .flex-between.flex-stack { align-items:flex-start; flex-direction:column; gap:12px; }
+}
+@media(prefers-color-scheme:dark) {
+  /* Explicit theme selection remains authoritative; this block only applies when the app marks dark mode. */
+}
+[data-theme="dark"] .lighting-simulation-page .panel,
+body.dark .lighting-simulation-page .panel,
+[data-theme="dark"] #simulation-page .card,
+body.dark #simulation-page .card,
+[data-theme="dark"] #accessibility-inspection-page .accessibility-main-card,
+[data-theme="dark"] #intensity-inspection-page .intensity-main-card,
+[data-theme="dark"] #comfort-inspection-page .comfort-main-card,
+[data-theme="dark"] #disaster-page .card-quartz,
+[data-theme="dark"] #egress-inspection-page .egress-main-card,
+[data-theme="dark"] #environmental-inspection-page .env-main-card,
+[data-theme="dark"] #fire-inspection-page .fire-main-card,
+[data-theme="dark"] #lps-inspection-page .lps-main-card,
+[data-theme="dark"] #wastewater-inspection-page .wastewater-main-card,
+[data-theme="dark"] #water-inspection-page .card-quartz,
+[data-theme="dark"] #stormwater-page .card-quartz,
+[data-theme="dark"] .legal-page .legal-container,
+[data-theme="dark"] .canva-studio-container,
+body.dark .lighting-simulation-page .panel,
+body.dark #simulation-page .card,
+body.dark #accessibility-inspection-page .accessibility-main-card,
+body.dark #intensity-inspection-page .intensity-main-card,
+body.dark #comfort-inspection-page .comfort-main-card,
+body.dark #disaster-page .card-quartz,
+body.dark #egress-inspection-page .egress-main-card,
+body.dark #environmental-inspection-page .env-main-card,
+body.dark #fire-inspection-page .fire-main-card,
+body.dark #lps-inspection-page .lps-main-card,
+body.dark #wastewater-inspection-page .wastewater-main-card,
+body.dark #water-inspection-page .card-quartz,
+body.dark #stormwater-page .card-quartz,
+body.dark .legal-page .legal-container,
+body.dark .canva-studio-container {
+  background:#232429 !important; border-color:rgba(255,255,255,.09) !important; color:#f5f5f7 !important;
+}
+[data-theme="dark"] .lighting-simulation-page .panel-header,
+body.dark .lighting-simulation-page .panel-header,
+[data-theme="dark"] .canva-studio-header,
+[data-theme="dark"] .canva-studio-footer,
+[data-theme="dark"] .canva-sidebar,
+[data-theme="dark"] .properties-panel,
+body.dark .canva-studio-header,
+body.dark .canva-studio-footer,
+body.dark .canva-sidebar,
+body.dark .properties-panel { background:#1c1d21 !important; color:#f5f5f7 !important; border-color:rgba(255,255,255,.09) !important; }
+[data-theme="dark"] .canva-studio-body,
+[data-theme="dark"] .canva-studio-overlay,
+body.dark .canva-studio-body,
+body.dark .canva-studio-overlay { background:#15161a !important; }
+[data-theme="dark"] .lighting-simulation-page input,
+[data-theme="dark"] .lighting-simulation-page select,
+[data-theme="dark"] .lighting-simulation-page textarea,
+[data-theme="dark"] #simulation-page input,
+[data-theme="dark"] #simulation-page select,
+[data-theme="dark"] #simulation-page textarea,
+[data-theme="dark"] .canva-studio-container input,
+[data-theme="dark"] .canva-studio-container textarea,
+body.dark .lighting-simulation-page input,
+body.dark .lighting-simulation-page select,
+body.dark .lighting-simulation-page textarea,
+body.dark #simulation-page input,
+body.dark #simulation-page select,
+body.dark #simulation-page textarea,
+body.dark .canva-studio-container input,
+body.dark .canva-studio-container textarea {
+  background:#292a30 !important; color:#f5f5f7 !important; border-color:rgba(255,255,255,.14) !important;
+}
+[data-theme="dark"] .legal-page .legal-section p,
+[data-theme="dark"] .legal-page .legal-section li,
+[data-theme="dark"] .legal-page .legal-subtitle,
+body.dark .legal-page .legal-section p,
+body.dark .legal-page .legal-section li,
+body.dark .legal-page .legal-subtitle { color:#c5c7ce !important; }
+[data-theme="dark"] #accessibility-inspection-page .form-input-dark,
+[data-theme="dark"] #intensity-inspection-page .form-input-dark,
+[data-theme="dark"] #comfort-inspection-page .form-input-dark,
+[data-theme="dark"] #egress-inspection-page .form-input-dark,
+[data-theme="dark"] #environmental-inspection-page .form-input-dark,
+[data-theme="dark"] #fire-inspection-page .form-input-dark,
+[data-theme="dark"] #lps-inspection-page .form-input-dark,
+[data-theme="dark"] #wastewater-inspection-page .form-input-dark,
+body.dark #accessibility-inspection-page .form-input-dark,
+body.dark #intensity-inspection-page .form-input-dark,
+body.dark #comfort-inspection-page .form-input-dark,
+body.dark #egress-inspection-page .form-input-dark,
+body.dark #environmental-inspection-page .form-input-dark,
+body.dark #fire-inspection-page .form-input-dark,
+body.dark #lps-inspection-page .form-input-dark,
+body.dark #wastewater-inspection-page .form-input-dark {
+  background:#292a30 !important; color:#f5f5f7 !important; border-color:rgba(255,255,255,.14) !important;
+}
