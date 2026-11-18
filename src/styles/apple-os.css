@@ -3171,3 +3171,173 @@ body.dark #docx-render-container #docx-page-container {
     animation-duration: .01ms !important;
   }
 }
+
+
+/* Phase 3 — Reporting, organization and team workspaces */
+#laporan-page {
+  min-width: 0;
+  color: var(--text-primary);
+}
+#laporan-page > .page-header {
+  padding: clamp(18px,3vw,30px);
+  border: 1px solid var(--border-default);
+  border-radius: 20px;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+}
+#laporan-page .page-title {
+  font-size: clamp(1.55rem,3vw,2.15rem) !important;
+  line-height: 1.15;
+}
+#laporan-page .page-subtitle { color: var(--text-secondary) !important; }
+#laporan-page .card-quartz {
+  border-color: var(--border-default);
+  border-radius: 15px;
+  box-shadow: var(--shadow-sm);
+}
+#laporan-page .tab-item {
+  min-height: 44px;
+  border-radius: 10px !important;
+  color: var(--text-secondary);
+  font-family: var(--font-sans, inherit) !important;
+  font-size: 12px !important;
+  letter-spacing: .015em !important;
+}
+#laporan-page .tab-item.active {
+  color: var(--text-primary) !important;
+  background: var(--bg-card) !important;
+  box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--border-default);
+}
+#laporan-page .tab-content { min-width: 0; }
+#laporan-page .btn,
+#laporan-page .btn-presidential { min-height: 40px; border-radius: 10px !important; }
+#laporan-page #docx-render-container {
+  border-radius: 14px;
+  border: 1px solid var(--border-default);
+  overflow: hidden;
+}
+#laporan-page #docx-page-container {
+  max-width: 100%;
+  overflow-x: auto;
+}
+#organisasi-page,
+#tim-kerja-page { min-width: 0; }
+#organisasi-page .page-header,
+#tim-kerja-page .page-header {
+  padding: clamp(18px,3vw,28px);
+  border: 1px solid var(--border-default);
+  border-radius: 18px;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+}
+#organisasi-page .page-title,
+#tim-kerja-page .page-title {
+  font-size: clamp(1.6rem,3vw,2.2rem) !important;
+  line-height: 1.15;
+}
+#organisasi-page .grid-main-side,
+#tim-kerja-page .grid-main-side {
+  align-items: start;
+  gap: 20px;
+}
+#organisasi-page .card-quartz,
+#tim-kerja-page .card-quartz {
+  border: 1px solid var(--border-default);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+#organisasi-page .card-quartz { padding: clamp(16px,2.5vw,24px) !important; }
+#organisasi-page h2,
+#organisasi-page h3,
+#tim-kerja-page h2,
+#tim-kerja-page h3 { color: var(--text-primary) !important; }
+#organisasi-page p,
+#tim-kerja-page p { color: var(--text-secondary); }
+#organisasi-page .form-input,
+#organisasi-page input,
+#tim-kerja-page .form-input,
+#tim-kerja-page input,
+#tim-kerja-page select {
+  min-height: 42px;
+  border-radius: 10px;
+  border-color: var(--border-default);
+  background: var(--bg-input, var(--bg-card));
+  color: var(--text-primary);
+}
+#organisasi-page .form-input:focus,
+#organisasi-page input:focus,
+#tim-kerja-page .form-input:focus,
+#tim-kerja-page input:focus,
+#tim-kerja-page select:focus {
+  outline: 3px solid rgba(22,119,237,.13);
+  border-color: var(--brand-500);
+}
+#tim-kerja-page .page-header .flex-between { gap: 18px; }
+#tim-kerja-page .page-header .flex-between > div:last-child { flex-wrap: wrap; }
+#dashboard-page { min-width: 0; }
+#dashboard-page .hero-banner-audit {
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+#dashboard-page .kpi-grid { gap: 14px; }
+#dashboard-page .kpi-grid > * {
+  min-width: 0;
+  border-radius: 16px;
+  border-color: var(--border-default);
+}
+#dashboard-page .grid-dashboard-main {
+  grid-template-columns: minmax(0,1.55fr) minmax(300px,.85fr);
+  gap: 18px;
+}
+#dashboard-page .grid-dashboard-main > .card-quartz,
+#dashboard-page .grid-dashboard-main > div > .card-quartz {
+  min-width: 0;
+  border-radius: 17px;
+  border-color: var(--border-default);
+}
+#dashboard-page .grid-dashboard-main .card-header {
+  background: var(--bg-card);
+  border-color: var(--border-default);
+}
+#dashboard-page .grid-3-col { gap: 16px; }
+#dashboard-page .grid-3-col > .card-quartz {
+  min-width: 0;
+  border-radius: 16px;
+  border-color: var(--border-default);
+}
+@media (max-width: 1050px) {
+  #dashboard-page .grid-dashboard-main { grid-template-columns: minmax(0,1fr); }
+  #dashboard-page .grid-dashboard-main > .card-quartz { min-height: 420px !important; }
+}
+@media (max-width: 800px) {
+  #organisasi-page .grid-main-side,
+  #tim-kerja-page .grid-main-side { grid-template-columns: minmax(0,1fr) !important; }
+  #organisasi-page .grid-main-side > aside { order: -1; }
+  #tim-kerja-page .page-header .flex-between { align-items: flex-start; flex-direction: column; }
+  #tim-kerja-page .page-header .flex-between > div:last-child { width: 100%; }
+  #dashboard-page .grid-3-col { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 600px) {
+  #laporan-page > .page-header { padding: 14px; border-radius: 15px; }
+  #laporan-page .page-header > .flex-between { align-items: stretch !important; }
+  #laporan-page .page-header > .flex-between > div:last-child { width: 100% !important; }
+  #laporan-page .page-header > .flex-between > div:last-child > button { flex: 1 1 auto; }
+  #laporan-page .card-quartz { border-radius: 12px; }
+  #laporan-page .tab-item { flex: 1 1 100% !important; min-width: 0 !important; }
+  #organisasi-page .page-header,
+  #tim-kerja-page .page-header { padding: 16px; border-radius: 15px; }
+  #organisasi-page .card-quartz { padding: 16px !important; }
+  #organisasi-page .card-quartz > div:first-child { flex-wrap: wrap; }
+  #tim-kerja-page .page-header .page-title { font-size: 1.65rem !important; }
+  #dashboard-page .kpi-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; }
+  #dashboard-page .grid-3-col { grid-template-columns: minmax(0,1fr); }
+  #dashboard-page .grid-dashboard-main > .card-quartz { min-height: 360px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #laporan-page *, #organisasi-page *, #tim-kerja-page *, #dashboard-page * {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
