@@ -228,16 +228,22 @@ PENTING: Kembalikan HANYA JSON valid tanpa markdown.`;
       const session = await supabase.auth.getSession();
       const token = session.data?.session?.access_token;
       
-      const res = await fetch('/functions/v1/ai-proxy', {
+      const proxyUrl = import.meta.env.VITE_AI_PROXY_URL ||
+        (import.meta.env.VITE_SUPABASE_URL
+          ? `${import.meta.env.VITE_SUPABASE_URL.replace(/[/]+$/, '')}/functions/v1/ai-proxy`
+          : '/functions/v1/ai-proxy');
+      const res = await fetch(proxyUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
+          'apikey': import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || ''
         },
         body: JSON.stringify({
           provider: 'gemini',
           model: selection.model.id,
-          prompt: prompt
+          prompt,
+          ...(options.projectId ? { projectId: options.projectId } : {})
         })
       });
       
