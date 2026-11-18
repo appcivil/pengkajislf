@@ -216,21 +216,28 @@ export function makeDialog(el, opts = {}) {
   if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
 
   if (initialFocus) {
-    // Dialog sering dibuat di dalam overlay yang pada frame pertama masih
-    // visibility:hidden. Jangan memilih target fokus sebelum overlay dibuka:
-    // computed visibility dari seluruh turunannya masih hidden pada saat itu.
-    // Pilih ulang target di frame berikutnya agar fokus benar-benar berpindah.
-    requestAnimationFrame(() => {
+    // Overlay modal memakai transisi visibility. Pada frame pertama setelah
+    // class "open" ditambahkan, computed visibility turunannya masih hidden.
+    // Tunggu sampai target benar-benar terlihat sebelum memindahkan fokus.
+    let focusAttempts = 0;
+    const focusWhenVisible = () => {
       if (!el.isConnected) return;
-      const first = focusableWithin(el)[0] || el;
-      try {
-        first.focus();
-        // Beberapa browser menolak fokus ketika transisi overlay baru dimulai.
-        if (!el.contains(document.activeElement)) el.focus();
-      } catch {
-        try { el.focus(); } catch { /* elemen mungkin sudah dilepas */ }
+      const first = focusableWithin(el)[0];
+      if (first) {
+        try {
+          first.focus();
+          if (el.contains(document.activeElement)) return;
+        } catch { /* coba lagi pada frame berikutnya */ }
       }
-    });
+      focusAttempts += 1;
+      if (focusAttempts < 30) {
+        requestAnimationFrame(focusWhenVisible);
+        return;
+      }
+      // Fallback aman: wadah dialog memiliki tabindex=-1 di atas.
+      try { el.focus(); } catch { /* elemen mungkin sudah dilepas */ }
+    };
+    requestAnimationFrame(focusWhenVisible);
   }
 
   const onKeydown = (ev) => {
