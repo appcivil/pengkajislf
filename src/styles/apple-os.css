@@ -1256,3 +1256,52 @@ body.dark #lps-inspection-page .form-input-dark,
 body.dark #wastewater-inspection-page .form-input-dark {
   background:#292a30 !important; color:#f5f5f7 !important; border-color:rgba(255,255,255,.14) !important;
 }
+
+
+/* Project evidence gallery: isolated with :has so other page containers are untouched */
+.page-container:has(#galeri-grid) { color:var(--text-primary); }
+.page-container:has(#galeri-grid) .page-header {
+  padding:clamp(16px,2.5vw,24px); background:rgba(255,255,255,.88);
+  border:1px solid rgba(31,41,55,.08); border-radius:16px;
+}
+.page-container:has(#galeri-grid) .page-title { color:var(--text-primary) !important; }
+.page-container:has(#galeri-grid) .page-subtitle { color:var(--text-tertiary) !important; }
+.page-container:has(#galeri-grid) .card {
+  background:#fff !important; border:1px solid rgba(31,41,55,.085) !important;
+  border-radius:14px !important; box-shadow:0 4px 16px rgba(31,41,55,.04);
+}
+.page-container:has(#galeri-grid) .btn-filter {
+  border-radius:9px !important; background:#f3f5f8; color:#555b65; border:1px solid transparent;
+}
+.page-container:has(#galeri-grid) .btn-filter.active {
+  background:#eaf3ff !important; color:#1769c2 !important; border-color:#d5e7ff !important;
+}
+.page-container:has(#galeri-grid) .galeri-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr)); gap:14px;
+}
+.page-container:has(#galeri-grid) .photo-card {
+  overflow:hidden; background:#fff; border:1px solid rgba(31,41,55,.09);
+  border-radius:13px; box-shadow:0 3px 12px rgba(31,41,55,.04);
+}
+.page-container:has(#galeri-grid) .photo-thumb-wrap { background:#f1f3f6; }
+.page-container:has(#galeri-grid) .photo-info { padding:12px; color:var(--text-primary); }
+.page-container:has(#galeri-grid) .photo-title { color:var(--text-primary); }
+.page-container:has(#galeri-grid) .photo-meta { color:var(--text-tertiary); }
+.page-container:has(#galeri-grid) .lightbox-content {
+  max-width:min(94vw,1200px); max-height:92vh; border-radius:15px; overflow:hidden;
+}
+@media(max-width:640px) {
+  .page-container:has(#galeri-grid) .page-header > .flex-between { align-items:flex-start; flex-direction:column; gap:12px; }
+  .page-container:has(#galeri-grid) .page-header .flex.gap-2 { width:100%; flex-wrap:wrap; }
+  .page-container:has(#galeri-grid) .galeri-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+}
+[data-theme="dark"] .page-container:has(#galeri-grid) .page-header,
+[data-theme="dark"] .page-container:has(#galeri-grid) .card,
+[data-theme="dark"] .page-container:has(#galeri-grid) .photo-card,
+body.dark .page-container:has(#galeri-grid) .page-header,
+body.dark .page-container:has(#galeri-grid) .card,
+body.dark .page-container:has(#galeri-grid) .photo-card {
+  background:#232429 !important; border-color:rgba(255,255,255,.09) !important; color:#f5f5f7 !important;
+}
+[data-theme="dark"] .page-container:has(#galeri-grid) .photo-title,
+body.dark .page-container:has(#galeri-grid) .photo-title { color:#f5f5f7 !important; }
