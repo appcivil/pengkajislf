@@ -35,7 +35,7 @@ Kembalikan JSON murni: {"status":"baik|sedang|buruk|kritis","catatan":"analisis 
       const integration = getSmartAIIntegration();
       if (integration?.isInitialized) {
         const enhanced = await integration.analyzeWithDeepReasoning(filesData, aspek, {
-          ...options, componentName, kategori, useDeepReasoning: false
+          ...options, componentName, kategori, baseResult: parsedResult, useDeepReasoning: false
         });
         parsedResult = { ...parsedResult, ...enhanced, deep_reasoning_enabled: true };
       }
@@ -91,7 +91,7 @@ Kembalikan JSON murni: {"status":"baik|sedang|buruk|kritis","catatan":"analisis 
     try {
       const integration = getSmartAIIntegration();
       if (integration?.isInitialized) {
-        const enhanced = await integration.analyzeComparativeWithDeepReasoning(filesData, itemName, itemKode, context, { ...options, useDeepReasoning: false });
+        const enhanced = await integration.analyzeComparativeWithDeepReasoning(filesData, itemName, itemKode, context, { ...options, baseResult: parsedResult, useDeepReasoning: false });
         return { ...parsedResult, ...enhanced, deep_reasoning_enabled: true };
       }
     } catch (error) {
