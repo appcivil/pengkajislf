@@ -82,3 +82,35 @@ Tidak boleh mengaktifkan batas numerik default secara diam-diam karena dapat men
 ## Status dan batas keselamatan
 
 Dokumen ini hanya rancangan. Belum membuat tabel, fungsi, cron, secret, atau mengubah Supabase. Implementasi baru dilakukan setelah nilai batas dan perilaku paket gratis disetujui serta diuji pada database lokal CI.
+
+
+## Matriks role untuk operasi AI — usulan, belum disetujui
+
+Akses baca proyek melalui RLS tidak otomatis memberikan hak menjalankan AI. Sebelum implementasi, kebijakan role harus menjadi keputusan produk tersendiri.
+
+| Role organisasi | Membaca proyek | Menjalankan AI proyek | Mengubah data hasil AI |
+|---|---:|---:|---:|
+| owner | sesuai RLS | usulan: ya | usulan: ya |
+| admin | sesuai RLS | usulan: ya | usulan: ya |
+| member | sesuai RLS | usulan: ya | sesuai izin modul |
+| viewer | sesuai RLS | usulan: tidak | tidak |
+| platform admin | dukungan lintas tenant hanya dengan otorisasi eksplisit dan audit | tidak otomatis | tidak otomatis |
+
+**Belum diputuskan:** apakah member boleh menjalankan semua jenis AI atau hanya modul tertentu; apakah hasil AI dapat disimpan oleh member; apakah ada approval owner/admin untuk operasi mahal atau penerbitan kesimpulan final. Jangan menerapkan matriks ini ke produksi sebelum owner menyetujuinya.
+
+### Pengujian role wajib sebelum implementasi
+
+- owner/admin/member yang sah dapat menjalankan permintaan proyek sesuai kebijakan final.
+- viewer dapat membaca proyek sesuai RLS, tetapi permintaan AI ditolak bila kebijakan final menetapkan read-only.
+- anggota tenant A tidak dapat meminta AI dengan projectId tenant B.
+- user yang sudah dikeluarkan dari organisasi langsung ditolak walaupun masih memiliki sesi login.
+- platform admin tidak memperoleh akses AI lintas tenant secara implisit; jalur dukungan harus eksplisit, terbatas, dan tercatat.
+- permintaan tanpa projectId hanya dapat memakai kuota user dan tidak boleh mengakses data proyek melalui prompt yang dikirim klien.
+
+## Kunci provider dan batas browser
+
+- Browser hanya mengirim permintaan ke `ai-proxy`; provider key berada di Edge Function secrets.
+- Build wajib menjalankan `prebuild` (`check-client-secrets.mjs`) dan `postbuild` (`check-bundle-secrets.mjs`).
+- Vision project requests menggunakan payload multi-image yang dibatasi jumlah, MIME, dan total ukuran serta wajib membawa projectId.
+- OCR saat pembuatan proyek dapat berjalan sebelum projectId tersedia, tetapi tetap memerlukan sesi pengguna; setelah proyek dibuat, operasi lanjutan harus membawa projectId.
+- Pemeriksaan role harus dilakukan server-side setelah project membership diverifikasi, sebelum reservasi kuota dan sebelum provider dipanggil.
