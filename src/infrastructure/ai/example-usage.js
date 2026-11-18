@@ -342,7 +342,7 @@ async function exampleOCRAnalysis(base64Data, mimeType) {
 /**
  * Contoh 8.1: Analisis komparatif dokumen
  */
-async function exampleComparativeAudit() {
+async function exampleComparativeAudit(projectId) {
     const integration = getSmartAIIntegration();
 
     // Data dokumen untuk komparasi
