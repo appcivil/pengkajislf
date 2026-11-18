@@ -84,6 +84,9 @@ do $$
 declare
   v_missing record;
   v_bad record;
+  v_table_name text;
+  v_policy_name text;
+  v_required_policies text[];
 begin
   select n.nspname, c.relname, a.attname
     into v_missing
@@ -111,6 +114,44 @@ begin
     raise exception 'FAIL: %.% lacks tenant_scope_select for FK key %',
       v_missing.nspname, v_missing.relname, v_missing.attname;
   end if;
+
+  -- Every direct FK-to-proyek table must have complete CRUD policy coverage.
+  for v_table_name in
+    select distinct c.relname
+    from pg_class c
+    join pg_namespace n on n.oid = c.relnamespace
+    join pg_attribute a on a.attrelid = c.oid
+    join pg_constraint fk on fk.conrelid = c.oid
+      and fk.contype = 'f' and a.attnum = any(fk.conkey)
+    where n.nspname = 'public' and c.relkind = 'r'
+      and a.attname in ('project_id', 'proyek_id')
+      and fk.confrelid = 'public.proyek'::regclass
+  loop
+    foreach v_policy_name in array array[
+      'tenant_scope_select','tenant_scope_insert',
+      'tenant_scope_update','tenant_scope_delete'
+    ] loop
+      if not exists (
+        select 1 from pg_policies p
+        where p.schemaname='public' and p.tablename=v_table_name
+          and p.policyname=v_policy_name
+      ) then
+        raise exception 'FAIL: %.% lacks policy %',
+          'public', v_table_name, v_policy_name;
+      end if;
+    end loop;
+
+    if not exists (
+      select 1 from pg_policies p
+      where p.schemaname='public' and p.tablename=v_table_name
+        and p.policyname='tenant_scope_update'
+        and nullif(p.qual, '') is not null
+        and nullif(p.with_check, '') is not null
+    ) then
+      raise exception 'FAIL: public.% update policy must constrain USING and WITH CHECK',
+        v_table_name;
+    end if;
+  end loop;
 
   select n.nspname, c.relname, a.attname, target.relname as target_name
     into v_bad
@@ -157,25 +198,96 @@ begin
       v_bad.schemaname, v_bad.tablename;
   end if;
 
-  -- Indirect-child policies must exist whenever the child module is present.
-  if to_regclass('public.architectural_rooms') is not null
-     and not exists (select 1 from pg_policies where schemaname='public'
-       and tablename='architectural_rooms' and policyname='tenant_parent_select') then
-    raise exception 'FAIL: architectural_rooms lacks parent tenant policy';
+  -- All configured indirect children must have complete CRUD parent policies.
+  for v_table_name in
+    select child_table from (values
+      ('architectural_rooms'),
+      ('building_room_schedules'),
+      ('building_setback_details'),
+      ('evacuation_agents'),
+      ('evacuation_exits'),
+      ('fire_sources'),
+      ('fire_timeline'),
+      ('pump_units'),
+      ('electrical_protection_settings')
+    ) as expected(child_table)
+    where to_regclass(format('public.%I', child_table)) is not null
+  loop
+    foreach v_policy_name in array array[
+      'tenant_parent_select','tenant_parent_insert',
+      'tenant_parent_update','tenant_parent_delete'
+    ] loop
+      if not exists (
+        select 1 from pg_policies p
+        where p.schemaname='public' and p.tablename=v_table_name
+          and p.policyname=v_policy_name
+      ) then
+        raise exception 'FAIL: public.% lacks indirect policy %',
+          v_table_name, v_policy_name;
+      end if;
+    end loop;
+
+    if not exists (
+      select 1 from pg_policies p
+      where p.schemaname='public' and p.tablename=v_table_name
+        and p.policyname='tenant_parent_update'
+        and nullif(p.qual, '') is not null
+        and nullif(p.with_check, '') is not null
+    ) then
+      raise exception 'FAIL: public.% indirect UPDATE must constrain USING and WITH CHECK',
+        v_table_name;
+    end if;
+  end loop;
+
+  -- SmartAI's project/document chain is handled by its dedicated policies.
+  if to_regclass('public.smartai_documents') is not null then
+    foreach v_policy_name in array array[
+      'tenant_scope_select','tenant_scope_insert',
+      'tenant_scope_update','tenant_scope_delete'
+    ] loop
+      if not exists (select 1 from pg_policies p
+        where p.schemaname='public' and p.tablename='smartai_documents'
+          and p.policyname=v_policy_name) then
+        raise exception 'FAIL: smartai_documents lacks policy %', v_policy_name;
+      end if;
+    end loop;
   end if;
-  if to_regclass('public.electrical_protection_settings') is not null
-     and not exists (select 1 from pg_policies where schemaname='public'
-       and tablename='electrical_protection_settings' and policyname='tenant_parent_select') then
-    raise exception 'FAIL: electrical_protection_settings lacks parent tenant policy';
+
+  if to_regclass('public.smartai_jobs') is not null then
+    foreach v_policy_name in array array[
+      'tenant_scope_select','tenant_scope_insert',
+      'tenant_scope_update','tenant_scope_delete'
+    ] loop
+      if not exists (select 1 from pg_policies p
+        where p.schemaname='public' and p.tablename='smartai_jobs'
+          and p.policyname=v_policy_name) then
+        raise exception 'FAIL: smartai_jobs lacks policy %', v_policy_name;
+      end if;
+    end loop;
+  end if;
+
+  if to_regclass('public.smartai_chunks') is not null then
+    foreach v_policy_name in array array[
+      'smartai_chunks_tenant_select','smartai_chunks_tenant_insert',
+      'smartai_chunks_tenant_update','smartai_chunks_tenant_delete'
+    ] loop
+      if not exists (select 1 from pg_policies p
+        where p.schemaname='public' and p.tablename='smartai_chunks'
+          and p.policyname=v_policy_name) then
+        raise exception 'FAIL: smartai_chunks lacks policy %', v_policy_name;
+      end if;
+    end loop;
   end if;
 
   -- Lighting tables have a different legacy root and must not be rewritten
   -- by the generic proyek policy until an organization mapping is approved.
-  if to_regclass('public.lighting_calculations') is not null
-     and exists (select 1 from pg_policies where schemaname='public'
-       and tablename='lighting_calculations' and policyname='tenant_scope_select') then
-    raise exception 'FAIL: lighting_calculations was incorrectly assigned proyek policy';
-  end if;
+  foreach v_table_name in array array['lighting_calculations','daylight_calculations'] loop
+    if to_regclass(format('public.%I', v_table_name)) is not null
+       and exists (select 1 from pg_policies where schemaname='public'
+         and tablename=v_table_name and policyname='tenant_scope_select') then
+      raise exception 'FAIL: % was incorrectly assigned proyek policy', v_table_name;
+    end if;
+  end loop;
 end;
 $$;
 rollback;
