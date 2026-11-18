@@ -568,7 +568,10 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
     // WAJIB memakai access_token sesi pengguna: Edge Function memverifikasi
     // token itu ke GoTrue. Anon key adalah JWT publik — ia bisa dibaca siapa
     // pun dari bundel, sehingga tidak boleh dipakai untuk membuka ai-proxy.
-    const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-proxy`;
+    const functionUrl = import.meta.env.VITE_AI_PROXY_URL ||
+      (import.meta.env.VITE_SUPABASE_URL
+        ? `${import.meta.env.VITE_SUPABASE_URL.replace(/[/]+$/, '')}/functions/v1/ai-proxy`
+        : '/functions/v1/ai-proxy');
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
     const response = await fetch(functionUrl, {
