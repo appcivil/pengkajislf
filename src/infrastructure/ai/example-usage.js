@@ -286,12 +286,12 @@ async function exampleGetWorkflowInfo() {
 /**
  * Contoh 7.1: Analisis dokumen dengan Deep Reasoning
  */
-async function exampleAnalyzeDocument(fileData) {
+async function exampleAnalyzeDocument(fileData, projectId) {
     const integration = getSmartAIIntegration();
 
     try {
         // Analisis dokumen
-        const result = await integration.analyzeDocumentWithDeepReasoning(fileData);
+        const result = await integration.analyzeDocumentWithDeepReasoning(fileData, { projectId });
 
         console.log('[Example] Hasil analisis dokumen:', result);
 
@@ -501,7 +501,7 @@ async function exampleConsensusAnalysis(checklist, proyek, analisisSummary) {
 /**
  * Contoh 11.1: Error handling dengan fallback
  */
-async function exampleWithErrorHandling() {
+async function exampleWithErrorHandling(projectId) {
     const integration = getSmartAIIntegration();
 
     try {
