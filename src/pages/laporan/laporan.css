@@ -484,3 +484,62 @@
     box-shadow: none !important;
   }
 }
+
+
+/* Mobile DOCX workspace: override legacy absolute positioning so the
+   outline and paper flow vertically without covering each other. */
+@media (max-width: 760px) {
+  .docx-preview-container {
+    height: auto !important;
+    min-height: 68dvh;
+    overflow: visible;
+  }
+  .docx-render-container,
+  .docx-render-container.show {
+    position: relative;
+    display: grid !important;
+    height: auto !important;
+    min-height: 68dvh;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(52dvh, 1fr);
+    overflow: visible;
+  }
+  .docx-render-container .nav-sidebar {
+    position: relative !important;
+    inset: auto !important;
+    width: auto !important;
+    min-width: 0;
+    max-height: 180px;
+    grid-column: 1;
+    grid-row: 1;
+    border-right: 0;
+    border-bottom: 1px solid var(--border-default, #dee2e6);
+  }
+  .docx-render-container .main-content {
+    position: relative !important;
+    inset: auto !important;
+    min-width: 0;
+    min-height: 52dvh;
+    grid-column: 1;
+    grid-row: 2;
+    padding: 12px;
+    overflow: auto;
+  }
+  .docx-render-container .page-container {
+    width: max-content;
+    max-width: 100%;
+    min-height: 0;
+  }
+  .docx-render-container .render-target {
+    min-height: 0;
+    padding: 12mm 8mm;
+  }
+  .docx-render-container .zoom-controls {
+    position: sticky;
+    inset: auto !important;
+    width: max-content;
+    margin: 12px 12px 12px auto;
+    grid-column: 1;
+    grid-row: 3;
+  }
+}
