@@ -112,7 +112,7 @@ export async function extractTextFromPDF(pdfSource, options = {}) {
           await page.render({ canvasContext: context, viewport }).promise;
           
           const imageData = canvas.toDataURL('image/png');
-          const ocrResult = await extractTextFromImage(imageData);
+          const ocrResult = await extractTextFromImage(imageData, options);
           
           if (ocrResult.success && ocrResult.text.trim().length > 0) {
             pageResult.images.push({
