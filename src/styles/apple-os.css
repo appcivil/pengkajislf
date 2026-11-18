@@ -883,3 +883,59 @@ body.dark #tier-checklist-page #tier-content h2 { color:#f4f4f5 !important; }
   #kondisi-page .page-header { padding:16px !important; }
   #todo-page .kanban-board { overflow-x:auto; grid-auto-columns:minmax(270px,85vw); }
 }
+
+
+/* Remaining technical modules, calculators, project forms and public utility pages */
+#architectural-inspection-page, #electrical-inspection-page, #ndt-page, #seismic-page,
+#proyek-form-page, #sp-list-page, #todo-detail, .legal-page { color:var(--text-primary); }
+#architectural-inspection-page .card-quartz,
+#electrical-inspection-page .card-quartz,
+#architectural-inspection-page .table-wrap,
+#electrical-inspection-page .table-wrap,
+#ndt-page .card, #seismic-page .card,
+#proyek-form-page .card-quartz,
+#sp-list-page .sp-card-item,
+#todo-detail .card {
+  background:#fff !important; border:1px solid rgba(31,41,55,.085) !important;
+  border-radius:15px !important; box-shadow:0 4px 16px rgba(31,41,55,.04);
+}
+#architectural-inspection-page .arch-tab-item,
+#electrical-inspection-page .electrical-tab-item { border-radius:10px !important; }
+#architectural-inspection-page .arch-tab-item.active,
+#electrical-inspection-page .electrical-tab-item.active {
+  background:#eaf3ff !important; color:#1769c2 !important; border-color:#d5e7ff !important;
+}
+#architectural-inspection-page .form-input-dark,
+#electrical-inspection-page input, #electrical-inspection-page select,
+#ndt-page .form-input, #ndt-page .form-select,
+#seismic-page .form-input, #seismic-page .form-select,
+#proyek-form-page .form-input, #proyek-form-page .form-select,
+#todo-detail .form-control {
+  background:#fff !important; color:#24262b !important;
+  border:1px solid #dfe3e9 !important; border-radius:9px !important;
+}
+#proyek-form-page .form-step-section { background:#fff !important; border:1px solid #e7eaf0; border-radius:15px; padding:20px; }
+#proyek-form-page .step-circle { box-shadow:0 2px 7px rgba(31,41,55,.08); }
+#sp-list-page .sp-card-item { transition:transform var(--transition-fast),box-shadow var(--transition-fast); }
+#sp-list-page .sp-card-item:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(31,41,55,.07); }
+#ndt-page .result-card, #seismic-page .result-card, #seismic-page .spectrum-card {
+  background:linear-gradient(145deg,#f8fbff,#edf4ff) !important; border:1px solid #dce8f8 !important; border-radius:15px !important;
+}
+.legal-page .legal-container { background:#fff !important; border:1px solid #e7eaf0; border-radius:18px; box-shadow:0 8px 28px rgba(31,41,55,.055); }
+.legal-page .legal-section { border-bottom-color:#eceef2 !important; }
+#verify-portal { color:var(--text-primary); }
+#verify-portal .card-quartz, #verify-portal .grid-4-col > * {
+  background:#fff !important; border:1px solid rgba(31,41,55,.09) !important; border-radius:14px !important;
+}
+#page-root > [id$="-page"] .page-header:not(#executive-page .page-header) {
+  border-radius:15px; 
+}
+@media(max-width:760px) {
+  #architectural-inspection-page .grid-4-col,
+  #architectural-inspection-page .grid-2-col,
+  #electrical-inspection-page .grid-3-col,
+  #electrical-inspection-page .grid-2-col,
+  #proyek-form-page .grid-main-side,
+  #ndt-page .grid-2-1, #seismic-page .grid-2-1 { grid-template-columns:1fr !important; }
+  #proyek-form-page .form-step-section { padding:14px; }
+}
