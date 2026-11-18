@@ -343,38 +343,6 @@ export class AIRouter {
     }
   }
 
-  /**
-   * Kunci API penyedia AI — HANYA untuk pengembangan lokal.
-   *
-   * KENAPA DIBATASI
-   * ---------------
-   * Setiap nilai `import.meta.env.VITE_*` diganti menjadi teks biasa di
-   * dalam berkas JS saat `npm run build`. Jadi kunci yang ada di `.env`
-   * saat build akan IKUT TERBIT ke bundel publik dan dapat dibaca siapa
-   * pun lewat DevTools — lalu dipakai atas biaya Anda.
-   *
-   * Di produksi permintaan AI WAJIB lewat Edge Function `ai-proxy`
-   * (set `VITE_AI_PROXY_URL`). Kuncinya disimpan sebagai secret Edge
-   * Function dan tidak pernah menyentuh peramban.
-   *
-   * Lapis kedua: `npm run build` akan GAGAL bila mendapati kunci AI di
-   * environment produksi — lihat scripts/check-client-secrets.mjs.
-   */
-  getApiKey(provider) {
-    if (!import.meta.env.DEV) {
-      throw new Error(
-        `Permintaan AI langsung ke ${provider} dinonaktifkan di produksi. ` +
-        'Arahkan trafik lewat Edge Function ai-proxy dengan mengisi VITE_AI_PROXY_URL.'
-      );
-    }
-    const keys = {
-      kimi: import.meta.env.VITE_KIMI_API_KEY,
-      gemini: import.meta.env.VITE_GEMINI_API_KEY,
-      openrouter: import.meta.env.VITE_OPENROUTER_API_KEY
-    };
-    return keys[provider];
-  }
-
   delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
