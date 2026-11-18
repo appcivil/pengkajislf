@@ -216,9 +216,21 @@ export function makeDialog(el, opts = {}) {
   if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
 
   if (initialFocus) {
-    const first = focusableWithin(el)[0] || el;
-    // Dijalankan setelah elemen benar-benar terpasang di dokumen.
-    requestAnimationFrame(() => { try { first.focus(); } catch { /* diabaikan */ } });
+    // Dialog sering dibuat di dalam overlay yang pada frame pertama masih
+    // visibility:hidden. Jangan memilih target fokus sebelum overlay dibuka:
+    // computed visibility dari seluruh turunannya masih hidden pada saat itu.
+    // Pilih ulang target di frame berikutnya agar fokus benar-benar berpindah.
+    requestAnimationFrame(() => {
+      if (!el.isConnected) return;
+      const first = focusableWithin(el)[0] || el;
+      try {
+        first.focus();
+        // Beberapa browser menolak fokus ketika transisi overlay baru dimulai.
+        if (!el.contains(document.activeElement)) el.focus();
+      } catch {
+        try { el.focus(); } catch { /* elemen mungkin sudah dilepas */ }
+      }
+    });
   }
 
   const onKeydown = (ev) => {
