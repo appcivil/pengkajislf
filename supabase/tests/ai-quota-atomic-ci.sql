@@ -133,7 +133,8 @@ where subject_id in (
   'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
   'dddddddd-dddd-4ddd-8ddd-dddddddddddd'
 );
-delete from private.ai_quota_policies
+update private.ai_quota_policies
+set max_requests = null, max_tokens = null, enabled = false, updated_at = now()
 where plan_key = 'free' and scope in ('user', 'organization') and window_seconds = 86400;
 
 commit;
