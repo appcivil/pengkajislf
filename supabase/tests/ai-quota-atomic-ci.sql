@@ -17,7 +17,18 @@ begin
   end if;
   if has_function_privilege('authenticated', 'private.ai_quota_reserve(uuid,uuid,text,integer,integer)', 'EXECUTE')
      or has_function_privilege('anon', 'private.ai_quota_reserve(uuid,uuid,text,integer,integer)', 'EXECUTE') then
-    raise exception 'quota reservation RPC must be service_role-only';
+    raise exception 'private quota reservation RPC must be service_role-only';
+  end if;
+  if has_function_privilege('authenticated', 'public.ai_quota_reserve(uuid,uuid,text,integer,integer)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.ai_quota_reserve(uuid,uuid,text,integer,integer)', 'EXECUTE')
+     or not has_function_privilege('service_role', 'public.ai_quota_reserve(uuid,uuid,text,integer,integer)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.ai_quota_finalize(uuid,integer)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.ai_quota_finalize(uuid,integer)', 'EXECUTE')
+     or not has_function_privilege('service_role', 'public.ai_quota_finalize(uuid,integer)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.ai_quota_release(uuid)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.ai_quota_release(uuid)', 'EXECUTE')
+     or not has_function_privilege('service_role', 'public.ai_quota_release(uuid)', 'EXECUTE') then
+    raise exception 'public quota gateway must be executable only by service_role';
   end if;
 end;
 $privileges$;
