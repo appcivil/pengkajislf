@@ -787,7 +787,7 @@ export async function callAI(model, prompt, options = {}) {
     case 'google': return await fetchGemini(model, prompt, options);
     case 'openai': return await fetchKimi(model, prompt); // Kimi uses OpenAI-compatible API
     case 'anthropic': return await fetchClaude(model, prompt);
-    case 'openrouter': return await fetchOpenRouter(model, prompt);
+    case 'openrouter': return await fetchOpenRouterDirect(model, prompt);
     case 'huggingface': return await fetchSLFOpus(model, prompt);
     case 'mistral': return await fetchMistral(model, prompt);
     case 'ollama': return await fetchOllama(model, prompt);
@@ -1299,7 +1299,7 @@ async function fetchOpenAI(model, prompt) {
   return data.choices?.[0]?.message?.content ?? '{}';
 }
 
-export async function fetchOpenRouter(model, prompt) {
+async function fetchOpenRouterDirect(model, prompt) {
   const res = await fetch(model.url, {
     method: 'POST',
     headers: {
@@ -1313,6 +1313,14 @@ export async function fetchOpenRouter(model, prompt) {
   if (!res.ok) throw new Error(`OpenRouter Error (HTTP ${res.status})`);
   const data = await res.json();
   return data.choices?.[0]?.message?.content ?? '{}';
+}
+
+/**
+ * Public provider entry point. External modules must use this wrapper so
+ * production requests always pass through ai-proxy and its auth/project checks.
+ */
+export async function fetchOpenRouter(model, prompt, options = {}) {
+  return callAI({ ...model, vendor: 'openrouter', proxyProvider: 'openrouter' }, prompt, options);
 }
 
 async function fetchClaude(model, prompt) {
