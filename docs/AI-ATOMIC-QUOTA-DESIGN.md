@@ -1,6 +1,6 @@
 # Rancangan Kuota AI Atomik — Free Tier
 
-Status: desain untuk review; belum ada migrasi atau implementasi kuota.
+Status: fondasi ledger dan RPC atomik ditambahkan pada migration 20261118090000; jendela pencatatan penggunaan sudah disiapkan dalam keadaan nonaktif (tanpa batas numerik); AI Proxy belum terhubung ke RPC.
 
 ## Tujuan
 
@@ -26,6 +26,8 @@ Usulan tabel internal (skema privat, bukan tabel yang dapat dibaca klien):
 - `private.ai_usage_buckets`: agregat penggunaan berdasarkan subject, periode, request count, token reserved, dan token final.
 - `private.ai_usage_reservations`: reservasi per request dengan idempotency key, user, optional organization, perkiraan token, status, dan waktu kedaluwarsa.
 
+Jendela pencatatan 1 menit, 1 jam, 1 hari, dan 30 hari dibuat untuk scope user dan organization dengan `enabled=false` serta batas `NULL`. Reservasi tetap memperbarui counter reserved/used pada jendela ini. Dengan demikian, penggunaan tercatat sebelum batas numerik disetujui; mengaktifkan batas pada jendela yang sudah ada tidak menghilangkan histori penggunaan di periode berjalan.
+
 Jangan menyimpan prompt, isi dokumen, gambar, API key provider, atau access token dalam tabel usage. Simpan metadata minimum untuk audit dan rekonsiliasi.
 
 ## Alur reserve → provider → finalize
@@ -39,13 +41,13 @@ Jangan menyimpan prompt, isi dokumen, gambar, API key provider, atau access toke
 7. Setelah provider merespons, finalisasi reservasi memakai usage aktual bila provider menyediakannya. Jika usage tidak tersedia, gunakan jumlah reservasi sebagai biaya konservatif.
 8. Finalisasi harus idempotent. Timeout atau retry tidak boleh menggandakan hitungan; reservation yang kedaluwarsa direkonsiliasi oleh proses terjadwal.
 
-## Implementasi database yang disarankan
+## Implementasi database yang sudah dibuat
 
-- Fungsi reserve/finalize berada di skema privat dan memakai `SECURITY DEFINER` hanya jika benar-benar diperlukan.
+- Fungsi `ai_quota_reserve`, `ai_quota_finalize`, `ai_quota_release`, dan `ai_quota_expire_reservations` berada di skema privat dan memakai `SECURITY DEFINER`.
 - Semua fungsi privileged wajib memakai `SET search_path = ''`, nama objek fully-qualified, validasi parameter, serta revoke dari `PUBLIC` dan `anon`.
-- Fungsi reserve memverifikasi `auth.uid()` atau menerima klaim pengguna yang sudah diverifikasi melalui jalur server yang tidak dapat dipalsukan klien.
+- RPC hanya dapat dipanggil `service_role`; karena itu pemanggil Edge Function wajib mengambil `user_id` dari JWT yang sudah diverifikasi dan `organization_id` dari baris proyek yang berhasil diakses lewat RLS pengguna. Jangan pernah meneruskan ID organisasi dari payload klien.
 - Lock baris dilakukan dalam urutan deterministik (user lalu organization) untuk menghindari deadlock.
-- Update dua bucket dan pembuatan reservation harus berada dalam satu transaksi PostgreSQL.
+- Pemeriksaan seluruh bucket dan pembuatan reservasi berjalan dalam satu transaksi PostgreSQL; advisory lock deterministik mengambil lock user lebih dahulu, kemudian organization. Finalize/release/expire mengunci reservasi dan memperbarui semua bucket yang direferensikan.
 - Client roles tidak mendapat SELECT/INSERT/UPDATE/DELETE langsung atas tabel privat.
 - Jika Edge Function memakai service-role untuk finalisasi, RPC wajib mengikat reservation ke ID request yang dibuat saat reserve; service-role tidak boleh dapat mengubah identitas pemilik reservation sembarang.
 
@@ -81,27 +83,27 @@ Tidak boleh mengaktifkan batas numerik default secara diam-diam karena dapat men
 
 ## Status dan batas keselamatan
 
-Dokumen ini hanya rancangan. Belum membuat tabel, fungsi, cron, secret, atau mengubah Supabase. Implementasi baru dilakukan setelah nilai batas dan perilaku paket gratis disetujui serta diuji pada database lokal CI.
+Fondasi implementasi dibuat dalam migration 20261118090000_ai_atomic_quota_foundation.sql: tabel privat untuk policy, bucket penggunaan, dan reservasi; RPC reserve/finalize/release/expire dengan advisory lock deterministik, idempotency, dan finalisasi idempotent. Jendela pencatatan sudah tersedia tanpa batas numerik aktif. AI Proxy belum memanggil RPC ini, belum ada cron/secret/deployment, dan CI kuota pertama menemukan kesalahan delimiter pada SQL test expiry; delimiter telah diperbaiki. Test lanjutan menambahkan pemeriksaan ACL, usage tracking tanpa caps, conflicting finalize, serta dua sesi concurrent; hasil CI terbaru untuk head PR #24 masih menunggu. Tidak ada migrasi yang diterapkan pada database produksi.
 
 
 ## Matriks role untuk operasi AI — disetujui 2026-11-18
 
-Akses baca proyek melalui RLS tidak otomatis memberikan hak menjalankan AI. Sebelum implementasi, kebijakan role harus menjadi keputusan produk tersendiri.
+Akses baca proyek melalui RLS tidak otomatis memberikan hak menjalankan AI. Matriks berikut telah disetujui sebagai kebijakan produk.
 
 | Role organisasi | Membaca proyek | Menjalankan AI proyek | Mengubah data hasil AI |
 |---|---:|---:|---:|
-| owner | sesuai RLS | usulan: ya | usulan: ya |
-| admin | sesuai RLS | usulan: ya | usulan: ya |
-| member | sesuai RLS | usulan: ya | sesuai izin modul |
-| viewer | sesuai RLS | usulan: tidak | tidak |
+| owner | sesuai RLS | ya | ya |
+| admin | sesuai RLS | ya | ya |
+| member | sesuai RLS | ya | sesuai izin modul |
+| viewer | sesuai RLS | tidak | tidak |
 | platform admin | dukungan lintas tenant hanya dengan otorisasi eksplisit dan audit | tidak otomatis | tidak otomatis |
 
 **Keputusan yang telah disetujui:** owner/admin/member boleh menjalankan AI proyek; viewer hanya membaca dan tidak boleh menjalankan AI atau mengubah hasil; platform admin tidak memperoleh akses lintas tenant otomatis. Hak simpan hasil untuk member mengikuti izin modul dan RLS yang berlaku. Approval untuk operasi mahal belum diputuskan dan tetap menunggu kebijakan kuota.
 
-### Pengujian role wajib sebelum implementasi
+### Pengujian role wajib
 
 - owner/admin/member yang sah dapat menjalankan permintaan proyek.
-- viewer dapat membaca proyek sesuai RLS, tetapi permintaan AI ditolak bila kebijakan final menetapkan read-only.
+- viewer dapat membaca proyek sesuai RLS, tetapi permintaan AI ditolak; request tanpa projectId juga harus menolak akun yang seluruh membership-nya viewer.
 - anggota tenant A tidak dapat meminta AI dengan projectId tenant B.
 - user yang sudah dikeluarkan dari organisasi langsung ditolak walaupun masih memiliki sesi login.
 - platform admin tidak memperoleh akses AI lintas tenant secara implisit; jalur dukungan harus eksplisit, terbatas, dan tercatat.
