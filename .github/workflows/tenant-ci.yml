@@ -30,6 +30,12 @@ jobs:
         run: npm test -- --run
       - name: Static security audits
         run: npm run audit:all
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: AI Proxy security unit tests
+        run: deno test --allow-net supabase/functions/ai-proxy/security_test.ts
       - name: Setup Supabase CLI (pinned v2 during v3 migration)
         uses: supabase/setup-cli@v3
         with:
