@@ -51,7 +51,7 @@ export type ProjectAuthResult =
   | { ok: false; status: number; error: string };
 
 export async function authenticateProject(req: Request, projectId: unknown): Promise<ProjectAuthResult> {
-  const match = (req.headers.get("authorization") || "").match(/^Bearer\\s+(.+)$/i);
+  const match = (req.headers.get("authorization") || "").match(/^Bearer\s+(.+)$/i);
   const token = match?.[1]?.trim();
   if (!token) return { ok: false, status: 401, error: "Valid user session required" };
   if (typeof projectId !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId)) {
