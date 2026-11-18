@@ -47,8 +47,13 @@ export async function readJsonBody(req: Request, maxBytes: number): Promise<Json
 }
 
 export type ProjectAuthResult =
-  | { ok: true; userId: string }
+  | { ok: true; userId: string; organizationId: string }
   | { ok: false; status: number; error: string };
+
+/** AI execution is distinct from project read access: viewer stays read-only. */
+export function canExecuteProjectAI(role: unknown): boolean {
+  return role === "owner" || role === "admin" || role === "member";
+}
 
 export async function authenticateProject(req: Request, projectId: unknown): Promise<ProjectAuthResult> {
   const match = (req.headers.get("authorization") || "").match(/^Bearer\s+(.+)$/i);
@@ -76,10 +81,26 @@ export async function authenticateProject(req: Request, projectId: unknown): Pro
   });
   const { data: project, error: projectError } = await scopedClient
     .from("proyek")
-    .select("id")
+    .select("id, organization_id")
     .eq("id", projectId)
     .maybeSingle();
 
-  if (projectError || !project) return { ok: false, status: 403, error: "Project access denied" };
-  return { ok: true, userId: user.id };
+  if (projectError || !project?.organization_id) {
+    return { ok: false, status: 403, error: "Project access denied" };
+  }
+
+  // RLS visibility only proves read access. Verify the tenant role explicitly
+  // before either Edge Function calls the paid Gemini provider.
+  const { data: membership, error: membershipError } = await scopedClient
+    .from("organization_members")
+    .select("role")
+    .eq("organization_id", project.organization_id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (membershipError || !membership || !canExecuteProjectAI(membership.role)) {
+    return { ok: false, status: 403, error: "Role is read-only or not authorized to execute AI for this project" };
+  }
+
+  return { ok: true, userId: user.id, organizationId: project.organization_id };
 }

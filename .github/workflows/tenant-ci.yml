@@ -35,7 +35,7 @@ jobs:
         with:
           deno-version: v2.x
       - name: AI Proxy security unit tests
-        run: deno test --allow-net supabase/functions/ai-proxy/security_test.ts
+        run: deno test --allow-net supabase/functions/ai-proxy/security_test.ts supabase/functions/_shared/tenant-auth_test.ts
       - name: Setup Supabase CLI (pinned v2 during v3 migration)
         uses: supabase/setup-cli@v3
         with:
