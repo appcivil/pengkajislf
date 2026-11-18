@@ -31,6 +31,25 @@ values
  ('bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb','CI Project B','bbbbbbbb-0000-4000-8000-000000000002','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb')
 on conflict (id) do nothing;
 
+-- SmartAI records inherit tenant scope from their project/document chain.
+insert into public.smartai_jobs (id,type,status,user_id,project_id)
+values
+ ('aaaaaaaa-3333-4333-8333-aaaaaaaaaaaa','rag','completed','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa'),
+ ('bbbbbbbb-3333-4333-8333-bbbbbbbbbbbb','rag','completed','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb')
+on conflict (id) do nothing;
+
+insert into public.smartai_documents (id,job_id,user_id,project_id,file_name)
+values
+ ('aaaaaaaa-4444-4444-8444-aaaaaaaaaaaa','aaaaaaaa-3333-4333-8333-aaaaaaaaaaaa','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa','tenant-a.txt'),
+ ('bbbbbbbb-4444-4444-8444-bbbbbbbbbbbb','bbbbbbbb-3333-4333-8333-bbbbbbbbbbbb','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb','tenant-b.txt')
+on conflict (id) do nothing;
+
+insert into public.smartai_chunks (id,document_id,chunk_index,text)
+values
+ ('aaaaaaaa-5555-4555-8555-aaaaaaaaaaaa','aaaaaaaa-4444-4444-8444-aaaaaaaaaaaa',0,'Tenant A private chunk'),
+ ('bbbbbbbb-5555-4555-8555-bbbbbbbbbbbb','bbbbbbbb-4444-4444-8444-bbbbbbbbbbbb',0,'Tenant B private chunk')
+on conflict (id) do nothing;
+
 set local role authenticated;
 select set_config('request.jwt.claim.sub','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',true);
 select set_config('request.jwt.claims','{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}',true);
@@ -43,6 +62,29 @@ begin
 
  select count(*) into n from public.proyek where id='bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb';
  if n <> 0 then raise exception 'FAIL: tenant A can read tenant B project'; end if;
+
+ -- SmartAI document and chunk reads must follow the parent project's tenant.
+ select count(*) into n from public.smartai_documents where id='aaaaaaaa-4444-4444-8444-aaaaaaaaaaaa';
+ if n <> 1 then raise exception 'FAIL: tenant A cannot read its own SmartAI document'; end if;
+ select count(*) into n from public.smartai_documents where id='bbbbbbbb-4444-4444-8444-bbbbbbbbbbbb';
+ if n <> 0 then raise exception 'FAIL: tenant A can read tenant B SmartAI document'; end if;
+ select count(*) into n from public.smartai_chunks where id='aaaaaaaa-5555-4555-8555-aaaaaaaaaaaa';
+ if n <> 1 then raise exception 'FAIL: tenant A cannot read its own SmartAI chunk'; end if;
+ select count(*) into n from public.smartai_chunks where id='bbbbbbbb-5555-4555-8555-bbbbbbbbbbbb';
+ if n <> 0 then raise exception 'FAIL: tenant A can read tenant B SmartAI chunk'; end if;
+
+ begin
+   insert into public.smartai_chunks (document_id,chunk_index,text)
+   values ('bbbbbbbb-4444-4444-8444-bbbbbbbbbbbb',1,'unauthorized cross-tenant chunk');
+   raise exception 'FAIL: tenant A inserted chunk into tenant B document';
+ exception when insufficient_privilege then null;
+ end;
+ update public.smartai_chunks set text=text where id='bbbbbbbb-5555-4555-8555-bbbbbbbbbbbb';
+ get diagnostics n = row_count;
+ if n <> 0 then raise exception 'FAIL: tenant A updated tenant B SmartAI chunk'; end if;
+ delete from public.smartai_chunks where id='bbbbbbbb-5555-4555-8555-bbbbbbbbbbbb';
+ get diagnostics n = row_count;
+ if n <> 0 then raise exception 'FAIL: tenant A deleted tenant B SmartAI chunk'; end if;
 
  update public.proyek set nama_bangunan=nama_bangunan where id='bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb';
  get diagnostics n = row_count;
