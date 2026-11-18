@@ -46,10 +46,10 @@ export class VoiceService {
   /**
    * Formalize a spoken raw note into professional engineering language using AI
    */
-  async formalize(rawText) {
+  async formalize(rawText, requestOptions = {}) {
     if (!rawText || rawText.length < 5) return rawText;
 
-    const { MODELS, fetchGemini } = await import('./ai-router.js');
+    const { MODELS, callAI } = await import('./ai-router.js');
     
     const prompt = `
       Anda adalah AI Ahli Pengkaji SLF.
@@ -61,7 +61,7 @@ export class VoiceService {
     `;
 
     try {
-      const res = await fetchGemini(MODELS.GEMINI, prompt);
+      const res = await callAI(MODELS.GEMINI, prompt, { projectId: requestOptions.projectId });
       return res.replace(/["']/g, '').trim();
     } catch (e) {
       console.error("Formalization failed:", e);
@@ -73,7 +73,7 @@ export class VoiceService {
    * INFER STATUS FROM SPEECH (COMMAND ENGINE)
    * Heuristic + AI identification of checklist status from voice.
    */
-  async inferStatus(rawText, options = []) {
+  async inferStatus(rawText, options = [], requestOptions = {}) {
     const text = rawText.toLowerCase();
     
     // 1. Fast Heuristics (Local, Instant)
@@ -99,7 +99,7 @@ export class VoiceService {
     `;
 
     try {
-      const res = await fetchGemini(MODELS.GEMINI, prompt);
+      const res = await callAI(MODELS.GEMINI, prompt, { projectId: requestOptions.projectId });
       const cleaned = res.toLowerCase().trim();
       return options.find(o => cleaned.includes(o.value.toLowerCase()))?.value || null;
     } catch (e) {
