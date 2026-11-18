@@ -56,7 +56,7 @@ function renderTaskHero(t) {
   const c = prioColors[t.priority] || 'var(--text-tertiary)';
 
   return `
-    <div style="animation: page-fade-in 0.6s ease-out">
+    <div id="task-detail-page" style="animation: page-fade-in 0.6s ease-out">
       <!-- Breadcrumbs -->
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:32px; font-size:0.75rem; font-family:var(--font-mono); letter-spacing:1px; color:var(--text-tertiary)">
          <span class="clickable" onclick="window.navigate('dashboard')">SYSTEM</span>
