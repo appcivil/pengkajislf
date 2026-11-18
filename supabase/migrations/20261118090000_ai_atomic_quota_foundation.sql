@@ -3,7 +3,9 @@
 -- All writes are performed through service-role-only SECURITY DEFINER RPCs.
 
 create schema if not exists private;
-revoke all on schema private from public, anon, authenticated;
+-- Preserve existing authenticated USAGE on private: tenant RLS policies call
+-- private.is_org_member() and private.has_org_role(). Only the new quota tables
+-- and RPCs are restricted below.
 grant usage on schema private to service_role;
 
 create table if not exists private.ai_quota_policies (
