@@ -984,7 +984,7 @@ body.dark #tier-checklist-page #tier-content h2 { color:#f4f4f5 !important; }
   min-height:52px; padding:12px 15px; background:#fafbfc;
   border-bottom:1px solid rgba(31,41,55,.08);
 }
-.lighting-simulation-page .panel-header h3 { color:var(--text-primary); font:650 13px/1.4 inherit; }
+.lighting-simulation-page .panel-header h3 { color:var(--text-primary); font-family:inherit; font-size:13px; font-weight:650; line-height:1.4; }
 .lighting-simulation-page .panel-content { min-width:0; color:var(--text-primary); }
 .lighting-simulation-page .view-toggle,
 .lighting-simulation-page .tabs { background:#f0f2f5; border-radius:10px; padding:4px; }
