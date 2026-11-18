@@ -63,3 +63,15 @@ Deno.test("public errors never expose unknown provider diagnostics", () => {
     message: "Layanan AI sementara gagal. Silakan coba kembali.",
   });
 });
+
+Deno.test("rejects audio-only Groq models on the text chat proxy", () => {
+  for (const model of ["whisper-large-v3-turbo", "whisper-large-v3"]) {
+    try {
+      validateAIRequest({ provider: "groq", model, prompt: "transcribe this audio" });
+      throw new Error("Expected audio-only model to be rejected");
+    } catch (error) {
+      if (!(error instanceof Error) || error.message === "Expected audio-only model to be rejected") throw error;
+      assertEquals(error.message, "INVALID_MODEL");
+    }
+  }
+});
