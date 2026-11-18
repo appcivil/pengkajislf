@@ -48,6 +48,7 @@ export class VoiceService {
    */
   async formalize(rawText, requestOptions = {}) {
     if (!rawText || rawText.length < 5) return rawText;
+    if (!requestOptions.projectId) throw new Error('ID proyek wajib untuk pemrosesan catatan audit dengan AI.');
 
     const { MODELS, callAI } = await import('./ai-router.js');
     
