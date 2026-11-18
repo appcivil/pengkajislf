@@ -36,7 +36,7 @@ export class ChatbotService extends IChatbotService {
     // Process attachments - read file content
     let attachmentContent = '';
     if (attachments && attachments.length > 0) {
-      attachmentContent = await this._processAttachments(attachments);
+      attachmentContent = await this._processAttachments(attachments, { projectId: context.projectId });
     }
 
     // Combine message with attachment content
@@ -200,7 +200,7 @@ export class ChatbotService extends IChatbotService {
     // Process attachments - read file content (same as generateResponse)
     let attachmentContent = '';
     if (attachments && attachments.length > 0) {
-      attachmentContent = await this._processAttachments(attachments);
+      attachmentContent = await this._processAttachments(attachments, { projectId: options.projectId || options.context?.projectId });
     }
 
     // Combine message with attachment content
@@ -752,7 +752,7 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
   /**
    * Process attachments - extract file content for AI using DocumentEngine and OCR
    */
-  async _processAttachments(attachments) {
+  async _processAttachments(attachments, requestOptions = {}) {
     const contents = [];
 
     for (const file of attachments) {
@@ -765,7 +765,7 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
         if (fileType.startsWith('image/')) {
           // For images, use OCR to extract text
           console.log(`[ChatbotService] Processing image: ${file.name}`);
-          content = await this._extractImageContent(file);
+          content = await this._extractImageContent(file, requestOptions);
         } else if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
           // For PDFs, use OCR service
           console.log(`[ChatbotService] Processing PDF: ${file.name}`);
@@ -808,9 +808,10 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
   /**
    * Extract content from image using OCR
    */
-  async _extractImageContent(file) {
+  async _extractImageContent(file, requestOptions = {}) {
     try {
       const result = await extractTextFromImage(file, {
+        projectId: requestOptions.projectId,
         language: 'ind',
         logger: (m) => {
           if (m.status === 'recognizing text') {
