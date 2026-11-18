@@ -8,6 +8,7 @@ if (typeof exports === 'undefined') { window.exports = {}; }
 if (typeof module === 'undefined') { window.module = { exports: window.exports }; }
 
 import './styles/main.css';
+import './styles/apple-os.css';
 import { escapeHtml } from './lib/safe-markdown.js';
 import { initAuth, onAuthChange, isAuthenticated, getUserInfo } from './lib/auth.js';
 import { route, startRouter, navigate, getRouteHandler } from './lib/router.js';

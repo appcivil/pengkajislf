@@ -9,11 +9,13 @@ import { confirm } from './modal.js';
 import { showSuccess, showError } from './toast.js';
 
 const GLOBAL_NAV = [
-  { section: 'Utama', icon: 'fa-house' },
+  { section: 'FAVORIT', icon: 'fa-star' },
   { path: 'dashboard',              label: 'Dasbor Eksekutif',   icon: 'fa-gauge-high' },
   { path: 'proyek',                 label: 'Daftar Proyek SLF',  icon: 'fa-folder-tree' },
   { path: 'surat-pernyataan-list',  label: 'Kumpulan Surat SP',  icon: 'fa-file-signature' },
   { path: 'files',                  label: 'SLFdrive Berkas',    icon: 'fa-cloud-arrow-up' },
+
+  { section: 'INTELLIGENCE', icon: 'fa-brain' },
   { path: 'smart-ai',               label: 'SmartAI Pipeline',   icon: 'fa-microchip' },
   { path: 'chatbot',                label: 'Asisten AI SLF',     icon: 'fa-comments' },
   { path: 'canva-studio',           label: 'Studio Desain AI',   icon: 'fa-palette' },
@@ -24,7 +26,7 @@ const GLOBAL_NAV = [
   { path: 'todo',         label: 'Papan Tugas (TODO)',  icon: 'fa-list-check', adminOnly: true },
   { path: 'tim-kerja',    label: 'Manajemen Tim',       icon: 'fa-users-gear', adminOnly: true },
 
-  { section: 'SISTEM', icon: 'fa-sliders' },
+  { section: 'PREFERENSI', icon: 'fa-sliders' },
   { path: 'settings',     label: 'Pengaturan',          icon: 'fa-gear' },
 ];
 
