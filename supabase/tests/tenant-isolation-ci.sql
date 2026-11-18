@@ -80,8 +80,7 @@ reset role;
 -- the four tenant policies; foreign project roots must not be treated as
 -- public.proyek IDs; no legacy literal-true/auth.role policies may remain on
 -- tables governed by the generic direct-project policy.
-do $
-declare
+do $$declare
   v_missing record;
   v_bad record;
 begin
@@ -177,7 +176,6 @@ begin
     raise exception 'FAIL: lighting_calculations was incorrectly assigned proyek policy';
   end if;
 end;
-$;
-
+$$;
 rollback;
 select 'PASS: tenant isolation, direct FK policy coverage, non-proyek FK exclusion, and indirect policy assertions' as result;
