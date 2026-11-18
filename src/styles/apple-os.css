@@ -2525,3 +2525,40 @@ body.dark #tim-kerja-page .baris-anggota:hover { background: #2c3038; }
   .drive-nav-item,
   .control-bar .btn-control { transition: none; }
 }
+
+
+/* Final page-root alignment for organization and generated report shell */
+body:has(#create-organization-form) .card-quartz {
+  border: 1px solid rgba(31,41,55,.085);
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(31,41,55,.035);
+}
+body:has(#create-organization-form) :where(.form-input, .form-select, textarea) {
+  min-width: 0;
+  border-radius: 9px;
+}
+.laporan-container {
+  min-width: 0;
+  max-width: 100%;
+}
+.laporan-container .control-bar { flex: 0 0 auto; }
+.laporan-container .docx-preview-container {
+  min-height: 0;
+  flex: 1 1 auto;
+}
+.laporan-container :where(.docx-render-container, #docx-main-content) {
+  min-width: 0;
+  min-height: 0;
+}
+@media (max-width: 640px) {
+  .laporan-container {
+    height: auto !important;
+    min-height: calc(100vh - 72px);
+    overflow: visible !important;
+    padding: 12px !important;
+  }
+  .laporan-container .docx-preview-container {
+    min-height: 65vh;
+    overflow: auto;
+  }
+}
