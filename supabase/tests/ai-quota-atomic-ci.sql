@@ -11,8 +11,13 @@ begin
   if has_table_privilege('authenticated', 'private.ai_quota_policies', 'SELECT')
      or has_table_privilege('authenticated', 'private.ai_usage_buckets', 'SELECT')
      or has_table_privilege('authenticated', 'private.ai_usage_reservations', 'SELECT')
+     or has_table_privilege('anon', 'private.ai_usage_reservations', 'SELECT')
      or has_table_privilege('service_role', 'private.ai_usage_reservations', 'SELECT') then
     raise exception 'quota ledger tables must not be directly readable by client or service role';
+  end if;
+  if has_function_privilege('authenticated', 'private.ai_quota_reserve(uuid,uuid,text,integer,integer)', 'EXECUTE')
+     or has_function_privilege('anon', 'private.ai_quota_reserve(uuid,uuid,text,integer,integer)', 'EXECUTE') then
+    raise exception 'quota reservation RPC must be service_role-only';
   end if;
 end;
 $privileges$;
