@@ -155,16 +155,35 @@ export function askInput({
 
 export function confirm({ title = 'Konfirmasi', message = 'Apakah Anda yakin?', confirmText = 'Ya', danger = false } = {}) {
   return new Promise((resolve) => {
-    openModal({
+    // Bangun kontrol footer melalui DOM, bukan menyisipkan HTML ke string
+    // yang kemudian di-escape oleh openModal. Ini juga menjaga teks tombol
+    // sebagai textContent dan mempertahankan kontrak Promise<boolean>.
+    const overlay = openModal({
       title,
-      body: `<p style="color:var(--text-secondary)">${escapeHtml(message)}</p>`,
-      footer: `
-        <button class="btn btn-secondary" id="confirm-cancel">Batal</button>
-        <button class="btn ${danger ? 'btn-danger' : 'btn-primary'}" id="confirm-ok">${escapeHtml(confirmText)}</button>
-      `,
+      body: `<p style="color:var(--text-secondary)"></p>`,
+      footer: '',
       onClose: () => resolve(false),
     });
-    document.getElementById('confirm-cancel')?.addEventListener('click', () => { closeModal(); resolve(false); });
-    document.getElementById('confirm-ok')?.addEventListener('click', () => { closeModal(); resolve(true); });
+    const paragraph = overlay.querySelector('.modal-body p');
+    if (paragraph) paragraph.textContent = message;
+
+    const footer = document.createElement('div');
+    footer.className = 'modal-footer';
+    const cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.className = 'btn btn-secondary';
+    cancel.id = 'confirm-cancel';
+    cancel.textContent = 'Batal';
+
+    const accept = document.createElement('button');
+    accept.type = 'button';
+    accept.className = `btn ${danger ? 'btn-danger' : 'btn-primary'}`;
+    accept.id = 'confirm-ok';
+    accept.textContent = confirmText;
+
+    footer.append(cancel, accept);
+    overlay.querySelector('.modal')?.appendChild(footer);
+    cancel.addEventListener('click', () => { closeModal(); resolve(false); });
+    accept.addEventListener('click', () => { closeModal(); resolve(true); });
   });
 }
