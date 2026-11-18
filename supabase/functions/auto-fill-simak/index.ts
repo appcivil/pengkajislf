@@ -50,7 +50,8 @@ serve(async (req: Request) => {
   }
 
   let quotaReservation: AIQuotaReservation | null = null;
-  let actualTokens: number | null = null;\n  let providerRequestStarted = false;
+  let actualTokens: number | null = null;
+  let providerRequestStarted = false;
   try {
     const parsedBody = await readJsonBody(req, 256 * 1024);
     if (!parsedBody.ok) {
@@ -151,7 +152,8 @@ PENTING: Kembalikan HANYA JSON array tanpa markdown atau penjelasan tambahan.
       Math.min(1_000_000, estimateTextTokens(prompt) + 8192),
     );
 
-    providerRequestStarted = true;\n    const geminiRes = await fetch(
+    providerRequestStarted = true;
+    const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
       {
         method: "POST",
