@@ -49,6 +49,12 @@ jobs:
         run: psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f supabase/tests/bootstrap-smartai-ci.sql
       - name: Enforce tenant isolation and viewer read-only policies
         run: psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f supabase/tests/tenant-isolation-ci.sql
+      - name: Verify atomic AI quota reservations
+        run: psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f supabase/tests/ai-quota-atomic-ci.sql
+      - name: Verify concurrent AI quota reservations
+        run: bash supabase/tests/ai-quota-concurrency-ci.sh
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
       - name: Stop local Supabase stack
         if: always() && steps.start-supabase.outcome == 'success'
         run: supabase stop --no-backup
