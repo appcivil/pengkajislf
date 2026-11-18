@@ -146,7 +146,13 @@ export async function analyzePhotoAntiRateLimit(base64Data, mimeType, options = 
   
   try {
     // Vision tasks menggunakan Gemini Pro langsung (bukan fallback chain)
-    const result = await analyzeChecklistImage(base64Data, mimeType);
+    const result = await analyzeChecklistImage(
+      [{ base64: base64Data, mimeType }],
+      options.componentName || 'Bukti audit',
+      options.kategori || 'teknis',
+      options.aspek || '',
+      { projectId: options.projectId }
+    );
     
     const endTime = Date.now();
     
