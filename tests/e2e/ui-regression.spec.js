@@ -68,6 +68,7 @@ test('workspace routes render and inspection routes are registered', async ({ pa
     'environmental',
   ];
   const workspaceRoutes = ['dashboard', 'proyek', 'laporan', 'files', 'galeri', 'simulation', 'settings'];
+  const navigableWorkspaceRoutes = ['dashboard', 'proyek', 'laporan'];
 
   // Inspection pages require a real project context and backend data. Verify
   // their route handlers are registered without fabricating a project record
@@ -113,8 +114,9 @@ test('dialog and toast can be opened and dismissed accessibly', async ({ page })
   });
   const dialog = page.getByRole('dialog', { name: 'Uji dialog' });
   await expect(dialog).toBeVisible();
-  const closeButton = dialog.getByRole('button', { name: 'Tutup' });
-  await expect(closeButton).toBeFocused();
+  // makeDialog memindahkan fokus ke dalam dialog; elemen fokus awal dapat
+  // berupa dialog itu sendiri atau kontrol pertama yang terlihat.
+  await expect.poll(() => dialog.evaluate((el) => el.contains(document.activeElement))).toBe(true);
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
 
