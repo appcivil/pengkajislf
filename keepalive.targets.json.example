@@ -2,7 +2,8 @@
   {
     "name": "SLF - Proyek Utama",
     "url": "https://<project-ref>.supabase.co",
-    "key": "ISI_DENGAN_ANON_KEY_ATAU_SB_PUBLISHABLE_KEY"
+    "key": "ISI_DENGAN_ANON_KEY_ATAU_SB_PUBLISHABLE_KEY",
+    "secret": "ISI_DENGAN_KEEPALIVE_SECRET_DI_SECRET_STORE_LOKAL"
   },
   {
     "name": "Contoh proyek kedua",
