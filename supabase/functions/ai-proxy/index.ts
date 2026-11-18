@@ -100,11 +100,12 @@ serve(async (req: Request) => {
 
     // A project context is an authorization boundary, not trusted client metadata.
     // Re-check it with the caller's JWT so Postgres RLS decides membership.
+    const projectClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+
     if (projectId) {
-      const projectClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: { persistSession: false, autoRefreshToken: false },
-        global: { headers: { Authorization: `Bearer ${token}` } },
-      });
       const { data: project, error: projectError } = await projectClient
         .from("proyek")
         .select("id, organization_id")
@@ -130,6 +131,29 @@ serve(async (req: Request) => {
 
       if (membershipError || !membership || !canExecuteProjectAI(membership.role)) {
         return new Response(JSON.stringify({ error: "Role Anda hanya memiliki akses baca atau tidak memiliki izin menjalankan AI pada proyek ini." }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } else {
+      // Unscoped AI is still unavailable to accounts whose organization
+      // memberships are exclusively read-only. Accounts with no tenant
+      // membership may use user-scoped AI; tenant membership is never inferred
+      // from a client-supplied organization identifier.
+      const { data: memberships, error: membershipsError } = await projectClient
+        .from("organization_members")
+        .select("role")
+        .eq("user_id", user.id);
+
+      if (membershipsError) {
+        return new Response(JSON.stringify({ error: "Tidak dapat memverifikasi izin AI akun ini." }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if ((memberships ?? []).length > 0 &&
+          !memberships!.some((membership) => canExecuteProjectAI(membership.role))) {
+        return new Response(JSON.stringify({ error: "Role viewer hanya memiliki akses baca dan tidak dapat menjalankan AI." }), {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
