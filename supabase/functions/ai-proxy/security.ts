@@ -64,6 +64,16 @@ export function validateAIRequest(value: unknown): ValidatedAIRequest {
     throw new Error("INVALID_MODEL");
   }
   // Model IDs are data, never URL fragments or arbitrary provider endpoints.
+  const allowedModels: Record<string, Set<string>> = {
+    gemini: new Set(["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-2.5-pro-exp-03-25", "gemma-3-27b-it"]),
+    kimi: new Set(["moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k"]),
+    groq: new Set(["llama-3.3-70b-versatile", "llama-3.2-11b-vision-preview", "deepseek-r1-distill-llama-70b", "openai/gpt-oss-20b", "openai/gpt-oss-120b", "qwen/qwen3-32b", "meta-llama/llama-4-scout-17b-16e-instruct", "whisper-large-v3-turbo", "whisper-large-v3"]),
+    openrouter: new Set(["google/gemini-2.0-flash-lite:free", "anthropic/claude-3.5-sonnet", "openai/gpt-4o"]),
+    openai: new Set(["gpt-4o"]),
+    claude: new Set(["claude-3-5-sonnet-20241022"]),
+    mistral: new Set(["mistral-large-latest"]),
+    huggingface: new Set(["adminskpslf/SLF_OPUS"]),
+  };
   const modelPatterns: Record<string, RegExp> = {
     gemini: /^[a-zA-Z0-9._-]{1,100}$/,
     openai: /^[a-zA-Z0-9._-]{1,100}$/,
@@ -74,7 +84,7 @@ export function validateAIRequest(value: unknown): ValidatedAIRequest {
     huggingface: /^[a-zA-Z0-9._-]{1,60}(\/[a-zA-Z0-9._-]{1,60})?$/,
     kimi: /^[a-zA-Z0-9._-]{1,100}$/,
   };
-  if (!modelPatterns[body.provider].test(body.model)) throw new Error("INVALID_MODEL");
+  if (!modelPatterns[body.provider].test(body.model) || !allowedModels[body.provider].has(body.model)) throw new Error("INVALID_MODEL");
 
   if (typeof body.prompt !== "string" || body.prompt.trim().length === 0 ||
       body.prompt.length > MAX_PROMPT_CHARS) throw new Error("INVALID_PROMPT");
@@ -84,8 +94,8 @@ export function validateAIRequest(value: unknown): ValidatedAIRequest {
   }
 
   const maxTokens = body.maxTokens === undefined ? 2048 : body.maxTokens;
-  if (!Number.isInteger(maxTokens) || (maxTokens as number) < 1 ||
-      (maxTokens as number) > MAX_OUTPUT_TOKENS) throw new Error("INVALID_MAX_TOKENS");
+  if (!Number.isInteger(maxTokens) || (maxTokens as number) < 1) throw new Error("INVALID_MAX_TOKENS");
+  const boundedMaxTokens = Math.min(maxTokens as number, MAX_OUTPUT_TOKENS);
   const temperature = body.temperature === undefined ? 0.1 : body.temperature;
   if (typeof temperature !== "number" || !Number.isFinite(temperature) ||
       temperature < 0 || temperature > 1.5) throw new Error("INVALID_TEMPERATURE");
@@ -110,7 +120,7 @@ export function validateAIRequest(value: unknown): ValidatedAIRequest {
     prompt: body.prompt,
     ...(typeof body.systemPrompt === "string" ? { systemPrompt: body.systemPrompt } : {}),
     ...(hasImage ? { base64Data: body.base64Data as string, mimeType: body.mimeType as string } : {}),
-    maxTokens: maxTokens as number,
+    maxTokens: boundedMaxTokens,
     temperature,
   };
 }
@@ -125,7 +135,7 @@ export function publicError(error: unknown): { status: number; message: string }
     INVALID_MODEL: { status: 400, message: "Model tidak valid." },
     INVALID_PROMPT: { status: 400, message: "Prompt kosong atau terlalu panjang." },
     INVALID_SYSTEM_PROMPT: { status: 400, message: "System prompt tidak valid atau terlalu panjang." },
-    INVALID_MAX_TOKENS: { status: 400, message: "Batas token keluaran tidak valid (maksimum 4096)." },
+    INVALID_MAX_TOKENS: { status: 400, message: "Batas token keluaran harus berupa bilangan bulat positif." },
     INVALID_TEMPERATURE: { status: 400, message: "Temperature harus berada pada rentang 0 sampai 1,5." },
     INVALID_IMAGE: { status: 400, message: "Data gambar tidak valid atau melewati batas." },
   };
