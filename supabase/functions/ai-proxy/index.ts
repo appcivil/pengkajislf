@@ -7,7 +7,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { readJsonBody, validateAIRequest, publicError, canExecuteProjectAI, type ValidatedAIRequest } from "./security.ts";
+import { readJsonBody, validateAIRequest, publicError, canExecuteProjectAI, canExecuteUnscopedAI, type ValidatedAIRequest } from "./security.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -136,24 +136,15 @@ serve(async (req: Request) => {
         });
       }
     } else {
-      // Unscoped AI is still unavailable to accounts whose organization
-      // memberships are exclusively read-only. Accounts with no tenant
-      // membership may use user-scoped AI; tenant membership is never inferred
-      // from a client-supplied organization identifier.
+      // Tenant users must supply projectId so role checks are unambiguous.
+      // Only authenticated users with no tenant membership may use unscoped AI.
       const { data: memberships, error: membershipsError } = await projectClient
         .from("organization_members")
         .select("role")
         .eq("user_id", user.id);
 
-      if (membershipsError) {
-        return new Response(JSON.stringify({ error: "Tidak dapat memverifikasi izin AI akun ini." }), {
-          status: 403,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if ((memberships ?? []).length > 0 &&
-          !memberships!.some((membership) => canExecuteProjectAI(membership.role))) {
-        return new Response(JSON.stringify({ error: "Role viewer hanya memiliki akses baca dan tidak dapat menjalankan AI." }), {
+      if (membershipsError || !canExecuteUnscopedAI(memberships ?? [])) {
+        return new Response(JSON.stringify({ error: "ID proyek wajib untuk pengguna yang tergabung dalam organisasi. Pilih proyek agar izin AI dapat diverifikasi." }), {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
