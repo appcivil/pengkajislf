@@ -400,6 +400,7 @@ async function urlToImageData(url) {
  */
 export async function runBatchSmartEngine(kategori) {
   const { checklist, currentProyekId, currentProyek } = store.get();
+  if (!currentProyekId) throw new Error('Proyek aktif wajib dipilih sebelum analisis AI dijalankan.');
   const items = Object.values(checklist.dataMap).filter(it => it.kategori === kategori && it.foto_urls?.length);
   if (!items.length) {
     showInfo(`Tidak ada item dengan lampiran foto di kategori ${kategori}.`);
