@@ -1,6 +1,8 @@
 -- Atomic AI quota ledger integration tests.
 -- Executed only in the disposable local Supabase CI database.
 
+begin;
+
 insert into private.ai_quota_policies
   (scope, plan_key, window_seconds, max_requests, max_tokens, enabled)
 values
@@ -87,3 +89,5 @@ where subject_id in (
 );
 delete from private.ai_quota_policies
 where plan_key = 'free' and scope in ('user', 'organization') and window_seconds = 86400;
+
+commit;
