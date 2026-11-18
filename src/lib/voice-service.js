@@ -48,6 +48,7 @@ export class VoiceService {
    */
   async formalize(rawText, requestOptions = {}) {
     if (!rawText || rawText.length < 5) return rawText;
+    if (!requestOptions.projectId) throw new Error('ID proyek wajib untuk pemrosesan catatan audit dengan AI.');
 
     const { MODELS, callAI } = await import('./ai-router.js');
     
@@ -74,6 +75,7 @@ export class VoiceService {
    * Heuristic + AI identification of checklist status from voice.
    */
   async inferStatus(rawText, options = [], requestOptions = {}) {
+    if (!requestOptions.projectId) throw new Error('ID proyek wajib untuk inferensi status audit dengan AI.');
     const text = rawText.toLowerCase();
     
     // 1. Fast Heuristics (Local, Instant)
