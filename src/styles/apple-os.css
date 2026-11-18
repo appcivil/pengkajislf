@@ -1717,3 +1717,148 @@ body.dark #proyek-form-page textarea {
 }
 [data-theme="dark"] #proyek-form-page #proyek-map,
 body.dark #proyek-form-page #proyek-map { background:#252a32 !important; border-color:rgba(255,255,255,.12) !important; }
+
+
+/* Cross-module interaction surfaces: calm, consistent engineering workspace */
+:where(.page-container, .main-content) :where(
+  .form-input, .form-control, .form-select, input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  select, textarea
+) {
+  min-height: 40px;
+  border-radius: 10px !important;
+  border: 1px solid #d9e0e8 !important;
+  background: #fff !important;
+  color: #20242b !important;
+  box-shadow: 0 1px 2px rgba(25,35,50,.025);
+  transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+:where(.page-container, .main-content) :where(
+  .form-input, .form-control, .form-select, input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  select, textarea
+):focus {
+  border-color: #79a9e8 !important;
+  box-shadow: 0 0 0 3px rgba(45,125,220,.12) !important;
+  outline: 0 !important;
+}
+:where(.page-container, .main-content) textarea { min-height: 88px; resize: vertical; }
+:where(.page-container, .main-content) :where(button, .btn, .btn-primary, .btn-secondary) {
+  border-radius: 10px;
+  transition: transform .16s ease, box-shadow .16s ease, background .16s ease, border-color .16s ease;
+}
+:where(.page-container, .main-content) :where(.btn-primary, button.primary) {
+  box-shadow: 0 2px 5px rgba(30,100,190,.14);
+}
+:where(.page-container, .main-content) :where(button, .btn):active { transform: translateY(1px); }
+:where(.page-container, .main-content) :where(table, .table-wrapper) {
+  border-color: #e5e9ef;
+}
+:where(.page-container, .main-content) table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: .92rem;
+}
+:where(.page-container, .main-content) table thead th {
+  background: #f5f7fa;
+  color: #657080;
+  font-size: .76rem;
+  font-weight: 650;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+  border-bottom: 1px solid #e5e9ef;
+}
+:where(.page-container, .main-content) table tbody tr:hover { background: #f7faff; }
+:where(.page-container, .main-content) table :where(th,td) { padding: 11px 13px; }
+:where(.modal, .modal-content, .modal-card, .dialog, [role="dialog"]) {
+  border-radius: 16px;
+}
+:where(.dropdown-menu, .select-menu, .popover, [role="listbox"]) {
+  border: 1px solid rgba(31,41,55,.1);
+  border-radius: 12px;
+  box-shadow: 0 14px 38px rgba(20,32,50,.14);
+  overflow: hidden;
+}
+:where(.toast, .notification, .alert) { border-radius: 12px; }
+
+/* Checklist and technical inspection surfaces */
+#checklist-page, .checklist-page, #checklist-shell,
+[id*="inspection-page"], [class*="inspection-page"] { min-width: 0; }
+:where(#checklist-page, .checklist-page, #checklist-shell) :where(
+  .checklist-sidebar, .checklist-nav, .sidebar-panel
+) {
+  background: #f7f9fc;
+  border-color: #e6ebf1;
+  border-radius: 14px;
+}
+:where(#checklist-page, .checklist-page, #checklist-shell) :where(
+  .checklist-section, .checklist-card, .checklist-item, .section-card
+) {
+  background: #fff;
+  border: 1px solid rgba(31,41,55,.085);
+  border-radius: 13px;
+  box-shadow: 0 3px 12px rgba(31,41,55,.035);
+}
+:where(#checklist-page, .checklist-page, #checklist-shell) :where(
+  .checklist-nav button, .checklist-tab, [data-tab]
+) { border-radius: 9px; }
+:where([id*="inspection-page"], [class*="inspection-page"]) :where(
+  .card, .card-quartz, .inspection-card, .form-section, .result-card
+) {
+  border-radius: 14px;
+}
+:where([id*="inspection-page"], [class*="inspection-page"]) :where(
+  .form-section, .inspection-card, .result-card
+) { min-width: 0; }
+
+/* Dark appearance parity for shared controls */
+[data-theme="dark"] :where(.page-container, .main-content) :where(
+  .form-input, .form-control, .form-select, input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  select, textarea
+),
+body.dark :where(.page-container, .main-content) :where(
+  .form-input, .form-control, .form-select, input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  select, textarea
+) {
+  background: #292a30 !important;
+  color: #f5f5f7 !important;
+  border-color: rgba(255,255,255,.14) !important;
+}
+[data-theme="dark"] :where(.page-container, .main-content) table thead th,
+body.dark :where(.page-container, .main-content) table thead th {
+  background: #292a30; color: #b9c0cc; border-color: rgba(255,255,255,.1);
+}
+[data-theme="dark"] :where(.page-container, .main-content) table tbody tr:hover,
+body.dark :where(.page-container, .main-content) table tbody tr:hover { background: #292d35; }
+[data-theme="dark"] :where(.dropdown-menu, .select-menu, .popover, [role="listbox"]),
+body.dark :where(.dropdown-menu, .select-menu, .popover, [role="listbox"]) {
+  background: #25262c; border-color: rgba(255,255,255,.1);
+  box-shadow: 0 14px 38px rgba(0,0,0,.32);
+}
+[data-theme="dark"] :where(#checklist-page, .checklist-page, #checklist-shell) :where(
+  .checklist-sidebar, .checklist-nav, .sidebar-panel
+),
+body.dark :where(#checklist-page, .checklist-page, #checklist-shell) :where(
+  .checklist-sidebar, .checklist-nav, .sidebar-panel
+) { background: #202127; border-color: rgba(255,255,255,.09); }
+[data-theme="dark"] :where(#checklist-page, .checklist-page, #checklist-shell) :where(
+  .checklist-section, .checklist-card, .checklist-item, .section-card
+),
+body.dark :where(#checklist-page, .checklist-page, #checklist-shell) :where(
+  .checklist-section, .checklist-card, .checklist-item, .section-card
+) { background: #25262c; border-color: rgba(255,255,255,.09); }
+
+@media (max-width: 768px) {
+  :where(.page-container, .main-content) :where(.table-wrapper, .table-responsive) {
+    max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  }
+  :where(.page-container, .main-content) table { min-width: 620px; }
+  :where(.page-container, .main-content) :where(.modal, .modal-content, .modal-card, .dialog) {
+    max-width: calc(100vw - 24px);
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(.page-container, .main-content) :where(button, .btn, input, select, textarea) {
+    transition: none !important;
+  }
+}
