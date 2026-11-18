@@ -1,6 +1,7 @@
 /// <reference lib="deno.ns" />
 import { assertEquals, assertRejects } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { readJsonBody, validateAIRequest, publicError, canExecuteProjectAI, canExecuteUnscopedAI } from "./security.ts";
+import { extractProviderUsageTokens } from "../_shared/ai-quota.ts";
 
 Deno.test("accepts a registered provider/model and clamps output tokens", () => {
   const request = validateAIRequest({
@@ -180,4 +181,13 @@ Deno.test("only users without tenant memberships may execute unscoped AI", () =>
   assertEquals(canExecuteUnscopedAI([{ role: "member" }]), false);
   assertEquals(canExecuteUnscopedAI([{ role: "viewer" }]), false);
   assertEquals(canExecuteUnscopedAI(null), false);
+});
+
+Deno.test("normalizes provider-reported token usage", () => {
+  assertEquals(extractProviderUsageTokens({ usageMetadata: { totalTokenCount: 123 } }), 123);
+  assertEquals(extractProviderUsageTokens({ usage: { total_tokens: 456 } }), 456);
+  assertEquals(extractProviderUsageTokens({ usage: { prompt_tokens: 20, completion_tokens: 30 } }), 50);
+  assertEquals(extractProviderUsageTokens({ usage: { input_tokens: 12, output_tokens: 8 } }), 20);
+  assertEquals(extractProviderUsageTokens({ choices: [] }), null);
+  assertEquals(extractProviderUsageTokens(null), null);
 });
