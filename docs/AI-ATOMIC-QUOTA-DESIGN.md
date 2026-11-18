@@ -1,6 +1,6 @@
 # Rancangan Kuota AI Atomik — Free Tier
 
-Status: desain untuk review; belum ada migrasi atau implementasi kuota.
+Status: fondasi ledger dan RPC atomik ditambahkan pada migration 20261118090000; belum ada batas numerik aktif, dan AI Proxy belum terhubung ke RPC.
 
 ## Tujuan
 
@@ -81,7 +81,7 @@ Tidak boleh mengaktifkan batas numerik default secara diam-diam karena dapat men
 
 ## Status dan batas keselamatan
 
-Dokumen ini hanya rancangan. Belum membuat tabel, fungsi, cron, secret, atau mengubah Supabase. Implementasi baru dilakukan setelah nilai batas dan perilaku paket gratis disetujui serta diuji pada database lokal CI.
+Fondasi implementasi dibuat dalam migration 20261118090000_ai_atomic_quota_foundation.sql: tabel privat untuk policy, bucket penggunaan, dan reservasi; RPC reserve/finalize/release/expire dengan advisory lock deterministik, idempotency, dan finalisasi idempotent. Tidak ada policy kuota aktif yang di-seed karena angka batas belum disetujui. AI Proxy belum memanggil RPC ini, dan belum ada cron/secret/deployment. Migration hanya diuji pada database lokal CI setelah seluruh test lulus.
 
 
 ## Matriks role untuk operasi AI — disetujui 2026-11-18
@@ -101,7 +101,7 @@ Akses baca proyek melalui RLS tidak otomatis memberikan hak menjalankan AI. Sebe
 ### Pengujian role wajib sebelum implementasi
 
 - owner/admin/member yang sah dapat menjalankan permintaan proyek.
-- viewer dapat membaca proyek sesuai RLS, tetapi permintaan AI ditolak bila kebijakan final menetapkan read-only.
+- viewer dapat membaca proyek sesuai RLS, tetapi permintaan AI ditolak; request tanpa projectId juga harus menolak akun yang seluruh membership-nya viewer.
 - anggota tenant A tidak dapat meminta AI dengan projectId tenant B.
 - user yang sudah dikeluarkan dari organisasi langsung ditolak walaupun masih memiliki sesi login.
 - platform admin tidak memperoleh akses AI lintas tenant secara implisit; jalur dukungan harus eksplisit, terbatas, dan tercatat.
