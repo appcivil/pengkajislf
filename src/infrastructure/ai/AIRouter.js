@@ -188,7 +188,8 @@ export class AIRouter {
       maxTokens,
       stream = false,
       deduplicate = true,
-      cache = true
+      cache = true,
+      projectId
     } = options;
 
     const modelConfig = AI_MODELS[model] || AI_MODELS.KIMI;
@@ -221,7 +222,7 @@ export class AIRouter {
       }
 
       // Create request promise
-      const requestPromise = this.executeRequest(prompt, modelConfig, { temperature, maxTokens, stream });
+      const requestPromise = this.executeRequest(prompt, modelConfig, { temperature, maxTokens, stream, projectId });
 
       if (deduplicate) {
         this.deduplicator.setPending(cacheKey, requestPromise);
@@ -279,7 +280,8 @@ export class AIRouter {
         // Edge Function membaca `maxTokens` (camelCase). Sebelumnya dikirim
         // sebagai `max_tokens`, sehingga parameter ini dibuang diam-diam dan
         // selalu jatuh ke nilai default server.
-        maxTokens: options.maxTokens || modelConfig.maxTokens
+        maxTokens: options.maxTokens || modelConfig.maxTokens,
+        ...(options.projectId ? { projectId: options.projectId } : {})
       })
     });
 
