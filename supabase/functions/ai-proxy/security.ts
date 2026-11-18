@@ -168,3 +168,9 @@ export function publicError(error: unknown): { status: number; message: string }
   };
   return known[code] || { status: 502, message: "Layanan AI sementara gagal. Silakan coba kembali." };
 }
+
+
+/** Only tenant owner/admin/member may execute project-scoped AI operations. */
+export function canExecuteProjectAI(role: unknown): boolean {
+  return role === "owner" || role === "admin" || role === "member";
+}
