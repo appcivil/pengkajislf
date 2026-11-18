@@ -82,6 +82,7 @@ declare
   v_period_start timestamptz;
   v_bucket private.ai_usage_buckets%rowtype;
   v_refs jsonb := '[]'::jsonb;
+  v_ref jsonb;
   v_now timestamptz := clock_timestamp();
 begin
   if p_user_id is null
@@ -109,7 +110,23 @@ begin
   for update;
 
   if found then
-    if v_existing.status = 'reserved'
+    if v_existing.status = 'reserved' and v_existing.expires_at <= v_now then
+      for v_ref in select value from pg_catalog.jsonb_array_elements(v_existing.bucket_refs)
+      loop
+        update private.ai_usage_buckets b
+        set reserved_requests = greatest(0, b.reserved_requests - 1),
+            reserved_tokens = greatest(0, b.reserved_tokens - v_existing.reserved_tokens),
+            updated_at = v_now
+        where b.scope = v_ref->>'scope'
+          and b.subject_id = (v_ref->>'subject_id')::uuid
+          and b.window_seconds = (v_ref->>'window_seconds')::integer
+          and b.period_start = (v_ref->>'period_start')::timestamptz;
+      end loop;
+      update private.ai_usage_reservations
+      set status = 'expired', finalized_at = v_now
+      where id = v_existing.id;
+      return query select false, v_existing.id, 'idempotency_key_expired'::text, null::timestamptz;
+    elsif v_existing.status = 'reserved'
        and v_existing.reserved_tokens = p_reserved_tokens
        and v_existing.organization_id is not distinct from p_organization_id then
       return query select true, v_existing.id, 'existing_reservation'::text, v_existing.expires_at;
