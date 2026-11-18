@@ -316,6 +316,25 @@ begin
     where n.nspname = 'public'
       and c.relkind = 'r'
       and c.relname <> 'proyek'
+      -- A column called project_id is not necessarily a public.proyek ID.
+      -- Preserve modules whose project_id FK targets a different domain root
+      -- (for example lighting_projects); they need their own ownership model.
+      and not exists (
+        select 1
+        from pg_constraint fk
+        join pg_attribute child_key
+          on child_key.attrelid = fk.conrelid
+         and child_key.attnum = any(fk.conkey)
+        join pg_class target_table on target_table.oid = fk.confrelid
+        join pg_namespace target_schema on target_schema.oid = target_table.relnamespace
+        where fk.contype = 'f'
+          and fk.conrelid = c.oid
+          and child_key.attname in ('proyek_id', 'project_id')
+          and not (
+            target_schema.nspname = 'public'
+            and target_table.relname = 'proyek'
+          )
+      )
     group by c.relname
   loop
     select exists (
