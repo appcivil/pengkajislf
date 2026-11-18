@@ -90,6 +90,20 @@ test('workspace routes render and inspection routes are registered', async ({ pa
   }
 });
 
+test('logout clears preview session and returns to login', async ({ page }) => {
+  await openPreviewSession(page);
+  await expect.poll(() => page.evaluate(() => Boolean(localStorage.getItem('slf_dev_user')))).toBe(true);
+
+  await page.locator('#user-card-btn').click();
+  const dialog = page.getByRole('dialog', { name: 'Keluar Akun' });
+  await expect(dialog).toBeVisible();
+  await page.locator('#confirm-ok').click();
+
+  await expect(page.locator('#email-login-form')).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('#app-layout')).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('slf_dev_user'))).toBeNull();
+});
+
 test('dark appearance tokens and light restoration are applied consistently', async ({ page }) => {
   await openPreviewSession(page);
 
