@@ -183,7 +183,9 @@ export async function parseIMBDocument(ocrText, useGemini = true, options = {}) 
   }
   
   // AI enhancement dengan Gemini Flash (hemat quota)
-  // AI enrichment is allowed only for an existing, authorized project.\n  // Project-creation OCR has no project scope yet, so keep it local/regex-only.\n  if (useGemini && typeof options.projectId === 'string' && options.projectId.length > 0 && ocrText.length > 50) {
+  // AI enrichment is allowed only for an existing, authorized project.
+  // Project-creation OCR has no project scope yet, so keep it local/regex-only.
+  if (useGemini && typeof options.projectId === 'string' && options.projectId.length > 0 && ocrText.length > 50) {
     try {
       const prompt = `
 Anda adalah AI Data Entry untuk dokumen perizinan bangunan Indonesia (IMB/PBG/SLF).
