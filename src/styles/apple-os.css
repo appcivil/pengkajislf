@@ -4137,3 +4137,357 @@ body.dark #sanitation-card {
     animation-duration: .01ms !important;
   }
 }
+
+
+/* Phase 7 — integrated inspection experience, data tables, charts and reports */
+#dashboard-page {
+  max-width: 1680px;
+  margin-inline: auto;
+  padding: clamp(12px,2vw,28px);
+  color: var(--text-primary);
+}
+#dashboard-page .hero-banner-audit {
+  overflow: hidden;
+  border: 1px solid rgba(22,119,237,.14);
+  border-radius: 22px;
+  box-shadow: var(--shadow-md);
+}
+#dashboard-page .kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+#dashboard-page .kpi-grid > .card-quartz {
+  min-width: 0;
+  min-height: 126px;
+  border: 1px solid var(--border-default);
+  border-radius: 16px;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+#dashboard-page .kpi-grid > .card-quartz:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+#dashboard-page .grid-dashboard-main {
+  display: grid;
+  grid-template-columns: minmax(0,1.55fr) minmax(300px,1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+#dashboard-page .grid-dashboard-main > .card-quartz,
+#dashboard-page .grid-dashboard-main .card-quartz {
+  min-width: 0;
+  border-color: var(--border-default) !important;
+  border-radius: 17px !important;
+  background-color: var(--bg-card);
+  box-shadow: var(--shadow-xs);
+}
+#dashboard-page .card-header,
+#dashboard-page .card-title { color: var(--text-primary); }
+#dashboard-page .chart-wrap {
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+}
+#dashboard-page canvas {
+  display: block;
+  max-width: 100%;
+}
+#dashboard-page .table-container {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  border: 1px solid var(--border-default);
+  border-radius: 13px;
+  background: var(--bg-card);
+  scrollbar-width: thin;
+}
+#dashboard-page .table-container table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--text-primary);
+  font-size: 12px;
+}
+#dashboard-page .table-container thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 12px 14px;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-default);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .045em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+#dashboard-page .table-container tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: middle;
+}
+#dashboard-page .table-container tbody tr:last-child td { border-bottom: 0; }
+#dashboard-page .table-container tbody tr:hover { background: var(--bg-hover); }
+#dashboard-page .ai-panel-bg {
+  border-radius: 17px !important;
+  background: linear-gradient(145deg,var(--bg-card),var(--bg-elevated)) !important;
+}
+#dashboard-page .page-actions-mobile { display: flex; flex-wrap: wrap; gap: 9px; }
+#inspection-tabs-container {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 3px 2px 7px;
+  scrollbar-width: thin;
+  overscroll-behavior-inline: contain;
+}
+.inspection-header-card {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--border-default) !important;
+  border-radius: 18px !important;
+  background: var(--bg-card) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+.inspection-tabs-wrapper {
+  min-width: 0;
+  overflow: hidden;
+}
+.inspection-tab-item {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 13px !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
+  color: var(--text-secondary) !important;
+  background: transparent !important;
+  font-family: inherit !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+  letter-spacing: .015em;
+  transition: color var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
+}
+.inspection-tab-item:hover {
+  color: var(--brand-500) !important;
+  background: var(--bg-hover) !important;
+}
+.inspection-tab-item.active {
+  color: var(--brand-600) !important;
+  background: var(--brand-soft) !important;
+  border-color: var(--border-brand) !important;
+}
+.inspection-stats-grid {
+  grid-template-columns: repeat(auto-fit,minmax(min(100%,180px),1fr)) !important;
+  gap: 12px !important;
+}
+.inspection-stat-card {
+  min-width: 0;
+  border: 1px solid var(--border-default) !important;
+  border-radius: 15px !important;
+  background: var(--bg-card) !important;
+  box-shadow: var(--shadow-xs) !important;
+}
+.inspection-section-card {
+  min-width: 0;
+  border: 1px solid var(--border-default) !important;
+  border-radius: 16px !important;
+  background: var(--bg-card) !important;
+  box-shadow: var(--shadow-xs) !important;
+}
+.inspection-section-header {
+  color: var(--text-primary);
+  border-bottom-color: var(--border-subtle) !important;
+}
+.inspection-section-content { min-width: 0; color: var(--text-secondary); }
+.inspection-table-wrapper {
+  max-width: 100%;
+  overflow-x: auto !important;
+  overscroll-behavior-inline: contain;
+  border: 1px solid var(--border-default) !important;
+  border-radius: 13px !important;
+  background: var(--bg-card);
+  scrollbar-width: thin;
+}
+.inspection-table-wrapper table {
+  min-width: 620px;
+  color: var(--text-primary);
+  border-collapse: separate !important;
+  border-spacing: 0;
+  font-size: 12px;
+}
+.inspection-table-wrapper thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 11px 13px !important;
+  color: var(--text-secondary);
+  background: var(--bg-elevated) !important;
+  border-bottom: 1px solid var(--border-default) !important;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.inspection-table-wrapper tbody td {
+  padding: 11px 13px !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+  vertical-align: middle;
+}
+.inspection-table-wrapper tbody tr:last-child td { border-bottom: 0 !important; }
+.inspection-table-wrapper tbody tr:hover { background: var(--bg-hover); }
+.inspection-action-bar {
+  align-items: center;
+  gap: 9px !important;
+  padding: 10px 0;
+}
+.inspection-action-btn {
+  min-height: 38px;
+  border-radius: 10px !important;
+  font-family: inherit !important;
+  font-weight: 650 !important;
+}
+.inspection-empty-state {
+  padding: clamp(28px,5vw,56px) 20px !important;
+  color: var(--text-secondary);
+  background: var(--bg-elevated) !important;
+  border: 1px dashed var(--border-default) !important;
+  border-radius: 16px !important;
+}
+.inspection-score-indicator { color: var(--text-primary); }
+.inspection-modal {
+  padding: 16px !important;
+  backdrop-filter: blur(18px) saturate(130%) !important;
+}
+.inspection-modal-content {
+  max-width: min(960px,100%) !important;
+  border: 1px solid var(--border-default) !important;
+  border-radius: 18px !important;
+  background: var(--bg-card) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+.inspection-modal-header {
+  color: var(--text-primary);
+  border-bottom-color: var(--border-default) !important;
+}
+.inspection-modal-body { color: var(--text-secondary); }
+#architectural-inspection-page .table-wrap,
+#electrical-inspection-page .table-wrap,
+#fire-inspection-page .table-wrap,
+#lps-inspection-page .table-wrap,
+#wastewater-inspection-page .table-wrap,
+#environmental-inspection-page .table-wrap,
+#egress-inspection-page .table-wrap,
+#comfort-inspection-page .table-wrap,
+#intensity-inspection-page .table-wrap,
+#stormwater-page .table-wrap,
+#disaster-page .table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  scrollbar-width: thin;
+}
+#architectural-inspection-page .table-wrap table,
+#electrical-inspection-page .table-wrap table,
+#fire-inspection-page .table-wrap table,
+#lps-inspection-page .table-wrap table,
+#wastewater-inspection-page .table-wrap table,
+#environmental-inspection-page .table-wrap table,
+#egress-inspection-page .table-wrap table,
+#comfort-inspection-page .table-wrap table,
+#intensity-inspection-page .table-wrap table,
+#stormwater-page .table-wrap table,
+#disaster-page .table-wrap table { min-width: 580px; }
+#dashboard-page .chart-wrap,
+#comfort-inspection-page canvas,
+#dashboard-page canvas,
+#stormwater-page canvas { min-width: 0; }
+[data-theme="dark"] #dashboard-page .kpi-grid > .card-quartz,
+body.dark #dashboard-page .kpi-grid > .card-quartz,
+[data-theme="dark"] #dashboard-page .grid-dashboard-main .card-quartz,
+body.dark #dashboard-page .grid-dashboard-main .card-quartz,
+[data-theme="dark"] .inspection-header-card,
+body.dark .inspection-header-card,
+[data-theme="dark"] .inspection-stat-card,
+body.dark .inspection-stat-card,
+[data-theme="dark"] .inspection-section-card,
+body.dark .inspection-section-card {
+  background: #24252b !important;
+  border-color: rgba(255,255,255,.09) !important;
+}
+[data-theme="dark"] #dashboard-page .table-container,
+body.dark #dashboard-page .table-container,
+[data-theme="dark"] .inspection-table-wrapper,
+body.dark .inspection-table-wrapper {
+  background: #202126;
+  border-color: rgba(255,255,255,.1) !important;
+}
+[data-theme="dark"] #dashboard-page .table-container thead th,
+body.dark #dashboard-page .table-container thead th,
+[data-theme="dark"] .inspection-table-wrapper thead th,
+body.dark .inspection-table-wrapper thead th {
+  color: #c5c9d2;
+  background: #2c2d34 !important;
+  border-color: rgba(255,255,255,.1) !important;
+}
+[data-theme="dark"] #dashboard-page .table-container tbody td,
+body.dark #dashboard-page .table-container tbody td,
+[data-theme="dark"] .inspection-table-wrapper tbody td,
+body.dark .inspection-table-wrapper tbody td {
+  border-color: rgba(255,255,255,.07) !important;
+}
+[data-theme="dark"] .inspection-empty-state,
+body.dark .inspection-empty-state { background: #202126 !important; }
+[data-theme="dark"] .inspection-modal-content,
+body.dark .inspection-modal-content {
+  background: #24252b !important;
+  border-color: rgba(255,255,255,.1) !important;
+}
+@media (max-width: 1100px) {
+  #dashboard-page .kpi-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  #dashboard-page .grid-dashboard-main { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 700px) {
+  #dashboard-page { padding: 10px; }
+  #dashboard-page .kpi-grid { gap: 9px; }
+  #dashboard-page .kpi-grid > .card-quartz { min-height: 108px; padding: 13px !important; }
+  #dashboard-page .hero-banner-audit { border-radius: 16px; }
+  #dashboard-page .grid-dashboard-main { gap: 12px; margin-top: 14px !important; }
+  #dashboard-page .page-actions-mobile { width: 100%; }
+  #dashboard-page .page-actions-mobile > * { flex: 1 1 auto; }
+  .inspection-header-card { padding: 14px !important; border-radius: 15px !important; }
+  .inspection-header-card > .flex-between { align-items: flex-start !important; flex-direction: column; gap: 12px; }
+  .inspection-tabs-wrapper { width: 100%; }
+  #inspection-tabs-container { flex-wrap: nowrap; }
+  .inspection-stats-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+  .inspection-section-card { padding: 14px !important; }
+  .inspection-action-bar > * { flex: 1 1 auto; }
+  .inspection-modal { padding: 8px !important; }
+  .inspection-modal-content { max-height: calc(100dvh - 16px) !important; border-radius: 14px !important; }
+  .inspection-modal-body { padding: 16px !important; }
+}
+@media (max-width: 380px) {
+  #dashboard-page .kpi-grid,
+  .inspection-stats-grid { grid-template-columns: minmax(0,1fr) !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #dashboard-page *,
+  .inspection-header-card *,
+  .inspection-section-card *,
+  .inspection-modal-content * {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
