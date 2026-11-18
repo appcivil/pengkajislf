@@ -190,7 +190,7 @@ export class SmartAIIntegration {
             aiResult = await runSingleItemAnalysis(target, aspek, { ...options, evidence });
         } else {
             // Legacy vision path
-            aiResult = await analyzeChecklistImage(target, componentName, kategori, aspek, { ...options, useDeepReasoning: false });
+            aiResult = options.baseResult || await analyzeChecklistImage(target, componentName, kategori, aspek, { ...options, useDeepReasoning: false });
         }
 
         // 4. Enhance hasil dengan Deep Reasoning
@@ -222,7 +222,7 @@ export class SmartAIIntegration {
         // Eksekusi document analysis yang sudah ada
         // Jalankan ekstraksi dasar tanpa memanggil Deep Reasoning kembali.
         // analyzeDocument() melakukan enhancement otomatis secara default.
-        const docResult = await analyzeDocument(fileData, { ...options, useDeepReasoning: false });
+        const docResult = options.baseResult || await analyzeDocument(fileData, { ...options, useDeepReasoning: false });
 
         // Enhance dengan rule validation
         const validatedResult = this.ruleEngine.validateDocument(docResult);
@@ -241,7 +241,7 @@ export class SmartAIIntegration {
         console.log(`[SmartAI Integration] Analisis komparatif ${itemName}`);
 
         // Eksekusi comparative audit yang sudah ada
-        const compResult = await analyzeComparativeAudit(filesData, itemName, itemKode, context, { ...options, useDeepReasoning: false });
+        const compResult = options.baseResult || await analyzeComparativeAudit(filesData, itemName, itemKode, context, { ...options, useDeepReasoning: false });
 
         // Enhance dengan workflow validation
         const workflowResult = await this.workflowEngine.executeWorkflow(
