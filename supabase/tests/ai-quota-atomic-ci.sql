@@ -90,14 +90,14 @@ set expires_at = now() - interval '1 minute'
 where idempotency_key = 'quota-test-user-c-expire';
 
 set local role service_role;
-do $
+do $quota_expire$
 declare
   v_expired integer;
 begin
   v_expired := private.ai_quota_expire_reservations(50);
   if v_expired < 1 then raise exception 'expired reservation should be released'; end if;
 end;
-$;
+$quota_expire$;
 reset role;
 
 delete from private.ai_usage_reservations
