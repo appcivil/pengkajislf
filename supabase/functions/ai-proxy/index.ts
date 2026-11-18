@@ -7,6 +7,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { readJsonBody, validateAIRequest, publicError, type ValidatedAIRequest } from "./security.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,6 +30,9 @@ serve(async (req: Request) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
   try {
@@ -91,18 +95,8 @@ serve(async (req: Request) => {
       return unauthorized("sesi tidak valid atau sudah kedaluwarsa");
     }
 
-    const body: AIRequest = await req.json();
-    const { provider, model, prompt, systemPrompt, base64Data, mimeType, maxTokens = 8192 } = body;
-    // Terima `temperature` dari klien; 0.1 adalah default yang aman untuk
-    // keluaran teknis (deterministik, tidak mengarang angka).
-    const temperature = typeof body.temperature === "number" ? body.temperature : 0.1;
-
-    if (!provider || !prompt) {
-      return new Response(JSON.stringify({ error: "provider and prompt are required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const body: ValidatedAIRequest = validateAIRequest(await readJsonBody(req));
+    const { provider, model, prompt, systemPrompt, base64Data, mimeType, maxTokens, temperature } = body;
 
     let result = "";
 
@@ -220,6 +214,7 @@ serve(async (req: Request) => {
             model,
             messages: [{ role: "user", content: prompt }],
             temperature,
+            max_tokens: maxTokens,
           }),
         });
         const orData = await orRes.json();
@@ -283,9 +278,11 @@ serve(async (req: Request) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[AI Proxy] Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
+    // Never return raw upstream provider diagnostics to the browser.
+    const safe = publicError(error);
+    console.error("[AI Proxy] Request failed:", safe.status);
+    return new Response(JSON.stringify({ error: safe.message }), {
+      status: safe.status,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

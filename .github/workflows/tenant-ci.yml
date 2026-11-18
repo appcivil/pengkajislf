@@ -30,11 +30,18 @@ jobs:
         run: npm test -- --run
       - name: Static security audits
         run: npm run audit:all
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: AI Proxy security unit tests
+        run: deno test --allow-net supabase/functions/ai-proxy/security_test.ts
       - name: Setup Supabase CLI (pinned v2 during v3 migration)
         uses: supabase/setup-cli@v3
         with:
           version: v2.stable
       - name: Start local Supabase stack
+        id: start-supabase
         run: supabase start
       - name: Replay all committed migrations on clean local database
         run: supabase db reset
@@ -43,7 +50,7 @@ jobs:
       - name: Enforce tenant isolation and viewer read-only policies
         run: psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f supabase/tests/tenant-isolation-ci.sql
       - name: Stop local Supabase stack
-        if: always()
+        if: always() && steps.start-supabase.outcome == 'success'
         run: supabase stop --no-backup
       - name: Production build
         run: npm run build
