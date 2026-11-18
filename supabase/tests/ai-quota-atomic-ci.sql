@@ -3,6 +3,17 @@
 
 begin;
 
+do $privileges$
+begin
+  if has_table_privilege('authenticated', 'private.ai_quota_policies', 'SELECT')
+     or has_table_privilege('authenticated', 'private.ai_usage_buckets', 'SELECT')
+     or has_table_privilege('authenticated', 'private.ai_usage_reservations', 'SELECT')
+     or has_table_privilege('service_role', 'private.ai_usage_reservations', 'SELECT') then
+    raise exception 'quota ledger tables must not be directly readable by client or service role';
+  end if;
+end;
+$privileges$;
+
 insert into private.ai_quota_policies
   (scope, plan_key, window_seconds, max_requests, max_tokens, enabled)
 values
@@ -96,6 +107,19 @@ declare
 begin
   v_expired := private.ai_quota_expire_reservations(50);
   if v_expired < 1 then raise exception 'expired reservation should be released'; end if;
+
+  -- Expired idempotency keys remain consumed and cannot create a fresh reservation.
+  if exists (
+    select 1 from private.ai_quota_reserve(
+      'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+      null,
+      'quota-test-user-c-expire',
+      100,
+      900
+    ) q where q.allowed
+  ) then
+    raise exception 'expired idempotency key must not create a new reservation';
+  end if;
 end;
 $quota_expire$;
 reset role;
