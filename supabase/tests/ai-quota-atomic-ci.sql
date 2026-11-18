@@ -53,6 +53,7 @@ declare
   v_denied_org record;
   v_denied_user record;
   v_after_finalize record;
+  v_after_release record;
   v_expiring record;
   v_user_a uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
   v_user_b uuid := 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
@@ -112,6 +113,16 @@ begin
   end if;
   if not public.ai_quota_release(v_second_user.reservation_id) then
     raise exception 'repeated release should be idempotent';
+  end if;
+
+  -- A pre-provider release must restore the organization request slot.
+  select * into v_after_release
+  from public.ai_quota_reserve(v_user_b, v_org, 'quota-test-user-b-after-release', 100, 900);
+  if not v_after_release.allowed then
+    raise exception 'released pre-provider reservation must restore quota capacity: %', v_after_release.reason;
+  end if;
+  if not public.ai_quota_release(v_after_release.reservation_id) then
+    raise exception 'follow-up reservation release should succeed';
   end if;
 end;
 $$;
