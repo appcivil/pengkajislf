@@ -80,6 +80,22 @@ One implementation concern remains: the indirect migration uses `continue` when 
    - user-owned and reference tables have explicit allow-listed access models.
 6. Add cross-tenant tests for tenant A and B, owner/admin/member/viewer, anonymous, and service-role paths. Include lighting owner/shared-user scenarios and SmartAI rows with null, valid, invalid, and foreign project IDs.
 
+## Changes made on the feature branch
+
+The following corrective changes are now committed but are **not applied to production**:
+
+- The foundation migration's generic project-key discovery now excludes tables whose declared `project_id`/`proyek_id` foreign key targets a non-`public.proyek` root. This prevents the lighting module from being rewritten with a predicate against the wrong project table.
+- The indirect-child migration no longer includes `lighting_reports` in the generic `proyek` parent policy. Its current legacy access path remains separate until the lighting module receives an approved organization ownership model.
+- The indirect-child migration now fails if a child table exists but its required parent, child key, parent project key, or child-to-parent FK is missing. It skips only when the optional child table itself is absent.
+- The local CI SQL test now checks direct FK-to-`proyek` policy coverage, rejects generic tenant policies on non-`proyek` FK roots, rejects literal-true/`auth.role()` generic policies, and verifies representative indirect-child policy creation.
+
+Commits:
+- Foundation FK-root filter: `6bccf0f728b5b77fb7f81c47fa1a036595d6578b`
+- Fail-closed indirect relationships: `88364a0bf81b899bc8bf4c66dd824b85f023b66a`
+- CI FK/policy assertions: `571c63754ddf1ab391cacbdc7b993ca4f0a72db6`
+
+The latest CI runs for the test change are queued/pending at the time of this report; do not treat the changes as validated until the run for the latest commit completes successfully.
+
 ## Production safety
 
 Do not apply the current migration set to production. Keep PR #1 Draft. First implement the above fixes on the feature branch, run the full local Supabase reset/RLS suite and production build in GitHub Actions, then rehearse against a disposable staging baseline. Production requires a separate explicit approval after backup and rollback rehearsal.
