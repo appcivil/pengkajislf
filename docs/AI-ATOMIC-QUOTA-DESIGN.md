@@ -90,15 +90,15 @@ Akses baca proyek melalui RLS tidak otomatis memberikan hak menjalankan AI. Sebe
 
 | Role organisasi | Membaca proyek | Menjalankan AI proyek | Mengubah data hasil AI |
 |---|---:|---:|---:|
-| owner | sesuai RLS | usulan: ya | usulan: ya |
-| admin | sesuai RLS | usulan: ya | usulan: ya |
-| member | sesuai RLS | usulan: ya | sesuai izin modul |
-| viewer | sesuai RLS | usulan: tidak | tidak |
+| owner | sesuai RLS | ya | ya |
+| admin | sesuai RLS | ya | ya |
+| member | sesuai RLS | ya | sesuai izin modul |
+| viewer | sesuai RLS | tidak | tidak |
 | platform admin | dukungan lintas tenant hanya dengan otorisasi eksplisit dan audit | tidak otomatis | tidak otomatis |
 
 **Keputusan yang telah disetujui:** owner/admin/member boleh menjalankan AI proyek; viewer hanya membaca dan tidak boleh menjalankan AI atau mengubah hasil; platform admin tidak memperoleh akses lintas tenant otomatis. Hak simpan hasil untuk member mengikuti izin modul dan RLS yang berlaku. Approval untuk operasi mahal belum diputuskan dan tetap menunggu kebijakan kuota.
 
-### Pengujian role wajib sebelum implementasi
+### Pengujian role wajib
 
 - owner/admin/member yang sah dapat menjalankan permintaan proyek.
 - viewer dapat membaca proyek sesuai RLS, tetapi permintaan AI ditolak; request tanpa projectId juga harus menolak akun yang seluruh membership-nya viewer.
