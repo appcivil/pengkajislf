@@ -4668,7 +4668,7 @@ body.dark #dashboard-page .grid-3-col > .card-quartz {
 
 
 /* Contrast guard: prevent white text on light surfaces in light theme */
-:root:not([data-theme="dark"]) .app-layout :where(
+:root:not([data-theme="dark"]) body:not(.dark) .app-layout :where(
   .card-quartz, .card, .card-header, .card-body, .panel, .panel-body,
   .modal-card, .empty-state, .table-wrap, .form-section, .settings-card
 ) :where(
