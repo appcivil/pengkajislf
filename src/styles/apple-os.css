@@ -3341,3 +3341,38 @@ body.dark #docx-render-container #docx-page-container {
     transition-duration: .01ms !important;
   }
 }
+
+/* Organization route has no dedicated root id; scope by its existing form hook. */
+body:has(#create-organization-form) .page-header {
+  padding: clamp(18px,3vw,28px);
+  border: 1px solid var(--border-default);
+  border-radius: 18px;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+}
+body:has(#create-organization-form) .grid-main-side { align-items: start; gap: 20px; }
+body:has(#create-organization-form) .grid-main-side > .card-quartz,
+body:has(#create-organization-form) .grid-main-side > aside {
+  border: 1px solid var(--border-default);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+body:has(#create-organization-form) .grid-main-side h2,
+body:has(#create-organization-form) .grid-main-side h3 { color: var(--text-primary) !important; }
+body:has(#create-organization-form) .grid-main-side p { color: var(--text-secondary); }
+body:has(#create-organization-form) .grid-main-side .form-input,
+body:has(#create-organization-form) .grid-main-side input {
+  min-height: 42px;
+  border-radius: 10px;
+  border-color: var(--border-default);
+  background: var(--bg-input, var(--bg-card));
+  color: var(--text-primary);
+}
+@media (max-width: 800px) {
+  body:has(#create-organization-form) .grid-main-side { grid-template-columns: minmax(0,1fr) !important; }
+}
+@media (max-width: 600px) {
+  body:has(#create-organization-form) .page-header { padding: 16px; border-radius: 15px; }
+  body:has(#create-organization-form) .grid-main-side > .card-quartz,
+  body:has(#create-organization-form) .grid-main-side > aside { padding: 16px !important; }
+}
