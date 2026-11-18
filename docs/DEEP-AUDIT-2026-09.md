@@ -137,12 +137,10 @@ Bagian ini adalah temuan paling serius dari seluruh audit, dan **angka awalnya s
 `.github/workflows/deploy.yml`, langkah **Build**, memuat ini:
 
 ```yaml
-# Direct AI Access (Optional if using Proxy)
-VITE_GEMINI_API_KEY:     ${{ secrets.VITE_GEMINI_API_KEY }}
-VITE_OPENAI_API_KEY:     ${{ secrets.VITE_OPENAI_API_KEY }}
-VITE_CLAUDE_API_KEY:     ${{ secrets.VITE_CLAUDE_API_KEY }}
-VITE_OPENROUTER_API_KEY: ${{ secrets.VITE_OPENROUTER_API_KEY }}
-VITE_GROQ_API_KEY:       ${{ secrets.VITE_GROQ_API_KEY }}
+# OBSOLETE CONFIG — DO NOT USE
+# The historical VITE_*_API_KEY variables below were removed from browser builds.
+# Production AI requests must use the authenticated Supabase Edge Function ai-proxy.
+# Provider keys belong only in Edge Function secrets, never in Vite build env.
 VITE_MISTRAL_API_KEY:    ${{ secrets.VITE_MISTRAL_API_KEY }}
 VITE_HF_API_TOKEN:       ${{ secrets.VITE_HF_API_TOKEN }}
 ```
