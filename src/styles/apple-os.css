@@ -631,3 +631,108 @@ body.dark #tier-checklist-page #tier-content h2 { color:#f4f4f5 !important; }
   .laporan-container .main-content { grid-column:1 !important; padding:10px !important; }
   .laporan-container .render-target { padding:10mm !important; }
 }
+
+
+/* Smart AI, Multi-Agent and Chat surfaces */
+.smart-ai-dashboard { color:var(--text-primary); }
+.smart-ai-dashboard .smart-ai-kpi-card,
+.smart-ai-dashboard .smart-ai-card {
+  background:rgba(255,255,255,.88) !important;
+  border:1px solid rgba(31,41,55,.09) !important;
+  border-radius:17px !important;
+  box-shadow:0 4px 16px rgba(31,41,55,.045);
+  backdrop-filter:blur(18px) saturate(145%);
+  -webkit-backdrop-filter:blur(18px) saturate(145%);
+}
+.smart-ai-dashboard .smart-ai-kpi-card:hover,
+.smart-ai-dashboard .smart-ai-card:hover {
+  border-color:rgba(22,119,237,.2) !important;
+  box-shadow:0 9px 24px rgba(31,41,55,.075);
+}
+.smart-ai-dashboard .smart-ai-card-header { border-bottom-color:rgba(31,41,55,.08); }
+.smart-ai-dashboard .smart-ai-upload-zone {
+  background:#f7faff !important; border-color:#b9d4f7 !important; border-radius:14px !important;
+}
+.smart-ai-dashboard .smart-ai-upload-zone:hover,
+.smart-ai-dashboard .smart-ai-upload-zone.dragover { background:#eef5ff !important; }
+.smart-ai-dashboard .smart-ai-upload-icon-box { background:#e7f1ff !important; border-color:#d1e4ff !important; color:#1677ed !important; }
+.smart-ai-dashboard .smart-ai-upload-prompt-title,
+.smart-ai-dashboard .smart-ai-card-title { color:#202126 !important; }
+.smart-ai-dashboard .smart-ai-upload-prompt-desc,
+.smart-ai-dashboard .smart-ai-card-subtitle { color:#737780 !important; }
+.smart-ai-dashboard .smart-ai-query-input,
+.smart-ai-dashboard .smart-ai-select-context {
+  background:#f7f8fa !important; color:#24262b !important; border:1px solid #dfe2e7 !important; border-radius:10px !important;
+}
+.smart-ai-dashboard .smart-ai-chip { background:#edf4ff !important; color:#1769c2 !important; border-color:#d8e8ff !important; }
+.smart-ai-dashboard .smart-ai-chip:hover { background:#dcecff !important; color:#1257a5 !important; }
+.smart-ai-dashboard .smart-ai-filter-btn { background:#f5f6f8 !important; color:#555a64 !important; border:1px solid #e4e6ea !important; }
+.smart-ai-dashboard .smart-ai-filter-btn.active { background:#e8f2ff !important; color:#1769c2 !important; border-color:#cfe2ff !important; box-shadow:none !important; }
+.smart-ai-dashboard .smart-ai-job-item { background:#fafbfc !important; border-color:#e8eaee !important; }
+.smart-ai-dashboard .smart-ai-job-item.selected { background:#eff6ff !important; border-color:#b9d4f7 !important; }
+.multi-agent-container { color:var(--text-primary); }
+.multi-agent-container .multi-agent-kpi-card,
+.multi-agent-container .multi-agent-toolbar,
+.multi-agent-container .multi-agent-hub-card,
+.multi-agent-container .multi-agent-expert-card,
+.multi-agent-container .multi-agent-drawer {
+  background:rgba(255,255,255,.9) !important;
+  border:1px solid rgba(31,41,55,.09) !important;
+  box-shadow:0 4px 16px rgba(31,41,55,.045) !important;
+  color:#24262b;
+}
+.multi-agent-container .multi-agent-title,
+.multi-agent-container .multi-agent-kpi-value,
+.multi-agent-container .multi-agent-expert-name { color:#202126 !important; }
+.multi-agent-container .multi-agent-desc,
+.multi-agent-container .multi-agent-kpi-label,
+.multi-agent-container .multi-agent-kpi-sub,
+.multi-agent-container .multi-agent-expert-body { color:#686d76 !important; }
+.multi-agent-container .multi-agent-synthesis-card {
+  background:linear-gradient(145deg,#f8fbff,#edf4ff) !important;
+  border:1px solid #dce8f8 !important; box-shadow:0 6px 20px rgba(31,41,55,.055) !important;
+}
+.multi-agent-container .multi-agent-justifikasi-box { background:#fff !important; border-color:#e3e8ef !important; color:#555a64 !important; }
+.multi-agent-container .multi-agent-score-val { color:#a66a12 !important; }
+.multi-agent-container .multi-agent-terminal { background:#f7f8fa !important; border-color:#e1e4e9 !important; box-shadow:0 4px 16px rgba(31,41,55,.05) !important; }
+.multi-agent-container .multi-agent-terminal-header,
+.multi-agent-container .multi-agent-terminal-footer { background:#eef0f3 !important; border-color:#e1e4e9 !important; }
+.multi-agent-container .multi-agent-terminal-title,
+.multi-agent-container .multi-agent-feed-time { color:#777d87 !important; }
+.multi-agent-container .multi-agent-feed-msg { color:#424750 !important; }
+.multi-agent-container .multi-agent-select { background:#fff !important; color:#24262b !important; border-color:#dfe2e7 !important; }
+.multi-agent-container .multi-agent-view-switch { background:#f0f2f5 !important; border-color:#e2e5e9 !important; }
+.multi-agent-container .multi-agent-view-btn.active { background:#1677ed !important; color:#fff !important; box-shadow:0 2px 7px rgba(22,119,237,.2) !important; }
+.multi-agent-container .multi-agent-drawer-header,
+.multi-agent-container .multi-agent-drawer-footer { background:#f7f8fa !important; }
+.chat-page { background:transparent !important; min-height:0; }
+.chat-page .chat-container {
+  background:#fff !important; border:1px solid rgba(31,41,55,.09);
+  border-radius:18px !important; margin:12px !important;
+  box-shadow:0 8px 28px rgba(31,41,55,.07) !important;
+}
+.chat-page .chat-header,
+.chat-page .chat-sidebar { background:rgba(248,249,251,.94) !important; border-color:#e8eaee !important; }
+.chat-page .chat-title h3,
+.chat-page .session-title { color:#202126 !important; }
+.chat-page .chat-status,
+.chat-page .session-time { color:#777d87 !important; }
+.chat-page .session-item:hover { background:#eff2f6 !important; }
+.chat-page .session-item.active { background:#eaf3ff !important; border-color:#d2e5ff !important; }
+.chat-page .chat-messages { background:#fff !important; }
+.chat-page .message-content { border-radius:14px !important; }
+@media(max-width:900px) {
+  .smart-ai-dashboard .smart-ai-kpi-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  .smart-ai-dashboard .smart-ai-workspace-grid { grid-template-columns:1fr !important; }
+}
+@media(max-width:640px) {
+  .smart-ai-dashboard .smart-ai-kpi-grid { grid-template-columns:1fr !important; }
+  .smart-ai-dashboard .smart-ai-card { padding:16px !important; }
+  .chat-page { height:calc(100dvh - 60px) !important; }
+  .chat-page .chat-container { margin:6px !important; border-radius:13px !important; }
+  .chat-page .chat-sidebar { width:210px !important; }
+  .chat-page .chat-messages { padding:14px !important; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .smart-ai-dashboard *, .multi-agent-container *, .chat-page * { animation-duration:.01ms !important; transition-duration:.01ms !important; }
+}
