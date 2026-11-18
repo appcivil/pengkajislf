@@ -1,7 +1,7 @@
 [functions.ai-proxy]
 verify_jwt = true
 
-# Keepalive: gateway JWT tetap aktif; aplikasi juga wajib mengirim
+# Keepalive: gateway JWT tetap aktif; scheduler juga wajib mengirim
 # x-keepalive-secret. Secret hanya disimpan di Supabase/GitHub/scheduler.
 [functions.keepalive]
 verify_jwt = true
