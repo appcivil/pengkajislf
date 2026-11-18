@@ -25,21 +25,6 @@ const AI_PROXY_URL = env.VITE_AI_PROXY_URL || (env.VITE_SUPABASE_URL
 const USE_PROXY = !!AI_PROXY_URL;
 
 // ── Legacy direct mode (untuk dev atau jika belum ada proxy) ──
-const DIRECT_ENDPOINTS = {
-  gemini: (model) => env.PROD
-    ? `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.VITE_GEMINI_API_KEY}`
-    : `/api/gemini/v1beta/models/${model}:generateContent?key=${env.VITE_GEMINI_API_KEY}`,
-  kimi: (model) => env.PROD
-    ? `https://api.moonshot.ai/v1/chat/completions`
-    : `/api/kimi/v1/chat/completions`,
-  openai: env.PROD ? 'https://api.openai.com/v1/chat/completions' : '/api/openai/v1/chat/completions',
-  groq: env.PROD ? 'https://api.groq.com/openai/v1/chat/completions' : '/api/groq/v1/chat/completions',
-  claude: env.PROD ? 'https://api.anthropic.com/v1/messages' : '/api/claude/v1/messages',
-  openrouter: env.PROD ? 'https://openrouter.ai/api/v1/chat/completions' : '/api/openrouter/v1/chat/completions',
-  mistral: env.PROD ? 'https://api.mistral.ai/v1/chat/completions' : '/api/mistral/v1/chat/completions',
-  huggingface: env.VITE_HF_SLF_OPUS_URL || 'https://api-inference.huggingface.co/models/adminskpslf/SLF_OPUS',
-};
-
 // ── Model Registry ────────────────────────────────────────────
 export const MODELS = {
   // KIMI FAMILY - Default model (Moonshot AI)
@@ -47,8 +32,6 @@ export const MODELS = {
     id: 'moonshot-v1-8k',
     name: 'Kimi (Moonshot)',
     vendor: 'openai', // OpenAI-compatible API
-    url: DIRECT_ENDPOINTS.kimi,
-    key: env.VITE_KIMI_API_KEY,
     proxyProvider: 'kimi',
     type: 'text',
     costTier: 'free',
@@ -60,8 +43,6 @@ export const MODELS = {
     id: 'moonshot-v1-32k',
     name: 'Kimi 32K',
     vendor: 'openai',
-    url: DIRECT_ENDPOINTS.kimi,
-    key: env.VITE_KIMI_API_KEY,
     proxyProvider: 'kimi',
     type: 'text',
     costTier: 'free',
@@ -72,8 +53,6 @@ export const MODELS = {
     id: 'moonshot-v1-128k',
     name: 'Kimi 128K',
     vendor: 'openai',
-    url: DIRECT_ENDPOINTS.kimi,
-    key: env.VITE_KIMI_API_KEY,
     proxyProvider: 'kimi',
     type: 'text',
     costTier: 'free',
@@ -120,8 +99,6 @@ export const MODELS = {
   GROQ: {
     id: 'llama-3.3-70b-versatile',
     name: 'Groq Llama 3.3 70B (Ultra-Fast)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'text',
@@ -133,8 +110,6 @@ export const MODELS = {
   GROQ_VISION: {
     id: 'llama-3.2-11b-vision-preview',
     name: 'Groq Llama 3.2 11B Vision (Multimodal)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'vision',
@@ -146,8 +121,6 @@ export const MODELS = {
   GROQ_REASONING: {
     id: 'deepseek-r1-distill-llama-70b',
     name: 'Groq DeepSeek R1 (Advanced Reasoning)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'reasoning',
@@ -159,8 +132,6 @@ export const MODELS = {
   GROQ_GPT_OSS_20B: {
     id: 'openai/gpt-oss-20b',
     name: 'Groq GPT-OSS 20B (Gratis - Lightweight)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'text',
@@ -172,8 +143,6 @@ export const MODELS = {
   GROQ_GPT_OSS_120B: {
     id: 'openai/gpt-oss-120b',
     name: 'Groq GPT-OSS 120B (Gratis - Powerful)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'text',
@@ -186,8 +155,6 @@ export const MODELS = {
   GROQ_QWEN_32B: {
     id: 'qwen/qwen3-32b',
     name: 'Groq Qwen 3 32B (Gratis - Multilingual)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'text',
@@ -199,8 +166,6 @@ export const MODELS = {
   GROQ_LLAMA_4_SCOUT: {
     id: 'meta-llama/llama-4-scout-17b-16e-instruct',
     name: 'Groq Llama 4 Scout 17B (Gratis - Latest)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'text',
@@ -213,8 +178,6 @@ export const MODELS = {
   GROQ_WHISPER_TURBO: {
     id: 'whisper-large-v3-turbo',
     name: 'Groq Whisper Turbo (Speech-to-Text)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'audio',
@@ -225,8 +188,6 @@ export const MODELS = {
   GROQ_WHISPER_LARGE: {
     id: 'whisper-large-v3',
     name: 'Groq Whisper Large V3 (Speech-to-Text)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'audio',
@@ -237,24 +198,18 @@ export const MODELS = {
   OPENROUTER: {
     id: 'google/gemini-2.0-flash-lite:free',
     name: 'OpenRouter Free',
-    url: DIRECT_ENDPOINTS.openrouter,
-    key: env.VITE_OPENROUTER_API_KEY,
     vendor: 'openrouter',
     proxyProvider: 'openrouter',
   },
   OPENAI: {
     id: 'gpt-4o',
     name: 'OpenAI GPT-4o',
-    url: DIRECT_ENDPOINTS.openai,
-    key: env.VITE_OPENAI_API_KEY,
     vendor: 'openai',
     proxyProvider: 'openai',
   },
   CLAUDE: {
     id: 'claude-3-5-sonnet-20241022',
     name: 'Claude 3.5 Sonnet',
-    url: DIRECT_ENDPOINTS.claude,
-    key: env.VITE_CLAUDE_API_KEY,
     vendor: 'anthropic',
     proxyProvider: 'claude',
   },
@@ -267,16 +222,12 @@ export const MODELS = {
   SLF_OPUS: {
     id: 'adminskpslf/SLF_OPUS',
     name: 'SLF OPUS Reasoning (Hugging Face)',
-    url: DIRECT_ENDPOINTS.huggingface,
-    key: env.VITE_HF_API_TOKEN,
     vendor: 'huggingface',
     proxyProvider: 'huggingface',
   },
   MISTRAL: {
     id: 'mistral-large-latest',
     name: 'Mistral Large',
-    url: DIRECT_ENDPOINTS.mistral,
-    key: env.VITE_MISTRAL_API_KEY,
     vendor: 'mistral',
     proxyProvider: 'mistral',
   },
@@ -380,23 +331,11 @@ export const MODEL_COMPARATOR = {
       return getDefaultModel(options);
     }
     
-    const kimiAvailable = !!env.VITE_KIMI_API_KEY;
-    
-    // Jika pemenang adalah Kimi dan tersedia, gunakan Kimi
-    if (comparison.winner.startsWith('kimi') && kimiAvailable) {
-      return {
-        model: comparison.kimiModel || MODELS.KIMI,
-        reason: comparison.reason,
-        estimatedCost: 'free',
-        advantage: comparison.reason
-      };
-    }
-    
-    // Jika pemenang Gemini atau Kimi tidak tersedia
+    const selectedModel = comparison.geminiModel || MODELS.GEMINI_FLASH;
     return {
-      model: comparison.geminiModel || MODELS.GEMINI_FLASH,
+      model: selectedModel,
       reason: comparison.reason,
-      estimatedCost: comparison.geminiModel?.costTier || 'low',
+      estimatedCost: selectedModel.costTier || 'low',
       advantage: comparison.reason
     };
   }
@@ -550,20 +489,6 @@ export const EXPERT_PERSONAS = {
     Tugas: Mensintesis laporan multidisiplin menjadi Narasi Evaluasi Komprehensif (Bab IV) dan Kesimpulan Final (Bab V).
     Fokus: Mengelompokkan analisis ke dalam pilar Tata Bangunan dan Keandalan Bangunan sesuai standar NSPK.`
 };
-
-// Log status (hanya keberadaan key, bukan nilai)
-if (env.DEV) {
-  console.log('[AI Engine] Status Kunci API (DEV):', {
-    Kimi: !!env.VITE_KIMI_API_KEY,
-    Gemini: !!env.VITE_GEMINI_API_KEY,
-    OpenAI: !!env.VITE_OPENAI_API_KEY,
-    Claude: !!env.VITE_CLAUDE_API_KEY,
-    Groq: !!env.VITE_GROQ_API_KEY,
-    OpenRouter: !!env.VITE_OPENROUTER_API_KEY,
-    Mistral: !!env.VITE_MISTRAL_API_KEY,
-    'AI Proxy': USE_PROXY ? AI_PROXY_URL : 'Tidak aktif (gunakan direct)',
-  });
-}
 
 // ── Retry dengan True Exponential Backoff ─────────────────────────
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
