@@ -94,7 +94,8 @@ test('logout clears preview session and returns to login', async ({ page }) => {
   await openPreviewSession(page);
   await expect.poll(() => page.evaluate(() => Boolean(localStorage.getItem('slf_dev_user')))).toBe(true);
 
-  await page.locator('#user-card-btn').click();
+  await page.locator('#user-card-btn').focus();
+  await page.keyboard.press('Enter');
   const dialog = page.getByRole('dialog', { name: 'Keluar Akun' });
   await expect(dialog).toBeVisible();
   await page.locator('#confirm-ok').click();
