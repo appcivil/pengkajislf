@@ -117,11 +117,12 @@ begin
     return;
   end if;
 
-  foreach v_scope in array
+  foreach v_scope in array (
     case when p_organization_id is null
       then array['user']::text[]
       else array['user','organization']::text[]
     end
+  )
   loop
     v_subject_id := case when v_scope = 'user' then p_user_id else p_organization_id end;
 
