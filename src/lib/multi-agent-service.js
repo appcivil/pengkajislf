@@ -214,7 +214,8 @@ Alamat: ${proyek?.alamat || 'N/A'}`;
       roleTitle: agent.name,
       standard: agent.standard || 'Standar Nasional Indonesia',
       targetModel: MODELS.GEMINI,
-      customPrompt: prompt
+      customPrompt: prompt,
+      projectId: proyekId
     });
     
     return {
