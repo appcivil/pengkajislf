@@ -48,6 +48,10 @@ create table if not exists private.ai_usage_reservations (
   unique (user_id, idempotency_key)
 );
 
+alter table private.ai_quota_policies enable row level security;
+alter table private.ai_usage_buckets enable row level security;
+alter table private.ai_usage_reservations enable row level security;
+
 create index if not exists ai_usage_reservations_expiry_idx
   on private.ai_usage_reservations (expires_at)
   where status = 'reserved';
@@ -127,9 +131,10 @@ begin
       where p.scope = v_scope and p.plan_key = 'free' and p.enabled = true
       order by p.window_seconds
     loop
-      v_period_start := pg_catalog.to_timestamp(
-        pg_catalog.floor(pg_catalog.extract(epoch from v_now) / v_policy.window_seconds)
-        * v_policy.window_seconds
+      v_period_start := pg_catalog.date_bin(
+        pg_catalog.make_interval(secs => v_policy.window_seconds),
+        v_now,
+        'epoch'::timestamptz
       );
 
       insert into private.ai_usage_buckets (
