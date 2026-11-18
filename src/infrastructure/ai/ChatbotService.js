@@ -849,6 +849,7 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
       const result = await extractTextFromPDF(file, {
         extractImages: true,
         maxPages,
+        projectId: options.projectId,
         onProgress: (current, total, msg) => {
           console.log(`[PDF OCR] ${file.name}: ${msg}`);
         }
