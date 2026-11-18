@@ -83,12 +83,12 @@ Tidak boleh mengaktifkan batas numerik default secara diam-diam karena dapat men
 
 ## Status dan batas keselamatan
 
-Fondasi implementasi dibuat dalam migration 20261118090000_ai_atomic_quota_foundation.sql: tabel privat untuk policy, bucket penggunaan, dan reservasi; RPC reserve/finalize/release/expire dengan advisory lock deterministik, idempotency, dan finalisasi idempotent. Jendela pencatatan sudah tersedia tanpa batas numerik aktif. AI Proxy belum memanggil RPC ini, belum ada cron/secret/deployment, dan CI untuk tes kuota masih perlu diulang setelah perbaikan SQL test. Tidak ada migrasi yang diterapkan pada database produksi.
+Fondasi implementasi dibuat dalam migration 20261118090000_ai_atomic_quota_foundation.sql: tabel privat untuk policy, bucket penggunaan, dan reservasi; RPC reserve/finalize/release/expire dengan advisory lock deterministik, idempotency, dan finalisasi idempotent. Jendela pencatatan sudah tersedia tanpa batas numerik aktif. AI Proxy belum memanggil RPC ini, belum ada cron/secret/deployment, dan CI kuota pertama menemukan kesalahan delimiter pada SQL test expiry; delimiter telah diperbaiki. Test lanjutan menambahkan pemeriksaan ACL, usage tracking tanpa caps, conflicting finalize, serta dua sesi concurrent; hasil CI terbaru untuk head PR #24 masih menunggu. Tidak ada migrasi yang diterapkan pada database produksi.
 
 
 ## Matriks role untuk operasi AI — disetujui 2026-11-18
 
-Akses baca proyek melalui RLS tidak otomatis memberikan hak menjalankan AI. Sebelum implementasi, kebijakan role harus menjadi keputusan produk tersendiri.
+Akses baca proyek melalui RLS tidak otomatis memberikan hak menjalankan AI. Matriks berikut telah disetujui sebagai kebijakan produk.
 
 | Role organisasi | Membaca proyek | Menjalankan AI proyek | Mengubah data hasil AI |
 |---|---:|---:|---:|
