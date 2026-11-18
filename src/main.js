@@ -212,6 +212,7 @@ const pages = {
   todo:              () => import('./pages/todo.js'),
   timKerja:          () => import('./pages/tim-kerja.js'),
   pengaturan:        () => import('./pages/pengaturan.js'),
+  organisasi:        () => import('./pages/organisasi.js'),
   placeholder:       () => import('./pages/placeholder.js'),
   galeri:            () => import('./pages/proyek-galeri.js'),
   taskDetail:        () => import('./pages/task-detail.js'),
@@ -763,6 +764,11 @@ function registerRoutes() {
   route('settings', async () => {
     const { pengaturanPage } = await pages.pengaturan();
     return await pengaturanPage();
+  });
+
+  route('organisasi', async () => {
+    const { organisasiPage } = await pages.organisasi();
+    return await organisasiPage();
   });
 
   route('surat-pernyataan-list', async () => {

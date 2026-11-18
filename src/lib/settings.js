@@ -1,13 +1,14 @@
 /**
  * SETTINGS MANAGER
  * Mengelola persistensi identitas konsultan, pemilihan model AI, 
- * dan daftar tenaga ahli menggunakan LocalStorage.
+ * dan daftar tenaga ahli per organisasi melalui Supabase.
  */
 
 import { supabase } from './supabase.js';
-
-const SETTINGS_KEY = 'slf_app_settings';
-const GLOBAL_ID = '00000000-0000-0000-0000-000000000000';
+import { store } from './store.js';
+function getSettingsContext() {
+  return { organizationId: store.get().activeOrganizationId || null };
+}
 
 const DEFAULT_SETTINGS = {
   consultant: {
@@ -57,28 +58,18 @@ const DEFAULT_SETTINGS = {
  * Mengambil dari LocalStorage dulu (cepat), lalu cek Supabase (sinkron).
  */
 export async function getSettings() {
-  // 1. Ambil dari lokal dulu
-  const saved = localStorage.getItem(SETTINGS_KEY);
-  let settings = saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+  const { organizationId } = getSettingsContext();
+  if (!organizationId) return { ...DEFAULT_SETTINGS };
 
-  // 2. Jika online, coba ambil dari Supabase
-  try {
-    const { data: remote, error } = await supabase
-      .from('settings')
-      .select('data')
-      .eq('id', GLOBAL_ID)
-      .maybeSingle();
+  const { data: remote, error } = await supabase
+    .from('settings')
+    .select('data')
+    .eq('organization_id', organizationId)
+    .maybeSingle();
 
-    if (remote && remote.data) {
-      settings = remote.data;
-      // Update lokal agar sinkron
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-    }
-  } catch (e) {
-    console.warn('[Settings] Failed to fetch remote settings, using local.', e);
-  }
+  if (error) throw new Error('Tidak dapat memuat pengaturan organisasi: ' + error.message);
+  const settings = remote?.data || DEFAULT_SETTINGS;
 
-  // Merge dengan default untuk kestabilan struktur
   return {
     consultant: { ...DEFAULT_SETTINGS.consultant, ...settings.consultant },
     ai:         { ...DEFAULT_SETTINGS.ai, ...settings.ai },
@@ -92,23 +83,22 @@ export async function getSettings() {
  * Menyimpan pengaturan ke LocalStorage DAN Supabase (Global).
  */
 export async function saveSettings(data) {
-  // Simpan Lokal
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(data));
-
-  // Simpan Cloud (Upsert kpd GLOBAL_ID)
-  try {
-    const { error } = await supabase
-      .from('settings')
-      .upsert({ 
-        id: GLOBAL_ID, 
-        data: data,
-        updated_at: new Date().toISOString()
-      });
-    
-    if (error) throw error;
-    return true;
-  } catch (e) {
-    console.error('[Settings] Cloud sync failed:', e);
-    throw e;
+  const { organizationId } = getSettingsContext();
+  if (!organizationId) {
+    throw new Error('Pilih organisasi aktif sebelum menyimpan pengaturan.');
   }
+
+  const { error } = await supabase
+    .from('settings')
+    .upsert({
+      organization_id: organizationId,
+      data,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'organization_id' });
+
+  if (error) {
+    console.error('[Settings] Tenant cloud sync failed:', error);
+    throw error;
+  }
+  return true;
 }

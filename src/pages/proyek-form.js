@@ -12,6 +12,7 @@ import { fetchTeamMembers } from '../lib/team-service.js';
 import { runOCRAnalysis } from '../lib/ai-router.js';
 import { initializeProjectFolder } from '../lib/drive.js';
 import { APP_CONFIG } from '../lib/config.js';
+import { store } from '../lib/store.js';
 
 export async function proyekFormPage(params = {}) {
   const isEdit = !!params.id;
@@ -24,13 +25,37 @@ export async function proyekFormPage(params = {}) {
   }
 
   const teamMembers = await fetchTeamMembers();
+  const { data: memberships, error: membershipError } = await supabase
+    .from('organization_members')
+    .select('organization_id, role, organizations(name)')
+    .order('created_at', { ascending: true });
+  if (membershipError) {
+    throw new Error('Gagal memuat organisasi akun: ' + membershipError.message);
+  }
+  const organizations = (memberships || []).map(member => ({
+    id: member.organization_id,
+    name: member.organizations?.name || 'Organisasi',
+    role: member.role
+  })).filter(org => org.id);
+  const writableOrganizations = organizations.filter(org => org.role !== 'viewer');
+  if (!isEdit && writableOrganizations.length === 0) {
+    throw new Error('Akun tidak memiliki peran yang diizinkan membuat proyek pada organisasi mana pun.');
+  }
+  if (!store.get().activeOrganizationId && writableOrganizations.length === 1) {
+    store.set({ activeOrganizationId: writableOrganizations[0].id });
+  }
+  const organizationField = !isEdit
+    ? '<div class="form-group mb-6"><label class="form-label">Organisasi / Tenant <span style="color:var(--danger-400)">*</span></label><select class="form-select" name="organization_id" required><option value="">-- Pilih organisasi --</option>' +
+      writableOrganizations.map(org => '<option value="' + escapeHtml(org.id) + '"' + ((writableOrganizations.length === 1 || store.get().activeOrganizationId === org.id) ? ' selected' : '') + '>' + escapeHtml(org.name) + ' (' + escapeHtml(org.role) + ')</option>').join('') +
+      '</select><small style="color:var(--text-tertiary)">Proyek hanya dapat diakses anggota organisasi yang dipilih.</small></div>'
+    : '';
   const jenis = ['Bangunan Gedung', 'Hunian', 'Komersial', 'Industri', 'Pendidikan', 'Kesehatan', 'Ibadah', 'Pemerintahan', 'Campuran'];
   const konstruksi = ['Beton Bertulang', 'Baja', 'Kayu', 'Bata', 'Komposit'];
 
   // Map initialization delay
   setTimeout(() => window.initProyekMap && window.initProyekMap(data.latitude, data.longitude), 300);
 
-  return `
+  const html = `
     <div id="proyek-form-page" style="animation: page-fade-in 0.8s ease-out">
       
       <!-- Executive Header -->
@@ -102,6 +127,7 @@ export async function proyekFormPage(params = {}) {
                  <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size:1.2rem; color:white; margin-bottom:28px; display:flex; align-items:center; gap:12px; text-align: left">
                     <i class="fas fa-landmark" style="color:var(--brand-400)"></i> I. IDENTITAS BANGUNAN
                  </div>
+                 <!-- ORGANIZATION_FIELD -->
                  
                  <div class="form-group mb-6">
                     <label class="form-label">Nama Bangunan Gedung <span style="color:var(--danger-400)">*</span></label>
@@ -322,6 +348,7 @@ export async function proyekFormPage(params = {}) {
       </form>
     </div>
   `;
+  return html.replace('<!-- ORGANIZATION_FIELD -->', organizationField);
 }
 
 // INTERACTIVITY: STEPPER ORCHESTRATION
@@ -555,7 +582,15 @@ window.submitProyek = async function(event) {
       drive_proxy_url:     data.drive_proxy_url || null,
       updated_at:       new Date().toISOString()
     };
-    
+
+    if (!id) {
+      const selectedOrganizationId = data.organization_id;
+      if (!selectedOrganizationId || !writableOrganizations.some(org => org.id === selectedOrganizationId)) {
+        throw new Error('Pilih organisasi yang Anda ikuti sebelum membuat proyek.');
+      }
+      cleanData.organization_id = selectedOrganizationId;
+    }
+
     if (id) {
       await supabase.from('proyek').update(cleanData).eq('id', id);
     } else {

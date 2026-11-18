@@ -1,0 +1,431 @@
+-- SaaS multi-tenant foundation for Pengkaji SLF.
+-- Existing records are preserved in a legacy workspace. Do not remove that
+-- workspace until its projects have been explicitly reassigned to tenants.
+
+create schema if not exists private;
+revoke all on schema private from public, anon;
+grant usage on schema private to authenticated;
+
+create table if not exists public.organizations (
+  id uuid primary key default gen_random_uuid(),
+  name text not null check (length(trim(name)) between 2 and 160),
+  slug text unique,
+  created_by uuid references auth.users(id) on delete set null,
+  is_legacy boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.organization_members (
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  role text not null default 'member'
+    check (role in ('owner', 'admin', 'member', 'viewer')),
+  created_at timestamptz not null default now(),
+  primary key (organization_id, user_id)
+);
+
+create index if not exists organization_members_user_idx
+  on public.organization_members(user_id, organization_id);
+
+alter table public.proyek
+  add column if not exists organization_id uuid
+  references public.organizations(id) on delete restrict;
+
+-- Explicit sample tenant approved for the existing sample project.
+-- No broad auto-membership: only the designated account is granted owner access.
+insert into public.organizations
+  (id, name, slug, created_by, is_legacy)
+values
+  ('22222222-2222-4222-8222-222222222222',
+   'PT. TAPAK CITRA REKAYASA',
+   'pt-tapak-citra-rekayasa', null, false)
+on conflict (id) do update
+set name = excluded.name, slug = excluded.slug, is_legacy = false;
+
+update public.proyek
+set organization_id = '22222222-2222-4222-8222-222222222222'
+where organization_id is null;
+
+-- Platform administration is separate from customer-tenant membership.
+create table if not exists private.platform_admins (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  email_at_assignment text not null,
+  created_at timestamptz not null default now()
+);
+revoke all on private.platform_admins from public, anon, authenticated;
+
+create or replace function private.is_platform_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from private.platform_admins a
+    where a.user_id = (select auth.uid())
+  );
+$$;
+revoke all on function private.is_platform_admin() from public, anon;
+grant execute on function private.is_platform_admin() to authenticated;
+
+-- Platform administrator and sample-tenant owner are distinct identities.
+-- Grant each role only to its explicitly designated, verified Auth account.
+do $$
+declare
+  v_platform_admin_id uuid;
+  v_tenant_owner_id uuid;
+begin
+  select id into v_platform_admin_id
+  from auth.users
+  where lower(email) = 'enjangwahyudin.st@gmail.com'
+    and email_confirmed_at is not null
+  limit 1;
+
+  if v_platform_admin_id is not null then
+    insert into private.platform_admins(user_id, email_at_assignment)
+    values (v_platform_admin_id, 'enjangwahyudin.st@gmail.com')
+    on conflict (user_id) do nothing;
+  end if;
+
+  select id into v_tenant_owner_id
+  from auth.users
+  where lower(email) = 'inannmar@gmail.com'
+    and email_confirmed_at is not null
+  limit 1;
+
+  if v_tenant_owner_id is not null then
+    insert into public.organization_members(organization_id, user_id, role)
+    values ('22222222-2222-4222-8222-222222222222', v_tenant_owner_id, 'owner')
+    on conflict (organization_id, user_id) do update set role = 'owner';
+  end if;
+end;
+$$;
+
+alter table public.proyek
+  alter column organization_id set not null;
+
+create or replace function private.is_org_member(p_org_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.organization_members m
+    where m.organization_id = p_org_id
+      and m.user_id = (select auth.uid())
+  );
+$$;
+
+create or replace function private.has_org_role(p_org_id uuid, p_roles text[])
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.organization_members m
+    where m.organization_id = p_org_id
+      and m.user_id = (select auth.uid())
+      and m.role = any(p_roles)
+  );
+$$;
+
+revoke all on function private.is_org_member(uuid) from public, anon;
+revoke all on function private.has_org_role(uuid, text[]) from public, anon;
+grant execute on function private.is_org_member(uuid) to authenticated;
+grant execute on function private.has_org_role(uuid, text[]) to authenticated;
+
+alter table public.organizations enable row level security;
+alter table public.organization_members enable row level security;
+
+drop policy if exists organizations_select_member on public.organizations;
+create policy organizations_select_member on public.organizations
+for select to authenticated
+using (private.is_org_member(id));
+
+drop policy if exists organizations_create_self on public.organizations;
+create policy organizations_create_self on public.organizations
+for insert to authenticated
+with check (created_by = (select auth.uid()) and is_legacy = false);
+
+drop policy if exists organizations_update_admin on public.organizations;
+create policy organizations_update_admin on public.organizations
+for update to authenticated
+using (private.has_org_role(id, array['owner','admin']))
+with check (private.has_org_role(id, array['owner','admin']));
+
+drop policy if exists org_members_select_self_or_admin on public.organization_members;
+create policy org_members_select_self_or_admin on public.organization_members
+for select to authenticated
+using (
+  user_id = (select auth.uid())
+  or private.has_org_role(organization_id, array['owner','admin'])
+);
+
+drop policy if exists org_members_insert_owner_or_admin on public.organization_members;
+create policy org_members_insert_owner_or_admin on public.organization_members
+for insert to authenticated
+with check (
+  (
+    user_id = (select auth.uid())
+    and role = 'owner'
+    and exists (
+      select 1 from public.organizations o
+      where o.id = organization_id
+        and o.created_by = (select auth.uid())
+        and o.is_legacy = false
+    )
+  )
+  or private.has_org_role(organization_id, array['owner','admin'])
+);
+
+drop policy if exists org_members_update_admin on public.organization_members;
+create policy org_members_update_admin on public.organization_members
+for update to authenticated
+using (private.has_org_role(organization_id, array['owner','admin']))
+with check (private.has_org_role(organization_id, array['owner','admin']));
+
+drop policy if exists org_members_delete_admin on public.organization_members;
+create policy org_members_delete_admin on public.organization_members
+for delete to authenticated
+using (
+  private.has_org_role(organization_id, array['owner','admin'])
+  and role <> 'owner'
+);
+
+-- Atomic tenant creation: the caller becomes the first owner.
+create or replace function public.create_organization(p_name text)
+returns public.organizations
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_org public.organizations;
+begin
+  if v_user_id is null then
+    raise exception 'Authentication required' using errcode = '28000';
+  end if;
+  if p_name is null or length(trim(p_name)) not between 2 and 160 then
+    raise exception 'Nama organisasi harus 2–160 karakter' using errcode = '22023';
+  end if;
+
+  insert into public.organizations(name, created_by)
+  values (trim(p_name), v_user_id)
+  returning * into v_org;
+
+  insert into public.organization_members(organization_id, user_id, role)
+  values (v_org.id, v_user_id, 'owner');
+
+  return v_org;
+end;
+$$;
+
+revoke all on function public.create_organization(text) from public, anon;
+grant execute on function public.create_organization(text) to authenticated;
+
+-- Backward-compatible project creation: when a user has exactly one tenant,
+-- infer it. Multi-tenant users must pass organization_id explicitly.
+create or replace function private.set_project_organization()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_org_count integer;
+  v_org_id uuid;
+begin
+  if new.organization_id is null then
+    select count(*), (array_agg(m.organization_id order by m.created_at))[1]
+      into v_org_count, v_org_id
+    from public.organization_members m
+    where m.user_id = (select auth.uid());
+
+    if v_org_count <> 1 then
+      raise exception 'Pilih organisasi sebelum membuat proyek'
+        using errcode = '23514';
+    end if;
+    new.organization_id := v_org_id;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_set_project_organization on public.proyek;
+create trigger trg_set_project_organization
+before insert or update of organization_id on public.proyek
+for each row execute function private.set_project_organization();
+
+-- A member may edit project data but cannot move a project between tenants.
+-- Reassignment requires owner/admin authority in both source and destination.
+create or replace function private.prevent_project_tenant_reassignment()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  if new.organization_id is distinct from old.organization_id then
+    if not private.has_org_role(old.organization_id, array['owner','admin'])
+       or not private.has_org_role(new.organization_id, array['owner','admin']) then
+      raise exception 'Hanya owner/admin tenant yang boleh memindahkan proyek antar organisasi'
+        using errcode = '42501';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_prevent_project_tenant_reassignment on public.proyek;
+create trigger trg_prevent_project_tenant_reassignment
+before update of organization_id on public.proyek
+for each row execute function private.prevent_project_tenant_reassignment();
+
+-- Replace the legacy authenticated-wide project policy. RLS on every
+-- project-child table is derived from its parent proyek_id. Existing policies
+-- are removed first because PostgreSQL combines permissive policies with OR.
+do $$
+declare
+  v_table record;
+  v_has_user_id boolean;
+  v_using text;
+  v_write text;
+  v_policy record;
+begin
+  for v_table in
+    select c.relname,
+      case
+        when bool_or(col.column_name = 'proyek_id') then 'proyek_id'
+        else 'project_id'
+      end as project_column
+    from pg_class c
+    join pg_namespace n on n.oid = c.relnamespace
+    join information_schema.columns col
+      on col.table_schema = n.nspname
+     and col.table_name = c.relname
+     and col.column_name in ('proyek_id', 'project_id')
+    where n.nspname = 'public'
+      and c.relkind = 'r'
+      and c.relname <> 'proyek'
+      -- A column called project_id is not necessarily a public.proyek ID.
+      -- Preserve modules whose project_id FK targets a different domain root
+      -- (for example lighting_projects); they need their own ownership model.
+      and not exists (
+        select 1
+        from pg_constraint fk
+        join pg_attribute child_key
+          on child_key.attrelid = fk.conrelid
+         and child_key.attnum = any(fk.conkey)
+        join pg_class target_table on target_table.oid = fk.confrelid
+        join pg_namespace target_schema on target_schema.oid = target_table.relnamespace
+        where fk.contype = 'f'
+          and fk.conrelid = c.oid
+          and child_key.attname in ('proyek_id', 'project_id')
+          and not (
+            target_schema.nspname = 'public'
+            and target_table.relname = 'proyek'
+          )
+      )
+    group by c.relname
+  loop
+    select exists (
+      select 1 from information_schema.columns
+      where table_schema = 'public'
+        and table_name = v_table.relname
+        and column_name = 'user_id'
+    ) into v_has_user_id;
+
+    v_using := format(
+      'exists (select 1 from public.proyek p where p.id = %I.%I and private.is_org_member(p.organization_id))',
+      v_table.relname, v_table.project_column
+    );
+    v_write := format(
+      'exists (select 1 from public.proyek p where p.id = %I.%I and private.has_org_role(p.organization_id, array[''owner'',''admin'',''member'']))',
+      v_table.relname, v_table.project_column
+    );
+
+    if v_has_user_id then
+      v_using := '(' || v_using || format(
+        ' or (%I.%I is null and %I.user_id = (select auth.uid()))',
+        v_table.relname, v_table.project_column, v_table.relname
+      ) || ')';
+      v_write := '(' || v_write || format(
+        ' or (%I.%I is null and %I.user_id = (select auth.uid()))',
+        v_table.relname, v_table.project_column, v_table.relname
+      ) || ')';
+    end if;
+
+    for v_policy in
+      select policyname from pg_policies
+      where schemaname = 'public' and tablename = v_table.relname
+    loop
+      execute format('drop policy %I on public.%I', v_policy.policyname, v_table.relname);
+    end loop;
+
+    execute format('alter table public.%I enable row level security', v_table.relname);
+    execute format(
+      'create policy tenant_scope_select on public.%I for select to authenticated using (%s)',
+      v_table.relname, v_using
+    );
+    execute format(
+      'create policy tenant_scope_insert on public.%I for insert to authenticated with check (%s)',
+      v_table.relname, v_write
+    );
+    execute format(
+      'create policy tenant_scope_update on public.%I for update to authenticated using (%s) with check (%s)',
+      v_table.relname, v_write, v_write
+    );
+    execute format(
+      'create policy tenant_scope_delete on public.%I for delete to authenticated using (%s)',
+      v_table.relname, v_write
+    );
+  end loop;
+end;
+$$;
+
+-- proyek itself is tenant-scoped. Remove all permissive legacy policies.
+do $$
+declare v_policy record;
+begin
+  for v_policy in
+    select policyname from pg_policies
+    where schemaname = 'public' and tablename = 'proyek'
+  loop
+    execute format('drop policy %I on public.proyek', v_policy.policyname);
+  end loop;
+end;
+$$;
+
+create policy proyek_tenant_select on public.proyek
+for select to authenticated
+using (private.is_org_member(organization_id));
+
+create policy proyek_tenant_insert on public.proyek
+for insert to authenticated
+with check (private.has_org_role(organization_id, array['owner','admin','member']));
+
+create policy proyek_tenant_update on public.proyek
+for update to authenticated
+using (private.has_org_role(organization_id, array['owner','admin','member']))
+with check (private.has_org_role(organization_id, array['owner','admin','member']));
+
+create policy proyek_tenant_delete on public.proyek
+for delete to authenticated
+using (private.has_org_role(organization_id, array['owner','admin']));
+
+create index if not exists proyek_organization_id_idx
+  on public.proyek(organization_id);
+
+comment on table public.organizations is
+  'Tenant boundary for Pengkaji SLF SaaS. Every customer organization is isolated by RLS.';
+comment on column public.proyek.organization_id is
+  'Tenant owner of the project; required for all new and existing project rows.';

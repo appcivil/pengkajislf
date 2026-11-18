@@ -1,7 +1,7 @@
 // ============================================================
 //  AUTHENTICATION MODULE
 //  Google OAuth via Supabase Auth
-//  SECURITY FIX: Admin check divalidasi dari DB, bukan hanya client-side
+//  Admin UI indicator only; privileged operations require server-side authorization.
 // ============================================================
 import { supabase } from './supabase.js';
 import { APP_CONFIG } from './config.js';
@@ -16,6 +16,14 @@ const DEV_USER_KEY = 'slf_dev_user';
 
 // Notify all auth state listeners
 function notifyListeners(user) {
+  // Scope persisted browser state to one authenticated identity. Switching
+  // accounts clears cached project/checklist/file data before the new session
+  // can render, including on shared field devices.
+  try {
+    store.bindUser(user?.id || null);
+  } catch (e) {
+    console.warn('[Auth] Failed to bind local state to user', e);
+  }
   _listeners.forEach(fn => fn(user));
   // Global Store Sync
   store.set({ user });
@@ -187,23 +195,22 @@ export function isAuthenticated() {
  */
 function _checkIsAdminFromProfile(profile, email) {
   if (!profile) return _checkIsAdminFromEmail(email);
-  const role = (profile.role || '').toLowerCase();
-  return role === 'admin' || role === 'administrator' || _checkIsAdminFromEmail(email);
+  // Frontend-only display gate. Authoritative platform privileges are checked
+  // server-side against private.platform_admins; profile.role is not trusted.
+  return _checkIsAdminFromEmail(email);
 }
 
 /**
- * Cek admin dari email (fallback).
- * Private — HANYA sebagai fallback ketika DB tidak dapat diakses.
+ * Email allowlist for frontend display only; database/server checks private.platform_admins.
  */
 function _checkIsAdminFromEmail(email) {
   if (!email) return false;
-  const SUPER_ADMIN_EMAILS = ['admin.skpslf@gmail.com', 'skpslf.official@gmail.com'];
+  const SUPER_ADMIN_EMAILS = ['enjangwahyudin.st@gmail.com'];
   return SUPER_ADMIN_EMAILS.includes(email.toLowerCase());
 }
 
 /**
- * isAdmin() — sinkron, menggunakan cache yang divalidasi dari DB.
- * SECURITY FIX: Tidak lagi bergantung pada user_metadata JWT yang bisa dispoofing.
+ * isAdmin() — frontend display gate only. Never use for privileged API/DB authorization.
  */
 export function isAdmin() {
   if (!_currentUser) return false;

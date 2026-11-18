@@ -23,6 +23,64 @@ class Store {
     this.notify();
   }
 
+  bindUser(userId) {
+    const key = 'slf_app_state_user';
+    const currentOwner = localStorage.getItem(key);
+    const nextOwner = userId || null;
+    if (currentOwner !== nextOwner) {
+      this.clearSessionData();
+      if (nextOwner) localStorage.setItem(key, nextOwner);
+      else localStorage.removeItem(key);
+    }
+  }
+
+  clearSessionData() {
+    // Never carry one account's project, checklist, file or analysis state
+    // into the next login on shared field devices.
+    const ui = { ...this.state.ui, isOnline: navigator.onLine };
+    this.state = {
+      user: null,
+      currentProyekId: null,
+      currentProyek: null,
+      currentAnalisis: null,
+      activeOrganizationId: null,
+      checklist: {
+        dataMap: {},
+        fotoLinks: {},
+        activeTab: 'admin',
+        isDirty: false,
+        dirtyKodes: new Set(),
+        lastSaveTime: null,
+        isSaving: false
+      },
+      gallery: { photos: [], filter: 'all', activePhoto: null },
+      files: { documents: [], activeCategory: 'umum', searchQuery: '', isSyncing: false, syncProgress: 0 },
+      ui,
+      workspace: {
+        activeView: 'projects',
+        viewMode: 'grid',
+        selectedFileId: null,
+        selectedProjectId: null,
+        activeInspectorTab: 'preview',
+        smartFilter: null
+      }
+    };
+    try {
+      localStorage.removeItem('slf_app_state');
+      // Settings can contain customer names, report templates and branding.
+      // Clear all browser copies on logout/account switch; they are reloaded
+      // from the tenant-scoped database after the next authenticated session.
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('slf_app_settings:')) localStorage.removeItem(key);
+      }
+      this.persist();
+    } catch (e) {
+      console.warn('[Store] Failed to clear persisted session data', e);
+    }
+    this.notify();
+  }
+
   persist() {
      try {
         // Don't persist sensitive or transient data
@@ -55,6 +113,7 @@ export const store = new Store({
   currentProyekId: null,
   currentProyek: null,
   currentAnalisis: null,
+  activeOrganizationId: null,
   
   // Checklist State
   checklist: {

@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS public.proyek (
   tanggal_mulai    date,
   tanggal_target   date,
   progress         integer DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
+  metadata         jsonb NOT NULL DEFAULT '{}'::jsonb,
   
   -- SIMBG Step 1: Intensitas Teknis
   gsb              numeric,
@@ -91,6 +92,7 @@ CREATE TABLE IF NOT EXISTS public.proyek_files (
 
 -- RLS Policies - proyek_files
 ALTER TABLE public.proyek_files ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Authenticated users can manage all proyek files" ON public.proyek_files;
 CREATE POLICY "Authenticated users can manage all proyek files" ON public.proyek_files FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- RLS Policies - proyek
@@ -106,6 +108,14 @@ CREATE POLICY "Authenticated users can manage all projects"
 CREATE INDEX IF NOT EXISTS idx_proyek_created_by ON public.proyek(created_by);
 CREATE INDEX IF NOT EXISTS idx_proyek_status_slf ON public.proyek(status_slf);
 
+
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
 -- ===========================================================
 -- TABEL 2: checklist_items
@@ -206,12 +216,6 @@ CREATE TABLE IF NOT EXISTS public.proyek_files (
 
 -- RLS Policies - proyek_files
 ALTER TABLE public.proyek_files ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Authenticated users can manage all proyek files"
-  ON public.proyek_files FOR ALL
-  TO authenticated
-  USING (true)
-  WITH CHECK (true);
 
 -- Index
 CREATE INDEX IF NOT EXISTS idx_files_proyek ON public.proyek_files(proyek_id);
@@ -361,13 +365,7 @@ CREATE OR REPLACE TRIGGER trg_settings_updated_at
 -- ===========================================================
 -- FUNCTION: Update Timestamp otomatis
 -- ===========================================================
-CREATE OR REPLACE FUNCTION public.set_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = now();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+
 
 -- Terapkan trigger updated_at ke tabel yang relevan
 CREATE OR REPLACE TRIGGER trg_proyek_updated_at
@@ -484,11 +482,19 @@ ALTER TABLE public.field_test_data ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policy: Users can only access their own project field data
 CREATE POLICY "Field data access policy" ON public.field_test_data
-  FOR ALL USING (
-    auth.uid() IN (
-      SELECT created_by FROM public.proyek WHERE id = proyek_id
-    ) OR auth.uid() IN (
-      SELECT user_id FROM public.proyek_access WHERE proyek_id = proyek_id
+  FOR ALL TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.proyek p
+      WHERE p.id = field_test_data.proyek_id
+        AND p.created_by = (SELECT auth.uid())
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.proyek p
+      WHERE p.id = field_test_data.proyek_id
+        AND p.created_by = (SELECT auth.uid())
     )
   );
 

@@ -202,18 +202,9 @@ export class SupabaseAIMemoryRepository extends IAIMemoryRepository {
     });
 
     if (error) {
-      // Fallback: manual update
-      const { error: updateError } = await this.supabase
-        .from('ai_memories')
-        .update({
-          access_count: this.supabase.rpc('increment_access_count'),
-          last_accessed_at: new Date().toISOString()
-        })
-        .eq('id', id);
-
-      if (updateError) {
-        console.error('[SupabaseAIMemoryRepository] markAccessed error:', updateError);
-      }
+      // Do not fall back to a second write path: the RPC enforces user ownership
+      // atomically, while a client-side fallback could drift from that contract.
+      console.error('[SupabaseAIMemoryRepository] markAccessed error:', error);
     }
   }
 

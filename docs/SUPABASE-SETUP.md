@@ -1,10 +1,10 @@
 # Setup Supabase — Panduan Lengkap & Urutan Deploy
 
 **Proyek:** Smart AI Pengkaji SLF
-**Tanggal:** 16 September 2026
+**Tanggal:** 17 November 2026
 **Untuk:** pemasangan baru dari nol, atau verifikasi instalasi yang sudah ada.
 
-> Selain berkas di folder `supabase/`, panduan ini juga mencakup
+> **Peringatan untuk branch `feat/saas-multi-tenant-foundation`:** panduan instalasi lama di bawah masih menjelaskan pemasangan dasar. Untuk rollout SaaS, jangan jalankan SQL secara manual atau mengikuti urutan lama sebagai pengganti migration chain. Gunakan `supabase db reset` untuk validasi lokal; penerapan ke database live hanya setelah inventarisasi drift, staging, dan persetujuan eksplisit. Jangan deploy Edge Functions lama sebelum temuan otorisasi pada laporan Edge Function ditutup.\n>\n> Selain berkas di folder `supabase/`, panduan ini juga mencakup
 > **Storage bucket** dan **Edge Function**, karena keduanya wajib ada
 > agar fitur berjalan — dan keduanya belum pernah tercatat urutannya.
 
@@ -142,13 +142,13 @@ ALTER TABLE public.proyek          ENABLE ROW LEVEL SECURITY;
 ## 3. Storage Bucket
 
 Bucket **tidak dibuat oleh berkas SQL mana pun** — harus dibuat manual.
-Kode aplikasi merujuk empat bucket berikut:
+Kode aplikasi merujuk empat bucket berikut. Pada branch SaaS, seluruh dokumen proyek dan template laporan harus privat; hanya aset sistem non-rahasia yang boleh publik:
 
 | Bucket | Dipakai untuk | Akses | Rujukan kode |
 |---|---|---|---|
 | `project-files` | Berkas data lapangan (NDT, hasil uji) | Privat (signed URL) | `src/lib/field-data-import.js` |
 | `project-photos` | Foto bukti pemeriksaan egress | Privat | `src/domain/repositories/EgressRepository.js` |
-| `templates` | Template laporan DOCX per proyek | Publik (URL publik) | `src/pages/laporan.js` |
+| `templates` | Template laporan DOCX per proyek | **Privat (signed URL)** | `src/pages/laporan.js` |
 | `system-assets` | Aset sistem (logo, dsb.) | Publik | `src/pages/pengaturan.js` |
 
 ### Membuat bucket lewat dashboard
@@ -156,49 +156,37 @@ Kode aplikasi merujuk empat bucket berikut:
 **Storage → New bucket** → isi nama → pilih Public/Private → Create.
 Ulangi untuk keempat bucket.
 
-### Policy Storage (wajib, kalau tidak unduhan akan ditolak)
+### Policy Storage — SaaS multi-tenant
 
-Buka **SQL Editor**, jalankan:
+**Jangan gunakan policy lama yang hanya memeriksa `bucket_id`.** Policy seperti
+`bucket_id IN ('project-files','project-photos')` memberi setiap pengguna login
+akses lintas instansi.
 
-```sql
--- ── Bucket privat: hanya pengguna terautentikasi ──
-insert into storage.buckets (id, name, public)
-values ('project-files', 'project-files', false),
-       ('project-photos', 'project-photos', false)
-on conflict (id) do nothing;
+Pada branch SaaS, jalankan migrasi berurutan setelah skema inti dan setelah tabel opsional SmartAI dibuat bila modul tersebut dipakai:
 
-create policy "Berkas proyek untuk pengguna login"
-  on storage.objects for select
-  to authenticated
-  using (bucket_id in ('project-files', 'project-photos'));
+- `20261117000000_saas_multi_tenant_foundation.sql`
+- `20261117010000_harden_tenant_membership_and_roles.sql`
+- `20261117020000_tenant_scope_storage.sql`
+- `20261117030000_tenant_scope_settings_and_profiles.sql`
+- `20261117040000_smartai_tenant_rls.sql` (aman bila tabel SmartAI opsional belum dibuat; bila dibuat kemudian, jalankan ulang kebijakan ini).
+- `20261117050000_scope_indirect_project_children.sql` (mewariskan batas tenant ke tabel anak yang memakai foreign key assessment/simulation/panel/calculation/station).
+- `20261117060000_secure_public_views.sql` (mengaktifkan `security_invoker` pada view public dan mencabut akses anon/PUBLIC).
+- `20261117070000_harden_security_definer_rpcs.sql` (membatasi eksekusi RPC `SECURITY DEFINER`, memvalidasi identitas pemanggil, dan mengunci `search_path`).
 
-create policy "Unggah berkas proyek"
-  on storage.objects for insert
-  to authenticated
-  with check (bucket_id in ('project-files', 'project-photos'));
+Migrasi storage membuat bucket `project-files`, `project-photos`, `templates`, dan `system-assets`
+bila belum tersedia; bucket dokumen proyek dan template dibuat privat. Bucket legacy
+`skpslf` juga dikunci privat. Policy bucket proyek memeriksa tenant melalui UUID proyek pada path objek.
+Format path yang didukung:
+- `project-photos/<project-uuid>/...`
+- `templates/<project-uuid>/...`
+- `project-files/field_data/<project-uuid>/...`
 
-create policy "Ubah/hapus berkas proyek milik sendiri"
-  on storage.objects for update
-  to authenticated
-  using (bucket_id in ('project-files', 'project-photos'))
-  with check (bucket_id in ('project-files', 'project-photos'));
+Aplikasi harus membuat signed URL setelah akses lolos RLS. Jangan menyimpan
+public URL untuk dokumen proyek. Bucket `system-assets` tetap boleh dibaca
+publik karena hanya untuk aset non-rahasia.
 
--- ── Bucket publik: template & aset sistem ──
-insert into storage.buckets (id, name, public)
-values ('templates', 'templates', true),
-       ('system-assets', 'system-assets', true)
-on conflict (id) do nothing;
-
-create policy "Template & aset sistem bisa dibaca publik"
-  on storage.objects for select
-  to public
-  using (bucket_id in ('templates', 'system-assets'));
-
-create policy "Unggah template oleh pengguna login"
-  on storage.objects for insert
-  to authenticated
-  with check (bucket_id in ('templates', 'system-assets'));
-```
+Jalankan `supabase/security/rls_audit.sql` dan uji akses silang tenant pada
+database staging sebelum mengaktifkan migrasi ini di produksi.
 
 ### Setelan cache — pengaruh besar ke kuota egress
 

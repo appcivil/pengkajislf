@@ -17,14 +17,9 @@ export async function fetchTeamMembers() {
     if (error) throw error;
     return data || [];
   } catch (err) {
-    console.warn('[Team] Gagal ambil profil tim, gunakan fallback:', err.message);
-    // Mock Data Fallback
-    return [
-      { id: 'u1', full_name: 'Bpk. Ahmad Fauzi', role: 'Lead Engineer', status: 'Active', avatar_url: null },
-      { id: 'u2', full_name: 'Ibu Siti Aminah', role: 'Surveyor Utama', status: 'Active', avatar_url: null },
-      { id: 'u3', full_name: 'Andi Saputra', role: 'Drafter & Analyst', status: 'Active', avatar_url: null },
-      { id: 'u4', full_name: 'Dewi Lestari', role: 'Admin Proyek', status: 'Away', avatar_url: null },
-    ];
+    console.warn('[Team] Gagal ambil profil tenant:', err.message);
+    // Never fabricate members: assignment must reference real tenant users.
+    return [];
   }
 }
 
