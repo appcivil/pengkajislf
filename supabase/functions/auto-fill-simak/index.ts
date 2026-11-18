@@ -7,7 +7,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { authenticateProject, readJsonBody } from "../_shared/tenant-auth.ts";
-import { reserveAIUsage, finalizeAIUsage, estimateTextTokens, type AIQuotaReservation } from "../_shared/ai-quota.ts";
+import { reserveAIUsage, finalizeAIUsage, estimateTextTokens, extractProviderUsageTokens, type AIQuotaReservation } from "../_shared/ai-quota.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -50,6 +50,7 @@ serve(async (req: Request) => {
   }
 
   let quotaReservation: AIQuotaReservation | null = null;
+  let actualTokens: number | null = null;
   try {
     const parsedBody = await readJsonBody(req, 256 * 1024);
     if (!parsedBody.ok) {
@@ -167,6 +168,7 @@ PENTING: Kembalikan HANYA JSON array tanpa markdown atau penjelasan tambahan.
     );
 
     const geminiData = await geminiRes.json();
+    actualTokens = extractProviderUsageTokens(geminiData);
     if (!geminiRes.ok) {
       throw new Error(`Gemini Error ${geminiRes.status}: ${JSON.stringify(geminiData)}`);
     }
@@ -195,7 +197,7 @@ PENTING: Kembalikan HANYA JSON array tanpa markdown atau penjelasan tambahan.
       byAspek[item.aspek] = (byAspek[item.aspek] || 0) + 1;
     });
 
-    await finalizeAIUsage(quotaReservation, quotaReservation.reservedTokens);
+    await finalizeAIUsage(quotaReservation, actualTokens ?? quotaReservation.reservedTokens);
 
     return new Response(JSON.stringify({
       success: true,
