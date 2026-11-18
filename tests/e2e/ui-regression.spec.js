@@ -75,7 +75,7 @@ test('navigation resolves representative workspace and inspection routes', async
 
   for (const route of routes) {
     await page.evaluate((path) => window.navigate(path), route);
-    await expect(page).toHaveURL(new RegExp(`#/\\${route}(?:\\?|$)`));
+    await expect(page).toHaveURL(new RegExp('#/' + route + '(?:\\?|$)'));
     await expect(page.locator('#page-root')).not.toContainText('Halaman Tidak Ditemukan', { timeout: 15000 });
     await expect(page.locator('#page-root')).not.toContainText('Terjadi Kesalahan', { timeout: 15000 });
   }
