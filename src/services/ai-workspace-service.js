@@ -5,6 +5,7 @@
  */
 import { MODELS, fetchOpenRouter, parseAIJson } from '../lib/ai-router.js';
 import { PROYEK_AI_TEMPLATES } from '../application/ai-templates/ProyekAI.js';
+import { supabase } from '../lib/supabase.js';
 
 const OPENROUTER_MODEL = MODELS.OPENROUTER;
 
@@ -12,6 +13,9 @@ export async function analyzeDocumentIntelligence(fileId) {
     // 1. Fetch file record
     const { data: file } = await supabase.from('proyek_files').select('*').eq('id', fileId).single();
     if (!file) return null;
+    if (!file.proyek_id) {
+        throw new Error('Dokumen tidak memiliki konteks proyek; analisis AI ditolak.');
+    }
 
     console.log(`[AI] Analyzing file with OpenRouter: ${file.name}`);
 
@@ -21,7 +25,7 @@ export async function analyzeDocumentIntelligence(fileId) {
 
     let aiResult;
     try {
-       const respText = await fetchOpenRouter(OPENROUTER_MODEL, prompt);
+       const respText = await fetchOpenRouter(OPENROUTER_MODEL, prompt, { projectId: file.proyek_id });
        aiResult = parseAIJson(respText);
     } catch (err) {
        console.error("[AI] OpenRouter failed, using fallback mock", err);
@@ -35,7 +39,7 @@ export async function analyzeDocumentIntelligence(fileId) {
     }
 
     const aiData = {
-        ai_status: 'ready',
+        ai_status: aiResult.status === 'Pending' ? 'pending' : 'ready',
         category: aiResult.category || file.category,
         subcategory: aiResult.subcategory || file.subcategory,
         ai_summary: aiResult.ai_summary,
@@ -44,7 +48,7 @@ export async function analyzeDocumentIntelligence(fileId) {
         metadata: {
             ...(file.metadata || {}),
             ai_last_run: new Date().toISOString(),
-            provider: 'OpenRouter-Gemini'
+            provider: 'OpenRouter'
         }
     };
 
