@@ -6,6 +6,7 @@
 // ============================================================
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { authenticateProject, readJsonBody } from "../_shared/tenant-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -48,22 +49,35 @@ serve(async (req: Request) => {
   }
 
   try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
+    const parsedBody = await readJsonBody(req, 256 * 1024);
+    if (!parsedBody.ok) {
+      return new Response(JSON.stringify({ error: parsedBody.error }), {
+        status: parsedBody.status,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const body = parsedBody.data as AutoFillRequest;
+    const { proyekData, checklistTemplate, proyekId } = body;
+    const authorization = await authenticateProject(req, proyekId);
+    if (!authorization.ok) {
+      return new Response(JSON.stringify({ error: authorization.error }), {
+        status: authorization.status,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const body: AutoFillRequest = await req.json();
-    const { proyekData, checklistTemplate, proyekId } = body;
-
-    if (!proyekData) {
+    if (!proyekData || typeof proyekData !== "object" || Array.isArray(proyekData)) {
       return new Response(JSON.stringify({ error: "proyekData is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    if (JSON.stringify(proyekData).length > 32 * 1024) {
+      return new Response(JSON.stringify({ error: "proyekData is too large" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (checklistTemplate && (!Array.isArray(checklistTemplate) || checklistTemplate.length > 100 || checklistTemplate.some((item) => !item || typeof item.kode !== "string" || typeof item.nama !== "string" || typeof item.aspek !== "string" || item.kode.length > 40 || item.nama.length > 200 || item.aspek.length > 40))) {
+      return new Response(JSON.stringify({ error: "Invalid checklistTemplate (maximum 100 valid items)" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // Use Gemini Flash for fast, cost-effective text generation
