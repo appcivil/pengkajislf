@@ -49,6 +49,39 @@ Deno.test("rejects invalid image MIME and malformed base64", () => {
   }
 });
 
+Deno.test("accepts bounded multi-image Gemini requests", () => {
+  const request = validateAIRequest({
+    provider: "gemini",
+    model: "gemini-2.0-flash",
+    prompt: "Bandingkan dua bukti",
+    images: [
+      { base64Data: "AQID", mimeType: "image/jpeg" },
+      { base64Data: "BAUG", mimeType: "image/png" },
+    ],
+    projectId: "22222222-2222-4222-8222-222222222222",
+  });
+  assertEquals(request.images?.length, 2);
+  assertEquals(request.projectId, "22222222-2222-4222-8222-222222222222");
+});
+
+Deno.test("rejects too many, mixed, or non-Gemini multi-image payloads", () => {
+  const image = { base64Data: "AQID", mimeType: "image/jpeg" };
+  for (const input of [
+    { provider: "gemini", model: "gemini-2.0-flash", prompt: "x", images: Array(11).fill(image) },
+    { provider: "gemini", model: "gemini-2.0-flash", prompt: "x", images: [image], base64Data: "AQID", mimeType: "image/jpeg" },
+    { provider: "groq", model: "llama-3.3-70b-versatile", prompt: "x", images: [image] },
+    { provider: "gemini", model: "gemini-2.0-flash", prompt: "x", images: [{ base64Data: "bad!", mimeType: "image/jpeg" }] },
+  ]) {
+    try {
+      validateAIRequest(input);
+      throw new Error("Expected multi-image validation to fail");
+    } catch (error) {
+      if (!(error instanceof Error) || error.message === "Expected multi-image validation to fail") throw error;
+      assertEquals(error.message, "INVALID_IMAGE");
+    }
+  }
+});
+
 Deno.test("bounded JSON reader rejects a body above the byte limit", async () => {
   const req = new Request("https://example.invalid", {
     method: "POST",
