@@ -371,12 +371,35 @@ export class PipelineSupabaseService {
     await this.initialize();
 
     try {
+      const threshold = options.threshold ?? 0.7;
+      const limit = options.limit ?? 5;
+      const documentIds = options.documentIds ?? null;
+
+      // Mirror the database RPC contract before making a network request.
+      if (!Array.isArray(queryEmbedding) ||
+          queryEmbedding.length !== 384 ||
+          !queryEmbedding.every(Number.isFinite)) {
+        throw new TypeError('queryEmbedding must contain 384 finite numbers');
+      }
+      if (!Number.isFinite(threshold) || threshold < 0 || threshold > 1) {
+        throw new RangeError('threshold must be between 0 and 1');
+      }
+      if (!Number.isInteger(limit) || limit < 1 || limit > 50) {
+        throw new RangeError('limit must be an integer between 1 and 50');
+      }
+      if (documentIds !== null &&
+          (!Array.isArray(documentIds) ||
+           documentIds.length > 1000 ||
+           !documentIds.every(id => typeof id === 'string'))) {
+        throw new TypeError('documentIds must be an array of at most 1000 IDs');
+      }
+
       const { data, error } = await supabase
         .rpc('match_documents', {
           query_embedding: queryEmbedding,
-          match_threshold: options.threshold || 0.7,
-          match_count: options.limit || 5,
-          filter_document_ids: options.documentIds || null
+          match_threshold: threshold,
+          match_count: limit,
+          filter_document_ids: documentIds
         });
 
       if (error) throw error;
