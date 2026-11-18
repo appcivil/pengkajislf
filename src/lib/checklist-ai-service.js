@@ -412,7 +412,7 @@ export async function runBatchSmartEngine(kategori) {
       const imageData = await urlToImageData(item.foto_urls[0]);
       if (!imageData) continue;
 
-      const result = await analyzeChecklistImage([imageData], item.nama, item.kategori, item.aspek);
+      const result = await analyzeChecklistImage([imageData], item.nama, item.kategori, item.aspek, { projectId: currentProyekId });
       console.log(`[AI Engine] Result for ${item.kode}:`, result);
       
       const currentItem = store.get().checklist.dataMap[item.kode] || { kode: item.kode };
@@ -517,7 +517,7 @@ export async function fetchItemData(kode, nama) {
        try {
            const imageData = await urlToImageData(item.foto_urls[0]);
            if (imageData) {
-               const result = await analyzeChecklistImage([imageData], nama, item.kategori, item.aspek);
+               const result = await analyzeChecklistImage([imageData], nama, item.kategori, item.aspek, { projectId: currentProyekId });
                console.log(`[AI Vision] Result for ${kode}:`, result);
                
                const state = store.get().checklist;
@@ -583,7 +583,7 @@ export async function fetchItemData(kode, nama) {
                showInfo(`Mengekstrak temuan dari berkas Drive...`);
                const imageData = await urlToImageData(firstImg.url);
                if (imageData) {
-                  const res = await analyzeChecklistImage([imageData], nama, updatedItem.kategori, updatedItem.aspek);
+                  const res = await analyzeChecklistImage([imageData], nama, updatedItem.kategori, updatedItem.aspek, { projectId: currentProyekId });
                   console.log(`[AI Drive] Result for ${kode}:`, res);
                   
                   const refreshedState = store.get().checklist;
@@ -724,7 +724,7 @@ export async function autoSyncProjectData() {
           const imageData = await urlToImageData(task.url);
           if (imageData) {
             const currentItem = store.get().checklist.dataMap[task.kode] || { kode: task.kode };
-            const result = await analyzeChecklistImage([imageData], task.nama, currentItem.kategori || 'teknis', currentItem.aspek || 'Teknis');
+            const result = await analyzeChecklistImage([imageData], task.nama, currentItem.kategori || 'teknis', currentItem.aspek || 'Teknis', { projectId: currentProyekId });
             const state = store.get().checklist;
             const current = state.dataMap[task.kode] || { kode: task.kode };
             if (current) {
