@@ -5,6 +5,9 @@ begin;
 
 do $privileges$
 begin
+  if not has_schema_privilege('authenticated', 'private', 'USAGE') then
+    raise exception 'authenticated must retain private schema usage for tenant RLS helpers';
+  end if;
   if has_table_privilege('authenticated', 'private.ai_quota_policies', 'SELECT')
      or has_table_privilege('authenticated', 'private.ai_usage_buckets', 'SELECT')
      or has_table_privilege('authenticated', 'private.ai_usage_reservations', 'SELECT')
