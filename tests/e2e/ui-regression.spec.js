@@ -143,7 +143,7 @@ test('dialog and toast can be opened and dismissed accessibly', async ({ page })
     const { toast } = await import('/src/components/toast.js');
     toast('Notifikasi uji', 'success', 0);
   });
-  const notification = page.getByRole('status').filter({ hasText: 'Notifikasi uji' });
+  const notification = page.locator('.toast.toast-success').filter({ hasText: 'Notifikasi uji' });
   await expect(notification).toBeVisible();
   await notification.getByRole('button', { name: 'Tutup notifikasi' }).click();
   // Toast menjalankan animasi keluar 400 ms sebelum node dilepas dari DOM.
