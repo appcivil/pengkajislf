@@ -4098,3 +4098,306 @@ body.dark #dashboard-page .grid-3-col > .card-quartz {
   }
 }
 
+/* Phase 7 — Sistem visual bersama untuk seluruh modul pemeriksaan teknis */
+:is(
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #water-inspection-page,
+  #wastewater-inspection-page,
+  #stormwater-page,
+  #sanitation-inspection-page,
+  #environmental-inspection-page
+) {
+  --inspection-radius: 18px;
+  --inspection-gap: 16px;
+  --inspection-border: var(--border-default);
+  width: min(100%, 1480px);
+  min-width: 0;
+  margin-inline: auto;
+  padding: clamp(14px,2vw,28px) !important;
+  color: var(--text-primary);
+}
+:is(
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #water-inspection-page,
+  #wastewater-inspection-page,
+  #stormwater-page,
+  #sanitation-inspection-page,
+  #environmental-inspection-page
+) > .card-quartz,
+:is(
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #water-inspection-page,
+  #wastewater-inspection-page,
+  #stormwater-page,
+  #sanitation-inspection-page,
+  #environmental-inspection-page
+) > [id$="-main-card"] {
+  border: 1px solid var(--inspection-border) !important;
+  border-radius: var(--inspection-radius) !important;
+  background: var(--bg-card) !important;
+  box-shadow: var(--shadow-sm);
+}
+:is(
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #water-inspection-page,
+  #wastewater-inspection-page,
+  #stormwater-page,
+  #sanitation-inspection-page,
+  #environmental-inspection-page
+) :is(h1,h2,h3,h4,.page-title,.card-title) {
+  color: var(--text-primary) !important;
+  letter-spacing: -.025em;
+}
+:is(
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #water-inspection-page,
+  #wastewater-inspection-page,
+  #stormwater-page,
+  #sanitation-inspection-page,
+  #environmental-inspection-page
+) :is(.form-group,.form-field) {
+  min-width: 0;
+  margin-bottom: 14px;
+}
+:is(
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #water-inspection-page,
+  #wastewater-inspection-page,
+  #stormwater-page,
+  #sanitation-inspection-page,
+  #environmental-inspection-page
+) :is(.form-label,label) {
+  color: var(--text-secondary);
+  font-size: .78rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+:is(
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #water-inspection-page,
+  #wastewater-inspection-page,
+  #stormwater-page,
+  #sanitation-inspection-page,
+  #environmental-inspection-page
+) :is(.form-control,.form-input,select,textarea,input:not([type="checkbox"]):not([type="radio"])) {
+  max-width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  box-shadow: none;
+  transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+:is(
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #water-inspection-page,
+  #wastewater-inspection-page,
+  #stormwater-page,
+  #sanitation-inspection-page,
+  #environmental-inspection-page
+) :is(.form-control,.form-input,select,textarea,input):focus-visible {
+  border-color: var(--brand-400);
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(22,119,237,.14);
+}
+:is(
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #water-inspection-page,
+  #wastewater-inspection-page,
+  #stormwater-page,
+  #sanitation-inspection-page,
+  #environmental-inspection-page
+) :is(table,.table,.data-table) {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--text-primary);
+}
+:is(
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #water-inspection-page,
+  #wastewater-inspection-page,
+  #stormwater-page,
+  #sanitation-inspection-page,
+  #environmental-inspection-page
+) :is(th,td) {
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: middle;
+}
+:is(
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #water-inspection-page,
+  #wastewater-inspection-page,
+  #stormwater-page,
+  #sanitation-inspection-page,
+  #environmental-inspection-page
+) th {
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  font-size: .7rem;
+  font-weight: 750;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+:is(
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #water-inspection-page,
+  #wastewater-inspection-page,
+  #stormwater-page,
+  #sanitation-inspection-page,
+  #environmental-inspection-page
+) :is(.card-quartz,.inspection-card,.panel-card) {
+  min-width: 0;
+  border-color: var(--border-default);
+  border-radius: 15px;
+}
+:is(
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #water-inspection-page,
+  #wastewater-inspection-page,
+  #stormwater-page,
+  #sanitation-inspection-page,
+  #environmental-inspection-page
+) :is(.arch-tab,.electrical-tab,.fire-tab,.lps-tab,.water-tab,.wastewater-tab-item,.storm-tab,.sanitation-tab,.env-tab,[data-tab]) {
+  min-height: 40px;
+  border-radius: 10px;
+  font-weight: 650;
+  transition: background .16s ease, color .16s ease, border-color .16s ease;
+}
+:is(
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #water-inspection-page,
+  #wastewater-inspection-page,
+  #stormwater-page,
+  #sanitation-inspection-page,
+  #environmental-inspection-page
+) :is(button,a,[role="button"]):focus-visible {
+  outline: 3px solid rgba(22,119,237,.25);
+  outline-offset: 2px;
+}
+:is(
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #water-inspection-page,
+  #wastewater-inspection-page,
+  #stormwater-page,
+  #sanitation-inspection-page,
+  #environmental-inspection-page
+) :is(.grid-2-col,.grid-3-col,.grid-4-col) {
+  grid-template-columns: repeat(auto-fit,minmax(min(100%,260px),1fr));
+  gap: var(--inspection-gap);
+}
+@media (max-width: 720px) {
+  :is(
+    #architectural-inspection-page,
+    #electrical-inspection-page,
+    #fire-inspection-page,
+    #lps-inspection-page,
+    #water-inspection-page,
+    #wastewater-inspection-page,
+    #stormwater-page,
+    #sanitation-inspection-page,
+    #environmental-inspection-page
+  ) {
+    padding: 12px !important;
+  }
+  :is(
+    #architectural-inspection-page,
+    #electrical-inspection-page,
+    #fire-inspection-page,
+    #lps-inspection-page,
+    #water-inspection-page,
+    #wastewater-inspection-page,
+    #stormwater-page,
+    #sanitation-inspection-page,
+    #environmental-inspection-page
+  ) :is(.table-responsive,.table-wrap,.overflow-x-auto) {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  :is(
+    #architectural-inspection-page,
+    #electrical-inspection-page,
+    #fire-inspection-page,
+    #lps-inspection-page,
+    #water-inspection-page,
+    #wastewater-inspection-page,
+    #stormwater-page,
+    #sanitation-inspection-page,
+    #environmental-inspection-page
+  ) :is(th,td) { padding: 9px 10px; white-space: nowrap; }
+}
+[data-theme="dark"] :is(
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #water-inspection-page,
+  #wastewater-inspection-page,
+  #stormwater-page,
+  #sanitation-inspection-page,
+  #environmental-inspection-page
+) > .card-quartz,
+[data-theme="dark"] :is(
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #lps-inspection-page,
+  #water-inspection-page,
+  #wastewater-inspection-page,
+  #stormwater-page,
+  #sanitation-inspection-page,
+  #environmental-inspection-page
+) > [id$="-main-card"] {
+  background: var(--bg-card) !important;
+  border-color: var(--border-default) !important;
+}
+
