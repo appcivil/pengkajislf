@@ -7,7 +7,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { authenticateProject, readJsonBody } from "../_shared/tenant-auth.ts";
-import { reserveAIUsage, finalizeAIUsage, estimateTextTokens, type AIQuotaReservation } from "../_shared/ai-quota.ts";
+import { reserveAIUsage, finalizeAIUsage, estimateTextTokens, extractProviderUsageTokens, type AIQuotaReservation } from "../_shared/ai-quota.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -55,6 +55,7 @@ serve(async (req: Request) => {
   }
 
   let quotaReservation: AIQuotaReservation | null = null;
+  let actualTokens: number | null = null;
   try {
     const parsedBody = await readJsonBody(req, 12 * 1024 * 1024);
     if (!parsedBody.ok) {
@@ -213,6 +214,8 @@ Output WAJIB dalam format JSON:
           }
 
           const geminiData = await geminiRes.json();
+          const photoTokens = extractProviderUsageTokens(geminiData);
+          if (photoTokens !== null) actualTokens = (actualTokens ?? 0) + photoTokens;
           const resultText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
           
           // Extract JSON
@@ -280,7 +283,7 @@ Output WAJIB dalam format JSON:
       ? results.reduce((sum, r) => sum + r.confidence, 0) / results.length 
       : 0;
 
-    await finalizeAIUsage(quotaReservation, quotaReservation.reservedTokens);
+    await finalizeAIUsage(quotaReservation, actualTokens ?? quotaReservation.reservedTokens);
 
     return new Response(JSON.stringify({
       success: true,
