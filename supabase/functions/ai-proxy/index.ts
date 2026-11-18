@@ -7,7 +7,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { readJsonBody, validateAIRequest, publicError, canExecuteProjectAI, type ValidatedAIRequest } from "./security.ts";
+import { readJsonBody, validateAIRequest, publicError, canExecuteProjectAI, canExecuteUnscopedAI, type ValidatedAIRequest } from "./security.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -100,11 +100,12 @@ serve(async (req: Request) => {
 
     // A project context is an authorization boundary, not trusted client metadata.
     // Re-check it with the caller's JWT so Postgres RLS decides membership.
+    const projectClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+
     if (projectId) {
-      const projectClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: { persistSession: false, autoRefreshToken: false },
-        global: { headers: { Authorization: `Bearer ${token}` } },
-      });
       const { data: project, error: projectError } = await projectClient
         .from("proyek")
         .select("id, organization_id")
@@ -130,6 +131,20 @@ serve(async (req: Request) => {
 
       if (membershipError || !membership || !canExecuteProjectAI(membership.role)) {
         return new Response(JSON.stringify({ error: "Role Anda hanya memiliki akses baca atau tidak memiliki izin menjalankan AI pada proyek ini." }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } else {
+      // Tenant users must supply projectId so role checks are unambiguous.
+      // Only authenticated users with no tenant membership may use unscoped AI.
+      const { data: memberships, error: membershipsError } = await projectClient
+        .from("organization_members")
+        .select("role")
+        .eq("user_id", user.id);
+
+      if (membershipsError || !canExecuteUnscopedAI(memberships ?? [])) {
+        return new Response(JSON.stringify({ error: "ID proyek wajib untuk pengguna yang tergabung dalam organisasi. Pilih proyek agar izin AI dapat diverifikasi." }), {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });

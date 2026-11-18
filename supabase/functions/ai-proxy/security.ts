@@ -174,3 +174,9 @@ export function publicError(error: unknown): { status: number; message: string }
 export function canExecuteProjectAI(role: unknown): boolean {
   return role === "owner" || role === "admin" || role === "member";
 }
+
+
+/** Tenant members must provide project context so their role can be checked. */
+export function canExecuteUnscopedAI(memberships: unknown): boolean {
+  return Array.isArray(memberships) && memberships.length === 0;
+}
