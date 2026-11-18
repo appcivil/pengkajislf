@@ -115,7 +115,7 @@ async function callGeminiVision(filesData, prompt, projectId) {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${session.access_token}`,
-      'apikey': env.VITE_SUPABASE_ANON_KEY || ''
+      'apikey': env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || env.VITE_SUPABASE_ANON_KEY || ''
     },
     body: JSON.stringify({
       provider: 'gemini', model: 'gemini-2.0-flash', prompt, images, projectId,
