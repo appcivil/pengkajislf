@@ -38,6 +38,8 @@ jobs:
         run: supabase start
       - name: Replay all committed migrations on clean local database
         run: supabase db reset
+      - name: Bootstrap legacy SmartAI schema and tenant policies for integration tests
+        run: psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f supabase/tests/bootstrap-smartai-ci.sql
       - name: Enforce tenant isolation and viewer read-only policies
         run: psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f supabase/tests/tenant-isolation-ci.sql
       - name: Stop local Supabase stack
