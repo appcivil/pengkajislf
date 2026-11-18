@@ -986,6 +986,7 @@ function getKategori(score) {
 
 // ── Single Item Analysis ─────────────────────────────────────
 export async function runSingleItemAnalysis(item, aspek, options = {}) {
+  if (!options.projectId) throw new Error('ID proyek wajib untuk analisis item SLF.');
   const {
     roleTitle = 'Digital Technical Consultant SLF',
     standard = 'NSPK & PP No. 16 Tahun 2021',
@@ -1125,6 +1126,7 @@ export async function runOCRAnalysis(base64Data, mimeType) {
  */
 export async function runBatchPhotoAnalysis(photoArray, checklistContext = {}) {
   const projectId = checklistContext.projectId;
+  if (!projectId) throw new Error('ID proyek wajib untuk analisis foto checklist.');
   // Batch optimize untuk hemat quota
   const requests = photoArray.map((photo, idx) => ({
     id: idx,
@@ -1189,6 +1191,7 @@ Output JSON:
  */
 export async function generateDaftarSimak(proyekData, checklistTemplate) {
   const projectId = proyekData?.id || proyekData?.proyek_id;
+  if (!projectId) throw new Error('ID proyek wajib untuk membuat Daftar Simak AI.');
   const selection = GEMINI_ROUTER.selectModel({ 
     taskType: 'narrative',
     fastMode: true // Use Flash Lite for speed
@@ -1364,6 +1367,7 @@ async function fetchMistral(model, prompt) {
 }
 
 export async function runFinalConclusion(skorMap, rekomendasi_gabungan, options = {}) {
+  if (!options.projectId) throw new Error('ID proyek wajib untuk kesimpulan AI.');
   const systemPrompt = `Anda adalah Ketua Tim Konsultan Pengkaji SLF. 
 Berikan ringkasan eksekutif strategis berdasarkan seluruh aspek pengkajian teknis.
 Skor per aspek: ${JSON.stringify(skorMap)}
@@ -1381,6 +1385,7 @@ Output WAJIB JSON:
  */
 export async function getMultiAgentConsensus(checklist, proyek, analisisSummary) {
   const projectId = proyek?.id;
+  if (!projectId) throw new Error('ID proyek wajib untuk konsensus Multi-Agent.');
   const anomalies = checklist.filter(i => i.status !== 'baik' && i.status !== 'ada_sesuai' && i.status !== 'tidak_wajib');
   const totalCount = checklist.length;
   const goodCount = totalCount - anomalies.length;
