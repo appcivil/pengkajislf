@@ -11,7 +11,6 @@ const env = import.meta.env;
 import { SLF_PROMPT_LIBRARY } from './slf-prompt-library.js';
 import { getPromptConfig, injectPromptConfig } from './prompt-config-service.js';
 import { getSettings } from './settings.js';
-import { generateOllamaCompletion } from './ollama-service.js';
 import { supabase } from './supabase.js';
 
 // ── Edge Function Proxy URL ───────────────────────────────────
@@ -847,12 +846,7 @@ export async function runSingleItemAnalysis(item, aspek, options = {}) {
       const failoverChain = [];
       const seen = new Set();
 
-      // Ollama di awal jika diaktifkan
-      if (settings.ai?.ollamaEnabled && settings.ai?.ollamaModel) {
-        const ollamaModel = { ...MODELS.OLLAMA, id: settings.ai.ollamaModel, name: `Ollama (${settings.ai.ollamaModel})` };
-        failoverChain.push(ollamaModel);
-        seen.add(ollamaModel.name);
-      }
+      // Local Ollama is not exposed through the authenticated ai-proxy and is intentionally not routed from the browser.
 
       for (const m of order) {
         if (!m || seen.has(m.name) || blacklistedModels.has(m.name)) continue;
