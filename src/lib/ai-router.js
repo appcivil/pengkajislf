@@ -1123,6 +1123,7 @@ export async function runOCRAnalysis(base64Data, mimeType) {
  * Menganalisis banyak foto sekaligus untuk mapping ke checklist
  */
 export async function runBatchPhotoAnalysis(photoArray, checklistContext = {}) {
+  const projectId = checklistContext.projectId;
   // Batch optimize untuk hemat quota
   const requests = photoArray.map((photo, idx) => ({
     id: idx,
@@ -1160,7 +1161,8 @@ Output JSON:
       const selection = GEMINI_ROUTER.selectModel({ hasVision: true, taskType: 'vision' });
       const resText = await callAI(selection.model, prompt, { 
         base64Data: req.photo.base64, 
-        mimeType: req.photo.mimeType 
+        mimeType: req.photo.mimeType,
+        projectId
       });
       results.push(parseAIJson(resText));
     } catch (err) {
@@ -1185,6 +1187,7 @@ Output JSON:
  * Menggunakan Gemini Flash untuk generate checklist otomatis dari data proyek
  */
 export async function generateDaftarSimak(proyekData, checklistTemplate) {
+  const projectId = proyekData?.id || proyekData?.proyek_id;
   const selection = GEMINI_ROUTER.selectModel({ 
     taskType: 'narrative',
     fastMode: true // Use Flash Lite for speed
@@ -1213,7 +1216,7 @@ PENTING: Gunakan Flash untuk hemat quota. Prioritaskan akurasi pada item struktu
 `;
 
   try {
-    const resText = await callAI(selection.model, prompt);
+    const resText = await callAI(selection.model, prompt, { projectId });
     const parsed = parseAIJson(resText);
     return {
       items: Array.isArray(parsed) ? parsed : [],
@@ -1359,7 +1362,7 @@ async function fetchMistral(model, prompt) {
   return data.choices?.[0]?.message?.content ?? '{}';
 }
 
-export async function runFinalConclusion(skorMap, rekomendasi_gabungan) {
+export async function runFinalConclusion(skorMap, rekomendasi_gabungan, options = {}) {
   const systemPrompt = `Anda adalah Ketua Tim Konsultan Pengkaji SLF. 
 Berikan ringkasan eksekutif strategis berdasarkan seluruh aspek pengkajian teknis.
 Skor per aspek: ${JSON.stringify(skorMap)}
@@ -1368,7 +1371,7 @@ Rekomendasi Gabungan: ${JSON.stringify(rekomendasi_gabungan?.slice(0, 10))}
 Output WAJIB JSON:
 { "kesimpulan_eksekutif": "...", "status_final": "LAIK_FUNGSI|LAIK_BERSYARAT|TIDAK_LAIK", "risk_score": 0-100 }`;
 
-  const aiResultText = await safeCall(async () => callAI(MODELS.GEMINI, systemPrompt));
+  const aiResultText = await safeCall(async () => callAI(MODELS.GEMINI, systemPrompt, { projectId: options.projectId }));
   return parseAIJson(aiResultText);
 }
 
@@ -1376,6 +1379,7 @@ Output WAJIB JSON:
  * Multi-Agent Consensus
  */
 export async function getMultiAgentConsensus(checklist, proyek, analisisSummary) {
+  const projectId = proyek?.id;
   const anomalies = checklist.filter(i => i.status !== 'baik' && i.status !== 'ada_sesuai' && i.status !== 'tidak_wajib');
   const totalCount = checklist.length;
   const goodCount = totalCount - anomalies.length;
@@ -1397,7 +1401,7 @@ export async function getMultiAgentConsensus(checklist, proyek, analisisSummary)
   const findings = {};
   for (const role of ['ARSITEK', 'STRUKTUR', 'MEP', 'LEGAL']) {
     const prompt = `${EXPERT_PERSONAS[role]}\n\nData lapangan:\n${dataBrief}\n\nBerikan analisis mendalam sesuai spesialisasi Anda. Terangkan risiko dan rekomendasi perbaikan.`;
-    findings[role] = await callAI(MODELS.GEMINI, prompt);
+    findings[role] = await callAI(MODELS.GEMINI, prompt, { projectId });
   }
 
   const masterPrompt = `
@@ -1418,7 +1422,7 @@ export async function getMultiAgentConsensus(checklist, proyek, analisisSummary)
     }
   `;
 
-  const finalResultBlob = await callAI(MODELS.GEMINI, masterPrompt);
+  const finalResultBlob = await callAI(MODELS.GEMINI, masterPrompt, { projectId });
   return parseAIJson(finalResultBlob);
 }
 
