@@ -7,7 +7,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { readJsonBody, validateAIRequest, publicError, type ValidatedAIRequest } from "./security.ts";
+import { readJsonBody, validateAIRequest, publicError, canExecuteProjectAI, type ValidatedAIRequest } from "./security.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -107,12 +107,29 @@ serve(async (req: Request) => {
       });
       const { data: project, error: projectError } = await projectClient
         .from("proyek")
-        .select("id")
+        .select("id, organization_id")
         .eq("id", projectId)
         .maybeSingle();
 
       if (projectError || !project) {
         return new Response(JSON.stringify({ error: "Akses ke proyek tidak diizinkan." }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // RLS visibility only proves read access. AI execution is a separate
+      // capability: owner/admin/member are allowed; viewer is read-only.
+      // Platform admins receive no implicit cross-tenant bypass here.
+      const { data: membership, error: membershipError } = await projectClient
+        .from("organization_members")
+        .select("role")
+        .eq("organization_id", project.organization_id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (membershipError || !membership || !canExecuteProjectAI(membership.role)) {
+        return new Response(JSON.stringify({ error: "Role Anda hanya memiliki akses baca atau tidak memiliki izin menjalankan AI pada proyek ini." }), {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
