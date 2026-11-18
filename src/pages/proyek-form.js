@@ -511,20 +511,24 @@ window._handleOCRFile = async (event) => {
     const ocrResult = file.type === 'application/pdf'
       ? await extractTextFromPDF(file)
       : await extractTextFromImage(file);
-    if (!ocrResult.success || !ocrResult.text?.trim()) {
+    const ocrText = file.type === 'application/pdf'
+      ? ocrResult.fullText
+      : ocrResult.text;
+    if (!ocrResult.success || !ocrText?.trim()) {
       throw new Error(ocrResult.error || 'Teks dokumen tidak berhasil diekstrak.');
     }
-    const parsed = await parseIMBDocument(ocrResult.text, false);
+    const parsed = await parseIMBDocument(ocrText, false);
+    const extracted = parsed.raw || {};
     const result = {
-      pemilik: parsed.nama_pemilik,
-      alamat: parsed.alamat,
-      luas_bangunan: parsed.luas_bangunan,
-      jumlah_lantai: parsed.jumlah_lantai,
-      nomor_pbg: parsed.nomor_imb,
-      gsb: parsed.gsb,
-      kdb: parsed.kdb,
-      klb: parsed.klb,
-      kdh: parsed.kdh
+      pemilik: extracted.nama_pemilik,
+      alamat: extracted.alamat,
+      luas_bangunan: extracted.luas_bangunan,
+      jumlah_lantai: extracted.jumlah_lantai,
+      nomor_pbg: extracted.nomor_pbg || extracted.nomor_imb,
+      gsb: extracted.gsb,
+      kdb: extracted.kdb,
+      klb: extracted.klb,
+      kdh: extracted.kdh
     };
 
     if (progress) progress.style.width = '100%';
