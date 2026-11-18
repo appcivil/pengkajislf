@@ -84,7 +84,7 @@ Tidak boleh mengaktifkan batas numerik default secara diam-diam karena dapat men
 Dokumen ini hanya rancangan. Belum membuat tabel, fungsi, cron, secret, atau mengubah Supabase. Implementasi baru dilakukan setelah nilai batas dan perilaku paket gratis disetujui serta diuji pada database lokal CI.
 
 
-## Matriks role untuk operasi AI — usulan, belum disetujui
+## Matriks role untuk operasi AI — disetujui 2026-11-18
 
 Akses baca proyek melalui RLS tidak otomatis memberikan hak menjalankan AI. Sebelum implementasi, kebijakan role harus menjadi keputusan produk tersendiri.
 
@@ -96,11 +96,11 @@ Akses baca proyek melalui RLS tidak otomatis memberikan hak menjalankan AI. Sebe
 | viewer | sesuai RLS | usulan: tidak | tidak |
 | platform admin | dukungan lintas tenant hanya dengan otorisasi eksplisit dan audit | tidak otomatis | tidak otomatis |
 
-**Belum diputuskan:** apakah member boleh menjalankan semua jenis AI atau hanya modul tertentu; apakah hasil AI dapat disimpan oleh member; apakah ada approval owner/admin untuk operasi mahal atau penerbitan kesimpulan final. Jangan menerapkan matriks ini ke produksi sebelum owner menyetujuinya.
+**Keputusan yang telah disetujui:** owner/admin/member boleh menjalankan AI proyek; viewer hanya membaca dan tidak boleh menjalankan AI atau mengubah hasil; platform admin tidak memperoleh akses lintas tenant otomatis. Hak simpan hasil untuk member mengikuti izin modul dan RLS yang berlaku. Approval untuk operasi mahal belum diputuskan dan tetap menunggu kebijakan kuota.
 
 ### Pengujian role wajib sebelum implementasi
 
-- owner/admin/member yang sah dapat menjalankan permintaan proyek sesuai kebijakan final.
+- owner/admin/member yang sah dapat menjalankan permintaan proyek.
 - viewer dapat membaca proyek sesuai RLS, tetapi permintaan AI ditolak bila kebijakan final menetapkan read-only.
 - anggota tenant A tidak dapat meminta AI dengan projectId tenant B.
 - user yang sudah dikeluarkan dari organisasi langsung ditolak walaupun masih memiliki sesi login.
