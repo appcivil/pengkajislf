@@ -8,7 +8,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { readJsonBody, validateAIRequest, publicError, canExecuteProjectAI, canExecuteUnscopedAI, type ValidatedAIRequest } from "./security.ts";
-import { reserveAIUsage, finalizeAIUsage, estimateTextTokens, type AIQuotaReservation } from "../_shared/ai-quota.ts";
+import { reserveAIUsage, finalizeAIUsage, estimateTextTokens, extractProviderUsageTokens, type AIQuotaReservation } from "../_shared/ai-quota.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -37,6 +37,7 @@ serve(async (req: Request) => {
   }
 
   let quotaReservation: AIQuotaReservation | null = null;
+  let actualTokens: number | null = null;
   try {
     // ── OTORISASI ───────────────────────────────────────────────
     // Fungsi ini memegang kunci API berbayar, jadi pemanggilnya WAJIB
@@ -206,6 +207,7 @@ serve(async (req: Request) => {
           }
         );
         const geminiData = await geminiRes.json();
+        actualTokens = extractProviderUsageTokens(geminiData);
         if (!geminiRes.ok) throw new Error(`Gemini Error ${geminiRes.status}: ${JSON.stringify(geminiData)}`);
         result = geminiData.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
         break;
@@ -241,6 +243,7 @@ serve(async (req: Request) => {
           body: JSON.stringify({ model, messages, temperature, max_tokens: maxTokens }),
         });
         const oaiData = await oaiRes.json();
+        actualTokens = extractProviderUsageTokens(oaiData);
         if (!oaiRes.ok) throw new Error(`${provider} Error ${oaiRes.status}: ${JSON.stringify(oaiData)}`);
         result = oaiData.choices?.[0]?.message?.content ?? "{}";
         break;
@@ -265,6 +268,7 @@ serve(async (req: Request) => {
           }),
         });
         const claudeData = await claudeRes.json();
+        actualTokens = extractProviderUsageTokens(claudeData);
         if (!claudeRes.ok) throw new Error(`Claude Error ${claudeRes.status}: ${JSON.stringify(claudeData)}`);
         result = claudeData.content?.[0]?.text ?? "{}";
         break;
@@ -290,6 +294,7 @@ serve(async (req: Request) => {
           }),
         });
         const orData = await orRes.json();
+        actualTokens = extractProviderUsageTokens(orData);
         if (!orRes.ok) throw new Error(`OpenRouter Error ${orRes.status}: ${JSON.stringify(orData)}`);
         result = orData.choices?.[0]?.message?.content ?? "{}";
         break;
@@ -310,6 +315,7 @@ serve(async (req: Request) => {
           }),
         });
         const mistralData = await mistralRes.json();
+        actualTokens = extractProviderUsageTokens(mistralData);
         if (!mistralRes.ok) throw new Error(`Mistral Error ${mistralRes.status}: ${JSON.stringify(mistralData)}`);
         result = mistralData.choices?.[0]?.message?.content ?? "{}";
         break;
@@ -332,6 +338,7 @@ serve(async (req: Request) => {
           }),
         });
         const hfData = await hfRes.json();
+        actualTokens = extractProviderUsageTokens(hfData);
         if (!hfRes.ok) throw new Error(`HuggingFace Error ${hfRes.status}: ${JSON.stringify(hfData)}`);
         const hfText = Array.isArray(hfData) ? hfData[0]?.generated_text : hfData?.generated_text ?? "";
         result = hfText.replace(/<thought>[\s\S]*?<\/thought>/g, "").trim();
@@ -346,7 +353,7 @@ serve(async (req: Request) => {
     }
 
     // Until provider adapters expose normalized usage metadata, account the full reservation conservatively.
-    await finalizeAIUsage(quotaReservation, quotaReservation.reservedTokens);
+    await finalizeAIUsage(quotaReservation, actualTokens ?? quotaReservation.reservedTokens);
 
     return new Response(JSON.stringify({ result, provider, model }), {
       status: 200,
