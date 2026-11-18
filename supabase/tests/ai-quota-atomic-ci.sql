@@ -55,10 +55,14 @@ declare
   v_after_finalize record;
   v_after_release record;
   v_expiring record;
+  v_org_b_first record;
+  v_org_b_second record;
+  v_org_b_denied record;
   v_user_a uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
   v_user_b uuid := 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
   v_user_c uuid := 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
   v_org uuid := 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+  v_org_b uuid := 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
 begin
   select * into v_first
   from public.ai_quota_reserve(v_user_a, v_org, 'quota-test-user-a-1', 600, 900);
@@ -78,6 +82,27 @@ begin
   from public.ai_quota_reserve(v_user_c, v_org, 'quota-test-user-c-1', 100, 900);
   if v_denied_org.allowed or v_denied_org.reason <> 'request_quota_exceeded' then
     raise exception 'shared organization request cap must reject third request';
+  end if;
+
+  -- A full quota in organization A must not consume organization B capacity.
+  select * into v_org_b_first
+  from public.ai_quota_reserve(v_user_c, v_org_b, 'quota-test-user-c-org-b-1', 100, 900);
+  if not v_org_b_first.allowed then
+    raise exception 'organization B must have independent quota capacity: %', v_org_b_first.reason;
+  end if;
+  select * into v_org_b_second
+  from public.ai_quota_reserve(v_user_c, v_org_b, 'quota-test-user-c-org-b-2', 100, 900);
+  if not v_org_b_second.allowed then
+    raise exception 'organization B second request should fit its own quota: %', v_org_b_second.reason;
+  end if;
+  select * into v_org_b_denied
+  from public.ai_quota_reserve(v_user_c, v_org_b, 'quota-test-user-c-org-b-3', 100, 900);
+  if v_org_b_denied.allowed or v_org_b_denied.reason <> 'request_quota_exceeded' then
+    raise exception 'organization B must enforce its own independent request cap';
+  end if;
+  if not public.ai_quota_release(v_org_b_first.reservation_id)
+     or not public.ai_quota_release(v_org_b_second.reservation_id) then
+    raise exception 'organization B test reservations should release cleanly';
   end if;
 
   select * into v_denied_user
@@ -179,7 +204,8 @@ where subject_id in (
   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
   'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
-  'dddddddd-dddd-4ddd-8ddd-dddddddddddd'
+  'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'
 );
 update private.ai_quota_policies
 set max_requests = null, max_tokens = null, enabled = false, updated_at = now()
