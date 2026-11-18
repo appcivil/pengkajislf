@@ -361,7 +361,11 @@ export class SmartAIIntegration {
     /**
      * OCR Analysis dengan Deep Reasoning
      */
-    async runOCRWithDeepReasoning(base64Data, mimeType) {
+    async runOCRWithDeepReasoning(base64Data, mimeType, options = {}) {
+        const projectId = options.projectId;
+        if (typeof projectId !== 'string' || !projectId.trim()) {
+            throw new Error('ID proyek wajib untuk OCR Deep Reasoning.');
+        }
         if (!this.isInitialized) {
             await this.initialize();
         }
@@ -369,7 +373,7 @@ export class SmartAIIntegration {
         console.log('[SmartAI Integration] OCR Analysis dengan Deep Reasoning');
 
         // Jalankan OCR yang sudah ada
-        const ocrResult = await runOCRAnalysis(base64Data, mimeType);
+        const ocrResult = await runOCRAnalysis(base64Data, mimeType, { projectId });
 
         // Validate dengan rules
         const validatedResult = this.ruleEngine.validateOCRResult(ocrResult);
