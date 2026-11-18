@@ -6,14 +6,41 @@ export type JsonBodyResult =
 
 export async function readJsonBody(req: Request, maxBytes: number): Promise<JsonBodyResult> {
   const declaredLength = Number(req.headers.get("content-length") || 0);
-  if (declaredLength > maxBytes) return { ok: false, status: 413, error: "Request body too large" };
-
-  const raw = await req.text();
-  if (new TextEncoder().encode(raw).byteLength > maxBytes) {
+  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
     return { ok: false, status: 413, error: "Request body too large" };
   }
+
+  if (!req.body) return { ok: false, status: 400, error: "Invalid JSON body" };
+
+  // Enforce the limit while streaming so chunked/incorrect Content-Length
+  // requests cannot force the function to buffer an unbounded body.
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
   try {
-    return { ok: true, data: JSON.parse(raw) };
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > maxBytes) {
+        await reader.cancel();
+        return { ok: false, status: 413, error: "Request body too large" };
+      }
+      chunks.push(value);
+    }
+  } catch {
+    return { ok: false, status: 400, error: "Unable to read request body" };
+  }
+
+  const bytes = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  try {
+    return { ok: true, data: JSON.parse(new TextDecoder().decode(bytes)) };
   } catch {
     return { ok: false, status: 400, error: "Invalid JSON body" };
   }
@@ -24,7 +51,7 @@ export type ProjectAuthResult =
   | { ok: false; status: number; error: string };
 
 export async function authenticateProject(req: Request, projectId: unknown): Promise<ProjectAuthResult> {
-  const match = (req.headers.get("authorization") || "").match(/^Bearer\s+(.+)$/i);
+  const match = (req.headers.get("authorization") || "").match(/^Bearer\\s+(.+)$/i);
   const token = match?.[1]?.trim();
   if (!token) return { ok: false, status: 401, error: "Valid user session required" };
   if (typeof projectId !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId)) {
