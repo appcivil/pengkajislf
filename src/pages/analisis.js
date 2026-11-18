@@ -204,7 +204,7 @@ window._runAspect = async (aspekTarget) => {
 
     // Call Smart AI Integration with Deep Reasoning logic
     const integration = SmartAIIntegration.getInstance();
-    const result = await integration.runAspectAnalysisWithDeepReasoning(aspekTarget, targetItems);
+    const result = await integration.runAspectAnalysisWithDeepReasoning(aspekTarget, targetItems, undefined, { projectId: currentProyekId });
     
     // Update DB & Local Store
     const colMap = {
@@ -389,7 +389,8 @@ window._runSingleItemAnalysis = async (itemId, aspek) => {
 
         const integration = SmartAIIntegration.getInstance();
         const result = await integration.analyzeWithDeepReasoning(item, aspek, { 
-            evidence: relevantEvidence 
+            evidence: relevantEvidence,
+            projectId: currentProyekId
         });
         
         // Simpan ke catatan item di DB
