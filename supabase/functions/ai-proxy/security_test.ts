@@ -13,6 +13,11 @@ Deno.test("accepts a registered provider/model and clamps output tokens", () => 
   assertEquals(request.temperature, 0.2);
 });
 
+Deno.test("accepts registered namespaced Groq and OpenRouter models", () => {
+  assertEquals(validateAIRequest({ provider: "groq", model: "openai/gpt-oss-120b", prompt: "x" }).provider, "groq");
+  assertEquals(validateAIRequest({ provider: "openrouter", model: "google/gemini-2.0-flash-lite:free", prompt: "x" }).provider, "openrouter");
+});
+
 Deno.test("rejects unregistered provider and model", () => {
   for (const input of [
     { provider: "ollama", model: "gemma3:27b", prompt: "x" },
