@@ -75,3 +75,28 @@ Deno.test("rejects audio-only Groq models on the text chat proxy", () => {
     }
   }
 });
+
+Deno.test("preserves a syntactically valid project context", () => {
+  const request = validateAIRequest({
+    provider: "gemini",
+    model: "gemini-2.0-flash",
+    prompt: "Ringkas proyek",
+    projectId: "22222222-2222-4222-8222-222222222222",
+  });
+  assertEquals(request.projectId, "22222222-2222-4222-8222-222222222222");
+});
+
+Deno.test("rejects malformed project context identifiers", () => {
+  try {
+    validateAIRequest({
+      provider: "gemini",
+      model: "gemini-2.0-flash",
+      prompt: "Ringkas proyek",
+      projectId: "not-a-uuid",
+    });
+    throw new Error("Expected project ID validation to fail");
+  } catch (error) {
+    if (!(error instanceof Error) || error.message === "Expected project ID validation to fail") throw error;
+    assertEquals(error.message, "INVALID_PROJECT_ID");
+  }
+});
