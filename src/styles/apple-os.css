@@ -4484,3 +4484,104 @@ body.dark #dashboard-page .grid-3-col > .card-quartz {
   }
 }
 
+/* Report workspace — unified document modes and action hierarchy */
+#laporan-page > .page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+#laporan-page > .page-header > .flex-between {
+  gap: 20px;
+}
+#laporan-page > .page-header > .flex-between > div:first-child {
+  min-width: 0;
+}
+#laporan-page > .page-header > .flex-between > div:last-child {
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+#laporan-page > .page-header > .flex-between > div:last-child .btn {
+  white-space: nowrap;
+}
+#laporan-page .page-header > .card-quartz {
+  margin-top: 0 !important;
+  padding: 6px !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px !important;
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border-default);
+}
+#laporan-page .tab-item {
+  min-width: 0 !important;
+  width: 100%;
+  justify-content: center;
+  padding: 0 12px;
+  white-space: nowrap;
+  transition: background-color .18s ease, color .18s ease, box-shadow .18s ease;
+}
+#laporan-page .tab-item:not(.active):hover {
+  background: var(--bg-hover) !important;
+  color: var(--text-primary) !important;
+}
+#laporan-page .tab-content {
+  min-width: 0;
+  animation: report-panel-enter .2s ease-out both;
+}
+#laporan-page .tab-content > :first-child {
+  min-width: 0;
+}
+#laporan-page .tab-content .card-quartz {
+  overflow-wrap: anywhere;
+}
+#laporan-page #tab-docx-preview,
+#laporan-page #tab-gdocs,
+#laporan-page #tab-legacy {
+  scroll-margin-top: 16px;
+}
+#laporan-page button:focus-visible,
+#laporan-page a:focus-visible,
+#laporan-page [role="button"]:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--brand-500) 45%, transparent);
+  outline-offset: 2px;
+}
+@keyframes report-panel-enter {
+  from { opacity: .72; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 760px) {
+  #laporan-page > .page-header {
+    gap: 16px;
+  }
+  #laporan-page > .page-header > .flex-between > div:last-child {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px !important;
+  }
+  #laporan-page > .page-header > .flex-between > div:last-child > button {
+    width: 100% !important;
+    min-width: 0;
+  }
+  #laporan-page .page-header > .card-quartz {
+    grid-template-columns: repeat(3, minmax(128px, 1fr));
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+  #laporan-page .tab-item {
+    min-width: 128px !important;
+    flex: none !important;
+    font-size: 10px !important;
+  }
+}
+@media (max-width: 420px) {
+  #laporan-page > .page-header > .flex-between > div:last-child {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #laporan-page .tab-content {
+    animation: none;
+  }
+}
