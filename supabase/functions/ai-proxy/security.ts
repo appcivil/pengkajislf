@@ -115,7 +115,7 @@ export function validateAIRequest(value: unknown): ValidatedAIRequest {
     const item = image as Record<string, unknown>;
     return typeof item.base64Data === "string" &&
       item.base64Data.length >= 4 &&
-      /^[A-Za-z0-9+/]+={0,2}$/.test(item.base64Data) &&
+      /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(item.base64Data) &&
       item.base64Data.length % 4 === 0 &&
       ["image/jpeg", "image/png", "image/webp"].includes(String(item.mimeType));
   };
@@ -135,6 +135,7 @@ export function validateAIRequest(value: unknown): ValidatedAIRequest {
   } else if (body.mimeType !== undefined) {
     throw new Error("INVALID_IMAGE");
   }
+  if (hasImages && typeof body.projectId !== "string") throw new Error("PROJECT_REQUIRED_FOR_IMAGE_ANALYSIS");
 
   return {
     provider: body.provider,
@@ -163,6 +164,7 @@ export function publicError(error: unknown): { status: number; message: string }
     INVALID_MAX_TOKENS: { status: 400, message: "Batas token keluaran harus berupa bilangan bulat positif." },
     INVALID_TEMPERATURE: { status: 400, message: "Temperature harus berada pada rentang 0 sampai 1,5." },
     INVALID_IMAGE: { status: 400, message: "Data gambar tidak valid atau melewati batas." },
+    PROJECT_REQUIRED_FOR_IMAGE_ANALYSIS: { status: 400, message: "ID proyek wajib untuk analisis bukti proyek." },
   };
   return known[code] || { status: 502, message: "Layanan AI sementara gagal. Silakan coba kembali." };
 }
