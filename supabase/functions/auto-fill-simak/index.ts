@@ -7,6 +7,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { authenticateProject, readJsonBody } from "../_shared/tenant-auth.ts";
+import { reserveAIUsage, finalizeAIUsage, estimateTextTokens, extractProviderUsageTokens, type AIQuotaReservation } from "../_shared/ai-quota.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -48,6 +49,8 @@ serve(async (req: Request) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  let quotaReservation: AIQuotaReservation | null = null;
+  let actualTokens: number | null = null;
   try {
     const parsedBody = await readJsonBody(req, 256 * 1024);
     if (!parsedBody.ok) {
@@ -143,6 +146,11 @@ Generate dalam format JSON array:
 PENTING: Kembalikan HANYA JSON array tanpa markdown atau penjelasan tambahan.
 `;
 
+    quotaReservation = await reserveAIUsage(
+      { userId: authorization.userId, organizationId: authorization.organizationId },
+      Math.min(1_000_000, estimateTextTokens(prompt) + 8192),
+    );
+
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
       {
@@ -160,6 +168,7 @@ PENTING: Kembalikan HANYA JSON array tanpa markdown atau penjelasan tambahan.
     );
 
     const geminiData = await geminiRes.json();
+    actualTokens = extractProviderUsageTokens(geminiData);
     if (!geminiRes.ok) {
       throw new Error(`Gemini Error ${geminiRes.status}: ${JSON.stringify(geminiData)}`);
     }
@@ -188,6 +197,8 @@ PENTING: Kembalikan HANYA JSON array tanpa markdown atau penjelasan tambahan.
       byAspek[item.aspek] = (byAspek[item.aspek] || 0) + 1;
     });
 
+    await finalizeAIUsage(quotaReservation, actualTokens ?? quotaReservation.reservedTokens);
+
     return new Response(JSON.stringify({
       success: true,
       proyekId,
@@ -205,6 +216,13 @@ PENTING: Kembalikan HANYA JSON array tanpa markdown atau penjelasan tambahan.
     });
 
   } catch (error) {
+    if (quotaReservation) {
+      try { await finalizeAIUsage(quotaReservation, quotaReservation.reservedTokens); }
+      catch { console.error("[AI quota] finalization deferred to expiry"); }
+    }
+    if (error instanceof Error && error.name === "AIQuotaDeniedError") {
+      return new Response(JSON.stringify({ error: "Kuota AI telah tercapai." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     console.error("[AutoFill Simak] Error:", error);
     return new Response(JSON.stringify({ 
       error: error instanceof Error ? error.message : "Unknown error" 

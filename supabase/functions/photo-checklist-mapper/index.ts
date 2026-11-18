@@ -7,6 +7,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { authenticateProject, readJsonBody } from "../_shared/tenant-auth.ts";
+import { reserveAIUsage, finalizeAIUsage, estimateTextTokens, extractProviderUsageTokens, type AIQuotaReservation } from "../_shared/ai-quota.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -53,6 +54,8 @@ serve(async (req: Request) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  let quotaReservation: AIQuotaReservation | null = null;
+  let actualTokens: number | null = null;
   try {
     const parsedBody = await readJsonBody(req, 12 * 1024 * 1024);
     if (!parsedBody.ok) {
@@ -144,6 +147,11 @@ serve(async (req: Request) => {
 
     const context = checklistContext || defaultContext;
 
+    quotaReservation = await reserveAIUsage(
+      { userId: authorization.userId, organizationId: authorization.organizationId },
+      Math.min(1_000_000, estimateTextTokens(JSON.stringify(proyekData || {}) + JSON.stringify(context)) + photos.length * 8192),
+    );
+
     // Process photos in batches
     const results: PhotoAnalysisResult[] = [];
     const errors: string[] = [];
@@ -206,6 +214,8 @@ Output WAJIB dalam format JSON:
           }
 
           const geminiData = await geminiRes.json();
+          const photoTokens = extractProviderUsageTokens(geminiData);
+          if (photoTokens !== null) actualTokens = (actualTokens ?? 0) + photoTokens;
           const resultText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
           
           // Extract JSON
@@ -273,6 +283,8 @@ Output WAJIB dalam format JSON:
       ? results.reduce((sum, r) => sum + r.confidence, 0) / results.length 
       : 0;
 
+    await finalizeAIUsage(quotaReservation, errors.length > 0 ? quotaReservation.reservedTokens : (actualTokens ?? quotaReservation.reservedTokens));
+
     return new Response(JSON.stringify({
       success: true,
       proyekId,
@@ -295,6 +307,13 @@ Output WAJIB dalam format JSON:
     });
 
   } catch (error) {
+    if (quotaReservation) {
+      try { await finalizeAIUsage(quotaReservation, quotaReservation.reservedTokens); }
+      catch { console.error("[AI quota] finalization deferred to expiry"); }
+    }
+    if (error instanceof Error && error.name === "AIQuotaDeniedError") {
+      return new Response(JSON.stringify({ error: "Kuota AI telah tercapai." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     console.error("[Photo Checklist Mapper] Error:", error);
     return new Response(JSON.stringify({ 
       error: error instanceof Error ? error.message : "Unknown error" 

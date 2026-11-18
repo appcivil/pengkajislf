@@ -8,6 +8,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { readJsonBody, validateAIRequest, publicError, canExecuteProjectAI, canExecuteUnscopedAI, type ValidatedAIRequest } from "./security.ts";
+import { reserveAIUsage, finalizeAIUsage, estimateTextTokens, extractProviderUsageTokens, type AIQuotaReservation } from "../_shared/ai-quota.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,6 +36,8 @@ serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
+  let quotaReservation: AIQuotaReservation | null = null;
+  let actualTokens: number | null = null;
   try {
     // ── OTORISASI ───────────────────────────────────────────────
     // Fungsi ini memegang kunci API berbayar, jadi pemanggilnya WAJIB
@@ -105,6 +108,7 @@ serve(async (req: Request) => {
       global: { headers: { Authorization: `Bearer ${token}` } },
     });
 
+    let authorizedOrganizationId: string | null = null;
     if (projectId) {
       const { data: project, error: projectError } = await projectClient
         .from("proyek")
@@ -118,6 +122,8 @@ serve(async (req: Request) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+
+      authorizedOrganizationId = project.organization_id as string;
 
       // RLS visibility only proves read access. AI execution is a separate
       // capability: owner/admin/member are allowed; viewer is read-only.
@@ -150,6 +156,15 @@ serve(async (req: Request) => {
         });
       }
     }
+
+    // Reserve against the authenticated user and organization resolved above.
+    // Never accept an organization identifier or idempotency key from the client.
+    const imageCount = (base64Data ? 1 : 0) + (images?.length ?? 0);
+    const estimatedTokens = Math.min(1_000_000,
+      estimateTextTokens(prompt + (systemPrompt ?? "")) +
+      Math.max(1, maxTokens ?? 2048) + imageCount * 8192
+    );
+    quotaReservation = await reserveAIUsage({ userId: user.id, organizationId: authorizedOrganizationId }, estimatedTokens);
 
     let result = "";
 
@@ -192,6 +207,7 @@ serve(async (req: Request) => {
           }
         );
         const geminiData = await geminiRes.json();
+        actualTokens = extractProviderUsageTokens(geminiData);
         if (!geminiRes.ok) throw new Error(`Gemini Error ${geminiRes.status}: ${JSON.stringify(geminiData)}`);
         result = geminiData.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
         break;
@@ -227,6 +243,7 @@ serve(async (req: Request) => {
           body: JSON.stringify({ model, messages, temperature, max_tokens: maxTokens }),
         });
         const oaiData = await oaiRes.json();
+        actualTokens = extractProviderUsageTokens(oaiData);
         if (!oaiRes.ok) throw new Error(`${provider} Error ${oaiRes.status}: ${JSON.stringify(oaiData)}`);
         result = oaiData.choices?.[0]?.message?.content ?? "{}";
         break;
@@ -251,6 +268,7 @@ serve(async (req: Request) => {
           }),
         });
         const claudeData = await claudeRes.json();
+        actualTokens = extractProviderUsageTokens(claudeData);
         if (!claudeRes.ok) throw new Error(`Claude Error ${claudeRes.status}: ${JSON.stringify(claudeData)}`);
         result = claudeData.content?.[0]?.text ?? "{}";
         break;
@@ -276,6 +294,7 @@ serve(async (req: Request) => {
           }),
         });
         const orData = await orRes.json();
+        actualTokens = extractProviderUsageTokens(orData);
         if (!orRes.ok) throw new Error(`OpenRouter Error ${orRes.status}: ${JSON.stringify(orData)}`);
         result = orData.choices?.[0]?.message?.content ?? "{}";
         break;
@@ -296,6 +315,7 @@ serve(async (req: Request) => {
           }),
         });
         const mistralData = await mistralRes.json();
+        actualTokens = extractProviderUsageTokens(mistralData);
         if (!mistralRes.ok) throw new Error(`Mistral Error ${mistralRes.status}: ${JSON.stringify(mistralData)}`);
         result = mistralData.choices?.[0]?.message?.content ?? "{}";
         break;
@@ -318,6 +338,7 @@ serve(async (req: Request) => {
           }),
         });
         const hfData = await hfRes.json();
+        actualTokens = extractProviderUsageTokens(hfData);
         if (!hfRes.ok) throw new Error(`HuggingFace Error ${hfRes.status}: ${JSON.stringify(hfData)}`);
         const hfText = Array.isArray(hfData) ? hfData[0]?.generated_text : hfData?.generated_text ?? "";
         result = hfText.replace(/<thought>[\s\S]*?<\/thought>/g, "").trim();
@@ -331,11 +352,25 @@ serve(async (req: Request) => {
         });
     }
 
+    // Until provider adapters expose normalized usage metadata, account the full reservation conservatively.
+    await finalizeAIUsage(quotaReservation, actualTokens ?? quotaReservation.reservedTokens);
+
     return new Response(JSON.stringify({ result, provider, model }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
+    if (quotaReservation) {
+      try { await finalizeAIUsage(quotaReservation, quotaReservation.reservedTokens); }
+      catch { console.error("[AI Proxy] quota finalization deferred to expiry"); }
+    }
+    if (error instanceof Error && error.name === "AIQuotaDeniedError") {
+      const retryAfter = (error as Error & { retryAfter?: string }).retryAfter;
+      return new Response(JSON.stringify({ error: "Kuota AI telah tercapai.", retryAfter }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     // Never return raw upstream provider diagnostics to the browser.
     const safe = publicError(error);
     console.error("[AI Proxy] Request failed:", safe.status);
