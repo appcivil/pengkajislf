@@ -20,13 +20,31 @@ begin
       ('evacuation_exits', 'simulation_id', 'evacuation_simulations'),
       ('fire_sources', 'simulation_id', 'fire_simulations'),
       ('fire_timeline', 'simulation_id', 'fire_simulations'),
-      ('lighting_reports', 'calculation_id', 'lighting_calculations'),
+      -- lighting_reports remains on the legacy lighting_projects ownership
+      -- model until that module is explicitly mapped to organizations.
       ('pump_units', 'station_id', 'pump_stations')
     ) as mappings(child_table, child_fk, parent_table)
   loop
-    if to_regclass(format('public.%I', v_map.child_table)) is null
-       or to_regclass(format('public.%I', v_map.parent_table)) is null then
+    -- Optional modules may be absent from a reduced schema. But if a child
+    -- exists, a missing parent or required key is a migration error, not a
+    -- reason to silently leave the child without tenant policies.
+    if to_regclass(format('public.%I', v_map.child_table)) is null then
       continue;
+    end if;
+
+    if to_regclass(format('public.%I', v_map.parent_table)) is null then
+      raise exception 'Tenant child % exists but required parent % is missing',
+        v_map.child_table, v_map.parent_table;
+    end if;
+
+    if not exists (
+      select 1 from information_schema.columns
+      where table_schema = 'public'
+        and table_name = v_map.child_table
+        and column_name = v_map.child_fk
+    ) then
+      raise exception 'Tenant child %.% key is missing',
+        v_map.child_table, v_map.child_fk;
     end if;
 
     if not exists (
@@ -37,6 +55,23 @@ begin
     ) then
       raise exception 'Tenant parent %.% lacks project_id',
         v_map.parent_table, v_map.child_table;
+    end if;
+
+    if not exists (
+      select 1
+      from pg_constraint fk
+      join pg_attribute child_key
+        on child_key.attrelid = fk.conrelid
+       and child_key.attnum = any(fk.conkey)
+      join pg_class parent_table on parent_table.oid = fk.confrelid
+      join pg_namespace parent_schema on parent_schema.oid = parent_table.relnamespace
+      where fk.contype = 'f'
+        and fk.conrelid = to_regclass(format('public.%I', v_map.child_table))
+        and fk.confrelid = to_regclass(format('public.%I', v_map.parent_table))
+        and child_key.attname = v_map.child_fk
+    ) then
+      raise exception 'Tenant child %.% lacks FK to parent %',
+        v_map.child_table, v_map.child_fk, v_map.parent_table;
     end if;
 
     for v_policy in
