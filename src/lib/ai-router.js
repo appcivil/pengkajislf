@@ -19,8 +19,10 @@ import { supabase } from './supabase.js';
 // Contoh: https://<project-ref>.supabase.co/functions/v1/ai-proxy
 // (ref proyek sengaja tidak ditulis di sini: repo ini publik, dan setiap
 //  pengguna harus memakai proyeknya sendiri — jangan hardcode ref produksi.)
-const AI_PROXY_URL = env.VITE_AI_PROXY_URL || '';
-const USE_PROXY = env.PROD && !!AI_PROXY_URL;
+const AI_PROXY_URL = env.VITE_AI_PROXY_URL || (env.VITE_SUPABASE_URL
+  ? `${env.VITE_SUPABASE_URL.replace(/[/]+$/, '')}/functions/v1/ai-proxy`
+  : (env.DEV ? '/functions/v1/ai-proxy' : ''));
+const USE_PROXY = !!AI_PROXY_URL;
 
 // ── Legacy direct mode (untuk dev atau jika belum ada proxy) ──
 const DIRECT_ENDPOINTS = {
@@ -768,31 +770,11 @@ export async function callAI(model, prompt, options = {}) {
     return data.result;
   }
 
-  // Mode 2: Direct API call — HANYA pengembangan lokal.
-  //
-  // Sebelumnya cabang ini juga menjadi "fallback jika proxy belum di-deploy"
-  // di produksi. Itu berbahaya: kunci penyedia tersedia di `model.key`, dan
-  // setiap nilai `import.meta.env.VITE_*` disalin sebagai teks biasa ke dalam
-  // bundel publik. Bila VITE_AI_PROXY_URL lupa diisi saat build, aplikasi
-  // akan diam-diam memanggil penyedia AI langsung dari peramban.
-  // Sekarang produksi tanpa proxy = gagal jelas, bukan gagal senyap.
-  if (env.PROD) {
-    throw new Error(
-      'Produksi memerlukan Edge Function ai-proxy. Isi VITE_AI_PROXY_URL ' +
-      'lalu build ulang — lihat docs/SUPABASE-SETUP.md.'
-    );
-  }
-
-  switch (model.vendor) {
-    case 'google': return await fetchGemini(model, prompt, options);
-    case 'openai': return await fetchKimi(model, prompt); // Kimi uses OpenAI-compatible API
-    case 'anthropic': return await fetchClaude(model, prompt);
-    case 'openrouter': return await fetchOpenRouter(model, prompt);
-    case 'huggingface': return await fetchSLFOpus(model, prompt);
-    case 'mistral': return await fetchMistral(model, prompt);
-    case 'ollama': return await fetchOllama(model, prompt);
-    default: throw new Error(`Vendor '${model.vendor}' tidak dikenal`);
-  }
+  // Provider requests are never sent directly from the browser, including DEV.
+  throw new Error(
+    'AI Proxy belum dikonfigurasi. Set VITE_AI_PROXY_URL atau VITE_SUPABASE_URL ' +
+    'dan jalankan Edge Function ai-proxy.'
+  );
 }
 
 // ── JSON Extraction ──────────────────────────────────────────
@@ -1302,7 +1284,7 @@ async function fetchOpenAI(model, prompt) {
   return data.choices?.[0]?.message?.content ?? '{}';
 }
 
-export async function fetchOpenRouter(model, prompt) {
+async function fetchOpenRouterDirect(model, prompt) {
   const res = await fetch(model.url, {
     method: 'POST',
     headers: {
@@ -1316,6 +1298,11 @@ export async function fetchOpenRouter(model, prompt) {
   if (!res.ok) throw new Error(`OpenRouter Error (HTTP ${res.status})`);
   const data = await res.json();
   return data.choices?.[0]?.message?.content ?? '{}';
+}
+
+/** Public helper: always use authenticated ai-proxy. */
+export async function fetchOpenRouter(model, prompt, options = {}) {
+  return callAI({ ...model, vendor: 'openrouter', proxyProvider: 'openrouter' }, prompt, options);
 }
 
 async function fetchClaude(model, prompt) {
