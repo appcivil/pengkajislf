@@ -24,10 +24,12 @@ export async function analyzeDocumentIntelligence(fileId) {
     const prompt = PROYEK_AI_TEMPLATES.DOCUMENT_ANALYSIS(file.name, file.category);
 
     let aiResult;
+    let aiSucceeded = true;
     try {
        const respText = await fetchOpenRouter(OPENROUTER_MODEL, prompt, { projectId: file.proyek_id });
        aiResult = parseAIJson(respText);
     } catch (err) {
+       aiSucceeded = false;
        console.error("[AI] OpenRouter failed, using fallback mock", err);
        aiResult = {
          category: file.category || 'umum',
@@ -39,7 +41,7 @@ export async function analyzeDocumentIntelligence(fileId) {
     }
 
     const aiData = {
-        ai_status: aiResult.status === 'Pending' ? 'pending' : 'ready',
+        ai_status: aiSucceeded ? 'ready' : 'pending',
         category: aiResult.category || file.category,
         subcategory: aiResult.subcategory || file.subcategory,
         ai_summary: aiResult.ai_summary,
