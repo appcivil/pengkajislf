@@ -945,7 +945,7 @@ export async function runAspectAnalysis(aspek, items, onProgress, options = {}) 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     if (onProgress) onProgress(i + 1, items.length, `Menganalisis: ${item.nama}`);
-    const analyzed = await runSingleItemAnalysis(item, aspek, { roleTitle, standard, targetModel, blacklistedModels });
+    const analyzed = await runSingleItemAnalysis(item, aspek, { roleTitle, standard, targetModel, blacklistedModels, projectId: options.projectId });
     results.push(analyzed);
     await new Promise(r => setTimeout(r, 400));
   }
@@ -991,6 +991,7 @@ export async function runSingleItemAnalysis(item, aspek, options = {}) {
     standard = 'NSPK & PP No. 16 Tahun 2021',
     targetModel = MODELS.GEMINI,
     blacklistedModels = new Set(),
+    projectId,
   } = options;
 
   const itemPrompt = getPromptForItem(item, aspek, roleTitle, standard);
@@ -1035,7 +1036,7 @@ export async function runSingleItemAnalysis(item, aspek, options = {}) {
       let lastError = null;
       for (const model of failoverChain) {
         try {
-          return await callAI(model, itemPrompt);
+          return await callAI(model, itemPrompt, { projectId });
         } catch (err) {
           lastError = err;
           console.warn(`[AI Router] Model ${model.name} GAGAL: ${err.message}`);
