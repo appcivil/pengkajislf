@@ -52,6 +52,21 @@ begin
  get diagnostics n = row_count;
  if n <> 0 then raise exception 'FAIL: tenant A deleted tenant B project'; end if;
 
+ -- A regular member may edit project data, but may not delete projects
+ -- or move a project across tenant boundaries.
+ delete from public.proyek where id='aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa';
+ get diagnostics n = row_count;
+ if n <> 0 then raise exception 'FAIL: tenant member deleted own tenant project'; end if;
+
+ begin
+   update public.proyek
+   set organization_id='bbbbbbbb-0000-4000-8000-000000000002'
+   where id='aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa';
+   get diagnostics n = row_count;
+   if n <> 0 then raise exception 'FAIL: tenant member moved project to another tenant'; end if;
+ exception when insufficient_privilege then null;
+ end;
+
  begin
    insert into public.proyek (nama_bangunan,organization_id)
    values ('Forbidden cross-tenant insert','bbbbbbbb-0000-4000-8000-000000000002');
