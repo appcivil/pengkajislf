@@ -71,6 +71,26 @@ export async function finalizeAIUsage(
   }
 }
 
+/** Normalize token usage from Gemini, OpenAI-compatible, and Anthropic responses. */
+export function extractProviderUsageTokens(payload: unknown): number | null {
+  if (!payload || typeof payload !== "object") return null;
+  const root = payload as Record<string, unknown>;
+  const usage = (root.usageMetadata ?? root.usage ?? root) as Record<string, unknown>;
+  if (!usage || typeof usage !== "object") return null;
+  const candidates = [
+    usage.totalTokenCount,
+    usage.total_tokens,
+    usage.input_tokens !== undefined && usage.output_tokens !== undefined
+      ? Number(usage.input_tokens) + Number(usage.output_tokens)
+      : undefined,
+    usage.prompt_tokens !== undefined && usage.completion_tokens !== undefined
+      ? Number(usage.prompt_tokens) + Number(usage.completion_tokens)
+      : undefined,
+  ];
+  const value = candidates.find((item) => typeof item === "number" && Number.isFinite(item) && item >= 0);
+  return typeof value === "number" ? Math.ceil(value) : null;
+}
+
 /** Convert a bounded text payload into a deliberately conservative token estimate. */
 export function estimateTextTokens(value: string): number {
   return Math.max(1, Math.ceil(value.length / 3));
