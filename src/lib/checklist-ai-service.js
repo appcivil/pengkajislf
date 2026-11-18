@@ -468,11 +468,12 @@ export async function toggleVoiceAudit(kode) {
         showInfo("Memproses narasi teknis...");
         try {
             // 1. Formalize Narrative
-            const formal = await voiceService.formalize(transcript);
+            const { currentProyekId } = store.get();
+            const formal = await voiceService.formalize(transcript, { projectId: currentProyekId });
             
             // 2. Infer Status (Smart Command)
             const options = item.kategori === 'administrasi' ? ADMIN_OPTIONS : CONDITION_OPTIONS;
-            const inferredStatus = await voiceService.inferStatus(transcript, options);
+            const inferredStatus = await voiceService.inferStatus(transcript, options, { projectId: currentProyekId });
 
             const state = store.get().checklist;
             const currentItem = state.dataMap[kode] || { kode };
