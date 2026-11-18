@@ -26,6 +26,8 @@ Perubahan pada branch ini mengarahkan browser AI ke Edge Function `ai-proxy`, me
 | `src/services/ai-workspace-service.js` | Helper OpenRouter dipanggil langsung; project scope tidak diteruskan; Supabase import tidak ada | Menggunakan helper proxy dengan file.proyek_id; menolak file tanpa project scope |
 | `src/application/use-cases/AnalisisDokumenAI.js` | projectId dokumen tidak diteruskan ke AI service | Mengambil projectId dari record berkas dan meneruskannya |
 | `src/infrastructure/ai/OpenRouterService.js` | Helper provider diekspor dan dapat dipanggil langsung | Helper publik diarahkan melalui callAI/proxy |
+| `src/infrastructure/ai/ChatbotService.js` dan `AdvancedReasoningService.js` | Memanggil Edge Function sendiri, perlu verifikasi URL dan project scope | Tetap melalui ai-proxy; URL terkonfigurasi dan projectId diteruskan |
+| `src/lib/ocr-service.js` | OCR enhancement memanggil ai-proxy tanpa apikey dan tanpa project context attachment | Mengirim apikey dan projectId bila OCR berasal dari lampiran proyek |
 | `vite.config.js` | Tersedia proxy dev langsung ke beberapa provider | Endpoint proxy provider langsung dihapus; proxy /functions tetap ada |
 
 ## Multi-image proxy
