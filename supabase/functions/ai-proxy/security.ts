@@ -67,7 +67,7 @@ export function validateAIRequest(value: unknown): ValidatedAIRequest {
   const allowedModels: Record<string, Set<string>> = {
     gemini: new Set(["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-2.5-pro-exp-03-25", "gemma-3-27b-it"]),
     kimi: new Set(["moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k"]),
-    groq: new Set(["llama-3.3-70b-versatile", "llama-3.2-11b-vision-preview", "deepseek-r1-distill-llama-70b", "openai/gpt-oss-20b", "openai/gpt-oss-120b", "qwen/qwen3-32b", "meta-llama/llama-4-scout-17b-16e-instruct", "whisper-large-v3-turbo", "whisper-large-v3"]),
+    groq: new Set(["llama-3.3-70b-versatile", "llama-3.2-11b-vision-preview", "deepseek-r1-distill-llama-70b", "openai/gpt-oss-20b", "openai/gpt-oss-120b", "qwen/qwen3-32b", "meta-llama/llama-4-scout-17b-16e-instruct"]),
     openrouter: new Set(["google/gemini-2.0-flash-lite:free", "anthropic/claude-3.5-sonnet", "openai/gpt-4o"]),
     openai: new Set(["gpt-4o"]),
     claude: new Set(["claude-3-5-sonnet-20241022"]),
