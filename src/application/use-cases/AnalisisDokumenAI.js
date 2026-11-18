@@ -233,7 +233,9 @@ export class AnalisisDokumenAI {
 
     let aiResult;
     try {
-      aiResult = await this._callAIWithRetry(enrichedPrompt, options);
+      const projectId = berkas.proyek_id || berkas.project_id;
+      if (!projectId) throw new Error('Berkas tidak memiliki konteks proyek; analisis AI ditolak.');
+      aiResult = await this._callAIWithRetry(enrichedPrompt, { ...options, projectId });
       // Tambahkan metadata RAG
       aiResult.rag_context = nspkContext ? true : false;
       aiResult.regulatory_basis = nspkContext ? this._extractStandards(nspkContext) : [];
@@ -358,7 +360,7 @@ export class AnalisisDokumenAI {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        return await this.aiService.analyze(prompt);
+        return await this.aiService.analyze(prompt, options);
       } catch (error) {
         lastError = error;
 
