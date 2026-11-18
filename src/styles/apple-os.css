@@ -2562,3 +2562,48 @@ body:has(#create-organization-form) :where(.form-input, .form-select, textarea) 
     overflow: auto;
   }
 }
+
+/* Focused polish: authentication, verification, project flow and task board */
+#login-portal { min-height:100svh; }
+#login-portal .login-card-quartz { width:min(100% - 32px, 980px); overflow:hidden; }
+#login-portal .login-interaction { min-width:0; }
+#login-portal :where(.form-input, button, .btn) { min-height:42px; }
+#login-portal :where(input, button, a):focus-visible,
+#verify-portal :where(button, a, input):focus-visible { outline:3px solid rgba(35,125,235,.28); outline-offset:2px; }
+#verify-portal { min-height:100svh; padding-bottom:max(24px, env(safe-area-inset-bottom)); }
+#verify-portal .grid-main-side { min-width:0; align-items:start; }
+#verify-portal :where(.card-quartz, .grid-4-col > *) { min-width:0; overflow-wrap:anywhere; }
+#proyek-list-page #proyek-list-container { min-width:0; align-items:stretch; }
+#proyek-list-page #proyek-list-container > * { min-width:0; }
+#proyek-form-page .step-item, #proyek-form-page .form-step-section { min-width:0; }
+#proyek-form-page .step-label { overflow-wrap:anywhere; }
+#proyek-detail-page .workflow-timeline { overflow-x:auto; overscroll-behavior-inline:contain; scrollbar-width:thin; }
+#proyek-detail-page .grid-dashboard-main, #proyek-detail-page .grid-2-col { min-width:0; }
+#todo-page .kanban-board { min-width:0; align-items:stretch; gap:14px; overscroll-behavior-inline:contain; scrollbar-width:thin; }
+#todo-page .kanban-col { min-width:260px; min-height:240px; }
+#todo-page .kanban-col-body { min-height:160px; }
+#todo-page .task-card { min-width:0; overflow-wrap:anywhere; transition:transform .16s ease, box-shadow .16s ease; }
+#todo-page .task-card:hover { transform:translateY(-2px); box-shadow:0 7px 18px rgba(31,41,55,.08) !important; }
+#todo-page .modal-overlay { padding:16px; }
+#todo-page .modal { width:min(100%, 620px); max-height:min(90svh, 820px); overflow:auto; }
+#todo-detail { min-width:0; }
+#todo-detail .grid-main-side { min-width:0; align-items:start; }
+#todo-detail .card { min-width:0; overflow-wrap:anywhere; }
+[data-theme="dark"] #login-portal .login-card-quartz, body.dark #login-portal .login-card-quartz { background:rgba(35,37,43,.96) !important; color:#f5f6f8 !important; border-color:rgba(255,255,255,.12) !important; box-shadow:0 20px 60px rgba(0,0,0,.32) !important; }
+[data-theme="dark"] #login-portal .login-narrative, body.dark #login-portal .login-narrative { color:#b7bdc8 !important; }
+[data-theme="dark"] #login-portal .form-input, body.dark #login-portal .form-input { background:#292c33 !important; color:#f5f6f8 !important; border-color:rgba(255,255,255,.15) !important; }
+[data-theme="dark"] #verify-portal .card-quartz, [data-theme="dark"] #verify-portal .grid-4-col > *, body.dark #verify-portal .card-quartz, body.dark #verify-portal .grid-4-col > * { background:#252830 !important; color:#f2f4f7 !important; border-color:rgba(255,255,255,.1) !important; }
+[data-theme="dark"] #todo-page .kanban-col, body.dark #todo-page .kanban-col { background:#20232a !important; border-color:rgba(255,255,255,.1) !important; }
+[data-theme="dark"] #todo-page .task-card, body.dark #todo-page .task-card { background:#292c33 !important; color:#f2f4f7 !important; border-color:rgba(255,255,255,.1) !important; }
+[data-theme="dark"] #todo-page .modal, body.dark #todo-page .modal { background:#252830 !important; color:#f2f4f7 !important; border-color:rgba(255,255,255,.12) !important; }
+@media (max-width:760px) {
+ #login-portal .login-card-quartz { width:min(100% - 24px, 560px); border-radius:18px !important; }
+ #verify-portal { padding-inline:14px; }
+ #verify-portal .grid-main-side { grid-template-columns:minmax(0,1fr) !important; gap:18px !important; }
+ #proyek-form-page .stepper { overflow-x:auto; }
+ #proyek-detail-page .workflow-timeline { margin-inline:-4px; padding-bottom:8px; }
+ #todo-page .kanban-board { grid-auto-columns:minmax(270px,86vw); }
+ #todo-page .modal-overlay { align-items:flex-end; padding:8px; }
+ #todo-page .modal { width:100%; max-height:88svh; border-radius:18px 18px 12px 12px !important; }
+}
+@media (prefers-reduced-motion: reduce) { #todo-page .task-card { transition:none; } #todo-page .task-card:hover { transform:none; } }
