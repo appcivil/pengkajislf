@@ -317,7 +317,7 @@ async function exampleOCRAnalysis(base64Data, mimeType) {
 
     try {
         // Jalankan OCR dengan Deep Reasoning
-        const result = await integration.runOCRWithDeepReasoning(base64Data, mimeType);
+        const result = await integration.runOCRWithDeepReasoning(base64Data, mimeType, { projectId });
 
         console.log('[Example] Hasil OCR:', result);
 

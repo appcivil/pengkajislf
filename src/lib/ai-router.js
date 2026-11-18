@@ -918,7 +918,11 @@ export function parseAIJson(text) {
  * OCR Vision Engine — ekstrak data IMB/PBG dari gambar/PDF
  * Menggunakan Gemini Pro via Hybrid Router (Fitur #7 & #26)
  */
-export async function runOCRAnalysis(base64Data, mimeType) {
+export async function runOCRAnalysis(base64Data, mimeType, options = {}) {
+  const projectId = options.projectId;
+  if (typeof projectId !== 'string' || !projectId.trim()) {
+    throw new Error('ID proyek wajib untuk OCR berbasis AI. Gunakan OCR lokal sebelum proyek dibuat.');
+  }
   // Gunakan Gemini Pro untuk vision tasks via Hybrid Router
   const selection = GEMINI_ROUTER.selectModel({ 
     hasVision: true, 
@@ -939,7 +943,7 @@ export async function runOCRAnalysis(base64Data, mimeType) {
     PENTING: Jika data tidak ditemukan, berikan nilai null. Kembalikan HANYA JSON.
   `;
 
-  const resText = await callAI(selection.model, prompt, { base64Data, mimeType });
+  const resText = await callAI(selection.model, prompt, { base64Data, mimeType, projectId });
   return parseAIJson(resText);
 }
 

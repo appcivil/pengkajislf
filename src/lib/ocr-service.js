@@ -157,7 +157,7 @@ export async function extractTextFromPDF(pdfSource, options = {}) {
  * Parse dokumen IMB/PBG dari hasil OCR
  * Menggunakan AI untuk ekstrak field struktur
  */
-export async function parseIMBDocument(ocrText, useGemini = true) {
+export async function parseIMBDocument(ocrText, useGemini = true, options = {}) {
   const fields = {
     nomor_imb: /(?:IMB|PBG|Nomor|No\.?)\s*[:\-]?\s*([A-Z0-9\-/]+)/i,
     nama_pemilik: /(?:Pemilik|Atas Nama|Nama)\s*[:\-]?\s*([A-Z][a-zA-Z\s\.]+)/,
@@ -183,7 +183,9 @@ export async function parseIMBDocument(ocrText, useGemini = true) {
   }
   
   // AI enhancement dengan Gemini Flash (hemat quota)
-  if (useGemini && ocrText.length > 50) {
+  // AI enrichment is allowed only for an existing, authorized project.
+  // Project-creation OCR has no project scope yet, so keep it local/regex-only.
+  if (useGemini && typeof options.projectId === 'string' && options.projectId.length > 0 && ocrText.length > 50) {
     try {
       const prompt = `
 Anda adalah AI Data Entry untuk dokumen perizinan bangunan Indonesia (IMB/PBG/SLF).
