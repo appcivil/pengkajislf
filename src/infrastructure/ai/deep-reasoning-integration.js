@@ -171,7 +171,7 @@ export class SmartAIIntegration {
 
         // Handle both (filesData, componentName...) and (item, aspek, options...)
         const isSingleItem = typeof target === 'object' && target.kode;
-        const componentName = isSingleItem ? target.nama : target;
+        const componentName = isSingleItem ? target.nama : (options.componentName || 'Bukti audit');
         const evidence = options.evidence || [];
 
         console.log(`[SmartAI Integration] Menganalisis ${componentName} dengan Deep Reasoning + ${evidence.length} bukti fisik`);
@@ -180,7 +180,7 @@ export class SmartAIIntegration {
         await this.hookManager.executeHook('beforeAnalysis', { target, aspek, options });
 
         // 2. Dapatkan aturan yang relevan
-        const kategori = isSingleItem ? target.kategori : 'teknis';
+        const kategori = isSingleItem ? target.kategori : (options.kategori || 'teknis');
         const relevantRules = this.ruleEngine.getRulesForCategory(kategori);
 
         // 3. Eksekusi AI yang relevan
