@@ -72,6 +72,9 @@ begin
   if not private.ai_quota_finalize(v_first.reservation_id, 550) then
     raise exception 'repeated finalization should be idempotent';
   end if;
+  if private.ai_quota_finalize(v_first.reservation_id, 551) then
+    raise exception 'conflicting repeated finalization must be rejected';
+  end if;
 
   if not exists (
     select 1 from private.ai_usage_buckets b
