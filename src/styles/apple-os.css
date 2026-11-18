@@ -2629,3 +2629,194 @@ body:has(#create-organization-form) :where(.form-input, .form-select, textarea) 
  #task-detail-page .grid-main-side > :last-child { position:static !important; }
  #task-detail-page .card-quartz { padding:clamp(18px,5vw,28px) !important; }
 }
+
+
+/* Technical inspection workspaces — consistent shell, tabs and responsive data surfaces */
+#architectural-inspection-page,
+#electrical-inspection-page,
+#fire-inspection-page,
+#accessibility-inspection-page,
+.inspection-page {
+  width: min(100%, 1600px);
+  box-sizing: border-box;
+  color: var(--text-primary);
+}
+#architectural-inspection-page *,
+#electrical-inspection-page *,
+#fire-inspection-page *,
+#accessibility-inspection-page *,
+.inspection-page * { box-sizing: border-box; }
+
+#architectural-inspection-page > #arch-main-card,
+#electrical-inspection-page > #electrical-main-card,
+#fire-inspection-page > #fire-main-card,
+#accessibility-inspection-page > #accessibility-main-card,
+.inspection-page > .inspection-header-card {
+  background: linear-gradient(145deg, rgba(255,255,255,.98), rgba(247,249,252,.94)) !important;
+  border: 1px solid rgba(31,41,55,.09) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 7px 24px rgba(20,28,40,.055) !important;
+}
+#architectural-inspection-page .arch-content,
+#electrical-inspection-page .electrical-content,
+#fire-inspection-page .fire-content,
+#accessibility-inspection-page .accessibility-content,
+.inspection-page .inspection-content { min-width: 0; }
+
+#architectural-inspection-page .arch-tab-item,
+#electrical-inspection-page .electrical-tab-item,
+#fire-inspection-page .fire-tab-item,
+#accessibility-inspection-page .accessibility-tab-item,
+.inspection-page .inspection-tab-item {
+  min-height: 42px;
+  border-radius: 10px !important;
+  font-family: inherit !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+  letter-spacing: .025em !important;
+}
+#architectural-inspection-page .arch-tab-item:not(.active),
+#electrical-inspection-page .electrical-tab-item:not(.active),
+#fire-inspection-page .fire-tab-item:not(.active),
+#accessibility-inspection-page .accessibility-tab-item:not(.active),
+.inspection-page .inspection-tab-item:not(.active) {
+  color: var(--text-secondary) !important;
+}
+#architectural-inspection-page .arch-tab-item:focus-visible,
+#electrical-inspection-page .electrical-tab-item:focus-visible,
+#fire-inspection-page .fire-tab-item:focus-visible,
+#accessibility-inspection-page .accessibility-tab-item:focus-visible,
+.inspection-page .inspection-tab-item:focus-visible {
+  outline: 3px solid rgba(22,119,237,.28);
+  outline-offset: 2px;
+}
+#architectural-inspection-page .card-quartz,
+#electrical-inspection-page .card-quartz,
+#fire-inspection-page .card-quartz,
+#accessibility-inspection-page .card-quartz,
+.inspection-page .card-quartz {
+  border-radius: 14px;
+}
+#architectural-inspection-page table,
+#electrical-inspection-page table,
+#fire-inspection-page table,
+#accessibility-inspection-page table,
+.inspection-page table { width: 100%; }
+#architectural-inspection-page .table-responsive,
+#electrical-inspection-page .table-responsive,
+#fire-inspection-page .table-responsive,
+#accessibility-inspection-page .table-responsive,
+.inspection-page .table-responsive { max-width: 100%; overflow-x: auto; }
+
+#electrical-inspection-page .electrical-nav {
+  background: rgba(242,244,247,.92);
+  border: 1px solid rgba(31,41,55,.07);
+  border-radius: 12px;
+  scrollbar-width: thin;
+}
+#electrical-inspection-page .nav-tab { color: var(--text-secondary); }
+#electrical-inspection-page .nav-tab.active {
+  background: var(--gradient-brand);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(22,119,237,.16);
+}
+#fire-inspection-page .form-input-dark {
+  background: #fff;
+  color: var(--text-primary);
+  border-color: rgba(31,41,55,.15);
+  border-radius: 10px;
+}
+#fire-inspection-page .form-input-dark:focus {
+  border-color: var(--brand-400);
+  box-shadow: 0 0 0 3px rgba(22,119,237,.12);
+}
+#fire-inspection-page .modal-content {
+  background: #fff;
+  color: var(--text-primary);
+  border: 1px solid rgba(31,41,55,.12);
+  box-shadow: 0 20px 60px rgba(10,20,35,.22);
+}
+#fire-inspection-page .modal-header { border-color: rgba(31,41,55,.09); }
+#fire-inspection-page .modal-header h3 { color: var(--text-primary); }
+
+[data-theme="dark"] #architectural-inspection-page > #arch-main-card,
+[data-theme="dark"] #electrical-inspection-page > #electrical-main-card,
+[data-theme="dark"] #fire-inspection-page > #fire-main-card,
+[data-theme="dark"] #accessibility-inspection-page > #accessibility-main-card,
+[data-theme="dark"] .inspection-page > .inspection-header-card,
+body.dark #architectural-inspection-page > #arch-main-card,
+body.dark #electrical-inspection-page > #electrical-main-card,
+body.dark #fire-inspection-page > #fire-main-card,
+body.dark #accessibility-inspection-page > #accessibility-main-card,
+body.dark .inspection-page > .inspection-header-card {
+  background: linear-gradient(145deg, rgba(37,38,44,.98), rgba(29,30,35,.96)) !important;
+  border-color: rgba(255,255,255,.09) !important;
+  box-shadow: 0 8px 26px rgba(0,0,0,.18) !important;
+}
+[data-theme="dark"] #electrical-inspection-page .electrical-nav,
+body.dark #electrical-inspection-page .electrical-nav {
+  background: rgba(255,255,255,.045);
+  border-color: rgba(255,255,255,.08);
+}
+[data-theme="dark"] #fire-inspection-page .form-input-dark,
+body.dark #fire-inspection-page .form-input-dark {
+  background: #24252a;
+  color: var(--text-primary);
+  border-color: rgba(255,255,255,.14);
+}
+[data-theme="dark"] #fire-inspection-page .modal-content,
+body.dark #fire-inspection-page .modal-content {
+  background: #24252a;
+  color: var(--text-primary);
+  border-color: rgba(255,255,255,.12);
+}
+[data-theme="dark"] #fire-inspection-page .modal-header,
+body.dark #fire-inspection-page .modal-header { border-color: rgba(255,255,255,.10); }
+[data-theme="dark"] #fire-inspection-page .modal-header h3,
+body.dark #fire-inspection-page .modal-header h3 { color: var(--text-primary); }
+
+@media (max-width: 768px) {
+  #architectural-inspection-page,
+  #electrical-inspection-page,
+  #fire-inspection-page,
+  #accessibility-inspection-page,
+  .inspection-page { padding: 14px !important; }
+  #architectural-inspection-page > #arch-main-card,
+  #electrical-inspection-page > #electrical-main-card,
+  #fire-inspection-page > #fire-main-card,
+  #accessibility-inspection-page > #accessibility-main-card,
+  .inspection-page > .inspection-header-card {
+    padding: 18px !important;
+    margin-bottom: 16px !important;
+  }
+  #architectural-inspection-page .flex-between,
+  #electrical-inspection-page .flex-between,
+  #fire-inspection-page .flex-between,
+  #accessibility-inspection-page .flex-between,
+  .inspection-page .flex-between { flex-wrap: wrap; gap: 12px; }
+  #architectural-inspection-page .arch-tab-item,
+  #electrical-inspection-page .electrical-tab-item,
+  #fire-inspection-page .fire-tab-item,
+  #accessibility-inspection-page .accessibility-tab-item,
+  .inspection-page .inspection-tab-item { flex: 0 0 auto !important; }
+  #architectural-inspection-page .card-quartz,
+  #electrical-inspection-page .card-quartz,
+  #fire-inspection-page .card-quartz,
+  #accessibility-inspection-page .card-quartz,
+  .inspection-page .card-quartz { min-width: 0; }
+  #fire-inspection-page .modal { padding: 12px; align-items: flex-end; }
+  #fire-inspection-page .modal-content { max-height: 88vh; border-radius: 16px 16px 10px 10px; }
+}
+@media (max-width: 480px) {
+  #architectural-inspection-page .arch-tab-item,
+  #electrical-inspection-page .electrical-tab-item,
+  #fire-inspection-page .fire-tab-item,
+  #accessibility-inspection-page .accessibility-tab-item {
+    min-width: 112px !important;
+    min-height: 40px;
+    padding: 8px 10px !important;
+    font-size: 10px !important;
+  }
+  #accessibility-inspection-page .grid-4-col,
+  #architectural-inspection-page .grid-4-col { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
