@@ -79,7 +79,7 @@ export function validateAIRequest(value: unknown): ValidatedAIRequest {
     openai: /^[a-zA-Z0-9._-]{1,100}$/,
     claude: /^[a-zA-Z0-9._-]{1,100}$/,
     groq: /^[a-zA-Z0-9._-]{1,60}(?:\/[a-zA-Z0-9._-]{1,60})?$/,
-    openrouter: /^[a-zA-Z0-9._-]{1,60}\/[a-zA-Z0-9._:-]{1,60}$/ ,
+    openrouter: /^[a-zA-Z0-9._-]{1,60}\/[a-zA-Z0-9._:-]{1,60}$/,
     mistral: /^[a-zA-Z0-9._-]{1,100}$/,
     huggingface: /^[a-zA-Z0-9._-]{1,60}(\/[a-zA-Z0-9._-]{1,60})?$/,
     kimi: /^[a-zA-Z0-9._-]{1,100}$/,
