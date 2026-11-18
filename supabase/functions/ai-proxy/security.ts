@@ -127,6 +127,7 @@ export function validateAIRequest(value: unknown): ValidatedAIRequest {
     ...(hasImage ? { base64Data: body.base64Data as string, mimeType: body.mimeType as string } : {}),
     maxTokens: boundedMaxTokens,
     temperature,
+    ...(typeof body.projectId === "string" ? { projectId: body.projectId } : {}),
   };
 }
 
