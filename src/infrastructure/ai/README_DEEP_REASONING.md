@@ -263,12 +263,12 @@ Dapatkan semua workflow yang tersedia
 
 ### Environment Variables
 
-Tidak ada environment variable khusus yang diperlukan untuk Deep Reasoning. Sistem menggunakan environment yang sudah ada:
+Deep Reasoning production menggunakan Supabase Edge Function `ai-proxy`. Browser hanya boleh memiliki:
+- `VITE_AI_PROXY_URL` (atau URL Supabase untuk membentuk endpoint proxy)
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY` (publishable/anon key, bukan service-role)
 
-- `VITE_GEMINI_API_KEY` - Untuk Gemini API
-- `VITE_OPENAI_API_KEY` - Untuk OpenAI API
-- `VITE_CLAUDE_API_KEY` - Untuk Claude API
-- `VITE_HF_API_TOKEN` - Untuk Hugging Face API
+Jangan menambahkan `VITE_GEMINI_API_KEY`, `VITE_OPENAI_API_KEY`, `VITE_CLAUDE_API_KEY`, `VITE_HF_API_TOKEN`, atau kunci provider lain ke environment build. Kunci provider hanya berada di Edge Function secrets.
 
 ## 🎨 Implementation in Components
 

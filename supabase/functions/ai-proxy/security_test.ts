@@ -183,6 +183,28 @@ Deno.test("only users without tenant memberships may execute unscoped AI", () =>
   assertEquals(canExecuteUnscopedAI(null), false);
 });
 
+
+Deno.test("single-image Gemini requests require a project context", () => {
+  const base = {
+    provider: "gemini",
+    model: "gemini-2.0-flash",
+    prompt: "Analyze this building photo",
+    base64Data: "AAAA",
+    mimeType: "image/jpeg",
+  };
+  let error = "";
+  try {
+    validateAIRequest(base);
+  } catch (caught) {
+    error = caught instanceof Error ? caught.message : String(caught);
+  }
+  assertEquals(error, "PROJECT_REQUIRED_FOR_IMAGE_ANALYSIS");
+
+  const validated = validateAIRequest({ ...base, projectId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" });
+  assertEquals(validated.projectId, "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
+});
+
+
 Deno.test("normalizes provider-reported token usage", () => {
   assertEquals(extractProviderUsageTokens({ usageMetadata: { totalTokenCount: 123 } }), 123);
   assertEquals(extractProviderUsageTokens({ usage: { total_tokens: 456 } }), 456);
