@@ -283,7 +283,7 @@ Output WAJIB dalam format JSON:
       ? results.reduce((sum, r) => sum + r.confidence, 0) / results.length 
       : 0;
 
-    await finalizeAIUsage(quotaReservation, actualTokens ?? quotaReservation.reservedTokens);
+    await finalizeAIUsage(quotaReservation, errors.length > 0 ? quotaReservation.reservedTokens : (actualTokens ?? quotaReservation.reservedTokens));
 
     return new Response(JSON.stringify({
       success: true,
