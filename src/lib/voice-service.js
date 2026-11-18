@@ -46,10 +46,11 @@ export class VoiceService {
   /**
    * Formalize a spoken raw note into professional engineering language using AI
    */
-  async formalize(rawText) {
+  async formalize(rawText, requestOptions = {}) {
     if (!rawText || rawText.length < 5) return rawText;
+    if (!requestOptions.projectId) throw new Error('ID proyek wajib untuk pemrosesan catatan audit dengan AI.');
 
-    const { MODELS, fetchGemini } = await import('./ai-router.js');
+    const { MODELS, callAI } = await import('./ai-router.js');
     
     const prompt = `
       Anda adalah AI Ahli Pengkaji SLF.
@@ -61,7 +62,7 @@ export class VoiceService {
     `;
 
     try {
-      const res = await fetchGemini(MODELS.GEMINI, prompt);
+      const res = await callAI(MODELS.GEMINI, prompt, { projectId: requestOptions.projectId });
       return res.replace(/["']/g, '').trim();
     } catch (e) {
       console.error("Formalization failed:", e);
@@ -73,7 +74,8 @@ export class VoiceService {
    * INFER STATUS FROM SPEECH (COMMAND ENGINE)
    * Heuristic + AI identification of checklist status from voice.
    */
-  async inferStatus(rawText, options = []) {
+  async inferStatus(rawText, options = [], requestOptions = {}) {
+    if (!requestOptions.projectId) throw new Error('ID proyek wajib untuk inferensi status audit dengan AI.');
     const text = rawText.toLowerCase();
     
     // 1. Fast Heuristics (Local, Instant)

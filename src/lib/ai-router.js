@@ -11,7 +11,6 @@ const env = import.meta.env;
 import { SLF_PROMPT_LIBRARY } from './slf-prompt-library.js';
 import { getPromptConfig, injectPromptConfig } from './prompt-config-service.js';
 import { getSettings } from './settings.js';
-import { generateOllamaCompletion } from './ollama-service.js';
 import { supabase } from './supabase.js';
 
 // ── Edge Function Proxy URL ───────────────────────────────────
@@ -19,25 +18,12 @@ import { supabase } from './supabase.js';
 // Contoh: https://<project-ref>.supabase.co/functions/v1/ai-proxy
 // (ref proyek sengaja tidak ditulis di sini: repo ini publik, dan setiap
 //  pengguna harus memakai proyeknya sendiri — jangan hardcode ref produksi.)
-const AI_PROXY_URL = env.VITE_AI_PROXY_URL || '';
-const USE_PROXY = env.PROD && !!AI_PROXY_URL;
+const AI_PROXY_URL = env.VITE_AI_PROXY_URL || (env.VITE_SUPABASE_URL
+  ? `${env.VITE_SUPABASE_URL.replace(/[/]+$/, '')}/functions/v1/ai-proxy`
+  : (env.DEV ? '/functions/v1/ai-proxy' : ''));
+const USE_PROXY = !!AI_PROXY_URL;
 
 // ── Legacy direct mode (untuk dev atau jika belum ada proxy) ──
-const DIRECT_ENDPOINTS = {
-  gemini: (model) => env.PROD
-    ? `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.VITE_GEMINI_API_KEY}`
-    : `/api/gemini/v1beta/models/${model}:generateContent?key=${env.VITE_GEMINI_API_KEY}`,
-  kimi: (model) => env.PROD
-    ? `https://api.moonshot.ai/v1/chat/completions`
-    : `/api/kimi/v1/chat/completions`,
-  openai: env.PROD ? 'https://api.openai.com/v1/chat/completions' : '/api/openai/v1/chat/completions',
-  groq: env.PROD ? 'https://api.groq.com/openai/v1/chat/completions' : '/api/groq/v1/chat/completions',
-  claude: env.PROD ? 'https://api.anthropic.com/v1/messages' : '/api/claude/v1/messages',
-  openrouter: env.PROD ? 'https://openrouter.ai/api/v1/chat/completions' : '/api/openrouter/v1/chat/completions',
-  mistral: env.PROD ? 'https://api.mistral.ai/v1/chat/completions' : '/api/mistral/v1/chat/completions',
-  huggingface: env.VITE_HF_SLF_OPUS_URL || 'https://api-inference.huggingface.co/models/adminskpslf/SLF_OPUS',
-};
-
 // ── Model Registry ────────────────────────────────────────────
 export const MODELS = {
   // KIMI FAMILY - Default model (Moonshot AI)
@@ -45,8 +31,6 @@ export const MODELS = {
     id: 'moonshot-v1-8k',
     name: 'Kimi (Moonshot)',
     vendor: 'openai', // OpenAI-compatible API
-    url: DIRECT_ENDPOINTS.kimi,
-    key: env.VITE_KIMI_API_KEY,
     proxyProvider: 'kimi',
     type: 'text',
     costTier: 'free',
@@ -58,8 +42,6 @@ export const MODELS = {
     id: 'moonshot-v1-32k',
     name: 'Kimi 32K',
     vendor: 'openai',
-    url: DIRECT_ENDPOINTS.kimi,
-    key: env.VITE_KIMI_API_KEY,
     proxyProvider: 'kimi',
     type: 'text',
     costTier: 'free',
@@ -70,8 +52,6 @@ export const MODELS = {
     id: 'moonshot-v1-128k',
     name: 'Kimi 128K',
     vendor: 'openai',
-    url: DIRECT_ENDPOINTS.kimi,
-    key: env.VITE_KIMI_API_KEY,
     proxyProvider: 'kimi',
     type: 'text',
     costTier: 'free',
@@ -118,8 +98,6 @@ export const MODELS = {
   GROQ: {
     id: 'llama-3.3-70b-versatile',
     name: 'Groq Llama 3.3 70B (Ultra-Fast)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'text',
@@ -131,8 +109,6 @@ export const MODELS = {
   GROQ_VISION: {
     id: 'llama-3.2-11b-vision-preview',
     name: 'Groq Llama 3.2 11B Vision (Multimodal)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'vision',
@@ -144,8 +120,6 @@ export const MODELS = {
   GROQ_REASONING: {
     id: 'deepseek-r1-distill-llama-70b',
     name: 'Groq DeepSeek R1 (Advanced Reasoning)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'reasoning',
@@ -157,8 +131,6 @@ export const MODELS = {
   GROQ_GPT_OSS_20B: {
     id: 'openai/gpt-oss-20b',
     name: 'Groq GPT-OSS 20B (Gratis - Lightweight)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'text',
@@ -170,8 +142,6 @@ export const MODELS = {
   GROQ_GPT_OSS_120B: {
     id: 'openai/gpt-oss-120b',
     name: 'Groq GPT-OSS 120B (Gratis - Powerful)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'text',
@@ -184,8 +154,6 @@ export const MODELS = {
   GROQ_QWEN_32B: {
     id: 'qwen/qwen3-32b',
     name: 'Groq Qwen 3 32B (Gratis - Multilingual)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'text',
@@ -197,8 +165,6 @@ export const MODELS = {
   GROQ_LLAMA_4_SCOUT: {
     id: 'meta-llama/llama-4-scout-17b-16e-instruct',
     name: 'Groq Llama 4 Scout 17B (Gratis - Latest)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'text',
@@ -211,8 +177,6 @@ export const MODELS = {
   GROQ_WHISPER_TURBO: {
     id: 'whisper-large-v3-turbo',
     name: 'Groq Whisper Turbo (Speech-to-Text)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'audio',
@@ -223,8 +187,6 @@ export const MODELS = {
   GROQ_WHISPER_LARGE: {
     id: 'whisper-large-v3',
     name: 'Groq Whisper Large V3 (Speech-to-Text)',
-    url: DIRECT_ENDPOINTS.groq,
-    key: env.VITE_GROQ_API_KEY,
     vendor: 'openai',
     proxyProvider: 'groq',
     type: 'audio',
@@ -235,24 +197,18 @@ export const MODELS = {
   OPENROUTER: {
     id: 'google/gemini-2.0-flash-lite:free',
     name: 'OpenRouter Free',
-    url: DIRECT_ENDPOINTS.openrouter,
-    key: env.VITE_OPENROUTER_API_KEY,
     vendor: 'openrouter',
     proxyProvider: 'openrouter',
   },
   OPENAI: {
     id: 'gpt-4o',
     name: 'OpenAI GPT-4o',
-    url: DIRECT_ENDPOINTS.openai,
-    key: env.VITE_OPENAI_API_KEY,
     vendor: 'openai',
     proxyProvider: 'openai',
   },
   CLAUDE: {
     id: 'claude-3-5-sonnet-20241022',
     name: 'Claude 3.5 Sonnet',
-    url: DIRECT_ENDPOINTS.claude,
-    key: env.VITE_CLAUDE_API_KEY,
     vendor: 'anthropic',
     proxyProvider: 'claude',
   },
@@ -265,16 +221,12 @@ export const MODELS = {
   SLF_OPUS: {
     id: 'adminskpslf/SLF_OPUS',
     name: 'SLF OPUS Reasoning (Hugging Face)',
-    url: DIRECT_ENDPOINTS.huggingface,
-    key: env.VITE_HF_API_TOKEN,
     vendor: 'huggingface',
     proxyProvider: 'huggingface',
   },
   MISTRAL: {
     id: 'mistral-large-latest',
     name: 'Mistral Large',
-    url: DIRECT_ENDPOINTS.mistral,
-    key: env.VITE_MISTRAL_API_KEY,
     vendor: 'mistral',
     proxyProvider: 'mistral',
   },
@@ -310,92 +262,14 @@ function getItemConfig(kode) {
  * - Rate limit dan availability
  */
 export function getDefaultModel(options = {}) {
-  const { 
-    hasVision = false, 
-    complexReasoning = false, 
-    fastMode = false, 
-    taskType = 'analysis',
-    requiredContextLength = 8000 
-  } = options;
-  
-  const kimiAvailable = !!env.VITE_KIMI_API_KEY;
-  const geminiAvailable = !!env.VITE_GEMINI_API_KEY;
-  
-  // Jika Kimi tersedia dan gratis, prioritaskan Kimi
-  if (kimiAvailable) {
-    // Kimi lebih baik untuk task tanpa vision dan context moderat
-    if (!hasVision && requiredContextLength <= 128000) {
-      // Pilih varian Kimi berdasarkan context length
-      if (requiredContextLength > 32000) {
-        return {
-          model: MODELS.KIMI_128K,
-          reason: 'Kimi 128K: Gratis + Context panjang',
-          estimatedCost: 'free',
-          advantage: 'Kimi gratis dengan context 128K lebih baik untuk analisis dokumen panjang'
-        };
-      } else if (requiredContextLength > 8000) {
-        return {
-          model: MODELS.KIMI_32K,
-          reason: 'Kimi 32K: Gratis + Context menengah',
-          estimatedCost: 'free',
-          advantage: 'Kimi gratis dengan context 32K optimal untuk analisis teknikal'
-        };
-      }
-      
-      // Default ke Kimi 8K untuk task sederhana
-      return {
-        model: MODELS.KIMI,
-        reason: 'Kimi: Model default gratis dengan performa sangat baik',
-        estimatedCost: 'free',
-        advantage: 'Kimi gratis lebih baik daripada Gemini Flash karena biaya $0 dan performa kompetitif'
-      };
-    }
+  const { hasVision = false, complexReasoning = false, fastMode = false, taskType = 'analysis' } = options;
+  if (hasVision || taskType === 'vision' || taskType === 'ocr' || complexReasoning || taskType === 'deep_analysis') {
+    return { model: MODELS.GEMINI_PRO, reason: 'Gemini Pro via server-side proxy', estimatedCost: 'high', advantage: 'Vision dan reasoning diproses server-side' };
   }
-  
-  // Fallback ke Gemini jika Kimi tidak tersedia atau butuh vision
-  if (geminiAvailable) {
-    if (hasVision || taskType === 'vision' || taskType === 'ocr') {
-      return {
-        model: MODELS.GEMINI_PRO,
-        reason: 'Gemini Pro: Vision analysis & complex reasoning',
-        estimatedCost: 'high',
-        advantage: 'Gemini Pro lebih baik untuk vision tasks'
-      };
-    }
-    
-    if (complexReasoning || taskType === 'deep_analysis') {
-      return {
-        model: MODELS.GEMINI_PRO,
-        reason: 'Gemini Pro: Complex reasoning dengan konteks panjang',
-        estimatedCost: 'high',
-        advantage: 'Gemini Pro lebih baik untuk reasoning mendalam'
-      };
-    }
-    
-    if (fastMode || taskType === 'suggestion') {
-      return {
-        model: MODELS.GEMINI_FLASH_LITE,
-        reason: 'Gemini Flash Lite: Response cepat',
-        estimatedCost: 'lowest',
-        advantage: 'Flash Lite lebih cepat untuk task ringan'
-      };
-    }
-    
-    return {
-      model: MODELS.GEMINI_FLASH,
-      reason: 'Gemini Flash: Default untuk text tasks',
-      estimatedCost: 'low',
-      advantage: 'Gemini Flash lebih hemat dari Pro'
-    };
+  if (fastMode || taskType === 'suggestion' || taskType === 'autocomplete') {
+    return { model: MODELS.GEMINI_FLASH_LITE, reason: 'Gemini Flash Lite via server-side proxy', estimatedCost: 'lowest', advantage: 'Model ringan untuk tugas cepat' };
   }
-  
-  // Emergency fallback - prioritaskan Groq gratis yang cepat
-  return {
-    model: MODELS.GROQ || MODELS.GROQ_REASONING || MODELS.OPENROUTER,
-    reason: 'Emergency fallback to Groq (gratis & cepat)',
-    estimatedCost: 'free',
-    advantage: 'Groq Llama 4 195B Multimodal gratis dengan inference super cepat'
-  };
+  return { model: MODELS.GEMINI_FLASH, reason: 'Gemini Flash via server-side proxy', estimatedCost: 'low', advantage: 'Model teks standar melalui proxy' };
 }
 
 /**
@@ -456,23 +330,11 @@ export const MODEL_COMPARATOR = {
       return getDefaultModel(options);
     }
     
-    const kimiAvailable = !!env.VITE_KIMI_API_KEY;
-    
-    // Jika pemenang adalah Kimi dan tersedia, gunakan Kimi
-    if (comparison.winner.startsWith('kimi') && kimiAvailable) {
-      return {
-        model: comparison.kimiModel || MODELS.KIMI,
-        reason: comparison.reason,
-        estimatedCost: 'free',
-        advantage: comparison.reason
-      };
-    }
-    
-    // Jika pemenang Gemini atau Kimi tidak tersedia
+    const selectedModel = comparison.geminiModel || MODELS.GEMINI_FLASH;
     return {
-      model: comparison.geminiModel || MODELS.GEMINI_FLASH,
+      model: selectedModel,
       reason: comparison.reason,
-      estimatedCost: comparison.geminiModel?.costTier || 'low',
+      estimatedCost: selectedModel.costTier || 'low',
       advantage: comparison.reason
     };
   }
@@ -627,20 +489,6 @@ export const EXPERT_PERSONAS = {
     Fokus: Mengelompokkan analisis ke dalam pilar Tata Bangunan dan Keandalan Bangunan sesuai standar NSPK.`
 };
 
-// Log status (hanya keberadaan key, bukan nilai)
-if (env.DEV) {
-  console.log('[AI Engine] Status Kunci API (DEV):', {
-    Kimi: !!env.VITE_KIMI_API_KEY,
-    Gemini: !!env.VITE_GEMINI_API_KEY,
-    OpenAI: !!env.VITE_OPENAI_API_KEY,
-    Claude: !!env.VITE_CLAUDE_API_KEY,
-    Groq: !!env.VITE_GROQ_API_KEY,
-    OpenRouter: !!env.VITE_OPENROUTER_API_KEY,
-    Mistral: !!env.VITE_MISTRAL_API_KEY,
-    'AI Proxy': USE_PROXY ? AI_PROXY_URL : 'Tidak aktif (gunakan direct)',
-  });
-}
-
 // ── Retry dengan True Exponential Backoff ─────────────────────────
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
@@ -768,31 +616,11 @@ export async function callAI(model, prompt, options = {}) {
     return data.result;
   }
 
-  // Mode 2: Direct API call — HANYA pengembangan lokal.
-  //
-  // Sebelumnya cabang ini juga menjadi "fallback jika proxy belum di-deploy"
-  // di produksi. Itu berbahaya: kunci penyedia tersedia di `model.key`, dan
-  // setiap nilai `import.meta.env.VITE_*` disalin sebagai teks biasa ke dalam
-  // bundel publik. Bila VITE_AI_PROXY_URL lupa diisi saat build, aplikasi
-  // akan diam-diam memanggil penyedia AI langsung dari peramban.
-  // Sekarang produksi tanpa proxy = gagal jelas, bukan gagal senyap.
-  if (env.PROD) {
-    throw new Error(
-      'Produksi memerlukan Edge Function ai-proxy. Isi VITE_AI_PROXY_URL ' +
-      'lalu build ulang — lihat docs/SUPABASE-SETUP.md.'
-    );
-  }
-
-  switch (model.vendor) {
-    case 'google': return await fetchGemini(model, prompt, options);
-    case 'openai': return await fetchKimi(model, prompt); // Kimi uses OpenAI-compatible API
-    case 'anthropic': return await fetchClaude(model, prompt);
-    case 'openrouter': return await fetchOpenRouter(model, prompt);
-    case 'huggingface': return await fetchSLFOpus(model, prompt);
-    case 'mistral': return await fetchMistral(model, prompt);
-    case 'ollama': return await fetchOllama(model, prompt);
-    default: throw new Error(`Vendor '${model.vendor}' tidak dikenal`);
-  }
+  // Provider requests are never sent directly from the browser, including DEV.
+  throw new Error(
+    'AI Proxy belum dikonfigurasi. Set VITE_AI_PROXY_URL atau VITE_SUPABASE_URL ' +
+    'dan jalankan Edge Function ai-proxy.'
+  );
 }
 
 // ── JSON Extraction ──────────────────────────────────────────
@@ -986,6 +814,7 @@ function getKategori(score) {
 
 // ── Single Item Analysis ─────────────────────────────────────
 export async function runSingleItemAnalysis(item, aspek, options = {}) {
+  if (!options.projectId) throw new Error('ID proyek wajib untuk analisis item SLF.');
   const {
     roleTitle = 'Digital Technical Consultant SLF',
     standard = 'NSPK & PP No. 16 Tahun 2021',
@@ -1017,12 +846,7 @@ export async function runSingleItemAnalysis(item, aspek, options = {}) {
       const failoverChain = [];
       const seen = new Set();
 
-      // Ollama di awal jika diaktifkan
-      if (settings.ai?.ollamaEnabled && settings.ai?.ollamaModel) {
-        const ollamaModel = { ...MODELS.OLLAMA, id: settings.ai.ollamaModel, name: `Ollama (${settings.ai.ollamaModel})` };
-        failoverChain.push(ollamaModel);
-        seen.add(ollamaModel.name);
-      }
+      // Local Ollama is not exposed through the authenticated ai-proxy and is intentionally not routed from the browser.
 
       for (const m of order) {
         if (!m || seen.has(m.name) || blacklistedModels.has(m.name)) continue;
@@ -1125,6 +949,7 @@ export async function runOCRAnalysis(base64Data, mimeType) {
  */
 export async function runBatchPhotoAnalysis(photoArray, checklistContext = {}) {
   const projectId = checklistContext.projectId;
+  if (!projectId) throw new Error('ID proyek wajib untuk analisis foto checklist.');
   // Batch optimize untuk hemat quota
   const requests = photoArray.map((photo, idx) => ({
     id: idx,
@@ -1189,6 +1014,7 @@ Output JSON:
  */
 export async function generateDaftarSimak(proyekData, checklistTemplate) {
   const projectId = proyekData?.id || proyekData?.proyek_id;
+  if (!projectId) throw new Error('ID proyek wajib untuk membuat Daftar Simak AI.');
   const selection = GEMINI_ROUTER.selectModel({ 
     taskType: 'narrative',
     fastMode: true // Use Flash Lite for speed
@@ -1230,140 +1056,13 @@ PENTING: Gunakan Flash untuk hemat quota. Prioritaskan akurasi pada item struktu
   }
 }
 
-// ── Direct Fetchers (hanya aktif di dev mode) ─────────────────
-
-async function fetchKimi(model, prompt) {
-  if (!model.key) throw new Error('Kimi API Key tidak ditemukan di VITE_KIMI_API_KEY.');
-  
-  const res = await fetch(model.url, {
-    method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json', 
-      'Authorization': `Bearer ${model.key}` 
-    },
-    body: JSON.stringify({ 
-      model: model.id, 
-      messages: [
-        { role: 'system', content: 'Anda adalah asisten ahli audit teknis bangunan gedung SLF. Berikan respons dalam format yang terstruktur dan profesional.' },
-        { role: 'user', content: prompt }
-      ], 
-      temperature: 0.1, 
-      max_tokens: model.maxTokens || 8192 
-    }),
-  });
-  
-  if (!res.ok) {
-    const errData = await res.json().catch(() => ({}));
-    throw new Error(`Kimi Error (HTTP ${res.status}): ${errData.error?.message || res.statusText}`);
-  }
-  
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content ?? '{}';
-}
-
-async function fetchOllama(model, prompt) {
-  return await generateOllamaCompletion(
-    prompt,
-    'Anda adalah asisten ahli audit teknis bangunan gedung SLF. Balas dalam format JSON.',
-    model.id
-  );
-}
-
-async function fetchGemini(model, prompt, options = {}) {
-  const url = DIRECT_ENDPOINTS.gemini(model.id);
-  const parts = [{ text: prompt }];
-  if (options.base64Data && options.mimeType) {
-    parts.push({ inlineData: { mimeType: options.mimeType, data: options.base64Data } });
-  }
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts }],
-      generationConfig: { temperature: 0.1, maxOutputTokens: 8192 },
-    }),
-  });
-  if (!res.ok) throw new Error(`Gemini Error (HTTP ${res.status}): ${await res.text().then(t => t.substring(0, 50))}`);
-  const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? '{}';
-}
-
-async function fetchOpenAI(model, prompt) {
-  const res = await fetch(model.url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${model.key}` },
-    body: JSON.stringify({ model: model.id, messages: [{ role: 'user', content: prompt }], temperature: 0.1, max_tokens: 8192 }),
-  });
-  if (!res.ok) throw new Error(`OpenAI/Groq Error (HTTP ${res.status})`);
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content ?? '{}';
-}
-
-export async function fetchOpenRouter(model, prompt) {
-  const res = await fetch(model.url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${model.key}`,
-      'HTTP-Referer': 'https://appcivil.github.io/pengkajislf',
-      'X-Title': 'Smart AI Pengkaji SLF',
-    },
-    body: JSON.stringify({ model: model.id, messages: [{ role: 'user', content: prompt }], temperature: 0.1 }),
-  });
-  if (!res.ok) throw new Error(`OpenRouter Error (HTTP ${res.status})`);
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content ?? '{}';
-}
-
-async function fetchClaude(model, prompt) {
-  const res = await fetch(model.url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': model.key,
-      'anthropic-version': '2023-06-01',
-      // NOTE: Header ini hanya untuk dev/testing. Di production, gunakan Edge Function proxy.
-      ...(env.DEV ? { 'anthropic-dangerous-direct-browser-access': 'true' } : {}),
-    },
-    body: JSON.stringify({ model: model.id, max_tokens: 8192, messages: [{ role: 'user', content: prompt }] }),
-  });
-  if (!res.ok) throw new Error(`Claude Error (HTTP ${res.status})`);
-  const data = await res.json();
-  return data.content?.[0]?.text ?? '{}';
-}
-
-async function fetchSLFOpus(model, prompt) {
-  if (!model.key) throw new Error('HuggingFace API Token tidak ditemukan.');
-  const res = await fetch(model.url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${model.key}` },
-    body: JSON.stringify({
-      inputs: [
-        { role: 'developer', content: 'Anda adalah AI Ahli Pengkaji SLF Bangunan Gedung dengan kemampuan penalaran mendalam.' },
-        { role: 'user', content: prompt },
-      ],
-      parameters: { max_new_tokens: 4096, temperature: 0.1, return_full_text: false },
-    }),
-  });
-  if (!res.ok) throw new Error(`HF SLF_OPUS Error (HTTP ${res.status})`);
-  const data = await res.json();
-  const text = Array.isArray(data) ? data[0]?.generated_text : (data.generated_text ?? '');
-  return text.replace(/<thought>[\s\S]*?<\/thought>/g, '').trim();
-}
-
-async function fetchMistral(model, prompt) {
-  if (!model.key) throw new Error('Mistral API Key tidak ditemukan.');
-  const res = await fetch(model.url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${model.key}` },
-    body: JSON.stringify({ model: model.id, messages: [{ role: 'user', content: prompt }], temperature: 0.1, max_tokens: 4096 }),
-  });
-  if (!res.ok) throw new Error(`Mistral Error (HTTP ${res.status})`);
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content ?? '{}';
+/** Public provider helper; the only supported route is authenticated ai-proxy. */
+export async function fetchOpenRouter(model, prompt, options = {}) {
+  return callAI({ ...model, vendor: 'openrouter', proxyProvider: 'openrouter' }, prompt, options);
 }
 
 export async function runFinalConclusion(skorMap, rekomendasi_gabungan, options = {}) {
+  if (!options.projectId) throw new Error('ID proyek wajib untuk kesimpulan AI.');
   const systemPrompt = `Anda adalah Ketua Tim Konsultan Pengkaji SLF. 
 Berikan ringkasan eksekutif strategis berdasarkan seluruh aspek pengkajian teknis.
 Skor per aspek: ${JSON.stringify(skorMap)}
@@ -1381,6 +1080,7 @@ Output WAJIB JSON:
  */
 export async function getMultiAgentConsensus(checklist, proyek, analisisSummary) {
   const projectId = proyek?.id;
+  if (!projectId) throw new Error('ID proyek wajib untuk konsensus Multi-Agent.');
   const anomalies = checklist.filter(i => i.status !== 'baik' && i.status !== 'ada_sesuai' && i.status !== 'tidak_wajib');
   const totalCount = checklist.length;
   const goodCount = totalCount - anomalies.length;

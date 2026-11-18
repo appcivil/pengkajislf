@@ -92,37 +92,7 @@ export default defineConfig(({ mode }) => {
         changeOrigin: true,
         secure: true,
       },
-      // Proxy langsung ke AI APIs (hanya dev — di production pakai Edge Function)
-      '/api/gemini': {
-        target: 'https://generativelanguage.googleapis.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/gemini/, '')
-      },
-      '/api/openai': {
-        target: 'https://api.openai.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/openai/, '')
-      },
-      '/api/claude': {
-        target: 'https://api.anthropic.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/claude/, '')
-      },
-      '/api/groq': {
-        target: 'https://api.groq.com/openai',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/groq/, '')
-      },
-      '/api/mistral': {
-        target: 'https://api.mistral.ai',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/mistral/, '')
-      },
-      '/api/openrouter': {
-        target: 'https://openrouter.ai',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/openrouter/, '')
-      },
+
     }
   }
 };

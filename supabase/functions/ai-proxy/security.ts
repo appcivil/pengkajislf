@@ -11,6 +11,7 @@ export type ValidatedAIRequest = {
   systemPrompt?: string;
   base64Data?: string;
   mimeType?: string;
+  images?: Array<{ base64Data: string; mimeType: string }>;
   maxTokens: number;
   temperature: number;
   projectId?: string;
@@ -105,26 +106,44 @@ export function validateAIRequest(value: unknown): ValidatedAIRequest {
   if (typeof temperature !== "number" || !Number.isFinite(temperature) ||
       temperature < 0 || temperature > 1.5) throw new Error("INVALID_TEMPERATURE");
 
-  const hasImage = body.base64Data !== undefined;
-  if (hasImage) {
-    if (body.provider !== "gemini" || typeof body.base64Data !== "string" ||
-        body.base64Data.length < 4 || body.base64Data.length > MAX_IMAGE_BASE64_CHARS ||
-        !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(body.base64Data)) {
+  const hasSingleImage = body.base64Data !== undefined;
+  const hasImages = body.images !== undefined;
+  if (hasSingleImage && hasImages) throw new Error("INVALID_IMAGE");
+
+  const validImage = (image: unknown): image is { base64Data: string; mimeType: string } => {
+    if (!image || typeof image !== "object" || Array.isArray(image)) return false;
+    const item = image as Record<string, unknown>;
+    return typeof item.base64Data === "string" &&
+      item.base64Data.length >= 4 &&
+      /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(item.base64Data) &&
+      item.base64Data.length % 4 === 0 &&
+      ["image/jpeg", "image/png", "image/webp"].includes(String(item.mimeType));
+  };
+
+  if (hasSingleImage) {
+    if (body.provider !== "gemini" || !validImage({ base64Data: body.base64Data, mimeType: body.mimeType }) ||
+        (body.base64Data as string).length > MAX_IMAGE_BASE64_CHARS) {
       throw new Error("INVALID_IMAGE");
     }
-    if (!["image/jpeg", "image/png", "image/webp"].includes(String(body.mimeType))) {
+  } else if (hasImages) {
+    if (body.provider !== "gemini" || !Array.isArray(body.images) ||
+        body.images.length < 1 || body.images.length > 10 ||
+        !body.images.every(validImage) ||
+        body.images.reduce((sum, image) => sum + image.base64Data.length, 0) > MAX_IMAGE_BASE64_CHARS) {
       throw new Error("INVALID_IMAGE");
     }
   } else if (body.mimeType !== undefined) {
     throw new Error("INVALID_IMAGE");
   }
+  if (hasImages && typeof body.projectId !== "string") throw new Error("PROJECT_REQUIRED_FOR_IMAGE_ANALYSIS");
 
   return {
     provider: body.provider,
     model: body.model,
     prompt: body.prompt,
     ...(typeof body.systemPrompt === "string" ? { systemPrompt: body.systemPrompt } : {}),
-    ...(hasImage ? { base64Data: body.base64Data as string, mimeType: body.mimeType as string } : {}),
+    ...(hasSingleImage ? { base64Data: body.base64Data as string, mimeType: body.mimeType as string } : {}),
+    ...(hasImages ? { images: body.images as Array<{ base64Data: string; mimeType: string }> } : {}),
     maxTokens: boundedMaxTokens,
     temperature,
     ...(typeof body.projectId === "string" ? { projectId: body.projectId } : {}),
@@ -145,6 +164,13 @@ export function publicError(error: unknown): { status: number; message: string }
     INVALID_MAX_TOKENS: { status: 400, message: "Batas token keluaran harus berupa bilangan bulat positif." },
     INVALID_TEMPERATURE: { status: 400, message: "Temperature harus berada pada rentang 0 sampai 1,5." },
     INVALID_IMAGE: { status: 400, message: "Data gambar tidak valid atau melewati batas." },
+    PROJECT_REQUIRED_FOR_IMAGE_ANALYSIS: { status: 400, message: "ID proyek wajib untuk analisis bukti proyek." },
   };
   return known[code] || { status: 502, message: "Layanan AI sementara gagal. Silakan coba kembali." };
+}
+
+
+/** Only tenant owner/admin/member may execute project-scoped AI operations. */
+export function canExecuteProjectAI(role: unknown): boolean {
+  return role === "owner" || role === "admin" || role === "member";
 }

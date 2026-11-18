@@ -36,7 +36,7 @@ export class ChatbotService extends IChatbotService {
     // Process attachments - read file content
     let attachmentContent = '';
     if (attachments && attachments.length > 0) {
-      attachmentContent = await this._processAttachments(attachments);
+      attachmentContent = await this._processAttachments(attachments, { projectId: context.projectId || options.projectId });
     }
 
     // Combine message with attachment content
@@ -200,7 +200,7 @@ export class ChatbotService extends IChatbotService {
     // Process attachments - read file content (same as generateResponse)
     let attachmentContent = '';
     if (attachments && attachments.length > 0) {
-      attachmentContent = await this._processAttachments(attachments);
+      attachmentContent = await this._processAttachments(attachments, { projectId: options.projectId || options.context?.projectId });
     }
 
     // Combine message with attachment content
@@ -568,7 +568,10 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
     // WAJIB memakai access_token sesi pengguna: Edge Function memverifikasi
     // token itu ke GoTrue. Anon key adalah JWT publik — ia bisa dibaca siapa
     // pun dari bundel, sehingga tidak boleh dipakai untuk membuka ai-proxy.
-    const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-proxy`;
+    const functionUrl = import.meta.env.VITE_AI_PROXY_URL ||
+      (import.meta.env.VITE_SUPABASE_URL
+        ? `${import.meta.env.VITE_SUPABASE_URL.replace(/[/]+$/, '')}/functions/v1/ai-proxy`
+        : '/functions/v1/ai-proxy');
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
     const response = await fetch(functionUrl, {
@@ -752,7 +755,7 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
   /**
    * Process attachments - extract file content for AI using DocumentEngine and OCR
    */
-  async _processAttachments(attachments) {
+  async _processAttachments(attachments, requestOptions = {}) {
     const contents = [];
 
     for (const file of attachments) {
@@ -765,11 +768,11 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
         if (fileType.startsWith('image/')) {
           // For images, use OCR to extract text
           console.log(`[ChatbotService] Processing image: ${file.name}`);
-          content = await this._extractImageContent(file);
+          content = await this._extractImageContent(file, requestOptions);
         } else if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
           // For PDFs, use OCR service
           console.log(`[ChatbotService] Processing PDF: ${file.name}`);
-          content = await this._extractPDFContent(file);
+          content = await this._extractPDFContent(file, requestOptions);
         } else if (this._isTextFile(file)) {
           // For text files, read as text
           content = await this._fileToText(file);
@@ -808,9 +811,10 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
   /**
    * Extract content from image using OCR
    */
-  async _extractImageContent(file) {
+  async _extractImageContent(file, requestOptions = {}) {
     try {
       const result = await extractTextFromImage(file, {
+        projectId: requestOptions.projectId,
         language: 'ind',
         logger: (m) => {
           if (m.status === 'recognizing text') {
@@ -848,6 +852,7 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
       const result = await extractTextFromPDF(file, {
         extractImages: true,
         maxPages,
+        projectId: options.projectId,
         onProgress: (current, total, msg) => {
           console.log(`[PDF OCR] ${file.name}: ${msg}`);
         }

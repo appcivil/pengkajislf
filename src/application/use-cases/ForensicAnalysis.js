@@ -39,7 +39,8 @@ export class ForensicAnalysis {
       this.notificationService.notifySuccess(`Menjalankan audit forensik: ${item.nama}...`);
       
       const enhancedResult = await this.integration.analyzeWithDeepReasoning(item, item.aspek, {
-        evidence: relevantEvidence
+        evidence: relevantEvidence,
+        projectId: item.proyek_id
       });
 
       // 4. Transformasi hasil ke format metadata yang diinginkan

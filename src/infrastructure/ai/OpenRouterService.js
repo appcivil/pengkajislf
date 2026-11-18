@@ -18,7 +18,7 @@ export class OpenRouterAIService extends IAIService {
     const model = { ...MODELS.OPENROUTER, id: options.modelId || this.modelId };
     
     try {
-      const respText = await fetchOpenRouter(model, prompt);
+      const respText = await fetchOpenRouter(model, prompt, { projectId: options.projectId });
       return parseAIJson(respText);
     } catch (err) {
       console.error("[Infrastructure/AI] OpenRouter call failed: ", err);

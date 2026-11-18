@@ -1,6 +1,6 @@
 /// <reference lib="deno.ns" />
 import { assertEquals, assertRejects } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { readJsonBody, validateAIRequest, publicError } from "./security.ts";
+import { readJsonBody, validateAIRequest, publicError, canExecuteProjectAI } from "./security.ts";
 
 Deno.test("accepts a registered provider/model and clamps output tokens", () => {
   const request = validateAIRequest({
@@ -46,6 +46,54 @@ Deno.test("rejects invalid image MIME and malformed base64", () => {
     throw new Error("Expected image validation to fail");
   } catch (error) {
     if (!(error instanceof Error) || error.message === "Expected image validation to fail") throw error;
+  }
+});
+
+Deno.test("accepts bounded multi-image Gemini requests", () => {
+  const request = validateAIRequest({
+    provider: "gemini",
+    model: "gemini-2.0-flash",
+    prompt: "Bandingkan dua bukti",
+    images: [
+      { base64Data: "AQID", mimeType: "image/jpeg" },
+      { base64Data: "BAUG", mimeType: "image/png" },
+    ],
+    projectId: "22222222-2222-4222-8222-222222222222",
+  });
+  assertEquals(request.images?.length, 2);
+  assertEquals(request.projectId, "22222222-2222-4222-8222-222222222222");
+});
+
+Deno.test("rejects too many, mixed, or non-Gemini multi-image payloads", () => {
+  const image = { base64Data: "AQID", mimeType: "image/jpeg" };
+  for (const input of [
+    { provider: "gemini", model: "gemini-2.0-flash", prompt: "x", images: Array(11).fill(image) },
+    { provider: "gemini", model: "gemini-2.0-flash", prompt: "x", images: [image], base64Data: "AQID", mimeType: "image/jpeg" },
+    { provider: "groq", model: "llama-3.3-70b-versatile", prompt: "x", images: [image] },
+    { provider: "gemini", model: "gemini-2.0-flash", prompt: "x", images: [{ base64Data: "bad!", mimeType: "image/jpeg" }] },
+  ]) {
+    try {
+      validateAIRequest(input);
+      throw new Error("Expected multi-image validation to fail");
+    } catch (error) {
+      if (!(error instanceof Error) || error.message === "Expected multi-image validation to fail") throw error;
+      assertEquals(error.message, "INVALID_IMAGE");
+    }
+  }
+});
+
+Deno.test("requires project context for multi-image analysis", () => {
+  try {
+    validateAIRequest({
+      provider: "gemini",
+      model: "gemini-2.0-flash",
+      prompt: "Analisis bukti",
+      images: [{ base64Data: "AQID", mimeType: "image/jpeg" }],
+    });
+    throw new Error("Expected project context to be required");
+  } catch (error) {
+    if (!(error instanceof Error) || error.message === "Expected project context to be required") throw error;
+    assertEquals(error.message, "PROJECT_REQUIRED_FOR_IMAGE_ANALYSIS");
   }
 });
 
@@ -98,5 +146,18 @@ Deno.test("rejects malformed project context identifiers", () => {
   } catch (error) {
     if (!(error instanceof Error) || error.message === "Expected project ID validation to fail") throw error;
     assertEquals(error.message, "INVALID_PROJECT_ID");
+  }
+});
+
+
+Deno.test("project AI role matrix allows owner, admin, and member", () => {
+  for (const role of ["owner", "admin", "member"]) {
+    assertEquals(canExecuteProjectAI(role), true, `${role} should be allowed to execute project AI`);
+  }
+});
+
+Deno.test("project AI role matrix denies viewer, platform admin without membership, and unknown roles", () => {
+  for (const role of ["viewer", "platform_admin", "service_role", "anon", null, undefined]) {
+    assertEquals(canExecuteProjectAI(role), false, `${String(role)} must not receive implicit project AI access`);
   }
 });

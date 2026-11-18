@@ -171,7 +171,7 @@ export class SmartAIIntegration {
 
         // Handle both (filesData, componentName...) and (item, aspek, options...)
         const isSingleItem = typeof target === 'object' && target.kode;
-        const componentName = isSingleItem ? target.nama : target;
+        const componentName = isSingleItem ? target.nama : (options.componentName || 'Bukti audit');
         const evidence = options.evidence || [];
 
         console.log(`[SmartAI Integration] Menganalisis ${componentName} dengan Deep Reasoning + ${evidence.length} bukti fisik`);
@@ -180,7 +180,7 @@ export class SmartAIIntegration {
         await this.hookManager.executeHook('beforeAnalysis', { target, aspek, options });
 
         // 2. Dapatkan aturan yang relevan
-        const kategori = isSingleItem ? target.kategori : 'teknis';
+        const kategori = isSingleItem ? target.kategori : (options.kategori || 'teknis');
         const relevantRules = this.ruleEngine.getRulesForCategory(kategori);
 
         // 3. Eksekusi AI yang relevan
@@ -190,7 +190,7 @@ export class SmartAIIntegration {
             aiResult = await runSingleItemAnalysis(target, aspek, { ...options, evidence });
         } else {
             // Legacy vision path
-            aiResult = await analyzeChecklistImage(target, componentName, kategori, aspek);
+            aiResult = options.baseResult || await analyzeChecklistImage(target, componentName, kategori, aspek, { ...options, useDeepReasoning: false });
         }
 
         // 4. Enhance hasil dengan Deep Reasoning
@@ -212,7 +212,7 @@ export class SmartAIIntegration {
     /**
      * Analisis dokumen dengan Deep Reasoning
      */
-    async analyzeDocumentWithDeepReasoning(fileData) {
+    async analyzeDocumentWithDeepReasoning(fileData, options = {}) {
         if (!this.isInitialized) {
             await this.initialize();
         }
@@ -222,7 +222,7 @@ export class SmartAIIntegration {
         // Eksekusi document analysis yang sudah ada
         // Jalankan ekstraksi dasar tanpa memanggil Deep Reasoning kembali.
         // analyzeDocument() melakukan enhancement otomatis secara default.
-        const docResult = await analyzeDocument(fileData, { useDeepReasoning: false });
+        const docResult = options.baseResult || await analyzeDocument(fileData, { ...options, useDeepReasoning: false });
 
         // Enhance dengan rule validation
         const validatedResult = this.ruleEngine.validateDocument(docResult);
@@ -233,7 +233,7 @@ export class SmartAIIntegration {
     /**
      * Analisis komparatif dengan Deep Reasoning
      */
-    async analyzeComparativeWithDeepReasoning(filesData, itemName, itemKode, context = '') {
+    async analyzeComparativeWithDeepReasoning(filesData, itemName, itemKode, context = '', options = {}) {
         if (!this.isInitialized) {
             await this.initialize();
         }
@@ -241,7 +241,7 @@ export class SmartAIIntegration {
         console.log(`[SmartAI Integration] Analisis komparatif ${itemName}`);
 
         // Eksekusi comparative audit yang sudah ada
-        const compResult = await analyzeComparativeAudit(filesData, itemName, itemKode, context);
+        const compResult = options.baseResult || await analyzeComparativeAudit(filesData, itemName, itemKode, context, { ...options, useDeepReasoning: false });
 
         // Enhance dengan workflow validation
         const workflowResult = await this.workflowEngine.executeWorkflow(
