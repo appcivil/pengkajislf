@@ -63,7 +63,7 @@ Kembalikan JSON murni: {"category":"tanah|umum","subcategory":"...","extracted_t
     try {
       const integration = getSmartAIIntegration();
       if (integration?.isInitialized) {
-        const enhanced = await integration.analyzeDocumentWithDeepReasoning(fileData, { ...options, useDeepReasoning: false });
+        const enhanced = await integration.analyzeDocumentWithDeepReasoning(fileData, { ...options, baseResult: parsedResult, useDeepReasoning: false });
         return { ...parsedResult, ...enhanced, regulation_validated: true, deep_reasoning_enabled: true };
       }
     } catch (error) {
