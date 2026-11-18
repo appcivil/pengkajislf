@@ -75,5 +75,109 @@ end;
 $$;
 
 reset role;
+
+-- Static catalog assertions: every project-key FK to public.proyek must have
+-- the four tenant policies; foreign project roots must not be treated as
+-- public.proyek IDs; no legacy literal-true/auth.role policies may remain on
+-- tables governed by the generic direct-project policy.
+do $
+declare
+  v_missing record;
+  v_bad record;
+begin
+  select n.nspname, c.relname, a.attname
+    into v_missing
+  from pg_class c
+  join pg_namespace n on n.oid = c.relnamespace
+  join pg_attribute a on a.attrelid = c.oid
+  join pg_constraint fk on fk.conrelid = c.oid
+    and fk.contype = 'f' and a.attnum = any(fk.conkey)
+  join pg_class target on target.oid = fk.confrelid
+  join pg_namespace target_ns on target_ns.oid = target.relnamespace
+  where n.nspname = 'public'
+    and c.relkind = 'r'
+    and a.attname in ('project_id', 'proyek_id')
+    and target_ns.nspname = 'public'
+    and target.relname = 'proyek'
+    and not exists (
+      select 1 from pg_policies p
+      where p.schemaname = 'public'
+        and p.tablename = c.relname
+        and p.policyname = 'tenant_scope_select'
+    )
+  limit 1;
+
+  if found then
+    raise exception 'FAIL: %.% lacks tenant_scope_select for FK key %',
+      v_missing.nspname, v_missing.relname, v_missing.attname;
+  end if;
+
+  select n.nspname, c.relname, a.attname, target.relname as target_name
+    into v_bad
+  from pg_class c
+  join pg_namespace n on n.oid = c.relnamespace
+  join pg_attribute a on a.attrelid = c.oid
+  join pg_constraint fk on fk.conrelid = c.oid
+    and fk.contype = 'f' and a.attnum = any(fk.conkey)
+  join pg_class target on target.oid = fk.confrelid
+  join pg_namespace target_ns on target_ns.oid = target.relnamespace
+  where n.nspname = 'public'
+    and c.relkind = 'r'
+    and a.attname in ('project_id', 'proyek_id')
+    and target_ns.nspname = 'public'
+    and target.relname <> 'proyek'
+    and exists (
+      select 1 from pg_policies p
+      where p.schemaname = 'public'
+        and p.tablename = c.relname
+        and p.policyname = 'tenant_scope_select'
+    )
+  limit 1;
+
+  if found then
+    raise exception 'FAIL: %.% incorrectly uses generic proyek policy for FK to %',
+      v_bad.nspname, v_bad.relname, v_bad.target_name;
+  end if;
+
+  select p.schemaname, p.tablename, p.policyname
+    into v_bad
+  from pg_policies p
+  where p.schemaname = 'public'
+    and p.policyname = 'tenant_scope_select'
+    and (
+      lower(coalesce(p.qual, '')) = 'true'
+      or lower(coalesce(p.with_check, '')) = 'true'
+      or coalesce(p.qual, '') ilike '%auth.role()%'
+      or coalesce(p.with_check, '') ilike '%auth.role()%'
+    )
+  limit 1;
+
+  if found then
+    raise exception 'FAIL: generic tenant policy on %.% is broad or uses auth.role()',
+      v_bad.schemaname, v_bad.tablename;
+  end if;
+
+  -- Indirect-child policies must exist whenever the child module is present.
+  if to_regclass('public.architectural_rooms') is not null
+     and not exists (select 1 from pg_policies where schemaname='public'
+       and tablename='architectural_rooms' and policyname='tenant_parent_select') then
+    raise exception 'FAIL: architectural_rooms lacks parent tenant policy';
+  end if;
+  if to_regclass('public.electrical_protection_settings') is not null
+     and not exists (select 1 from pg_policies where schemaname='public'
+       and tablename='electrical_protection_settings' and policyname='tenant_parent_select') then
+    raise exception 'FAIL: electrical_protection_settings lacks parent tenant policy';
+  end if;
+
+  -- Lighting tables have a different legacy root and must not be rewritten
+  -- by the generic proyek policy until an organization mapping is approved.
+  if to_regclass('public.lighting_calculations') is not null
+     and exists (select 1 from pg_policies where schemaname='public'
+       and tablename='lighting_calculations' and policyname='tenant_scope_select') then
+    raise exception 'FAIL: lighting_calculations was incorrectly assigned proyek policy';
+  end if;
+end;
+$;
+
 rollback;
-select 'PASS: tenant SELECT/UPDATE/DELETE/INSERT isolation and viewer read-only' as result;
+select 'PASS: tenant isolation, direct FK policy coverage, non-proyek FK exclusion, and indirect policy assertions' as result;
