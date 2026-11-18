@@ -82,6 +82,21 @@ Deno.test("rejects too many, mixed, or non-Gemini multi-image payloads", () => {
   }
 });
 
+Deno.test("requires project context for multi-image analysis", () => {
+  try {
+    validateAIRequest({
+      provider: "gemini",
+      model: "gemini-2.0-flash",
+      prompt: "Analisis bukti",
+      images: [{ base64Data: "AQID", mimeType: "image/jpeg" }],
+    });
+    throw new Error("Expected project context to be required");
+  } catch (error) {
+    if (!(error instanceof Error) || error.message === "Expected project context to be required") throw error;
+    assertEquals(error.message, "PROJECT_REQUIRED_FOR_IMAGE_ANALYSIS");
+  }
+});
+
 Deno.test("bounded JSON reader rejects a body above the byte limit", async () => {
   const req = new Request("https://example.invalid", {
     method: "POST",
