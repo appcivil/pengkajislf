@@ -20,6 +20,7 @@
  *  Konfigurasi (via .env atau environment variable):
  *    VITE_SUPABASE_URL=https://xxxx.supabase.co
  *    VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
+ *    KEEPALIVE_SECRET=<secret scheduler, server-side only>
  *
  *  Untuk beberapa proyek sekaligus, buat keepalive.targets.json:
  *    [{ "name": "SLF Prod", "url": "https://a.supabase.co", "key": "eyJ..." }]
@@ -70,7 +71,7 @@ async function resolveTargets(env) {
       process.exit(1);
     }
     const list = JSON.parse(await readFile(file, 'utf8'));
-    return list.map((t) => ({ name: t.name || t.url, url: t.url, key: t.key }));
+    return list.map((t) => ({ name: t.name || t.url, url: t.url, key: t.key, secret: t.secret }));
   }
 
   const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || env.VITE_SUPABASE_URL || env.SUPABASE_URL;
@@ -86,7 +87,7 @@ async function resolveTargets(env) {
     console.error('   Buat file .env (lihat .env.example) atau isi environment variable.');
     process.exit(1);
   }
-  return [{ name: 'default', url, key }];
+  return [{ name: 'default', url, key, secret: process.env.KEEPALIVE_SECRET || env.KEEPALIVE_SECRET }];
 }
 
 /** Ping satu target. Mengembalikan {ok, bytes, via, ms}. */
@@ -106,11 +107,11 @@ async function ping(target) {
       url: `${base}/rest/v1/proyek?select=id&limit=1&_cb=${bust}`,
       init: { method: 'HEAD', headers: { Prefer: 'count=exact' } },
     },
-    {
+    ...(target.secret ? [{
       via: 'edge:keepalive',
       url: `${base}/functions/v1/keepalive?cb=${bust}`,
-      init: { method: 'POST', body: '{}' },
-    },
+      init: { method: 'POST', body: '{}', headers: { 'x-keepalive-secret': target.secret } },
+    }] : []),
   ];
 
   const headers = {

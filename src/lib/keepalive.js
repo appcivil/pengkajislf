@@ -10,7 +10,8 @@
  *  Ini adalah lapisan cadangan (defense in depth):
  *    1. GitHub Actions cron tiap 2 hari  (lihat .github/workflows/supabase-keepalive.yml)
  *    2. Ping dari aplikasi saat dibuka   (modul ini)
- *    3. Edge Function /functions/v1/keepalive (jalur alternatif bila RLS menolak)
+ *    3. Tidak ada jalur service-role dari browser; scheduler tepercaya
+ *       menangani ping bila query klien tidak tersedia.
  *
  *  Biaya egress: ± 1 baris × beberapa ratus byte per ping.
  *  Ping 15x/bulan ≈ < 50 KB/bulan → tidak signifikan.
@@ -107,22 +108,7 @@ export async function pingKeepAlive(options = {}) {
     log.debug('Head count error:', err?.message);
   }
 
-  // 3. Jalur terakhir: Edge Function keepalive (jalan dengan service role)
-  try {
-    const { data, error } = await supabase.functions.invoke('keepalive', {
-      method: 'POST',
-      body: { source: 'client', ts: Date.now() },
-    });
-    if (!error) {
-      log.info('Ping keepalive via Edge Function:', data?.ok ?? true);
-      return { ok: true, via: 'edge:keepalive', ms: Date.now() - started };
-    }
-    log.warn('Edge Function keepalive gagal:', error.message);
-  } catch (err) {
-    log.warn('Edge Function keepalive error:', err?.message);
-  }
-
-  log.warn('Semua jalur ping keepalive gagal — periksa koneksi/konfigurasi.');
+  log.warn('Ping klien gagal; scheduler tepercaya tetap menjadi jalur keepalive utama.');
   return { ok: false, via: 'none', ms: Date.now() - started, skipped: 'all-failed' };
 }
 

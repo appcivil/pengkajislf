@@ -1,109 +1,57 @@
 /**
- * EDGE FUNCTION: keepalive
- * ---------------------------------------------------------------
- * Tujuan: menghasilkan AKTIVITAS DATABASE yang nyata (dan sekecil
- * mungkin) agar proyek Supabase Free tidak di-pause setelah 7 hari
- * tanpa aktivitas.
- *
- * Dipanggil oleh:
- *   1. GitHub Actions  → .github/workflows/supabase-keepalive.yml (tiap 2 hari)
- *   2. Aplikasi klien  → src/lib/keepalive.js (jalur cadangan)
- *   3. Scheduler eksternal apa pun (cron-job.org, n8n, UptimeRobot, dl.)
- *
- * Egress yang dihasilkan: < 1 KB per pemanggilan (satu baris kecil).
- *
- * Deploy:
- *   supabase functions deploy keepalive
- *
- * Uji manual:
- *   curl -i "https://<project-ref>.supabase.co/functions/v1/keepalive" \
- *        -H "Authorization: Bearer <ANON_KEY>"
+ * Scheduler-only keepalive endpoint.
+ * Gateway JWT remains enabled; application auth additionally requires
+ * x-keepalive-secret. Never expose this secret to browser code.
  */
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const KEEPALIVE_TABLE = 'keepalive_ping';
-const FALLBACK_TABLE = 'proyek';
+const json = (payload: unknown, status = 200) => new Response(JSON.stringify(payload), {
+  status,
+  headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
+});
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-};
-
-const json = (payload: unknown, status = 200) =>
-  new Response(JSON.stringify(payload), {
-    status,
-    headers: { ...CORS_HEADERS, 'content-type': 'application/json; charset=utf-8' },
-  });
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i += 1) mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return mismatch === 0;
+}
 
 Deno.serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: CORS_HEADERS });
+  if (req.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
+
+  const expected = Deno.env.get('KEEPALIVE_SECRET') || '';
+  const supplied = req.headers.get('x-keepalive-secret') || '';
+  if (!expected || !supplied || !constantTimeEqual(supplied, expected)) {
+    return json({ ok: false, error: 'Unauthorized scheduler' }, 401);
   }
 
-  const started = Date.now();
+  const url = Deno.env.get('SUPABASE_URL');
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!url || !serviceRoleKey) return json({ ok: false, error: 'Server configuration incomplete' }, 500);
 
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  // Service role dipakai agar ping tetap berhasil walau RLS membatasi anon,
-  // dan agar ping tetap tercatat sebagai aktivitas database.
-  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    ?? Deno.env.get('SUPABASE_ANON_KEY');
-
-  if (!supabaseUrl || !serviceKey) {
-    return json({ ok: false, error: 'Konfigurasi Supabase tidak tersedia di Edge Function' }, 500);
-  }
-
-  const supabase = createClient(supabaseUrl, serviceKey, {
+  // One fixed, bounded database write only after scheduler authentication.
+  // At one row every two days, retention RPC is unnecessary; avoid invoking
+  // the legacy SECURITY DEFINER cleanup function from this endpoint.
+  const db = createClient(url, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+  const { error: insertError } = await db.from('keepalive_ping')
+    .insert({ source: 'trusted-scheduler' });
 
-  // --- Ping 1: baca 1 baris dari tabel keepalive (query nyata ke Postgres) ---
-  const read = await supabase
-    .from(KEEPALIVE_TABLE)
-    .select('id')
-    .limit(1);
-
-  if (!read.error) {
-    // Catat ping supaya ada jejak (dan sekaligus aktivitas tulis).
-    // Insert ini opsional: kalau gagal, ping baca di atas tetap sah.
-    await supabase
-      .from(KEEPALIVE_TABLE)
-      .insert({ source: 'edge-function', created_at: new Date().toISOString() })
-      .select('id')
-      .limit(1)
-      .then(() => undefined, () => undefined);
-
-    return json({
-      ok: true,
-      via: 'keepalive_ping',
-      rows: read.data?.length ?? 0,
-      ms: Date.now() - started,
-      ts: new Date().toISOString(),
-    });
+  if (!insertError) {
+    return json({ ok: true, via: 'keepalive_ping', ts: new Date().toISOString() });
   }
 
-  // --- Ping 2: tabel keepalive belum ada → pakai head count (0 byte baris) ---
-  const head = await supabase
-    .from(FALLBACK_TABLE)
+  // Older live installations may not have keepalive_ping yet. A bounded
+  // HEAD query against the existing project table is the read-only fallback.
+  const { error: fallbackError } = await db.from('proyek')
     .select('id', { count: 'exact', head: true })
     .limit(1);
 
-  if (!head.error) {
-    return json({
-      ok: true,
-      via: `head:${FALLBACK_TABLE}`,
-      count: head.count ?? null,
-      note: `Tabel ${KEEPALIVE_TABLE} belum ada — jalankan migration 20260916_keepalive_and_indexes.sql`,
-      ms: Date.now() - started,
-      ts: new Date().toISOString(),
-    });
+  if (!fallbackError) {
+    return json({ ok: true, via: 'head:proyek', ts: new Date().toISOString() });
   }
 
-  return json({
-    ok: false,
-    error: read.error.message || head.error.message,
-    hint: 'Pastikan migration keepalive sudah dijalankan atau ubah FALLBACK_TABLE.',
-    ms: Date.now() - started,
-  }, 500);
+  return json({ ok: false, error: 'Database keepalive query failed' }, 503);
 });
