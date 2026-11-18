@@ -1968,3 +1968,144 @@ body.dark :where(#architectural-inspection-page, #electrical-inspection-page,
   #fire-inspection-page) :where(.form-input-dark, .form-select-dark, .form-textarea-dark) {
   background: #292a30; color: #f5f5f7; border-color: rgba(255,255,255,.14);
 }
+
+
+/* Water, sanitation and environmental engineering modules */
+:where(.inspection-page, #water-inspection-page, #stormwater-page, #ndt-page,
+  #simulation-page, .lighting-simulation-page) {
+  min-width: 0;
+  color: var(--text-primary);
+}
+.inspection-page {
+  max-width: 1600px;
+}
+.inspection-page .inspection-header-card {
+  background: #fff;
+  border: 1px solid rgba(31,41,55,.085);
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgba(31,41,55,.04);
+}
+.inspection-page .inspection-header-card h3 { color: #20242b !important; }
+.inspection-page .inspection-content { min-width: 0; }
+:where(#water-inspection-page, #stormwater-page, #ndt-page, #simulation-page)
+  :where(.card, .card-quartz, .demand-card, .result-card, .calculator-panel) {
+  border-radius: 14px;
+}
+#water-inspection-page :where(.water-header, .demand-card, .result-item),
+#wastewater-inspection-page :where(.wastewater-main-card, .card-quartz),
+#stormwater-page :where(.card-quartz),
+#ndt-page :where(.card, .result-card) {
+  border-color: rgba(31,41,55,.085);
+}
+#water-inspection-page :where(.btn-tab, .btn-action, .btn-calculate),
+#stormwater-page .storm-tab,
+#ndt-page .btn { border-radius: 9px; }
+#water-inspection-page :where(.result-grid, .storage-grid) { min-width: 0; }
+#water-inspection-page :where(.result-item, .result-card) {
+  background: #fff;
+  border: 1px solid #e6ebf1;
+  border-radius: 12px;
+}
+#wastewater-inspection-page :where(.wastewater-tab-item, .wastewater-tab-content) {
+  min-width: 0;
+}
+#wastewater-inspection-page .wastewater-tab-item {
+  border-radius: 9px;
+  transition: background .16s ease, color .16s ease;
+}
+#wastewater-inspection-page .wastewater-tab-item.active {
+  background: #e8f1ff;
+  color: #1769c2;
+}
+#stormwater-page :where(.storm-tab, .btn) { transition: background .16s ease, box-shadow .16s ease; }
+#stormwater-page .storm-tab.active {
+  background: #e8f1ff;
+  color: #1769c2;
+  border-radius: 9px;
+}
+#ndt-page #calculator-panel, #ndt-page #ndt-history { min-width: 0; }
+#ndt-page #result-card {
+  border: 1px solid rgba(31,41,55,.09);
+  border-radius: 14px;
+}
+
+/* Sanitation is rendered through BaseInspection's shared inspection shell */
+#sanitation-inspection-page .inspection-header-card {
+  background: #fff;
+  border-color: rgba(31,41,55,.085);
+}
+#sanitation-inspection-page :where(.sanitation-tab-content, #sanitation-tab-dashboard,
+  #sanitation-tab-toilets, #sanitation-tab-septic, #sanitation-tab-waste) { min-width: 0; }
+
+/* Simulation workbench: keep the viewport dominant and tool panels restrained */
+.lighting-simulation-page .simulation-layout {
+  min-width: 0;
+  gap: 12px;
+}
+.lighting-simulation-page :where(.panel, .panel-left, .panel-center, .panel-right) {
+  min-width: 0;
+  border: 1px solid rgba(31,41,55,.09);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(31,41,55,.04);
+  overflow: hidden;
+}
+.lighting-simulation-page .panel-header {
+  background: #f7f9fc;
+  border-bottom: 1px solid #e8edf3;
+}
+.lighting-simulation-page :where(.tabs, .view-toggle, .floating-toolbar) {
+  border-radius: 10px;
+}
+.lighting-simulation-page :where(.tab-btn, .toggle-btn) { border-radius: 8px; }
+#simulation-page :where(.card, .result-card, #simulation-control-panel) {
+  border: 1px solid rgba(31,41,55,.085);
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(31,41,55,.035);
+}
+#simulation-page :where(.sim-tab, .btn) { border-radius: 9px; }
+
+[data-theme="dark"] .inspection-page .inspection-header-card,
+body.dark .inspection-page .inspection-header-card {
+  background: #232429;
+  border-color: rgba(255,255,255,.09);
+}
+[data-theme="dark"] .inspection-page .inspection-header-card h3,
+body.dark .inspection-page .inspection-header-card h3 { color: #f5f5f7 !important; }
+[data-theme="dark"] :where(#water-inspection-page, #wastewater-inspection-page,
+  #stormwater-page, #ndt-page, #simulation-page, .lighting-simulation-page)
+  :where(.card, .card-quartz, .demand-card, .result-card, .calculator-panel, .panel),
+body.dark :where(#water-inspection-page, #wastewater-inspection-page,
+  #stormwater-page, #ndt-page, #simulation-page, .lighting-simulation-page)
+  :where(.card, .card-quartz, .demand-card, .result-card, .calculator-panel, .panel) {
+  background: #232429;
+  color: #f5f5f7;
+  border-color: rgba(255,255,255,.09);
+}
+[data-theme="dark"] .lighting-simulation-page .panel-header,
+body.dark .lighting-simulation-page .panel-header {
+  background: #292a30;
+  border-color: rgba(255,255,255,.1);
+}
+[data-theme="dark"] #stormwater-page .storm-tab.active,
+[data-theme="dark"] #wastewater-inspection-page .wastewater-tab-item.active,
+body.dark #stormwater-page .storm-tab.active,
+body.dark #wastewater-inspection-page .wastewater-tab-item.active {
+  background: #17375d;
+  color: #8fc1ff;
+}
+@media (max-width: 900px) {
+  .lighting-simulation-page .simulation-layout {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .lighting-simulation-page .panel-center { min-height: 360px; }
+}
+@media (max-width: 680px) {
+  .inspection-page { padding: 16px !important; }
+  .inspection-page .inspection-header-card { padding: 18px !important; }
+  :where(#water-inspection-page, #stormwater-page, #ndt-page, #simulation-page)
+    :where(.grid-4-col, .grid-3-col, .grid-2-col) {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .lighting-simulation-page .panel-center { min-height: 300px; }
+}
