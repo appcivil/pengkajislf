@@ -3068,3 +3068,106 @@ body.dark #tier-checklist-page .tier-btn.active .tier-icon {
   #checklist-page *,
   #tier-checklist-page * { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+
+/* Report workspace — polished document controls and responsive DOCX preview */
+.laporan-container {
+  gap: 14px !important;
+  padding: clamp(12px, 1.8vw, 22px) !important;
+  min-width: 0;
+}
+.laporan-container > .control-bar {
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 16px !important;
+  background: rgba(255,255,255,.86) !important;
+  border: 1px solid rgba(31,41,55,.09) !important;
+  border-radius: 15px !important;
+  box-shadow: 0 4px 16px rgba(20,28,40,.045);
+  color: var(--text-primary) !important;
+}
+.laporan-container .control-left,
+.laporan-container .control-right { min-width: 0; }
+.laporan-container .brand-title { color: var(--text-primary) !important; }
+.laporan-container .brand-subtitle { color: var(--text-tertiary) !important; }
+.laporan-container .btn-control:not(.btn-primary):not(.btn-ai) {
+  color: var(--text-secondary) !important;
+  background: #f5f7fa !important;
+  border-color: rgba(31,41,55,.10) !important;
+}
+.laporan-container .preview-wrapper {
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid rgba(31,41,55,.10);
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(20,28,40,.05);
+}
+#docx-render-container .nav-sidebar {
+  background: #f7f8fa !important;
+  border-color: rgba(31,41,55,.10) !important;
+}
+#docx-render-container #docx-main-content {
+  background: #eef0f4 !important;
+}
+#docx-render-container #docx-page-container {
+  border: 1px solid rgba(31,41,55,.08);
+  box-shadow: 0 8px 28px rgba(20,28,40,.12) !important;
+}
+#docx-render-container #docx-nav-list { scrollbar-width: thin; }
+#docx-render-container #docx-nav-list button,
+#docx-render-container #docx-nav-list [role="button"] {
+  border-radius: 7px;
+  transition: background .16s ease, color .16s ease;
+}
+[data-theme="dark"] .laporan-container > .control-bar,
+body.dark .laporan-container > .control-bar {
+  background: rgba(35,36,41,.92) !important;
+  border-color: rgba(255,255,255,.09) !important;
+}
+[data-theme="dark"] .laporan-container .brand-title,
+body.dark .laporan-container .brand-title { color: var(--text-primary) !important; }
+[data-theme="dark"] .laporan-container .btn-control:not(.btn-primary):not(.btn-ai),
+body.dark .laporan-container .btn-control:not(.btn-primary):not(.btn-ai) {
+  color: var(--text-secondary) !important;
+  background: #292a30 !important;
+  border-color: rgba(255,255,255,.10) !important;
+}
+[data-theme="dark"] #docx-render-container .nav-sidebar,
+body.dark #docx-render-container .nav-sidebar {
+  background: #222329 !important;
+  border-color: rgba(255,255,255,.10) !important;
+}
+[data-theme="dark"] #docx-render-container #docx-main-content,
+body.dark #docx-render-container #docx-main-content { background: #17181c !important; }
+[data-theme="dark"] #docx-render-container #docx-page-container,
+body.dark #docx-render-container #docx-page-container {
+  border-color: rgba(255,255,255,.12);
+  box-shadow: 0 8px 28px rgba(0,0,0,.28) !important;
+}
+@media (max-width: 760px) {
+  .laporan-container { height: auto !important; min-height: calc(100vh - 90px); overflow: visible !important; }
+  .laporan-container > .control-bar { align-items: flex-start !important; }
+  .laporan-container .control-left { flex: 1 1 100%; }
+  .laporan-container .control-right { width: 100%; flex-wrap: wrap; }
+  .laporan-container .control-right .btn-control { flex: 1 1 auto; justify-content: center; }
+  .laporan-container .preview-wrapper { min-height: 65vh; overflow: auto; }
+  #docx-render-container .nav-sidebar { width: 190px !important; }
+  #docx-render-container #docx-main-content { left: 190px !important; padding: 12px !important; }
+  #docx-render-container #docx-page-container { min-width: 560px; }
+}
+@media (max-width: 480px) {
+  .laporan-container { padding: 10px !important; gap: 10px !important; }
+  .laporan-container > .control-bar { padding: 12px !important; }
+  .laporan-container .control-right .btn-control { min-width: 42px; padding: 0 10px !important; font-size: 10px !important; }
+  .laporan-container .brand-subtitle { font-size: 8px !important; line-height: 1.5; }
+  #docx-render-container .nav-sidebar { width: 150px !important; }
+  #docx-render-container #docx-main-content { left: 150px !important; padding: 8px !important; }
+  #docx-render-container #docx-page-container { min-width: 520px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .laporan-container *, #docx-render-container * {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
