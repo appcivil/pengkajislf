@@ -84,17 +84,6 @@ begin
     raise exception 'conflicting repeated finalization must be rejected';
   end if;
 
-  if not exists (
-    select 1 from private.ai_usage_buckets b
-    where b.scope = 'user'
-      and b.subject_id = v_user_a
-      and b.window_seconds in (60, 3600, 2592000)
-      and b.used_requests >= 1
-      and b.used_tokens >= 550
-  ) then
-    raise exception 'disabled accounting windows must still record actual usage';
-  end if;
-
   select * into v_after_finalize
   from private.ai_quota_reserve(v_user_a, null, 'quota-test-user-a-3', 400, 900);
   if not v_after_finalize.allowed then
@@ -117,6 +106,21 @@ end;
 $$;
 
 reset role;
+
+do $accounting$
+begin
+  if not exists (
+    select 1 from private.ai_usage_buckets b
+    where b.scope = 'user'
+      and b.subject_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+      and b.window_seconds in (60, 3600, 2592000)
+      and b.used_requests >= 1
+      and b.used_tokens >= 550
+  ) then
+    raise exception 'disabled accounting windows must still record actual usage';
+  end if;
+end;
+$accounting$;
 
 update private.ai_usage_reservations
 set expires_at = now() - interval '1 minute'
