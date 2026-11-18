@@ -801,3 +801,85 @@ body.dark #tier-checklist-page #tier-content h2 { color:#f4f4f5 !important; }
 @media(max-width:480px) {
   #executive-page .grid-4 { grid-template-columns:1fr !important; }
 }
+
+
+/* Administration, organization, account settings and task management */
+#settings-page, #tim-kerja-page, #todo-page, #proyek-list-page, #proyek-detail-page,
+#analisis-page, #kondisi-page, #login-portal { color:var(--text-primary); }
+#settings-page .page-header,
+#tim-kerja-page .page-header,
+#proyek-list-page .page-header,
+#proyek-detail-page > .page-header,
+#analisis-page .page-header,
+#kondisi-page .page-header {
+  background:linear-gradient(135deg,#fff,#f6f8fb) !important;
+  border:1px solid rgba(31,41,55,.07); border-radius:16px;
+  padding:20px !important; margin-bottom:20px;
+}
+#settings-page .page-title, #tim-kerja-page .page-title,
+#proyek-list-page .page-title, #proyek-detail-page .page-title,
+#analisis-page .page-title, #kondisi-page .page-title { color:#202126 !important; }
+#settings-page .card-quartz,
+#settings-page .tab-content,
+#tim-kerja-page .card-quartz,
+#tim-kerja-page .table-wrap,
+#proyek-list-page .card-quartz,
+#proyek-detail-page .card-quartz,
+#analisis-page .card-quartz,
+#kondisi-page .card {
+  background:#fff !important; border:1px solid rgba(31,41,55,.085) !important;
+  border-radius:15px !important; box-shadow:0 4px 16px rgba(31,41,55,.04);
+}
+#settings-page .tab-item { border-radius:10px !important; }
+#settings-page .tab-item.active { background:#eaf3ff !important; color:#1769c2 !important; border-color:#d5e7ff !important; }
+#settings-page .form-input, #settings-page .form-select,
+#tim-kerja-page .form-input, #tim-kerja-page .form-select,
+#todo-page .form-control, #proyek-list-page .form-input, #proyek-list-page .form-select,
+#proyek-detail-page .form-control, #analisis-page input, #analisis-page select,
+#kondisi-page input, #kondisi-page select, #kondisi-page textarea {
+  background:#fff !important; color:#24262b !important;
+  border:1px solid #dfe3e9 !important; border-radius:9px !important;
+}
+#settings-page .form-input:focus, #settings-page .form-select:focus,
+#tim-kerja-page .form-input:focus, #tim-kerja-page .form-select:focus,
+#todo-page .form-control:focus, #proyek-list-page .form-input:focus {
+  border-color:#80b5f4 !important; box-shadow:0 0 0 3px rgba(22,119,237,.1) !important; outline:0;
+}
+#tim-kerja-page table, #proyek-list-page table { color:#30333a; }
+#tim-kerja-page th, #proyek-list-page th { background:#f5f7fa; color:#656b75; }
+#tim-kerja-page td, #tim-kerja-page th,
+#proyek-list-page td, #proyek-list-page th { border-color:#e9ebef !important; }
+#todo-page .kanban-col {
+  background:#f5f7fa !important; border:1px solid #e7eaf0 !important; border-radius:14px !important;
+}
+#todo-page .kanban-col-header { border-bottom:1px solid #e5e8ed; }
+#todo-page .task-card { background:#fff !important; border:1px solid #e5e8ed !important; border-radius:12px !important; box-shadow:0 2px 8px rgba(31,41,55,.04); }
+#todo-page .modal { background:#fff !important; border:1px solid #e5e8ed !important; border-radius:16px !important; box-shadow:0 18px 50px rgba(31,41,55,.18); }
+#todo-page .modal-header, #todo-page .modal-footer { border-color:#eceef1 !important; }
+#login-portal .login-card-quartz {
+  background:rgba(255,255,255,.94) !important; color:#24262b !important;
+  border:1px solid rgba(255,255,255,.75) !important; border-radius:22px !important;
+  box-shadow:0 20px 60px rgba(31,41,55,.15) !important;
+  backdrop-filter:blur(24px) saturate(150%);
+}
+#login-portal .login-narrative { color:#626873 !important; }
+#login-portal .form-input { background:#fff !important; color:#24262b !important; border:1px solid #dfe3e9 !important; }
+#login-portal .login-backdrop { background:linear-gradient(145deg,#edf3fb,#f8f9fb 55%,#e9f1fc) !important; }
+#organization-page .card-quartz, #organisasi-page .card-quartz {
+  background:#fff !important; border:1px solid rgba(31,41,55,.09) !important;
+  border-radius:16px !important; box-shadow:0 4px 16px rgba(31,41,55,.045);
+}
+#organization-page input, #organisasi-page input { background:#fff !important; color:#24262b !important; border:1px solid #dfe3e9 !important; border-radius:9px !important; }
+#proyek-list-page .empty-state { background:#f8fafc !important; border:1px dashed #dce2e9; border-radius:14px; }
+#proyek-detail-page .workflow-timeline { border-color:#e4e8ee !important; }
+#proyek-detail-page .btn-tab.active { background:#eaf3ff !important; color:#1769c2 !important; border-color:#d5e7ff !important; }
+#analisis-page .modal-content { background:#fff !important; border:1px solid #e5e8ed !important; border-radius:16px !important; }
+#kondisi-page .kondisi-slider { accent-color:#1677ed; }
+@media(max-width:760px) {
+  #settings-page .grid-main-side, #settings-page .grid-2-col,
+  #tim-kerja-page .grid-main-side { grid-template-columns:1fr !important; }
+  #settings-page .page-header, #tim-kerja-page .page-header,
+  #proyek-list-page .page-header, #analisis-page .page-header,
+  #kondisi-page .page-header { padding:16px !important; }
+  #todo-page .kanban-board { overflow-x:auto; grid-auto-columns:minmax(270px,85vw); }
+}
