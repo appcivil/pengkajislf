@@ -23,6 +23,7 @@ declare
   v_denied_org record;
   v_denied_user record;
   v_after_finalize record;
+  v_expiring record;
   v_user_a uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
   v_user_b uuid := 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
   v_user_c uuid := 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
@@ -67,6 +68,12 @@ begin
     raise exception 'finalized actual usage should replace reservation amount: %', v_after_finalize.reason;
   end if;
 
+  select * into v_expiring
+  from private.ai_quota_reserve(v_user_c, null, 'quota-test-user-c-expire', 100, 900);
+  if not v_expiring.allowed then
+    raise exception 'expiry fixture reservation should be allowed';
+  end if;
+
   if not private.ai_quota_release(v_second_user.reservation_id) then
     raise exception 'release should succeed';
   end if;
@@ -76,6 +83,21 @@ begin
 end;
 $$;
 
+reset role;
+
+update private.ai_usage_reservations
+set expires_at = now() - interval '1 minute'
+where idempotency_key = 'quota-test-user-c-expire';
+
+set local role service_role;
+do $
+declare
+  v_expired integer;
+begin
+  v_expired := private.ai_quota_expire_reservations(50);
+  if v_expired < 1 then raise exception 'expired reservation should be released'; end if;
+end;
+$;
 reset role;
 
 delete from private.ai_usage_reservations
