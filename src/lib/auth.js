@@ -164,17 +164,23 @@ export async function devModeBypass() {
 
 // Sign out
 export async function signOut() {
-  try {
-    await supabase.auth.signOut();
-  } catch(e) { /* ignore error on signout */ }
+  // Jangan menyatakan logout berhasil bila Supabase gagal mengakhiri sesi.
+  // Pemanggil UI akan menampilkan pesan gagal dan pengguna dapat mencoba lagi.
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
+
   // EGRESS GUARD: buang cache data user agar tidak tertinggal di perangkat
   // (penting untuk perangkat yang dipakai bergantian di lapangan).
   try {
     const { guardedFetch } = await import('./egress/index.js');
     await guardedFetch.__reset?.();
-  } catch(e) { /* ignore */ }
+  } catch(e) {
+    console.warn('[Auth] Failed to clear local egress cache after sign out', e);
+  }
+
   localStorage.removeItem(DEV_USER_KEY);
   _currentUser = null;
+  _isAdmin = false;
   notifyListeners(null);
 }
 
