@@ -261,7 +261,9 @@ begin
   for update;
 
   if not found then return false; end if;
-  if v_reservation.status = 'finalized' then return true; end if;
+  if v_reservation.status = 'finalized' then
+    return v_reservation.actual_tokens = p_actual_tokens;
+  end if;
   if v_reservation.status <> 'reserved' then return false; end if;
 
   for v_ref in select value from pg_catalog.jsonb_array_elements(v_reservation.bucket_refs)
