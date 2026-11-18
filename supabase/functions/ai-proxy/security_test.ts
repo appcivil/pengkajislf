@@ -161,3 +161,14 @@ Deno.test("project AI role matrix denies viewer, platform admin without membersh
     assertEquals(canExecuteProjectAI(role), false, `${String(role)} must not receive implicit project AI access`);
   }
 });
+
+
+Deno.test("viewer-only memberships cannot execute unscoped AI", () => {
+  const memberships = [{ role: "viewer" }, { role: "viewer" }];
+  assertEquals(memberships.some((membership) => canExecuteProjectAI(membership.role)), false);
+});
+
+Deno.test("unscoped AI remains available to an account with an executable role in any tenant", () => {
+  const memberships = [{ role: "viewer" }, { role: "member" }];
+  assertEquals(memberships.some((membership) => canExecuteProjectAI(membership.role)), true);
+});
