@@ -174,8 +174,11 @@ export class AIRouter {
     this.rateLimiter = new RateLimiter();
     this.deduplicator = new RequestDeduplicator();
     this.logger = logger;
-    this.proxyUrl = import.meta.env.VITE_AI_PROXY_URL || '';
-    this.useProxy = import.meta.env.PROD && !!this.proxyUrl;
+    this.proxyUrl = import.meta.env.VITE_AI_PROXY_URL ||
+      (import.meta.env.VITE_SUPABASE_URL
+        ? `${import.meta.env.VITE_SUPABASE_URL.replace(/[/]+$/, '')}/functions/v1/ai-proxy`
+        : '/functions/v1/ai-proxy');
+    this.useProxy = true;
   }
 
   async generate(prompt, options = {}) {
@@ -246,11 +249,8 @@ export class AIRouter {
   async executeRequest(prompt, modelConfig, options) {
     this.rateLimiter.recordRequest(modelConfig.provider);
 
-    if (this.useProxy) {
-      return this.executeViaProxy(prompt, modelConfig, options);
-    } else {
-      return this.executeDirect(prompt, modelConfig, options);
-    }
+    if (!this.useProxy) throw new Error('AI Proxy wajib digunakan.');
+    return this.executeViaProxy(prompt, modelConfig, options);
   }
 
   async executeViaProxy(prompt, modelConfig, options) {
@@ -291,41 +291,8 @@ export class AIRouter {
     return this.normalizeResponse(data, modelConfig.provider);
   }
 
-  async executeDirect(prompt, modelConfig, options) {
-    // Direct API call — HANYA pengembangan. Di produksi, kunci penyedia AI
-    // tidak boleh ada di peramban; gunakan ai-proxy.
-    if (!import.meta.env.DEV) {
-      throw new Error(
-        'Permintaan AI langsung dari peramban dinonaktifkan di produksi. ' +
-        'Set VITE_AI_PROXY_URL ke Edge Function ai-proxy.'
-      );
-    }
-    const endpoints = {
-      kimi: 'https://api.moonshot.ai/v1/chat/completions',
-      gemini: `https://generativelanguage.googleapis.com/v1beta/models/${modelConfig.id}:generateContent`,
-      openrouter: 'https://openrouter.ai/api/v1/chat/completions'
-    };
-
-    const apiKey = this.getApiKey(modelConfig.provider);
-    if (!apiKey) {
-      throw new Error(`API key not found for provider: ${modelConfig.provider}`);
-    }
-
-    const response = await fetch(endpoints[modelConfig.provider], {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify(this.buildRequestBody(prompt, modelConfig, options))
-    });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return this.normalizeResponse(data, modelConfig.provider);
+  async executeDirect() {
+    throw new Error('Pemanggilan provider langsung dari browser dinonaktifkan. Gunakan ai-proxy.');
   }
 
   buildRequestBody(prompt, modelConfig, options) {
