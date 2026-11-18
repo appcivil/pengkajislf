@@ -31,6 +31,8 @@ Deno.serve(async (req: Request) => {
   if (!url || !serviceRoleKey) return json({ ok: false, error: 'Server configuration incomplete' }, 500);
 
   // One fixed, bounded database write only after scheduler authentication.
+  // At one row every two days, retention RPC is unnecessary; avoid invoking
+  // the legacy SECURITY DEFINER cleanup function from this endpoint.
   const db = createClient(url, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
@@ -38,8 +40,6 @@ Deno.serve(async (req: Request) => {
     .insert({ source: 'trusted-scheduler' });
 
   if (!insertError) {
-    // Best-effort retention; do not fail a successful ping if cleanup is unavailable.
-    await db.rpc('keepalive_prune').then(() => undefined, () => undefined);
     return json({ ok: true, via: 'keepalive_ping', ts: new Date().toISOString() });
   }
 
