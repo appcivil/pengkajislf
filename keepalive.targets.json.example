@@ -8,6 +8,7 @@
   {
     "name": "Contoh proyek kedua",
     "url": "https://xxxxxxxxxxxxxxxx.supabase.co",
-    "key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    "key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "secret": "ISI_DENGAN_KEEPALIVE_SECRET_DI_SECRET_STORE_LOKAL"
   }
 ]
