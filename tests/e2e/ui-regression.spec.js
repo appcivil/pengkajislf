@@ -151,3 +151,39 @@ test('dialog and toast can be opened and dismissed accessibly', async ({ page })
   await expect(notification).toHaveClass(/hide/);
   await expect(notification).toHaveCount(0, { timeout: 1500 });
 });
+
+test('light surfaces keep readable text while branded controls and dark theme stay intact', async ({ page }) => {
+  await openPreviewSession(page);
+
+  const fixture = await page.evaluate(() => {
+    const host = document.createElement('div');
+    host.id = 'contrast-regression-fixture';
+    host.innerHTML = `
+      <section class="card-quartz" style="background:#fff;color:#fff">
+        <span id="contrast-card-label" style="color:white">Label kartu</span>
+        <button id="contrast-brand-button" style="color:white;background:#1677ed">Aksi</button>
+      </section>
+      <div id="docx-preview-loading"><span id="contrast-docx-label" style="color:white">Memuat dokumen</span></div>
+    `;
+    document.querySelector('.app-layout').appendChild(host);
+    return true;
+  });
+  expect(fixture).toBe(true);
+
+  const lightColors = await page.evaluate(() => ({
+    card: getComputedStyle(document.querySelector('#contrast-card-label')).color,
+    docx: getComputedStyle(document.querySelector('#contrast-docx-label')).color,
+    button: getComputedStyle(document.querySelector('#contrast-brand-button')).color,
+  }));
+  expect(lightColors.card).toBe('rgb(29, 29, 31)');
+  expect(lightColors.docx).toBe('rgb(29, 29, 31)');
+  expect(lightColors.button).toBe('rgb(255, 255, 255)');
+
+  await page.evaluate(() => document.body.classList.add('dark'));
+  const darkColors = await page.evaluate(() => ({
+    card: getComputedStyle(document.querySelector('#contrast-card-label')).color,
+    docx: getComputedStyle(document.querySelector('#contrast-docx-label')).color,
+  }));
+  expect(darkColors.card).toBe('rgb(255, 255, 255)');
+  expect(darkColors.docx).toBe('rgb(255, 255, 255)');
+});
