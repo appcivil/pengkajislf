@@ -19,7 +19,7 @@ create table if not exists private.ai_quota_policies (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (scope, plan_key, window_seconds),
-  check (max_requests is not null or max_tokens is not null)
+  check (enabled = false or max_requests is not null or max_tokens is not null)
 );
 
 create table if not exists private.ai_usage_buckets (
@@ -53,6 +53,23 @@ create table if not exists private.ai_usage_reservations (
 alter table private.ai_quota_policies enable row level security;
 alter table private.ai_usage_buckets enable row level security;
 alter table private.ai_usage_reservations enable row level security;
+
+-- Disabled accounting windows record usage from day one without imposing
+-- any numeric limits. Owners can activate limits later without losing history.
+insert into private.ai_quota_policies
+  (scope, plan_key, window_seconds, max_requests, max_tokens, enabled)
+select scope, 'free', window_seconds, null, null, false
+from (values
+  ('user'::text, 60),
+  ('user'::text, 3600),
+  ('user'::text, 86400),
+  ('user'::text, 2592000),
+  ('organization'::text, 60),
+  ('organization'::text, 3600),
+  ('organization'::text, 86400),
+  ('organization'::text, 2592000)
+) as windows(scope, window_seconds)
+on conflict (scope, plan_key, window_seconds) do nothing;
 
 create index if not exists ai_usage_reservations_expiry_idx
   on private.ai_usage_reservations (expires_at)
@@ -146,9 +163,9 @@ begin
     v_subject_id := case when v_scope = 'user' then p_user_id else p_organization_id end;
 
     for v_policy in
-      select p.window_seconds, p.max_requests, p.max_tokens
+      select p.window_seconds, p.max_requests, p.max_tokens, p.enabled
       from private.ai_quota_policies p
-      where p.scope = v_scope and p.plan_key = 'free' and p.enabled = true
+      where p.scope = v_scope and p.plan_key = 'free'
       order by p.window_seconds
     loop
       v_period_start := pg_catalog.date_bin(
@@ -171,14 +188,14 @@ begin
         and b.period_start = v_period_start
       for update;
 
-      if v_policy.max_requests is not null
+      if v_policy.enabled and v_policy.max_requests is not null
          and v_bucket.used_requests + v_bucket.reserved_requests + 1 > v_policy.max_requests then
         return query select false, null::uuid, 'request_quota_exceeded'::text,
           v_period_start + pg_catalog.make_interval(secs => v_policy.window_seconds);
         return;
       end if;
 
-      if v_policy.max_tokens is not null
+      if v_policy.enabled and v_policy.max_tokens is not null
          and v_bucket.used_tokens + v_bucket.reserved_tokens + p_reserved_tokens > v_policy.max_tokens then
         return query select false, null::uuid, 'token_quota_exceeded'::text,
           v_period_start + pg_catalog.make_interval(secs => v_policy.window_seconds);
