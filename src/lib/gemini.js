@@ -182,7 +182,7 @@ PENTING: Isi 'catatan' dengan deskripsi kondisi fisik yang terlihat meskipun sta
  * @param {Object} fileData {base64, mimeType}
  * @returns {Promise<{category: string, subcategory: string, extracted_text: string, metadata: Object}>}
  */
-export async function analyzeDocument(fileData) {
+export async function analyzeDocument(fileData, options = {}) {
   let useDeepReasoning = false;
   try {
     const integration = getSmartAIIntegration();
@@ -216,8 +216,8 @@ Output WAJIB JSON murni:
     const cleanJson = rawResult.replace(/```json/gi, '').replace(/```/g, '').trim();
     let parsedResult = JSON.parse(cleanJson);
 
-    // Enhanced dengan Deep Reasoning jika tersedia
-    if (useDeepReasoning) {
+    // Enhanced hanya jika diminta; integrasi mematikan flag ini untuk mencegah rekursi.
+    if (useDeepReasoning && options.useDeepReasoning !== false) {
       try {
         const integration = getSmartAIIntegration();
         const enhancedResult = await integration.analyzeDocumentWithDeepReasoning(fileData);

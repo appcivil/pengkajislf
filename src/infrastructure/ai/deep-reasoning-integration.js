@@ -220,7 +220,9 @@ export class SmartAIIntegration {
         console.log('[SmartAI Integration] Menganalisis dokumen dengan Deep Reasoning');
 
         // Eksekusi document analysis yang sudah ada
-        const docResult = await analyzeDocument(fileData);
+        // Jalankan ekstraksi dasar tanpa memanggil Deep Reasoning kembali.
+        // analyzeDocument() melakukan enhancement otomatis secara default.
+        const docResult = await analyzeDocument(fileData, { useDeepReasoning: false });
 
         // Enhance dengan rule validation
         const validatedResult = this.ruleEngine.validateDocument(docResult);
