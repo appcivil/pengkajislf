@@ -56,8 +56,8 @@ create index if not exists ai_usage_reservations_expiry_idx
   on private.ai_usage_reservations (expires_at)
   where status = 'reserved';
 
-revoke all on all tables in schema private from public, anon, authenticated, service_role;
-revoke all on all sequences in schema private from public, anon, authenticated, service_role;
+revoke all on private.ai_quota_policies, private.ai_usage_buckets, private.ai_usage_reservations
+  from public, anon, authenticated, service_role;
 
 create or replace function private.ai_quota_reserve(
   p_user_id uuid,
