@@ -135,7 +135,7 @@ export function validateAIRequest(value: unknown): ValidatedAIRequest {
   } else if (body.mimeType !== undefined) {
     throw new Error("INVALID_IMAGE");
   }
-  if (hasImages && typeof body.projectId !== "string") throw new Error("PROJECT_REQUIRED_FOR_IMAGE_ANALYSIS");
+  if ((hasSingleImage || hasImages) && typeof body.projectId !== "string") throw new Error("PROJECT_REQUIRED_FOR_IMAGE_ANALYSIS");
 
   return {
     provider: body.provider,
