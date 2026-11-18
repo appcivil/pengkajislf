@@ -1,6 +1,27 @@
 -- Atomic AI quota ledger integration tests.
 -- Executed only in the disposable local Supabase CI database.
 
+begin;
+
+do $privileges$
+begin
+  if not has_schema_privilege('authenticated', 'private', 'USAGE') then
+    raise exception 'authenticated must retain private schema usage for tenant RLS helpers';
+  end if;
+  if has_table_privilege('authenticated', 'private.ai_quota_policies', 'SELECT')
+     or has_table_privilege('authenticated', 'private.ai_usage_buckets', 'SELECT')
+     or has_table_privilege('authenticated', 'private.ai_usage_reservations', 'SELECT')
+     or has_table_privilege('anon', 'private.ai_usage_reservations', 'SELECT')
+     or has_table_privilege('service_role', 'private.ai_usage_reservations', 'SELECT') then
+    raise exception 'quota ledger tables must not be directly readable by client or service role';
+  end if;
+  if has_function_privilege('authenticated', 'private.ai_quota_reserve(uuid,uuid,text,integer,integer)', 'EXECUTE')
+     or has_function_privilege('anon', 'private.ai_quota_reserve(uuid,uuid,text,integer,integer)', 'EXECUTE') then
+    raise exception 'quota reservation RPC must be service_role-only';
+  end if;
+end;
+$privileges$;
+
 insert into private.ai_quota_policies
   (scope, plan_key, window_seconds, max_requests, max_tokens, enabled)
 values
@@ -21,6 +42,7 @@ declare
   v_denied_org record;
   v_denied_user record;
   v_after_finalize record;
+  v_expiring record;
   v_user_a uuid := 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
   v_user_b uuid := 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
   v_user_c uuid := 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
@@ -58,11 +80,20 @@ begin
   if not private.ai_quota_finalize(v_first.reservation_id, 550) then
     raise exception 'repeated finalization should be idempotent';
   end if;
+  if private.ai_quota_finalize(v_first.reservation_id, 551) then
+    raise exception 'conflicting repeated finalization must be rejected';
+  end if;
 
   select * into v_after_finalize
   from private.ai_quota_reserve(v_user_a, null, 'quota-test-user-a-3', 400, 900);
   if not v_after_finalize.allowed then
     raise exception 'finalized actual usage should replace reservation amount: %', v_after_finalize.reason;
+  end if;
+
+  select * into v_expiring
+  from private.ai_quota_reserve(v_user_c, null, 'quota-test-user-c-expire', 100, 900);
+  if not v_expiring.allowed then
+    raise exception 'expiry fixture reservation should be allowed';
   end if;
 
   if not private.ai_quota_release(v_second_user.reservation_id) then
@@ -76,6 +107,49 @@ $$;
 
 reset role;
 
+do $accounting$
+begin
+  if not exists (
+    select 1 from private.ai_usage_buckets b
+    where b.scope = 'user'
+      and b.subject_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+      and b.window_seconds in (60, 3600, 2592000)
+      and b.used_requests >= 1
+      and b.used_tokens >= 550
+  ) then
+    raise exception 'disabled accounting windows must still record actual usage';
+  end if;
+end;
+$accounting$;
+
+update private.ai_usage_reservations
+set expires_at = now() - interval '1 minute'
+where idempotency_key = 'quota-test-user-c-expire';
+
+set local role service_role;
+do $quota_expire$
+declare
+  v_expired integer;
+begin
+  v_expired := private.ai_quota_expire_reservations(50);
+  if v_expired < 1 then raise exception 'expired reservation should be released'; end if;
+
+  -- Expired idempotency keys remain consumed and cannot create a fresh reservation.
+  if exists (
+    select 1 from private.ai_quota_reserve(
+      'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+      null,
+      'quota-test-user-c-expire',
+      100,
+      900
+    ) q where q.allowed
+  ) then
+    raise exception 'expired idempotency key must not create a new reservation';
+  end if;
+end;
+$quota_expire$;
+reset role;
+
 delete from private.ai_usage_reservations
 where idempotency_key like 'quota-test-user-%';
 delete from private.ai_usage_buckets
@@ -85,5 +159,8 @@ where subject_id in (
   'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
   'dddddddd-dddd-4ddd-8ddd-dddddddddddd'
 );
-delete from private.ai_quota_policies
+update private.ai_quota_policies
+set max_requests = null, max_tokens = null, enabled = false, updated_at = now()
 where plan_key = 'free' and scope in ('user', 'organization') and window_seconds = 86400;
+
+commit;
