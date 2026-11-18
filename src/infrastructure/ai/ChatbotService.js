@@ -36,7 +36,7 @@ export class ChatbotService extends IChatbotService {
     // Process attachments - read file content
     let attachmentContent = '';
     if (attachments && attachments.length > 0) {
-      attachmentContent = await this._processAttachments(attachments, { projectId: context.projectId });
+      attachmentContent = await this._processAttachments(attachments, { projectId: context.projectId || options.projectId });
     }
 
     // Combine message with attachment content
