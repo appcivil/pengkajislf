@@ -412,7 +412,10 @@ Tulis dalam gaya profesional namun santai, menggunakan bahasa Indonesia.`;
     const accessToken = session.access_token;
 
     const callFn = async (currentModel) => {
-      const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-proxy`;
+      const functionUrl = import.meta.env.VITE_AI_PROXY_URL ||
+        (import.meta.env.VITE_SUPABASE_URL
+          ? `${import.meta.env.VITE_SUPABASE_URL.replace(/[/]+$/, '')}/functions/v1/ai-proxy`
+          : '/functions/v1/ai-proxy');
       const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
       const response = await fetch(functionUrl, {
