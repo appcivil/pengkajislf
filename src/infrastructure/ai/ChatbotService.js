@@ -52,6 +52,7 @@ export class ChatbotService extends IChatbotService {
           projectData: context.applicationData,
           moduleContext: context.moduleContext,
           userId: context.userId,
+          projectId: context.projectId,
           model // Pass selected model
         };
 
@@ -87,6 +88,7 @@ export class ChatbotService extends IChatbotService {
             result = await this.reasoningService.research(fullMessage, {
               depth: 'comprehensive',
               sources: ['regulasi', 'standar', 'best_practices'],
+              projectId: context.projectId,
               model // Pass selected model
             });
             return {
@@ -108,6 +110,7 @@ export class ChatbotService extends IChatbotService {
               };
             }
             result = await this.reasoningService.daily(reasoningContext.userId, {
+              projectId: context.projectId,
               model // Pass selected model
             });
             return {

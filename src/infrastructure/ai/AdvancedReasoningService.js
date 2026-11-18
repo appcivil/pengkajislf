@@ -77,7 +77,7 @@ ${context.historicalData ? `Historical Data:\n${escapeHtml(context.historicalDat
 
 Execute full reasoning protocol now.`;
 
-    const response = await this._callAI(thinkingPrompt, model);
+    const response = await this._callAI(thinkingPrompt, model, { projectId: context.projectId });
 
     // Parse thinking dan answer
     const thinkMatch = response.match(/<thinking>([\s\S]*?)<\/thinking>/);
@@ -229,7 +229,7 @@ ${context.simulationResults ? `SIMULATION DATA:\n${escapeHtml(context.simulation
 EXECUTE COMPLETE REASONING PROTOCOL
 ═══════════════════════════════════════════════════════════════`;
 
-    const response = await this._callAI(deepPrompt, model);
+    const response = await this._callAI(deepPrompt, model, { projectId: context.projectId });
 
     return {
       mode: 'deep_reasoning',
@@ -247,7 +247,7 @@ EXECUTE COMPLETE REASONING PROTOCOL
    * Mode Research - Pengumpulan dan sintesis informasi
    */
   async research(topic, options = {}) {
-    const { depth = 'comprehensive', sources = ['regulasi', 'standar', 'best_practices'], model: modelOption } = options;
+    const { depth = 'comprehensive', sources = ['regulasi', 'standar', 'best_practices'], model: modelOption, projectId } = options;
 
     // Use model from options or fall back to GEMINI_PRO then default
     const model = modelOption || MODELS.GEMINI_PRO || this.defaultModel;
@@ -306,7 +306,8 @@ Pastikan output:
 ✓ Menggunakan bahasa Indonesia akademik dan teknis`;
 
     const response = await this._callAI(researchPrompt, model, {
-      maxTokens: 8192
+      maxTokens: 8192,
+      projectId
     });
 
     return {
@@ -382,7 +383,7 @@ Saran prioritas untuk fokus esok hari.
 
 Tulis dalam gaya profesional namun santai, menggunakan bahasa Indonesia.`;
 
-    const response = await this._callAI(dailyPrompt, model);
+    const response = await this._callAI(dailyPrompt, model, { projectId });
 
     return {
       mode: 'daily',
@@ -426,7 +427,8 @@ Tulis dalam gaya profesional namun santai, menggunakan bahasa Indonesia.`;
           model: currentModel.id,
           prompt,
           temperature: options.temperature || this.temperature,
-          maxTokens: options.maxTokens || this.maxTokens
+          maxTokens: options.maxTokens || this.maxTokens,
+          ...(options.projectId ? { projectId: options.projectId } : {})
         })
       });
 
