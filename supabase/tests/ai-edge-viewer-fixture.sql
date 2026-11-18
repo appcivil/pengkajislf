@@ -1,0 +1,4 @@
+insert into auth.users (id,aud,role,email,encrypted_password,email_confirmed_at,raw_app_meta_data,raw_user_meta_data,created_at,updated_at) values ('dddddddd-dddd-4ddd-8ddd-dddddddddddd','authenticated','authenticated','edge-viewer@example.test','',now(),'{}','{}',now(),now()) on conflict (id) do nothing;
+insert into public.organizations (id,name,slug) values ('dddddddd-0000-4ddd-8ddd-dddddddddddd','Edge Viewer CI','edge-viewer-ci') on conflict (id) do nothing;
+insert into public.organization_members (organization_id,user_id,role) values ('dddddddd-0000-4ddd-8ddd-dddddddddddd','dddddddd-dddd-4ddd-8ddd-dddddddddddd','viewer') on conflict (organization_id,user_id) do update set role=excluded.role;
+insert into public.proyek (id,nama_bangunan,organization_id,created_by) values ('dddddddd-1111-4ddd-8ddd-dddddddddddd','Edge Viewer Project','dddddddd-0000-4ddd-8ddd-dddddddddddd','dddddddd-dddd-4ddd-8ddd-dddddddddddd') on conflict (id) do nothing;
