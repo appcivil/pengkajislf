@@ -55,7 +55,8 @@ serve(async (req: Request) => {
   }
 
   let quotaReservation: AIQuotaReservation | null = null;
-  let actualTokens: number | null = null;\n  let providerRequestStarted = false;
+  let actualTokens: number | null = null;
+  let providerRequestStarted = false;
   try {
     const parsedBody = await readJsonBody(req, 12 * 1024 * 1024);
     if (!parsedBody.ok) {
@@ -188,7 +189,8 @@ Output WAJIB dalam format JSON:
   "rekomendasi": "Perbaikan..."
 }`;
 
-          providerRequestStarted = true;\n          const geminiRes = await fetch(
+          providerRequestStarted = true;
+          const geminiRes = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-exp-03-25:generateContent?key=${GEMINI_KEY}`,
             {
               method: "POST",
