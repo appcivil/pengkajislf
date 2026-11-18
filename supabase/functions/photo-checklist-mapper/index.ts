@@ -97,7 +97,8 @@ serve(async (req: Request) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const padding = photo.base64.endsWith('==') ? 2 : photo.base64.endsWith('=') ? 1 : 0;\n      const estimatedBytes = (photo.base64.length / 4) * 3 - padding;
+      const padding = photo.base64.endsWith('==') ? 2 : photo.base64.endsWith('=') ? 1 : 0;
+      const estimatedBytes = (photo.base64.length / 4) * 3 - padding;
       if (estimatedBytes > 3 * 1024 * 1024) {
         return new Response(JSON.stringify({ error: "Each photo must be 3 MB or smaller" }), {
           status: 413,
