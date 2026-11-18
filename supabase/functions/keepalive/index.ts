@@ -34,12 +34,24 @@ Deno.serve(async (req: Request) => {
   const db = createClient(url, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data, error } = await db.from('keepalive_ping')
-    .insert({ source: 'trusted-scheduler' }).select('id').single();
+  const { error: insertError } = await db.from('keepalive_ping')
+    .insert({ source: 'trusted-scheduler' });
 
-  if (error) return json({ ok: false, error: 'Database keepalive write failed' }, 503);
+  if (!insertError) {
+    // Best-effort retention; do not fail a successful ping if cleanup is unavailable.
+    await db.rpc('keepalive_prune').then(() => undefined, () => undefined);
+    return json({ ok: true, via: 'keepalive_ping', ts: new Date().toISOString() });
+  }
 
-  // Best-effort retention; do not fail a successful ping if cleanup is unavailable.
-  await db.rpc('keepalive_prune').then(() => undefined, () => undefined);
-  return json({ ok: true, via: 'keepalive_ping', id: data.id, ts: new Date().toISOString() });
+  // Older live installations may not have keepalive_ping yet. A bounded
+  // HEAD query against the existing project table is the read-only fallback.
+  const { error: fallbackError } = await db.from('proyek')
+    .select('id', { count: 'exact', head: true })
+    .limit(1);
+
+  if (!fallbackError) {
+    return json({ ok: true, via: 'head:proyek', ts: new Date().toISOString() });
+  }
+
+  return json({ ok: false, error: 'Database keepalive query failed' }, 503);
 });
