@@ -41,7 +41,7 @@ Expected behavior:
 
 - Missing or incorrect scheduler secret: HTTP 401.
 - Non-POST request: HTTP 405.
-- Authenticated scheduler: one bounded insert into `keepalive_ping`.
+- Authenticated scheduler: one bounded insert into `keepalive_ping`, or a bounded read-only HEAD query on `proyek` when the legacy keepalive table is absent.
 - The function does not accept table names, SQL, or arbitrary payload fields.
 - Service-role access is only created after the scheduler secret is validated.
 
