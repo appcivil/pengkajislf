@@ -340,3 +340,57 @@ body.dark #dashboard-page .ai-finding {
 }
 [data-theme="dark"] #dashboard-page .ai-finding span,
 body.dark #dashboard-page .ai-finding span { color: var(--text-secondary) !important; }
+
+
+/* Finder-style project portfolio and global chrome refinements */
+.app-layout .app-header {
+  background: rgba(255,255,255,.82) !important;
+  border-bottom-color: rgba(31,41,55,.08) !important;
+}
+.app-layout .app-header .profile-trigger { background: rgba(22,119,237,.07) !important; }
+.app-layout .app-header .p-mini-name { color: #286fbe !important; }
+.app-layout .app-header .profile-menu-header { background: #f4f8ff !important; }
+.app-layout .app-header .profile-menu-header .p-name { color: var(--text-primary) !important; }
+.app-layout .app-header .profile-menu-header .p-email { color: var(--text-tertiary) !important; opacity: 1 !important; }
+.app-layout .app-header .profile-menu-header .p-role-badge {
+  background: #eaf2ff !important; color: #286fbe !important;
+}
+#proyek-list-page .page-header { gap: 16px; }
+#proyek-list-page .page-title { font-size: clamp(1.65rem, 3vw, 2.1rem) !important; }
+#proyek-list-page .card-quartz { border-radius: 15px; }
+#proyek-list-page #proyek-count {
+  background: #edf7f2 !important;
+  border-color: #d5eee1 !important;
+  color: #16845c !important;
+  font-family: inherit !important;
+  letter-spacing: 0 !important;
+}
+#proyek-list-page #search-proyek,
+#proyek-list-page #filter-status,
+#proyek-list-page #filter-sort {
+  background: #fff !important;
+  border-color: rgba(31,41,55,.13) !important;
+}
+#proyek-list-page .empty-state .empty-title { color: var(--text-primary) !important; }
+#proyek-list-page .empty-state .empty-desc { color: var(--text-tertiary) !important; }
+#proyek-list-page .card-quartz h3 { font-family: inherit !important; font-weight: 650 !important; }
+#proyek-list-page .card-quartz [style*="font-family:var(--font-mono)"] {
+  font-family: inherit !important;
+  letter-spacing: 0 !important;
+}
+@media (max-width: 768px) {
+  #proyek-list-page .page-header { align-items: stretch; }
+  #proyek-list-page .page-header > .flex { width: 100%; }
+  #proyek-list-page .page-header > .flex button { flex: 1; }
+  #proyek-list-page .card-quartz { padding: 18px !important; }
+}
+[data-theme="dark"] .app-layout .app-header,
+body.dark .app-layout .app-header { background: rgba(28,29,34,.9) !important; }
+[data-theme="dark"] .app-layout .app-header .profile-menu-header,
+body.dark .app-layout .app-header .profile-menu-header { background: #252a33 !important; }
+[data-theme="dark"] #proyek-list-page #search-proyek,
+[data-theme="dark"] #proyek-list-page #filter-status,
+[data-theme="dark"] #proyek-list-page #filter-sort,
+body.dark #proyek-list-page #search-proyek,
+body.dark #proyek-list-page #filter-status,
+body.dark #proyek-list-page #filter-sort { background: #24252a !important; color: var(--text-primary) !important; }
