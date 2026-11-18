@@ -17,6 +17,7 @@ const EDGE_FUNCTION_BASE = import.meta.env.VITE_EDGE_FUNCTION_BASE || '';
  * @param {string} proyekId - ID proyek untuk tracking
  */
 export async function autoFillDaftarSimak(proyekData, checklistTemplate = null, proyekId = null) {
+  if (!proyekId) throw new Error('ID proyek wajib dipilih untuk otorisasi tenant');
   const session = await supabase.auth.getSession();
   const token = session.data?.session?.access_token;
   
@@ -61,14 +62,17 @@ export async function autoFillDaftarSimak(proyekData, checklistTemplate = null, 
  * @param {string} proyekId - ID proyek
  * @param {number} batchSize - Ukuran batch (default: 5)
  */
-export async function photoToChecklistMapper(photos, proyekData = {}, checklistContext = null, proyekId = null, batchSize = 5) {
+export async function photoToChecklistMapper(photos, proyekData = {}, checklistContext = null, proyekId = null, batchSize = 2) {
+  if (!proyekId) throw new Error('ID proyek wajib dipilih untuk otorisasi tenant');
+  if (!Array.isArray(photos) || photos.length > 10) throw new Error('Maksimal 10 foto per permintaan');
+  if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 3) throw new Error('Ukuran batch harus 1 sampai 3');
   const session = await supabase.auth.getSession();
   const token = session.data?.session?.access_token;
   
   if (!token) throw new Error('Sesi tidak valid - silakan login ulang');
 
   // Validate photos
-  const validPhotos = photos.filter(p => p.base64 && p.mimeType).slice(0, 20);
+  const validPhotos = photos.filter(p => p.base64 && p.mimeType);
   if (validPhotos.length === 0) {
     throw new Error('Tidak ada foto valid untuk diproses');
   }
@@ -106,7 +110,8 @@ export async function photoToChecklistMapper(photos, proyekData = {}, checklistC
  * @param {Array} fileUrls - URL file di Google Drive
  * @param {Object} proyekData - Data proyek
  */
-export async function analyzeDrivePhotos(fileUrls, proyekData = {}) {
+export async function analyzeDrivePhotos(fileUrls, proyekData = {}, proyekId = null) {
+  if (!proyekId) throw new Error('ID proyek wajib dipilih untuk otorisasi tenant');
   // Convert URLs to base64 (implementasi tergantung pada drive integration)
   const photos = await Promise.all(
     fileUrls.map(async (url, idx) => {
@@ -135,7 +140,7 @@ export async function analyzeDrivePhotos(fileUrls, proyekData = {}) {
     throw new Error('Gagal mengambil foto dari Google Drive');
   }
 
-  return await photoToChecklistMapper(validPhotos, proyekData);
+  return await photoToChecklistMapper(validPhotos, proyekData, null, proyekId);
 }
 
 /**
