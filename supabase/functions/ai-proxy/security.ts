@@ -13,6 +13,7 @@ export type ValidatedAIRequest = {
   mimeType?: string;
   maxTokens: number;
   temperature: number;
+  projectId?: string;
 };
 
 export async function readJsonBody(req: Request): Promise<unknown> {
@@ -86,6 +87,10 @@ export function validateAIRequest(value: unknown): ValidatedAIRequest {
   };
   if (!modelPatterns[body.provider].test(body.model) || !allowedModels[body.provider].has(body.model)) throw new Error("INVALID_MODEL");
 
+  if (body.projectId !== undefined && (typeof body.projectId !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.projectId))) {
+    throw new Error("INVALID_PROJECT_ID");
+  }
+
   if (typeof body.prompt !== "string" || body.prompt.trim().length === 0 ||
       body.prompt.length > MAX_PROMPT_CHARS) throw new Error("INVALID_PROMPT");
   if (body.systemPrompt !== undefined &&
@@ -122,6 +127,7 @@ export function validateAIRequest(value: unknown): ValidatedAIRequest {
     ...(hasImage ? { base64Data: body.base64Data as string, mimeType: body.mimeType as string } : {}),
     maxTokens: boundedMaxTokens,
     temperature,
+    ...(typeof body.projectId === "string" ? { projectId: body.projectId } : {}),
   };
 }
 
@@ -134,6 +140,7 @@ export function publicError(error: unknown): { status: number; message: string }
     UNSUPPORTED_PROVIDER: { status: 400, message: "Provider tidak didukung." },
     INVALID_MODEL: { status: 400, message: "Model tidak valid." },
     INVALID_PROMPT: { status: 400, message: "Prompt kosong atau terlalu panjang." },
+    INVALID_PROJECT_ID: { status: 400, message: "ID proyek tidak valid." },
     INVALID_SYSTEM_PROMPT: { status: 400, message: "System prompt tidak valid atau terlalu panjang." },
     INVALID_MAX_TOKENS: { status: 400, message: "Batas token keluaran harus berupa bilangan bulat positif." },
     INVALID_TEMPERATURE: { status: 400, message: "Temperature harus berada pada rentang 0 sampai 1,5." },

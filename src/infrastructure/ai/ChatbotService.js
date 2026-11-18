@@ -158,7 +158,7 @@ export class ChatbotService extends IChatbotService {
 
     try {
       // Panggil AI service dengan fallback dan progress reporting
-      const response = await this._callAIWithFallback(prompt, model, options, (status, data) => {
+      const response = await this._callAIWithFallback(prompt, model, { ...options, projectId: context.projectId || options.projectId }, (status, data) => {
         this._dispatchProgressEvent('ai_progress', { status, ...data });
       });
 
@@ -209,7 +209,7 @@ export class ChatbotService extends IChatbotService {
 
     try {
       // Untuk sekarang, simulate streaming dengan chunking
-      const response = await this._callAI(prompt, model, options);
+      const response = await this._callAI(prompt, model, { ...options, projectId: options.projectId || options.context?.projectId });
       const content = response.content;
       
       // Simulate streaming
@@ -580,7 +580,8 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
         model: model.id,
         prompt,
         temperature: options.temperature || this.temperature,
-        maxTokens: options.maxTokens || this.maxTokens
+        maxTokens: options.maxTokens || this.maxTokens,
+        ...(options.projectId ? { projectId: options.projectId } : {})
       })
     });
 
