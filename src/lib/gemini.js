@@ -21,13 +21,13 @@ import { escapeHtml } from './safe-markdown.js';
 export async function analyzeChecklistImage(filesData, componentName, kategori = 'teknis', aspek = '', options = {}) {
   if (!Array.isArray(filesData) || filesData.length === 0 || filesData.length > 10) throw new Error('Jumlah bukti gambar harus 1 sampai 10.');
   if (!options.projectId) throw new Error('ID proyek wajib untuk analisis bukti checklist.');
-  const bahasaDirective = \`[Bahasa Indonesia Protocol - WAJIB]
-Gunakan Bahasa Indonesia formal, akademik, teknis, dan profesional.\`;
+  const bahasaDirective = `[Bahasa Indonesia Protocol - WAJIB]
+Gunakan Bahasa Indonesia formal, akademik, teknis, dan profesional.`;
   const systemPrompt = kategori === 'administrasi'
-    ? bahasaDirective + \`Anda adalah Auditor Administrasi SLF. Telaah \${escapeHtml(filesData.length)} bukti untuk komponen "\${escapeHtml(componentName)}" dan verifikasi kesesuaian PP No. 16 Tahun 2021.
-Kembalikan JSON murni: {"status":"ada_sesuai|ada_tidak_sesuai|tidak_ada","catatan":"uraian bukti yang terlihat","rekomendasi":"tindak lanjut"}\`
-    : bahasaDirective + \`Anda adalah Insinyur Sipil/Struktur ahli audit keandalan bangunan. Diagnosa \${escapeHtml(filesData.length)} bukti visual untuk komponen "\${escapeHtml(componentName)}" pada aspek "\${escapeHtml(aspek)}". Jelaskan kondisi yang benar-benar terlihat, risiko, dan rekomendasi.
-Kembalikan JSON murni: {"status":"baik|sedang|buruk|kritis","catatan":"analisis visual teknis","rekomendasi":"tindakan engineering"}\`;
+    ? bahasaDirective + `Anda adalah Auditor Administrasi SLF. Telaah ${escapeHtml(filesData.length)} bukti untuk komponen "${escapeHtml(componentName)}" dan verifikasi kesesuaian PP No. 16 Tahun 2021.
+Kembalikan JSON murni: {"status":"ada_sesuai|ada_tidak_sesuai|tidak_ada","catatan":"uraian bukti yang terlihat","rekomendasi":"tindak lanjut"}`
+    : bahasaDirective + `Anda adalah Insinyur Sipil/Struktur ahli audit keandalan bangunan. Diagnosa ${escapeHtml(filesData.length)} bukti visual untuk komponen "${escapeHtml(componentName)}" pada aspek "${escapeHtml(aspek)}". Jelaskan kondisi yang benar-benar terlihat, risiko, dan rekomendasi.
+Kembalikan JSON murni: {"status":"baik|sedang|buruk|kritis","catatan":"analisis visual teknis","rekomendasi":"tindakan engineering"}`;
   const raw = await callGeminiVision(filesData, systemPrompt, options.projectId);
   let parsedResult = parseAIJson(raw);
   if (options.useDeepReasoning !== false) {
@@ -54,9 +54,9 @@ Kembalikan JSON murni: {"status":"baik|sedang|buruk|kritis","catatan":"analisis 
  */
 export async function analyzeDocument(fileData, options = {}) {
   if (!options.projectId) throw new Error('ID proyek wajib untuk analisis dokumen.');
-  const prompt = \`Anda adalah Auditor Dokumentasi Bangunan Gedung SLF.
+  const prompt = `Anda adalah Auditor Dokumentasi Bangunan Gedung SLF.
 Analisis dokumen dan tentukan kategori tanah atau umum, subkategori, nomor dokumen, tanggal terbit, pemilik/pemohon, dan abstraksi isi.
-Kembalikan JSON murni: {"category":"tanah|umum","subcategory":"...","extracted_text":"...","metadata":{"doc_no":"...","date":"...","owner":"..."}}\`;
+Kembalikan JSON murni: {"category":"tanah|umum","subcategory":"...","extracted_text":"...","metadata":{"doc_no":"...","date":"...","owner":"..."}}`;
   const raw = await callGeminiVision([fileData], prompt, options.projectId);
   const parsedResult = parseAIJson(raw);
   if (options.useDeepReasoning !== false) {
@@ -80,11 +80,11 @@ Kembalikan JSON murni: {"category":"tanah|umum","subcategory":"...","extracted_t
 export async function analyzeComparativeAudit(filesData, itemName, itemKode, context = '', options = {}) {
   if (!options.projectId) throw new Error('ID proyek wajib untuk analisis komparatif.');
   if (!Array.isArray(filesData) || filesData.length === 0 || filesData.length > 10) throw new Error('Jumlah dokumen komparatif harus 1 sampai 10.');
-  const prompt = \`Anda adalah Auditor Engineering SLF.
-Bandingkan bukti dokumen untuk item "\${itemName}" (kode "\${itemKode}").
-Konteks: \${context}
+  const prompt = `Anda adalah Auditor Engineering SLF.
+Bandingkan bukti dokumen untuk item "${itemName}" (kode "${itemKode}").
+Konteks: ${context}
 Bandingkan parameter dokumen legal dan fisik/teknis, identifikasi deviasi, dan berikan rekomendasi.
-Kembalikan JSON murni: {"status":"baik|sedang|buruk|kritis","catatan":"analisis komparatif bukti","rekomendasi":"..."}\`;
+Kembalikan JSON murni: {"status":"baik|sedang|buruk|kritis","catatan":"analisis komparatif bukti","rekomendasi":"..."}`;
   const raw = await callGeminiVision(filesData, prompt, options.projectId);
   const parsedResult = parseAIJson(raw);
   if (options.useDeepReasoning !== false) {
@@ -105,7 +105,7 @@ async function callGeminiVision(filesData, prompt, projectId) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.access_token) throw new Error('Sesi login diperlukan untuk analisis AI.');
   const proxyUrl = env.VITE_AI_PROXY_URL ||
-    (env.VITE_SUPABASE_URL ? \`\${env.VITE_SUPABASE_URL.replace(/\\/$/, '')}/functions/v1/ai-proxy\` : '/functions/v1/ai-proxy');
+    (env.VITE_SUPABASE_URL ? `${env.VITE_SUPABASE_URL.replace(/[/]+$/, '')}/functions/v1/ai-proxy` : '/functions/v1/ai-proxy');
   const images = filesData.map((file) => ({
     base64Data: file.base64,
     mimeType: String(file.mimeType || '').split(';')[0]
@@ -114,7 +114,7 @@ async function callGeminiVision(filesData, prompt, projectId) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': \`Bearer \${session.access_token}\`,
+      'Authorization': `Bearer ${session.access_token}`,
       'apikey': env.VITE_SUPABASE_ANON_KEY || ''
     },
     body: JSON.stringify({
@@ -124,7 +124,7 @@ async function callGeminiVision(filesData, prompt, projectId) {
   });
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(error.error || \`AI Proxy gagal (HTTP \${response.status}).\`);
+    throw new Error(error.error || `AI Proxy gagal (HTTP ${response.status}).`);
   }
   const data = await response.json();
   if (typeof data.result !== 'string') throw new Error('Respons AI Proxy tidak valid.');
