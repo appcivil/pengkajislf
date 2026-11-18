@@ -96,7 +96,28 @@ serve(async (req: Request) => {
     }
 
     const body: ValidatedAIRequest = validateAIRequest(await readJsonBody(req));
-    const { provider, model, prompt, systemPrompt, base64Data, mimeType, maxTokens, temperature } = body;
+    const { provider, model, prompt, systemPrompt, base64Data, mimeType, maxTokens, temperature, projectId } = body;
+
+    // A project context is an authorization boundary, not trusted client metadata.
+    // Re-check it with the caller's JWT so Postgres RLS decides membership.
+    if (projectId) {
+      const projectClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false },
+        global: { headers: { Authorization: `Bearer ${token}` } },
+      });
+      const { data: project, error: projectError } = await projectClient
+        .from("proyek")
+        .select("id")
+        .eq("id", projectId)
+        .maybeSingle();
+
+      if (projectError || !project) {
+        return new Response(JSON.stringify({ error: "Akses ke proyek tidak diizinkan." }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     let result = "";
 
