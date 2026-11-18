@@ -71,6 +71,17 @@ export async function finalizeAIUsage(
   }
 }
 
+/** Release a reservation only when the provider request is known not to have started. */
+export async function releaseAIUsage(reservation: AIQuotaReservation): Promise<void> {
+  const { error, data } = await serviceClient().rpc("ai_quota_release", {
+    p_reservation_id: reservation.id,
+  });
+  if (error || data !== true) {
+    // Keep the reservation until expiry if release status is ambiguous.
+    throw new Error("Unable to release AI usage reservation");
+  }
+}
+
 /** Normalize token usage from Gemini, OpenAI-compatible, and Anthropic responses. */
 export function extractProviderUsageTokens(payload: unknown): number | null {
   if (!payload || typeof payload !== "object") return null;

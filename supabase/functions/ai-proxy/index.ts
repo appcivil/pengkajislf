@@ -8,7 +8,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { readJsonBody, validateAIRequest, publicError, canExecuteProjectAI, canExecuteUnscopedAI, type ValidatedAIRequest } from "./security.ts";
-import { reserveAIUsage, finalizeAIUsage, estimateTextTokens, extractProviderUsageTokens, type AIQuotaReservation } from "../_shared/ai-quota.ts";
+import { reserveAIUsage, finalizeAIUsage, releaseAIUsage, estimateTextTokens, extractProviderUsageTokens, type AIQuotaReservation } from "../_shared/ai-quota.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,6 +38,7 @@ serve(async (req: Request) => {
 
   let quotaReservation: AIQuotaReservation | null = null;
   let actualTokens: number | null = null;
+  let providerRequestStarted = false;
   try {
     // ── OTORISASI ───────────────────────────────────────────────
     // Fungsi ini memegang kunci API berbayar, jadi pemanggilnya WAJIB
@@ -191,6 +192,7 @@ serve(async (req: Request) => {
           ? (model || "gemini-2.5-pro-exp-03-25") // Default to Pro for vision
           : (model || "gemini-2.0-flash"); // Default to Flash for text
 
+        providerRequestStarted = true;
         const geminiRes = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${GEMINI_KEY}`,
           {
@@ -237,6 +239,7 @@ serve(async (req: Request) => {
           ? [{ role: "system", content: systemPrompt }, { role: "user", content: prompt }]
           : [{ role: "user", content: prompt }];
 
+        providerRequestStarted = true;
         const oaiRes = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
@@ -253,6 +256,7 @@ serve(async (req: Request) => {
         const CLAUDE_KEY = Deno.env.get("CLAUDE_API_KEY");
         if (!CLAUDE_KEY) throw new Error("CLAUDE_API_KEY tidak dikonfigurasi");
 
+        providerRequestStarted = true;
         const claudeRes = await fetch("https://api.anthropic.com/v1/messages", {
           method: "POST",
           headers: {
@@ -278,6 +282,7 @@ serve(async (req: Request) => {
         const OR_KEY = Deno.env.get("OPENROUTER_API_KEY");
         if (!OR_KEY) throw new Error("OPENROUTER_API_KEY tidak dikonfigurasi");
 
+        providerRequestStarted = true;
         const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -304,6 +309,7 @@ serve(async (req: Request) => {
         const MISTRAL_KEY = Deno.env.get("MISTRAL_API_KEY");
         if (!MISTRAL_KEY) throw new Error("MISTRAL_API_KEY tidak dikonfigurasi");
 
+        providerRequestStarted = true;
         const mistralRes = await fetch("https://api.mistral.ai/v1/chat/completions", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${MISTRAL_KEY}` },
@@ -326,6 +332,7 @@ serve(async (req: Request) => {
         const HF_URL = Deno.env.get("HF_SLF_OPUS_URL") ?? "https://api-inference.huggingface.co/models/adminskpslf/SLF_OPUS";
         if (!HF_KEY) throw new Error("HF_API_TOKEN tidak dikonfigurasi");
 
+        providerRequestStarted = true;
         const hfRes = await fetch(HF_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${HF_KEY}` },
@@ -361,8 +368,16 @@ serve(async (req: Request) => {
     });
   } catch (error) {
     if (quotaReservation) {
-      try { await finalizeAIUsage(quotaReservation, quotaReservation.reservedTokens); }
-      catch { console.error("[AI Proxy] quota finalization deferred to expiry"); }
+      try {
+        if (providerRequestStarted) {
+          // A request may have reached the provider even if the response was lost.
+          await finalizeAIUsage(quotaReservation, quotaReservation.reservedTokens);
+        } else {
+          await releaseAIUsage(quotaReservation);
+        }
+      } catch {
+        console.error("[AI Proxy] quota settlement deferred to expiry");
+      }
     }
     if (error instanceof Error && error.name === "AIQuotaDeniedError") {
       const retryAfter = (error as Error & { retryAfter?: string }).retryAfter;

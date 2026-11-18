@@ -7,7 +7,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { authenticateProject, readJsonBody } from "../_shared/tenant-auth.ts";
-import { reserveAIUsage, finalizeAIUsage, estimateTextTokens, extractProviderUsageTokens, type AIQuotaReservation } from "../_shared/ai-quota.ts";
+import { reserveAIUsage, finalizeAIUsage, releaseAIUsage, estimateTextTokens, extractProviderUsageTokens, type AIQuotaReservation } from "../_shared/ai-quota.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -56,6 +56,7 @@ serve(async (req: Request) => {
 
   let quotaReservation: AIQuotaReservation | null = null;
   let actualTokens: number | null = null;
+  let providerRequestStarted = false;
   try {
     const parsedBody = await readJsonBody(req, 12 * 1024 * 1024);
     if (!parsedBody.ok) {
@@ -188,6 +189,7 @@ Output WAJIB dalam format JSON:
   "rekomendasi": "Perbaikan..."
 }`;
 
+          providerRequestStarted = true;
           const geminiRes = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-exp-03-25:generateContent?key=${GEMINI_KEY}`,
             {
@@ -308,8 +310,15 @@ Output WAJIB dalam format JSON:
 
   } catch (error) {
     if (quotaReservation) {
-      try { await finalizeAIUsage(quotaReservation, quotaReservation.reservedTokens); }
-      catch { console.error("[AI quota] finalization deferred to expiry"); }
+      try {
+        if (providerRequestStarted) {
+          await finalizeAIUsage(quotaReservation, quotaReservation.reservedTokens);
+        } else {
+          await releaseAIUsage(quotaReservation);
+        }
+      } catch {
+        console.error("[AI quota] settlement deferred to expiry");
+      }
     }
     if (error instanceof Error && error.name === "AIQuotaDeniedError") {
       return new Response(JSON.stringify({ error: "Kuota AI telah tercapai." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
