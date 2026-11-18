@@ -8,7 +8,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { readJsonBody, validateAIRequest, publicError, canExecuteProjectAI, canExecuteUnscopedAI, type ValidatedAIRequest } from "./security.ts";
-import { reserveAIUsage, finalizeAIUsage, releaseAIUsage, estimateTextTokens, extractProviderUsageTokens, type AIQuotaReservation } from "../_shared/ai-quota.ts";
+import { reserveAIUsage, finalizeAIUsage, releaseAIUsage, estimateTextTokens, extractProviderUsageTokens, aiQuotaSettlement, type AIQuotaReservation } from "../_shared/ai-quota.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -369,7 +369,7 @@ serve(async (req: Request) => {
   } catch (error) {
     if (quotaReservation) {
       try {
-        if (providerRequestStarted) {
+        if (aiQuotaSettlement(providerRequestStarted) === "finalize") {
           // A request may have reached the provider even if the response was lost.
           await finalizeAIUsage(quotaReservation, quotaReservation.reservedTokens);
         } else {

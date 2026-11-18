@@ -1,7 +1,7 @@
 /// <reference lib="deno.ns" />
 import { assertEquals, assertRejects } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { readJsonBody, validateAIRequest, publicError, canExecuteProjectAI, canExecuteUnscopedAI } from "./security.ts";
-import { extractProviderUsageTokens } from "../_shared/ai-quota.ts";
+import { extractProviderUsageTokens, aggregateProviderUsageTokens, aiQuotaSettlement } from "../_shared/ai-quota.ts";
 
 Deno.test("accepts a registered provider/model and clamps output tokens", () => {
   const request = validateAIRequest({
@@ -212,4 +212,18 @@ Deno.test("normalizes provider-reported token usage", () => {
   assertEquals(extractProviderUsageTokens({ usage: { input_tokens: 12, output_tokens: 8 } }), 20);
   assertEquals(extractProviderUsageTokens({ choices: [] }), null);
   assertEquals(extractProviderUsageTokens(null), null);
+});
+
+
+Deno.test("pre-provider failures release reservations, post-send failures finalize conservatively", () => {
+  // Missing provider key / local preparation error happens before fetch.
+  assertEquals(aiQuotaSettlement(false), "release");
+  // A timeout or dropped response after fetch begins is ambiguous: never release.
+  assertEquals(aiQuotaSettlement(true), "finalize");
+});
+
+Deno.test("photo batch usage is summed only when every response reports token usage", () => {
+  assertEquals(aggregateProviderUsageTokens([100, 250, 75]), 425);
+  assertEquals(aggregateProviderUsageTokens([100, null, 75]), null);
+  assertEquals(aggregateProviderUsageTokens([]), null);
 });

@@ -49,6 +49,19 @@ jobs:
         run: psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f supabase/tests/bootstrap-smartai-ci.sql
       - name: Enforce tenant isolation and viewer read-only policies
         run: psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f supabase/tests/tenant-isolation-ci.sql
+      - name: Seed real Edge Function viewer fixture
+        run: psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f supabase/tests/ai-edge-viewer-fixture.sql
+      - name: Export local Supabase credentials
+        run: supabase status -o env >> "$GITHUB_ENV"
+      - name: Serve local Edge Functions
+        run: |
+          supabase functions serve --no-verify-jwt > /tmp/supabase-functions.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:54321/functions/v1/ai-proxy >/dev/null 2>&1; then break; fi
+            sleep 2
+          done
+      - name: Verify real viewer HTTP requests against all AI Edge Functions
+        run: deno test --allow-net --allow-env supabase/tests/ai-edge-viewer-http_test.ts
       - name: Verify atomic AI quota reservations
         run: psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f supabase/tests/ai-quota-atomic-ci.sql
       - name: Verify concurrent AI quota reservations

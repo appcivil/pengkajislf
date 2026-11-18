@@ -82,6 +82,17 @@ export async function releaseAIUsage(reservation: AIQuotaReservation): Promise<v
   }
 }
 
+/** Decide settlement conservatively: only release when no provider request was started. */
+export function aiQuotaSettlement(providerRequestStarted: boolean): "release" | "finalize" {
+  return providerRequestStarted ? "finalize" : "release";
+}
+
+/** Sum per-request usage only when every provider response reports usage. */
+export function aggregateProviderUsageTokens(usages: Array<number | null>): number | null {
+  if (usages.length === 0 || usages.some((usage) => usage === null)) return null;
+  return usages.reduce<number>((total, usage) => total + (usage ?? 0), 0);
+}
+
 /** Normalize token usage from Gemini, OpenAI-compatible, and Anthropic responses. */
 export function extractProviderUsageTokens(payload: unknown): number | null {
   if (!payload || typeof payload !== "object") return null;
