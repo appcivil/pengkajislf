@@ -37,7 +37,7 @@ AI Proxy menerima array `images` khusus Gemini dengan batas:
 - request multi-image wajib membawa projectId;
 - projectId diverifikasi menggunakan JWT pemanggil dan RLS sebelum provider dipanggil.
 
-Payload satu gambar lama tetap tersedia untuk OCR sebelum proyek dibuat. Jalur tersebut tetap memerlukan sesi pengguna. Setelah proyek ada, operasi bukti proyek wajib membawa projectId.
+Payload satu gambar lama tetap tersedia untuk OCR sebelum proyek dibuat. Jalur tersebut tetap memerlukan sesi pengguna. Setelah proyek ada, operasi bukti proyek wajib membawa projectId. Local Ollama tidak lagi dipanggil langsung dari browser karena belum tersedia sebagai provider di ai-proxy; opsi Ollama pada pengaturan belum diintegrasikan kembali ke jalur proxy.
 
 ## Perlindungan bundel browser
 
