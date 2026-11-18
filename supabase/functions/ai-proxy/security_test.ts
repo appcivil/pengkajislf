@@ -1,6 +1,6 @@
 /// <reference lib="deno.ns" />
 import { assertEquals, assertRejects } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { readJsonBody, validateAIRequest, publicError } from "./security.ts";
+import { readJsonBody, validateAIRequest, publicError, canExecuteProjectAI } from "./security.ts";
 
 Deno.test("accepts a registered provider/model and clamps output tokens", () => {
   const request = validateAIRequest({
@@ -146,5 +146,18 @@ Deno.test("rejects malformed project context identifiers", () => {
   } catch (error) {
     if (!(error instanceof Error) || error.message === "Expected project ID validation to fail") throw error;
     assertEquals(error.message, "INVALID_PROJECT_ID");
+  }
+});
+
+
+Deno.test("project AI role matrix allows owner, admin, and member", () => {
+  for (const role of ["owner", "admin", "member"]) {
+    assertEquals(canExecuteProjectAI(role), true, `${role} should be allowed to execute project AI`);
+  }
+});
+
+Deno.test("project AI role matrix denies viewer, platform admin without membership, and unknown roles", () => {
+  for (const role of ["viewer", "platform_admin", "service_role", "anon", null, undefined]) {
+    assertEquals(canExecuteProjectAI(role), false, `${String(role)} must not receive implicit project AI access`);
   }
 });
