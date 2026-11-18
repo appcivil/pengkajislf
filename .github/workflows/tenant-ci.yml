@@ -57,7 +57,7 @@ jobs:
         run: |
           supabase functions serve --no-verify-jwt > /tmp/supabase-functions.log 2>&1 &
           for i in {1..30}; do
-            if curl -fsS http://127.0.0.1:54321/functions/v1/ai-proxy >/dev/null 2>&1; then break; fi
+            if curl -sS http://127.0.0.1:54321/functions/v1/ai-proxy >/dev/null 2>&1; then break; fi
             sleep 2
           done
       - name: Verify real viewer HTTP requests against all AI Edge Functions
