@@ -1,6 +1,6 @@
 /// <reference lib="deno.ns" />
 import { assertEquals, assertRejects } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { readJsonBody, validateAIRequest, publicError, canExecuteProjectAI } from "./security.ts";
+import { readJsonBody, validateAIRequest, publicError, canExecuteProjectAI, canExecuteUnscopedAI } from "./security.ts";
 
 Deno.test("accepts a registered provider/model and clamps output tokens", () => {
   const request = validateAIRequest({
@@ -171,4 +171,13 @@ Deno.test("viewer-only memberships cannot execute unscoped AI", () => {
 Deno.test("unscoped AI remains available to an account with an executable role in any tenant", () => {
   const memberships = [{ role: "viewer" }, { role: "member" }];
   assertEquals(memberships.some((membership) => canExecuteProjectAI(membership.role)), true);
+});
+
+
+Deno.test("only users without tenant memberships may execute unscoped AI", () => {
+  assertEquals(canExecuteUnscopedAI([]), true);
+  assertEquals(canExecuteUnscopedAI([{ role: "owner" }]), false);
+  assertEquals(canExecuteUnscopedAI([{ role: "member" }]), false);
+  assertEquals(canExecuteUnscopedAI([{ role: "viewer" }]), false);
+  assertEquals(canExecuteUnscopedAI(null), false);
 });
