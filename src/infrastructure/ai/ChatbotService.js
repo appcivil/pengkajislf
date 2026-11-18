@@ -769,7 +769,7 @@ Anda adalah AI Assistant untuk Sistem Pengkajian SLF (Sertifikat Laik Fungsi) In
         } else if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
           // For PDFs, use OCR service
           console.log(`[ChatbotService] Processing PDF: ${file.name}`);
-          content = await this._extractPDFContent(file);
+          content = await this._extractPDFContent(file, requestOptions);
         } else if (this._isTextFile(file)) {
           // For text files, read as text
           content = await this._fileToText(file);
