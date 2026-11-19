@@ -246,9 +246,11 @@ test('light translucent hover controls retain readable text', async ({ page }) =
     document.querySelector('.app-layout').appendChild(host);
   });
 
-  const colors = await page.evaluate(() => [
-    getComputedStyle(document.querySelector('#contrast-context-hover'), ':hover').color,
-    getComputedStyle(document.querySelector('#contrast-smart-chip'), ':hover').color,
-  ]);
-  expect(colors).toEqual(['rgb(9, 105, 218)', 'rgb(9, 105, 218)']);
+  await page.locator('#contrast-context-hover').hover();
+  const contextColor = await page.locator('#contrast-context-hover').evaluate((el) => getComputedStyle(el).color);
+  await page.locator('#contrast-smart-chip').hover();
+  const chipColor = await page.locator('#contrast-smart-chip').evaluate((el) => getComputedStyle(el).color);
+
+  expect(contextColor).toBe('rgb(9, 105, 218)');
+  expect(chipColor).toBe('rgb(9, 105, 218)');
 });
