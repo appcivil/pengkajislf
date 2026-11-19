@@ -254,3 +254,96 @@ test('light translucent hover controls retain readable text', async ({ page }) =
   expect(contextColor).toBe('rgb(9, 105, 218)');
   expect(chipColor).toBe('rgb(9, 105, 218)');
 });
+
+
+test('shared form, table, badge, empty and loading states follow light and dark tokens', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPreviewSession(page);
+
+  await page.evaluate(() => {
+    const host = document.createElement('section');
+    host.id = 'shared-components-fixture';
+    host.innerHTML = `
+      <div class="form-group">
+        <label class="form-label" for="audit-field">Nama proyek</label>
+        <input class="form-input" id="audit-field" value="Uji tampilan">
+        <p class="form-hint">Keterangan formulir</p>
+      </div>
+      <div class="table-container" id="audit-table-wrap">
+        <table id="audit-table" style="min-width:560px">
+          <thead><tr><th>Komponen</th><th>Status</th></tr></thead>
+          <tbody><tr><td>Struktur</td><td><span class="badge badge-laik">Laik</span></td></tr></tbody>
+        </table>
+      </div>
+      <button id="audit-disabled" class="btn btn-primary" disabled>Memproses</button>
+      <section class="empty-state" id="audit-empty">
+        <div class="empty-icon">i</div>
+        <h3 class="empty-title">Belum ada data</h3>
+        <p class="empty-desc">Pilih proyek untuk melanjutkan</p>
+      </section>
+      <div class="loading-skeleton" id="audit-skeleton"></div>
+    `;
+    document.querySelector('#page-root').appendChild(host);
+  });
+
+  const light = await page.evaluate(() => {
+    const get = (selector, property = 'color') => getComputedStyle(document.querySelector(selector))[property];
+    const wrap = document.querySelector('#audit-table-wrap');
+    return {
+      input: get('#audit-field'),
+      inputToken: getComputedStyle(document.body).getPropertyValue('--text-primary').trim(),
+      header: get('#audit-table th'),
+      headerToken: getComputedStyle(document.body).getPropertyValue('--text-tertiary').trim(),
+      cell: get('#audit-table td'),
+      cellToken: getComputedStyle(document.body).getPropertyValue('--text-secondary').trim(),
+      emptyTitle: get('#audit-empty .empty-title'),
+      disabledOpacity: get('#audit-disabled', 'opacity'),
+      disabledCursor: get('#audit-disabled', 'cursor'),
+      skeletonAnimation: get('#audit-skeleton', 'animationName'),
+      tableViewportFits: wrap.getBoundingClientRect().width <= document.documentElement.clientWidth,
+      tableCanScroll: wrap.scrollWidth > wrap.clientWidth,
+    };
+  });
+
+  expect(light.input).toBe(light.inputToken);
+  expect(light.header).toBe(light.headerToken);
+  expect(light.cell).toBe(light.cellToken);
+  expect(light.emptyTitle).not.toBe('rgba(0, 0, 0, 0)');
+  expect(light.disabledOpacity).toBe('0.5');
+  expect(light.disabledCursor).toBe('not-allowed');
+  expect(light.skeletonAnimation).not.toBe('none');
+  expect(light.tableViewportFits).toBe(true);
+  expect(light.tableCanScroll).toBe(true);
+
+  await page.evaluate(() => document.body.setAttribute('data-theme', 'dark'));
+  const dark = await page.evaluate(() => ({
+    input: getComputedStyle(document.querySelector('#audit-field')).color,
+    inputToken: getComputedStyle(document.body).getPropertyValue('--text-primary').trim(),
+    cell: getComputedStyle(document.querySelector('#audit-table td')).color,
+    cellToken: getComputedStyle(document.body).getPropertyValue('--text-secondary').trim(),
+  }));
+  expect(dark.input).toBe(dark.inputToken);
+  expect(dark.cell).toBe(dark.cellToken);
+});
+
+test('keyboard focus is visibly indicated on shared controls', async ({ page }) => {
+  await openPreviewSession(page);
+  await page.evaluate(() => {
+    const button = document.createElement('button');
+    button.id = 'audit-focus-target';
+    button.className = 'btn btn-secondary';
+    button.textContent = 'Fokus keyboard';
+    document.querySelector('#page-root').appendChild(button);
+  });
+
+  await page.keyboard.press('Tab');
+  await page.locator('#audit-focus-target').focus();
+  const focus = await page.locator('#audit-focus-target').evaluate((el) => ({
+    outlineStyle: getComputedStyle(el).outlineStyle,
+    outlineWidth: getComputedStyle(el).outlineWidth,
+    outlineColor: getComputedStyle(el).outlineColor,
+  }));
+  expect(focus.outlineStyle).toBe('solid');
+  expect(parseFloat(focus.outlineWidth)).toBeGreaterThanOrEqual(2);
+  expect(focus.outlineColor).not.toBe('rgba(0, 0, 0, 0)');
+});
