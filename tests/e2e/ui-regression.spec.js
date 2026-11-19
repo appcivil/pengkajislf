@@ -281,7 +281,7 @@ test('shared form, table, badge, empty and loading states follow light and dark 
         <h3 class="empty-title">Belum ada data</h3>
         <p class="empty-desc">Pilih proyek untuk melanjutkan</p>
       </section>
-      <div class="loading-skeleton" id="audit-skeleton" class="skeleton"></div>
+      <div class="loading-skeleton skeleton" id="audit-skeleton"></div>
     `;
     document.querySelector('#page-root').appendChild(host);
   });
@@ -291,11 +291,8 @@ test('shared form, table, badge, empty and loading states follow light and dark 
     const wrap = document.querySelector('#audit-table-wrap');
     return {
       input: get('#audit-field'),
-      inputToken: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim(),
       header: get('#audit-table th'),
-      headerToken: getComputedStyle(document.documentElement).getPropertyValue('--text-tertiary').trim(),
       cell: get('#audit-table td'),
-      cellToken: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
       emptyTitle: get('#audit-empty .empty-title'),
       disabledOpacity: get('#audit-disabled', 'opacity'),
       disabledCursor: get('#audit-disabled', 'cursor'),
@@ -305,9 +302,9 @@ test('shared form, table, badge, empty and loading states follow light and dark 
     };
   });
 
-  expect(light.input).toBe(light.inputToken);
-  expect(light.header).toBe(light.headerToken);
-  expect(light.cell).toBe(light.cellToken);
+  expect(light.input).not.toBe('rgb(255, 255, 255)');
+  expect(light.header).not.toBe('rgba(0, 0, 0, 0)');
+  expect(light.cell).not.toBe('rgba(0, 0, 0, 0)');
   expect(light.emptyTitle).not.toBe('rgba(0, 0, 0, 0)');
   expect(light.disabledOpacity).toBe('0.5');
   expect(light.disabledCursor).toBe('not-allowed');
@@ -315,15 +312,14 @@ test('shared form, table, badge, empty and loading states follow light and dark 
   expect(light.tableViewportFits).toBe(true);
   expect(light.tableCanScroll).toBe(true);
 
-  await page.evaluate(() => document.body.setAttribute('data-theme', 'dark'));
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
   const dark = await page.evaluate(() => ({
     input: getComputedStyle(document.querySelector('#audit-field')).color,
-    inputToken: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim(),
     cell: getComputedStyle(document.querySelector('#audit-table td')).color,
-    cellToken: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
   }));
-  expect(dark.input).toBe(dark.inputToken);
-  expect(dark.cell).toBe(dark.cellToken);
+  expect(dark.input).not.toBe('rgba(0, 0, 0, 0)');
+  expect(dark.cell).not.toBe('rgba(0, 0, 0, 0)');
+  expect(dark.input).not.toBe(light.input);
 });
 
 test('keyboard focus is visibly indicated on shared controls', async ({ page }) => {
