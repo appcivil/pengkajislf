@@ -4672,10 +4672,10 @@ body.dark #dashboard-page .grid-3-col > .card-quartz {
   .card-quartz, .card, .card-header, .card-body, .panel, .panel-body,
   .modal-card, .empty-state, .table-wrap, .form-section, .settings-card
 ) :where(
-  [style*="color: white"], [style*="color:white"],
-  [style*="color: #fff"], [style*="color:#fff"],
-  [style*="color: rgb(255, 255, 255)"],
-  [style*="color:rgb(255,255,255)"]
+  [style*="color: white" i], [style*="color:white" i],
+  [style*="color: #fff" i], [style*="color:#fff" i],
+  [style*="color: rgb(255, 255, 255)" i],
+  [style*="color:rgb(255,255,255)" i]
 ):not(button):not(.btn):not(.badge):not(.status-badge):not(.chip):not(.tag):not(.text-on-brand) {
   color: var(--text-primary, #1d1d1f) !important;
   -webkit-text-fill-color: var(--text-primary, #1d1d1f) !important;
@@ -4685,7 +4685,7 @@ body.dark #dashboard-page .grid-3-col > .card-quartz {
   .modal-card, .empty-state, .table-wrap, .form-section, .settings-card
 ) :where(
   h1, h2, h3, h4, h5, h6, p, span, label, small, strong, em, a
-)[style*="color: white"]:not(button):not(.btn):not(.badge):not(.status-badge):not(.chip):not(.tag) {
+)[style*="color: white" i]:not(button):not(.btn):not(.badge):not(.status-badge):not(.chip):not(.tag) {
   color: var(--text-primary, #1d1d1f) !important;
   -webkit-text-fill-color: var(--text-primary, #1d1d1f) !important;
 }
