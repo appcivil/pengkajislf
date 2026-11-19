@@ -111,7 +111,7 @@ test('dark appearance tokens and light restoration are applied consistently', as
   const light = await page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--bg-base').trim());
   expect(light).toBe('#f5f5f7');
 
-  await page.evaluate(() => document.body.setAttribute('data-theme', 'dark'));
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
   const dark = await page.evaluate(() => ({
     background: getComputedStyle(document.body).getPropertyValue('--bg-base').trim(),
     scheme: getComputedStyle(document.body).colorScheme,
@@ -291,11 +291,11 @@ test('shared form, table, badge, empty and loading states follow light and dark 
     const wrap = document.querySelector('#audit-table-wrap');
     return {
       input: get('#audit-field'),
-      inputToken: getComputedStyle(document.body).getPropertyValue('--text-primary').trim(),
+      inputToken: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim(),
       header: get('#audit-table th'),
-      headerToken: getComputedStyle(document.body).getPropertyValue('--text-tertiary').trim(),
+      headerToken: getComputedStyle(document.documentElement).getPropertyValue('--text-tertiary').trim(),
       cell: get('#audit-table td'),
-      cellToken: getComputedStyle(document.body).getPropertyValue('--text-secondary').trim(),
+      cellToken: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
       emptyTitle: get('#audit-empty .empty-title'),
       disabledOpacity: get('#audit-disabled', 'opacity'),
       disabledCursor: get('#audit-disabled', 'cursor'),
@@ -318,9 +318,9 @@ test('shared form, table, badge, empty and loading states follow light and dark 
   await page.evaluate(() => document.body.setAttribute('data-theme', 'dark'));
   const dark = await page.evaluate(() => ({
     input: getComputedStyle(document.querySelector('#audit-field')).color,
-    inputToken: getComputedStyle(document.body).getPropertyValue('--text-primary').trim(),
+    inputToken: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim(),
     cell: getComputedStyle(document.querySelector('#audit-table td')).color,
-    cellToken: getComputedStyle(document.body).getPropertyValue('--text-secondary').trim(),
+    cellToken: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
   }));
   expect(dark.input).toBe(dark.inputToken);
   expect(dark.cell).toBe(dark.cellToken);
