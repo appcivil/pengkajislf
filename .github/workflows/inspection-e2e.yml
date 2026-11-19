@@ -41,12 +41,7 @@ jobs:
           set -euo pipefail
           SERVICE_ROLE_KEY="$(supabase status -o env | sed -n 's/^SERVICE_ROLE_KEY=//p' | tr -d '"')"
           test -n "$SERVICE_ROLE_KEY"
-          curl --fail-with-body --silent --show-error \\
-            --request POST "http://127.0.0.1:54321/auth/v1/admin/users" \\
-            --header "apikey: $SERVICE_ROLE_KEY" \\
-            --header "Authorization: Bearer $SERVICE_ROLE_KEY" \\
-            --header "Content-Type: application/json" \\
-            --data '{"email":"ui-inspection-owner@example.test","password":"ci-ui-owner-password","email_confirm":true,"user_metadata":{"full_name":"UI Inspection Owner"}}'
+          curl --fail-with-body --silent --show-error --request POST "http://127.0.0.1:54321/auth/v1/admin/users" --header "apikey: $SERVICE_ROLE_KEY" --header "Authorization: Bearer $SERVICE_ROLE_KEY" --header "Content-Type: application/json" --data '{"email":"ui-inspection-owner@example.test","password":"ci-ui-owner-password","email_confirm":true,"user_metadata":{"full_name":"UI Inspection Owner"}}'
       - name: Seed authorized owner and project fixture
         run: psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f supabase/tests/ui-inspection-owner-fixture.sql
       - name: Export local Supabase credentials for Vite
