@@ -53,7 +53,7 @@ test('authorized owner can load project detail and hydrate all inspection cards 
   expect(keys.length).toBeGreaterThan(0);
   for (const key of keys) {
     const shell = page.locator(`#proyek-detail-page [data-lazy-card="${key}"]`);
-    if (await shell.count()) await shell.scrollIntoViewIfNeeded();
+    if (await shell.count()) await shell.evaluate((element) => element.scrollIntoView({ block: 'center', behavior: 'instant' })).catch(() => {});
     await expect(page.locator(`#proyek-detail-page [data-lazy-card="${key}"]`)).toHaveCount(0, { timeout: 30000 });
   }
   await expect(page.locator('#proyek-detail-page')).not.toContainText('Memuat modul');
