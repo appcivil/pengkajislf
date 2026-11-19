@@ -4727,3 +4727,11 @@ body.dark #dashboard-page .grid-3-col > .card-quartz {
   color: inherit !important;
   -webkit-text-fill-color: currentColor !important;
 }
+
+
+/* Translucent hover surfaces are not dark enough to support white labels. */
+:root:not([data-theme="dark"]) body:not(.dark) .app-layout .ctx-btn:hover,
+:root:not([data-theme="dark"]) body:not(.dark) .app-layout .smart-ai-chip:hover {
+  color: #0969da !important;
+  -webkit-text-fill-color: currentColor !important;
+}
