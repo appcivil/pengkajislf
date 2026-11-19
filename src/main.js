@@ -2,6 +2,27 @@
 //  MAIN APPLICATION ENTRY POINT (Composition Root)
 // ============================================================
 
+// Recover once when a deployment leaves a stale HTML/JS reference to a
+// fingerprinted CSS chunk. The service worker is network-first for documents;
+// this bounded retry refreshes an already-open tab without creating a loop.
+if (typeof window !== 'undefined') {
+  window.addEventListener('vite:preloadError', (event) => {
+    event.preventDefault();
+    const retryKey = 'slf-vite-preload-retry';
+    try {
+      if (sessionStorage.getItem(retryKey) !== '1') {
+        sessionStorage.setItem(retryKey, '1');
+        window.location.reload();
+        return;
+      }
+      sessionStorage.removeItem(retryKey);
+    } catch {
+      // Storage may be disabled; allow the original import error to surface.
+    }
+    window.dispatchEvent(new CustomEvent('slf:asset-preload-failed'));
+  });
+}
+
 // [GLOBAL SHIMS] Mencegah error 'exports is not defined' pada GitHub Pages / Production
 if (typeof global === 'undefined') { window.global = window; }
 if (typeof exports === 'undefined') { window.exports = {}; }
