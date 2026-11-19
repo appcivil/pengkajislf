@@ -111,7 +111,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
     <div id="proyek-detail-page" style="animation: page-fade-in 0.6s ease-out">
       
       <!-- Presidential Hero Header -->
-      <div class="card-quartz" style="padding: var(--space-6) var(--space-8); margin-bottom: var(--space-8); background: var(--gradient-dark); border-color: var(--border-default); position:relative; overflow:hidden">
+      <div class="card-quartz" style="padding: var(--space-6) var(--space-8); margin-bottom: var(--space-5); background: var(--gradient-dark); border-color: var(--border-default); position:relative; overflow:hidden">
          <!-- Abstract Background Effect -->
          <div style="position:absolute; right:-80px; top:-80px; width:360px; height:360px; border-radius:50%; background:radial-gradient(circle, hsla(220, 95%, 52%, 0.08) 0%, transparent 70%); pointer-events:none"></div>
 
@@ -148,7 +148,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
          </div>
 
          <!-- Immersive Workflow Bar -->
-         <div style="margin-top: 40px; padding-top: 40px; border-top: 1px solid hsla(220, 20%, 100%, 0.05); overflow-x: auto; padding-bottom: 10px;">
+         <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid hsla(220, 20%, 100%, 0.05); overflow-x: auto; padding-bottom: 10px;">
             <div class="workflow-timeline" style="margin-bottom:12px; min-width: 600px">
               ${workflowSteps.map((s, i) => `
                 <div class="workflow-step ${i < currentStep ? 'done' : i === currentStep ? 'active' : ''}" style="flex:1; position:relative; text-align:center">
@@ -167,7 +167,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
       <div class="grid-dashboard-main">
         
         <!-- Left: Operations & Data -->
-        <div style="display:flex; flex-direction:column; gap:var(--space-8)">
+        <div style="display:flex; flex-direction:column; gap:var(--space-5)">
           
           <!-- Functional Modules Grid -->
           <div class="grid-2-col">
@@ -195,7 +195,7 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
             </div>
 
             <!-- PEMERIKSAAN STRUKTUR BANGUNAN MODULE -->
-            ${lazyCardShell('struktur', { minHeight: 280, label: 'Memuat modul struktur…' })}
+            ${lazyCardShell('struktur', { minHeight: 176, label: 'Memuat struktur…' })}
 
             <!-- SISTEM KELISTRIKAN MODULE -->
             ${renderElectricalSystemCard(p, electricalSummary)}
