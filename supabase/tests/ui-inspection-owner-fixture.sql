@@ -1,51 +1,20 @@
--- Isolated owner/project fixture for browser navigation against local Supabase.
--- Test-only identity; never use these credentials outside disposable CI databases.
-insert into auth.users
-  (id, aud, role, email, encrypted_password, email_confirmed_at,
-   raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
-values
-  ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', 'authenticated', 'authenticated',
-   'ui-inspection-owner@example.test',
-   crypt('ci-ui-owner-password', gen_salt('bf')), now(),
-   '{"provider":"email","providers":["email"]}', '{"full_name":"UI Inspection Owner"}',
-   now(), now())
-on conflict (id) do nothing;
-
-insert into public.organizations (id, name, slug, created_by)
-values (
-  'eeeeeeee-0000-4eee-8eee-eeeeeeeeeeee',
-  'UI Inspection CI',
-  'ui-inspection-ci',
-  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'
+-- Isolated tenant/project fixture for browser navigation against local Supabase.
+-- The owner account is created through the Supabase Auth Admin API in CI.
+with owner as (
+  select id from auth.users where email = 'ui-inspection-owner@example.test'
 )
-on conflict (id) do nothing;
+insert into public.organizations (id, name, slug, created_by)
+select 'eeeeeeee-0000-4eee-8eee-eeeeeeeeeeee', 'UI Inspection CI', 'ui-inspection-ci', owner.id
+from owner
+on conflict (id) do update set created_by = excluded.created_by;
 
 insert into public.organization_members (organization_id, user_id, role)
-values (
-  'eeeeeeee-0000-4eee-8eee-eeeeeeeeeeee',
-  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
-  'owner'
-)
+select 'eeeeeeee-0000-4eee-8eee-eeeeeeeeeeee', id, 'owner'
+from auth.users where email = 'ui-inspection-owner@example.test'
 on conflict (organization_id, user_id) do update set role = excluded.role;
 
 insert into public.proyek (id, nama_bangunan, organization_id, created_by)
-values (
-  'eeeeeeee-1111-4eee-8eee-eeeeeeeeeeee',
-  'UI Inspection Test Building',
-  'eeeeeeee-0000-4eee-8eee-eeeeeeeeeeee',
-  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'
-)
-on conflict (id) do nothing;
-
--- Password sign-in requires an email identity as well as the auth.users row.
-insert into auth.identities
-  (provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
-values
-  ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
-   'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
-   '{"sub":"eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee","email":"ui-inspection-owner@example.test","email_verified":true}',
-   'email', now(), now(), now())
-on conflict (provider_id, provider) do update
-  set user_id = excluded.user_id,
-      identity_data = excluded.identity_data,
-      updated_at = now();
+select 'eeeeeeee-1111-4eee-8eee-eeeeeeeeeeee', 'UI Inspection Test Building',
+       'eeeeeeee-0000-4eee-8eee-eeeeeeeeeeee', id
+from auth.users where email = 'ui-inspection-owner@example.test'
+on conflict (id) do update set created_by = excluded.created_by;
