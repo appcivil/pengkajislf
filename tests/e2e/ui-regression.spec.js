@@ -187,3 +187,31 @@ test('light surfaces keep readable text while branded controls and dark theme st
   expect(darkColors.card).toBe('rgb(255, 255, 255)');
   expect(darkColors.docx).toBe('rgb(255, 255, 255)');
 });
+test('light surface contrast matching is case-insensitive for inline white colors', async ({ page }) => {
+  await openPreviewSession(page);
+
+  await page.evaluate(() => {
+    const host = document.createElement('section');
+    host.id = 'contrast-case-fixture';
+    host.innerHTML = [
+      '<div class="card-quartz">',
+      '<span id="contrast-white-case" style="color: White">White keyword</span>',
+      '<span id="contrast-hex-case" style="color: #FFFFFF">Hex keyword</span>',
+      '<span id="contrast-rgb-case" style="color: RGB(255, 255, 255)">RGB keyword</span>',
+      '</div>',
+    ].join('');
+    document.querySelector('.app-layout').appendChild(host);
+  });
+
+  const colors = await page.evaluate(() => [
+    '#contrast-white-case',
+    '#contrast-hex-case',
+    '#contrast-rgb-case',
+  ].map((selector) => getComputedStyle(document.querySelector(selector)).color));
+
+  expect(colors).toEqual([
+    'rgb(29, 29, 31)',
+    'rgb(29, 29, 31)',
+    'rgb(29, 29, 31)',
+  ]);
+});
