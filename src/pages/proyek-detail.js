@@ -328,12 +328,12 @@ function buildHtml(p, stats, analisis, pic, simulasiSummary = {}, electricalSumm
         <div style="display:flex; flex-direction:column; gap:var(--space-8)">
           
           <!-- Operation Command (Radar) -->
-          <div class="card-quartz" style="padding: var(--space-6); background: var(--gradient-dark); border-color: hsla(220, 95%, 52%, 0.2); position:relative">
+          <div class="card-quartz risk-pulse-card" style="padding: var(--space-6); background: var(--gradient-dark); border-color: hsla(220, 95%, 52%, 0.2); position:relative">
             <div style="font-family:'Outfit', sans-serif; font-weight:800; font-size: 0.9rem; color:white; margin-bottom: 24px; text-align:center; letter-spacing:1px">RISK PULSE INTERFACE</div>
             <div style="height:280px; display:flex; align-items:center; justify-content:center">
                <canvas id="project-radar-chart"></canvas>
             </div>
-            ${!analisis ? `<div style="position:absolute; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; text-align:center; padding:40px; font-size:0.75rem; color:var(--text-tertiary); font-weight:600">AUDIT DATA INSUFFICIENT<br>Complete field checklist to generate risk pulse.</div>` : ''}
+            ${!analisis ? `<div class="risk-pulse-empty" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:28px; font-size:0.75rem; font-weight:600"><div><strong>AUDIT DATA INSUFFICIENT</strong><br><span>Lengkapi checklist lapangan untuk membuat analisis risiko.</span></div></div>` : ''}
           </div>
 
           <!-- PIC Card -->
