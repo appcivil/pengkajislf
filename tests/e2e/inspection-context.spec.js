@@ -4,7 +4,7 @@ const projectId = 'eeeeeeee-1111-4eee-8eee-eeeeeeeeeeee';
 
 test.skip(!process.env.VITE_SUPABASE_URL, 'requires the disposable local Supabase integration environment');
 
-test('authorized owner can navigate to electrical inspection for a real tenant project', async ({ page }) => {
+test('authorized owner can load project detail and hydrate all inspection cards responsively', async ({ page }) => {
   await page.goto('/#/login');
   await expect(page.locator('#email-login-form')).toBeVisible({ timeout: 30000 });
 
@@ -34,22 +34,45 @@ test('authorized owner can navigate to electrical inspection for a real tenant p
     return router.listRoutes().includes('electrical-inspection');
   }), { timeout: 30000 }).toBe(true);
   await expect.poll(() => page.evaluate(() => typeof window.navigate)).toBe('function');
-  const routeRendered = page.evaluate(() => new Promise((resolve) => {
-    const handler = (event) => {
-      if (event.detail?.path === 'electrical-inspection') {
-        window.removeEventListener('route-changed', handler);
-        resolve(true);
-      }
-    };
-    window.addEventListener('route-changed', handler);
-  }));
-  await page.evaluate((id) => {
-    window.navigate('electrical-inspection', { id });
-  }, projectId);
-  await routeRendered;
+  const cssPreloadFailures = [];
+  page.on('console', (message) => {
+    if (/Unable to preload CSS/i.test(message.text())) cssPreloadFailures.push(message.text());
+  });
+  page.on('pageerror', (error) => {
+    if (/Unable to preload CSS/i.test(error.message)) cssPreloadFailures.push(error.message);
+  });
 
-  await expect(page.locator('#electrical-inspection-page')).toBeVisible({ timeout: 30000 });
-  await expect(page.locator('#electrical-inspection-page')).toContainText('Pemeriksaan Sistem Kelistrikan');
-  await expect(page.locator('#electrical-inspection-page')).toContainText('PUIL 2020');
+  await page.evaluate((id) => window.navigate('proyek-detail', { id }), projectId);
+  await expect(page.locator('#proyek-detail-page')).toBeVisible({ timeout: 30000 });
+  await expect(page.locator('.risk-pulse-card')).toBeVisible();
+
+  // Hydrate every registered inspection card by bringing it into the viewport.
+  const keys = await page.locator('#proyek-detail-page [data-lazy-card]').evaluateAll(
+    (nodes) => nodes.map((node) => node.getAttribute('data-lazy-card')).filter(Boolean),
+  );
+  expect(keys.length).toBeGreaterThan(0);
+  for (const key of keys) {
+    const shell = page.locator(`#proyek-detail-page [data-lazy-card="${key}"]`);
+    if (await shell.count()) await shell.scrollIntoViewIfNeeded();
+    await expect(page.locator(`#proyek-detail-page [data-lazy-card="${key}"]`)).toHaveCount(0, { timeout: 30000 });
+  }
+  await expect(page.locator('#proyek-detail-page')).not.toContainText('Memuat modul');
+  await expect(page.locator('#proyek-detail-page')).not.toContainText('Modul gagal dimuat');
+
+  // Verify the real rendered page at desktop, tablet, and mobile widths.
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 820, height: 1180 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    const dimensions = await page.locator('#proyek-detail-page').evaluate((element) => ({
+      viewport: document.documentElement.clientWidth,
+      content: element.scrollWidth,
+    }));
+    expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 1);
+  }
+
+  expect(cssPreloadFailures).toEqual([]);
   await expect(page.locator('#page-root')).not.toContainText('Halaman Tidak Ditemukan');
 });
