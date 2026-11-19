@@ -215,3 +215,20 @@ test('light surface contrast matching is case-insensitive for inline white color
     'rgb(29, 29, 31)',
   ]);
 });
+
+test('light sidebar active navigation uses readable blue text', async ({ page }) => {
+  await openPreviewSession(page);
+
+  await page.evaluate(() => {
+    const sidebar = document.querySelector('.app-layout .sidebar');
+    const item = document.createElement('a');
+    item.className = 'nav-item active';
+    item.id = 'contrast-active-nav';
+    item.style.background = 'rgba(22,119,237,.11)';
+    item.innerHTML = '<span id="contrast-active-nav-label" style="color:white">Navigasi aktif</span>';
+    sidebar.appendChild(item);
+  });
+
+  const color = await page.locator('#contrast-active-nav-label').evaluate((el) => getComputedStyle(el).color);
+  expect(color).toBe('rgb(9, 105, 218)');
+});
