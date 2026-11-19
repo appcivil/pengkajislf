@@ -4735,3 +4735,63 @@ body.dark #dashboard-page .grid-3-col > .card-quartz {
   color: #0969da !important;
   -webkit-text-fill-color: currentColor !important;
 }
+
+
+/* Project detail: compact, readable inspection workspace in both appearances. */
+#proyek-detail-page { min-width:0; }
+#proyek-detail-page > .card-quartz:first-child { margin-bottom:18px !important; }
+#proyek-detail-page .grid-dashboard-main { gap:16px !important; align-items:start; }
+#proyek-detail-page .grid-dashboard-main > div { min-width:0; gap:16px !important; }
+#proyek-detail-page .grid-2-col { gap:12px !important; align-items:stretch; }
+#proyek-detail-page .lazy-card-shell {
+  min-height:160px !important; padding:18px !important; opacity:1 !important;
+  border:1px solid var(--border-default, #dfe3e9);
+  background:var(--surface-card, #fff);
+  border-radius:14px;
+}
+#proyek-detail-page .lazy-card-shell > div { color:var(--text-secondary, #596273) !important; }
+#proyek-detail-page .risk-pulse-card {
+  background:var(--surface-card, #fff) !important;
+  border:1px solid var(--border-default, #dfe3e9) !important;
+}
+#proyek-detail-page .risk-pulse-card > div:first-child { color:var(--text-primary, #1d1d1f) !important; }
+#proyek-detail-page .risk-pulse-empty {
+  background:rgba(248,250,252,.96);
+  color:#374151 !important;
+  border:1px solid #d8e0ea;
+  border-radius:12px;
+}
+#proyek-detail-page .risk-pulse-empty strong { color:#1d2939; letter-spacing:.04em; }
+#proyek-detail-page .risk-pulse-empty span { color:#475467; display:inline-block; margin-top:8px; line-height:1.6; }
+#proyek-detail-page .card-quartz:not(.clickable) { min-width:0; }
+#proyek-detail-page .workflow-timeline { padding-bottom:4px !important; }
+@media (max-width:900px) {
+  #proyek-detail-page .grid-dashboard-main { grid-template-columns:minmax(0,1fr) !important; }
+  #proyek-detail-page .grid-dashboard-main > div { width:100%; }
+}
+@media (max-width:640px) {
+  #proyek-detail-page > .card-quartz:first-child { padding:18px !important; }
+  #proyek-detail-page .grid-2-col { grid-template-columns:minmax(0,1fr) !important; }
+  #proyek-detail-page .workflow-timeline { min-width:560px !important; }
+  #proyek-detail-page .risk-pulse-card canvas { max-width:100%; }
+}
+[data-theme="dark"] #proyek-detail-page .lazy-card-shell,
+body.dark #proyek-detail-page .lazy-card-shell {
+  background:#232429 !important; border-color:rgba(255,255,255,.12) !important;
+}
+[data-theme="dark"] #proyek-detail-page .lazy-card-shell > div,
+body.dark #proyek-detail-page .lazy-card-shell > div { color:#c5cad3 !important; }
+[data-theme="dark"] #proyek-detail-page .risk-pulse-card,
+body.dark #proyek-detail-page .risk-pulse-card {
+  background:#232429 !important; border-color:rgba(255,255,255,.14) !important;
+}
+[data-theme="dark"] #proyek-detail-page .risk-pulse-card > div:first-child,
+body.dark #proyek-detail-page .risk-pulse-card > div:first-child { color:#f5f5f7 !important; }
+[data-theme="dark"] #proyek-detail-page .risk-pulse-empty,
+body.dark #proyek-detail-page .risk-pulse-empty {
+  background:rgba(17,19,24,.96); color:#f3f4f6 !important; border-color:#475467;
+}
+[data-theme="dark"] #proyek-detail-page .risk-pulse-empty strong,
+body.dark #proyek-detail-page .risk-pulse-empty strong { color:#fff; }
+[data-theme="dark"] #proyek-detail-page .risk-pulse-empty span,
+body.dark #proyek-detail-page .risk-pulse-empty span { color:#d0d5dd; }
