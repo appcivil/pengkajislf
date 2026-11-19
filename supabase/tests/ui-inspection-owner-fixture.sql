@@ -36,3 +36,16 @@ values (
   'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'
 )
 on conflict (id) do nothing;
+
+-- Password sign-in requires an email identity as well as the auth.users row.
+insert into auth.identities
+  (provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
+values
+  ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
+   'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
+   '{"sub":"eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee","email":"ui-inspection-owner@example.test","email_verified":true}',
+   'email', now(), now(), now())
+on conflict (provider_id, provider) do update
+  set user_id = excluded.user_id,
+      identity_data = excluded.identity_data,
+      updated_at = now();
