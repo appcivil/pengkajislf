@@ -293,6 +293,10 @@ test('shared form, table, badge, empty and loading states follow light and dark 
       input: get('#audit-field'),
       header: get('#audit-table th'),
       cell: get('#audit-table td'),
+      badgeColor: get('#audit-table .badge'),
+      badgeBackground: get('#audit-table .badge', 'backgroundColor'),
+      tableBorder: get('#audit-table td', 'borderBottomColor'),
+      emptyIcon: get('#audit-empty .empty-icon'),
       emptyTitle: get('#audit-empty .empty-title'),
       disabledOpacity: get('#audit-disabled', 'opacity'),
       disabledCursor: get('#audit-disabled', 'cursor'),
@@ -305,6 +309,10 @@ test('shared form, table, badge, empty and loading states follow light and dark 
   expect(light.input).not.toBe('rgb(255, 255, 255)');
   expect(light.header).not.toBe('rgba(0, 0, 0, 0)');
   expect(light.cell).not.toBe('rgba(0, 0, 0, 0)');
+  expect(light.badgeColor).not.toBe('rgba(0, 0, 0, 0)');
+  expect(light.badgeBackground).not.toBe('rgba(0, 0, 0, 0)');
+  expect(light.tableBorder).not.toBe('rgba(0, 0, 0, 0)');
+  expect(light.emptyIcon).not.toBe('rgba(0, 0, 0, 0)');
   expect(light.emptyTitle).not.toBe('rgba(0, 0, 0, 0)');
   expect(light.disabledOpacity).toBe('0.5');
   expect(light.disabledCursor).toBe('not-allowed');
@@ -316,9 +324,17 @@ test('shared form, table, badge, empty and loading states follow light and dark 
   const dark = await page.evaluate(() => ({
     input: getComputedStyle(document.querySelector('#audit-field')).color,
     cell: getComputedStyle(document.querySelector('#audit-table td')).color,
+    badgeColor: getComputedStyle(document.querySelector('#audit-table .badge')).color,
+    badgeBackground: getComputedStyle(document.querySelector('#audit-table .badge')).backgroundColor,
+    tableBorder: getComputedStyle(document.querySelector('#audit-table td')).borderBottomColor,
+    emptyIcon: getComputedStyle(document.querySelector('#audit-empty .empty-icon')).color,
   }));
   expect(dark.input).not.toBe('rgba(0, 0, 0, 0)');
   expect(dark.cell).not.toBe('rgba(0, 0, 0, 0)');
+  expect(dark.badgeColor).not.toBe('rgba(0, 0, 0, 0)');
+  expect(dark.badgeBackground).not.toBe('rgba(0, 0, 0, 0)');
+  expect(dark.tableBorder).not.toBe('rgba(0, 0, 0, 0)');
+  expect(dark.emptyIcon).not.toBe('rgba(0, 0, 0, 0)');
   expect(dark.input).not.toBe(light.input);
 });
 
