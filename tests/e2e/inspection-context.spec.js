@@ -24,9 +24,22 @@ test('authorized owner can navigate to electrical inspection for a real tenant p
     return auth.isAuthenticated();
   })).toBe(true);
 
+  // Auth state flips before the async app-shell callback has necessarily mounted
+  // the router. Wait for its mount point before issuing the protected navigation.
+  await page.locator('#page-root').waitFor({ state: 'attached', timeout: 30000 });
+  const routeRendered = page.evaluate(() => new Promise((resolve) => {
+    const handler = (event) => {
+      if (event.detail?.path === 'electrical-inspection') {
+        window.removeEventListener('route-changed', handler);
+        resolve(true);
+      }
+    };
+    window.addEventListener('route-changed', handler);
+  }));
   await page.evaluate((id) => {
-    window.location.hash = `#/electrical-inspection?id=${encodeURIComponent(id)}`;
+    window.navigate('electrical-inspection', { id });
   }, projectId);
+  await routeRendered;
 
   await expect(page.locator('#electrical-inspection-page')).toBeVisible({ timeout: 30000 });
   await expect(page.locator('#electrical-main-card')).toContainText('Pemeriksaan Sistem Kelistrikan');
