@@ -281,7 +281,7 @@ test('shared form, table, badge, empty and loading states follow light and dark 
         <h3 class="empty-title">Belum ada data</h3>
         <p class="empty-desc">Pilih proyek untuk melanjutkan</p>
       </section>
-      <div class="loading-skeleton" id="audit-skeleton"></div>
+      <div class="loading-skeleton" id="audit-skeleton" class="skeleton"></div>
     `;
     document.querySelector('#page-root').appendChild(host);
   });
@@ -311,7 +311,7 @@ test('shared form, table, badge, empty and loading states follow light and dark 
   expect(light.emptyTitle).not.toBe('rgba(0, 0, 0, 0)');
   expect(light.disabledOpacity).toBe('0.5');
   expect(light.disabledCursor).toBe('not-allowed');
-  expect(light.skeletonAnimation).not.toBe('none');
+  expect(light.skeletonAnimation).toBe('skeleton-sweep');
   expect(light.tableViewportFits).toBe(true);
   expect(light.tableCanScroll).toBe(true);
 
