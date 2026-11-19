@@ -232,3 +232,23 @@ test('light sidebar active navigation uses readable blue text', async ({ page })
   const color = await page.locator('#contrast-active-nav-label').evaluate((el) => getComputedStyle(el).color);
   expect(color).toBe('rgb(9, 105, 218)');
 });
+
+test('light translucent hover controls retain readable text', async ({ page }) => {
+  await openPreviewSession(page);
+
+  await page.evaluate(() => {
+    const host = document.createElement('div');
+    host.id = 'contrast-hover-fixture';
+    host.innerHTML = [
+      '<button id="contrast-context-hover" class="ctx-btn">Menu</button>',
+      '<button id="contrast-smart-chip" class="smart-ai-chip">AI filter</button>',
+    ].join('');
+    document.querySelector('.app-layout').appendChild(host);
+  });
+
+  const colors = await page.evaluate(() => [
+    getComputedStyle(document.querySelector('#contrast-context-hover'), ':hover').color,
+    getComputedStyle(document.querySelector('#contrast-smart-chip'), ':hover').color,
+  ]);
+  expect(colors).toEqual(['rgb(9, 105, 218)', 'rgb(9, 105, 218)']);
+});
