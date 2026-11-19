@@ -4716,3 +4716,14 @@ body.dark #dashboard-page .grid-3-col > .card-quartz {
 :root:not([data-theme="dark"]) body:not(.dark) #export-progress-overlay .card-quartz {
   color: var(--text-primary, #1d1d1f);
 }
+
+
+/* Sidebar active state: legacy base CSS uses white text, but the Apple light
+   surface is pale blue. Keep active navigation readable in light appearance. */
+:root:not([data-theme="dark"]) body:not(.dark) .app-layout .sidebar .nav-item.active {
+  color: #0969da !important;
+}
+:root:not([data-theme="dark"]) body:not(.dark) .app-layout .sidebar .nav-item.active span {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+}
