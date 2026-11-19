@@ -27,6 +27,13 @@ test('authorized owner can navigate to electrical inspection for a real tenant p
   // Auth state flips before the async app-shell callback has necessarily mounted
   // the router. Wait for its mount point before issuing the protected navigation.
   await page.locator('#page-root').waitFor({ state: 'attached', timeout: 30000 });
+  // The app registers lazy route handlers after its authenticated shell boots.
+  // A hash change before registration resolves to the 404 handler.
+  await expect.poll(() => page.evaluate(async () => {
+    const router = await import('/src/lib/router.js');
+    return router.listRoutes().includes('electrical-inspection');
+  }), { timeout: 30000 }).toBe(true);
+  await expect.poll(() => page.evaluate(() => typeof window.navigate)).toBe('function');
   const routeRendered = page.evaluate(() => new Promise((resolve) => {
     const handler = (event) => {
       if (event.detail?.path === 'electrical-inspection') {
