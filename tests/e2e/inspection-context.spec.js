@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 
 const projectId = 'eeeeeeee-1111-4eee-8eee-eeeeeeeeeeee';
 
+test.skip(!process.env.VITE_SUPABASE_URL, 'requires the disposable local Supabase integration environment');
+
 test('authorized owner can navigate to electrical inspection for a real tenant project', async ({ page }) => {
   await page.goto('/#/login');
   await expect(page.locator('#email-login-form')).toBeVisible({ timeout: 30000 });
