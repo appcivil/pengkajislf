@@ -1,10 +1,24 @@
 import { test, expect } from '@playwright/test';
+import { mkdirSync } from 'node:fs';
 
 const projectId = 'eeeeeeee-1111-4eee-8eee-eeeeeeeeeeee';
 
 test.skip(!process.env.VITE_SUPABASE_URL, 'requires the disposable local Supabase integration environment');
 
 test('authorized owner can load project detail and hydrate all inspection cards responsively', async ({ page }) => {
+  const cssPreloadFailures = [];
+  page.on('console', (message) => {
+    if (/Unable to preload CSS/i.test(message.text())) cssPreloadFailures.push(message.text());
+  });
+  page.on('pageerror', (error) => {
+    if (/Unable to preload CSS/i.test(error.message)) cssPreloadFailures.push(error.message);
+  });
+  page.on('requestfailed', (request) => {
+    if (request.resourceType() === 'stylesheet') cssPreloadFailures.push(`${request.url()}: ${request.failure()?.errorText || 'request failed'}`);
+  });
+  page.on('response', (response) => {
+    if (response.request().resourceType() === 'stylesheet' && response.status() >= 400) cssPreloadFailures.push(`${response.status()} ${response.url()}`);
+  });
   await page.goto('/#/login');
   await expect(page.locator('#email-login-form')).toBeVisible({ timeout: 30000 });
 
@@ -34,14 +48,6 @@ test('authorized owner can load project detail and hydrate all inspection cards 
     return router.listRoutes().includes('electrical-inspection');
   }), { timeout: 30000 }).toBe(true);
   await expect.poll(() => page.evaluate(() => typeof window.navigate)).toBe('function');
-  const cssPreloadFailures = [];
-  page.on('console', (message) => {
-    if (/Unable to preload CSS/i.test(message.text())) cssPreloadFailures.push(message.text());
-  });
-  page.on('pageerror', (error) => {
-    if (/Unable to preload CSS/i.test(error.message)) cssPreloadFailures.push(error.message);
-  });
-
   await page.evaluate((id) => window.navigate('proyek-detail', { id }), projectId);
   await expect(page.locator('#proyek-detail-page')).toBeVisible({ timeout: 30000 });
   await expect(page.locator('.risk-pulse-card')).toBeVisible();
@@ -59,7 +65,8 @@ test('authorized owner can load project detail and hydrate all inspection cards 
   await expect(page.locator('#proyek-detail-page')).not.toContainText('Memuat modul');
   await expect(page.locator('#proyek-detail-page')).not.toContainText('Modul gagal dimuat');
 
-  // Verify the real rendered page at desktop, tablet, and mobile widths.
+  // Capture browser-rendered evidence at desktop, tablet, and mobile widths.
+  mkdirSync('artifacts', { recursive: true });
   for (const viewport of [
     { width: 1440, height: 900 },
     { width: 820, height: 1180 },
@@ -71,6 +78,8 @@ test('authorized owner can load project detail and hydrate all inspection cards 
       content: element.scrollWidth,
     }));
     expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 1);
+    const label = viewport.width === 1440 ? 'desktop' : viewport.width === 820 ? 'tablet' : 'mobile';
+    await page.screenshot({ path: `artifacts/project-detail-${label}.png`, fullPage: true });
   }
 
   expect(cssPreloadFailures).toEqual([]);
