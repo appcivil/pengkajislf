@@ -2,8 +2,9 @@
 -- Static standards tables remain readable to signed-in users, but never writable.
 begin;
 
-revoke all privileges on table public.schema_migrations from anon, authenticated;
-alter table public.schema_migrations enable row level security;
+-- schema_migrations is created by Supabase's migration runner in hosted projects,
+-- but is not part of the disposable local application schema. Its hosted grants
+-- are managed separately and must not block replaying application migrations.
 
 revoke all privileges on table public.smartai_logs from anon, authenticated;
 revoke all privileges on table public.smartai_embeddings from anon, authenticated;
