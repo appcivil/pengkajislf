@@ -49,7 +49,7 @@ test('authorized owner can navigate to electrical inspection for a real tenant p
   await routeRendered;
 
   await expect(page.locator('#electrical-inspection-page')).toBeVisible({ timeout: 30000 });
-  await expect(page.locator('#electrical-main-card')).toContainText('Pemeriksaan Sistem Kelistrikan');
-  await expect(page.locator('#electrical-main-card')).toContainText('PUIL 2020');
+  await expect(page.locator('#electrical-inspection-page')).toContainText('Pemeriksaan Sistem Kelistrikan');
+  await expect(page.locator('#electrical-inspection-page')).toContainText('PUIL 2020');
   await expect(page.locator('#page-root')).not.toContainText('Halaman Tidak Ditemukan');
 });
