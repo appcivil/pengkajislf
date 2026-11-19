@@ -79,10 +79,12 @@ export async function proyekDetailPage(params = {}) {
   ]);
 
   const html = buildHtml(proyek, checklistStats, analisisData, pic, simulasiSummary, electricalSummary, lpsSummary, fireProtectionSummary, buildingIntensitySummary, architecturalSummary, egressSummary, environmentalSummary, sanitationSummary, waterSummary, accessibilitySummary, stormwaterSummary, simulationHubSummary, comfortSummary, kondisiSummary, disasterMitigationSummary, wastewaterSummary);
-  if (root) {
-    root.innerHTML = html;
+  // Router owns the final DOM insertion. Initialize only after it mounts the
+  // returned HTML; observing the pre-router DOM leaves lazy cards stuck forever.
+  setTimeout(() => {
+    if (!document.getElementById('proyek-detail-page')) return;
     initProyekDetailAfterRender(proyek, checklistStats, analisisData, simulasiSummary, electricalSummary, lpsSummary, fireProtectionSummary, buildingIntensitySummary, architecturalSummary, egressSummary, environmentalSummary, sanitationSummary, waterSummary, accessibilitySummary, stormwaterSummary, simulationHubSummary, comfortSummary, kondisiSummary, disasterMitigationSummary, wastewaterSummary);
-  }
+  }, 0);
   return html;
 }
 
