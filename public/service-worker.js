@@ -23,10 +23,10 @@
  * ============================================================
  */
 
-const CACHE_VERSION = 'v2.2';
-const STATIC_CACHE = `slf-static-${CACHE_VERSION}`;
-const STORAGE_CACHE = `slf-supabase-storage-${CACHE_VERSION}`;
-const RUNTIME_CACHE = `slf-runtime-${CACHE_VERSION}`;
+const STATIC_CACHE = 'slf-static-v2.3';
+// Preserve the existing 30-day project evidence cache across app releases.
+const STORAGE_CACHE = 'slf-supabase-storage-v2.2';
+const RUNTIME_CACHE = 'slf-runtime-v2.3';
 const OWNED_CACHES = [STATIC_CACHE, STORAGE_CACHE, RUNTIME_CACHE];
 
 /** Masa simpan objek Supabase Storage (30 hari) — file proyek bersifat tetap. */
@@ -155,6 +155,12 @@ self.addEventListener('fetch', (event) => {
 
   // --- 5. Static same-origin assets: stale-while-revalidate ---
   if (url.origin === self.location.origin) {
+    // HTML must be fresh after a deployment: stale HTML can reference deleted
+    // fingerprinted CSS/JS chunks and trigger Vite's CSS preload error.
+    if (request.mode === 'navigate' || request.destination === 'document') {
+      event.respondWith(networkFirstDocument(request));
+      return;
+    }
     event.respondWith(staleWhileRevalidate(request));
     return;
   }
@@ -192,6 +198,25 @@ async function storageCacheFirst(request) {
   } catch (err) {
     if (cached) return cached;   // offline → sajikan salinan lama
     return new Response('Offline — berkas belum tersedia di cache', {
+      status: 503,
+      headers: { 'content-type': 'text/plain; charset=utf-8' },
+    });
+  }
+}
+
+/** Network-first untuk dokumen agar HTML tidak menunjuk chunk build yang sudah usang. */
+async function networkFirstDocument(request) {
+  try {
+    const response = await fetch(request, { cache: 'no-store' });
+    if (response && response.ok && response.type !== 'opaque') {
+      const cache = await caches.open(RUNTIME_CACHE);
+      cache.put(request, response.clone()).catch(() => {});
+    }
+    return response;
+  } catch (error) {
+    const cached = await caches.match(request) || await caches.match('./index.html') || await caches.match('./');
+    if (cached) return cached;
+    return new Response('Offline — halaman belum tersedia di cache', {
       status: 503,
       headers: { 'content-type': 'text/plain; charset=utf-8' },
     });
