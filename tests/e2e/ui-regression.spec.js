@@ -230,7 +230,7 @@ test('light sidebar active navigation uses readable blue text', async ({ page })
   });
 
   const color = await page.locator('#contrast-active-nav-label').evaluate((el) => getComputedStyle(el).color);
-  expect(color).toBe('rgb(9, 105, 218)');
+  expect(color).toBe('rgb(23, 105, 194)');
 });
 
 test('light translucent hover controls retain readable text', async ({ page }) => {
