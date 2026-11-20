@@ -2,12 +2,16 @@
 -- Static standards tables remain readable to signed-in users, but never writable.
 begin;
 
--- schema_migrations is created by Supabase's migration runner in hosted projects,
--- but is not part of the disposable local application schema. Its hosted grants
--- are managed separately and must not block replaying application migrations.
-
-revoke all privileges on table public.smartai_logs from anon, authenticated;
-revoke all privileges on table public.smartai_embeddings from anon, authenticated;
+-- Hosted deployments may have additional SmartAI tables not present in the replay fixture.
+do $$
+begin
+  if to_regclass('public.smartai_logs') is not null then
+    execute 'revoke all privileges on table public.smartai_logs from anon, authenticated';
+  end if;
+  if to_regclass('public.smartai_embeddings') is not null then
+    execute 'revoke all privileges on table public.smartai_embeddings from anon, authenticated';
+  end if;
+end $$;
 
 -- These two tables are shared, non-tenant reference catalogs.
 revoke all privileges on table public.architectural_standards_ref from anon;
